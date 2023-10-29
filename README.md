@@ -48,6 +48,7 @@ Help - Vuforia Engine - Show Developer Agreement -> Accept
 2. Import Ros# into the project
 
     - In case you don’t have a Unity ID yet, go to the Unity website and register an account.
+      https://id.unity.com/en/conversations/5c9a9838-2b4d-4c7e-bc53-d31475d0ba8001af 
     - Following that, go to the Asset Store and add Ros# to your asset list:
 https://assetstore.unity.com/packages/tools/physics/ros-107085
     - In Unity’s Package Manager Window open the Packages drop-down menu and choose My Assets.  Make sure you are loading all your assets in the list.
