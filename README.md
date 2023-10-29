@@ -38,11 +38,10 @@ pip install git+https://github.com/gramaziokohler/compas_eve@main
 1. Relink the VuforiaPackage and accept the Developer Agreement
 
     - Before opening the project - download, copy and paste the following Vuforia Tarball Package into the Unity Project:
-      
- project path […] / Packages/com.ptc.vuforia.engine-10.18.4.tgz.
+       project path […] / Packages/com.ptc.vuforia.engine-10.18.4.tgz.
 
 https://drive.google.com/file/d/1nfvQRbzSj2HSMrrA4bCLXUkwQfWudjQT/view?usp=share_link
-        - In Unity, go through the following steps in order to accept Vuforia’s Developer Agreement:
+       - In Unity, go through the following steps in order to accept Vuforia’s Developer Agreement:
 Help - Vuforia Engine - Show Developer Agreement -> Accept
 
 
