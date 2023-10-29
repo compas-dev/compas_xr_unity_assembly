@@ -55,7 +55,7 @@ https://assetstore.unity.com/packages/tools/physics/ros-107085
     - Download and import Ros# to the project 
 
 ### Android
-
+(Unless you wish to test the project with the given credentials, please follow all steps below. Otherwise, skip to 7)
 Register your Android app with [Firebase](https://firebase.google.com/docs/unity/setup).
 1. Create a Unity project in the Firebase console.
 
