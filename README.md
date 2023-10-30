@@ -4,11 +4,9 @@ COMPAS XR: Visualizer app for collaborative robotic assembly
 Firebase Installations Quickstart
 
 ### Requirements
-1. [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)
-<img width="718" alt="Screenshot 2023-10-30 at 10 55 29" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e6c67897-379b-4180-9481-79d43805842c">
-   
-2. Android SDK (when developing for Android) - should be installed when installing Unity.
-3. [Rhinoceros 7](https://www.rhino3d.com/de/7/) / [Grasshopper](https://www.grasshopper3d.com/)
+1. [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)   
+2. Android SDK and Java JDK (when developing for Android) - has to be ticked in the installation modules when installing Unity.
+   <img width="718" alt="Screenshot 2023-10-30 at 10 55 29" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e6c67897-379b-4180-9481-79d43805842c">
 
 
 ### Unity
