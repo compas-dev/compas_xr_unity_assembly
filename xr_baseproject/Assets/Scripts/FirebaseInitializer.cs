@@ -17,7 +17,6 @@ public class FirebaseInitializer : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Hellooooo");
         applicationIdInput.text = "1:641027065982:android:ad03c691095c1507dab02f";
         apiKeyInput.text = "AIzaSyCrvr3FD8TxvdxTFqPvRM4z-Qs4841-s7A";
         databaseUrlInput.text = "https://cdf-project-f570f-default-rtdb.europe-west1.firebasedatabase.app";
