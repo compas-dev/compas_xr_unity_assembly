@@ -4,21 +4,23 @@ COMPAS XR: Visualizer app for collaborative robotic assembly
 Firebase Installations Quickstart
 
 ### Requirements
-1. [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)   
-2. Android SDK and Java JDK (when developing for Android) - has to be ticked in the installation modules when installing Unity.
+1. Download and install Unity Hub and [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)   
+2. Android SDK and Java JDK (when developing for Android) - have to be ticked in the installation modules when installing Unity.
    <img width="718" alt="Screenshot 2023-10-30 at 10 55 29" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e6c67897-379b-4180-9481-79d43805842c">
 
 
 ### Unity
 
-1. Accept the Developer Agreement
+1. Open Unity Hub. In Projects, click on Open. Locate the folder you downloaded from GitHub "xr_baseproject" on the drive and add it.
+2. Open the Unity Project.
+3. Accept the Developer Agreement
 
     - In Unity, go through the following steps in order to accept Vuforia’s Developer Agreement:
       Help - Vuforia Engine - Show Developer Agreement -> Accept
       
        <img width="499" alt="Screenshot 2023-10-30 at 11 27 16" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/8f08fced-6fd9-4662-a77e-a390f20be665">
 
-2. Import Ros# into the project
+4. Import Ros# into the project
 
     - In case you don’t have a Unity ID yet, go to the Unity website and register an account.
       https://id.unity.com/en/conversations/5c9a9838-2b4d-4c7e-bc53-d31475d0ba8001af 
