@@ -12,7 +12,7 @@ Firebase Installations Quickstart
 
 ### Unity
 
-1. Open Unity Hub. In Projects, click on Open. Locate the folder you downloaded from GitHub "xr_baseproject" on the drive and add it.
+1. Open Unity Hub. In Projects, click on Open(MacOS) or ADD(Windows). Locate the folder you downloaded from GitHub "xr_baseproject" on the drive and add it.
 
    <img width="781" alt="Screenshot 2023-10-30 at 11 34 07" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/cac60d2a-8f64-466f-a8da-d92565934d21">
 
