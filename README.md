@@ -5,32 +5,10 @@ Firebase Installations Quickstart
 
 ### Requirements
 1. [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)
-3. [Xcode 13.3.1](https://developer.apple.com/xcode/) or higher (when developing for iOS or tvOS).
-4. Android SDK (when developing for Android) - should be installed when installing Unity.
-5. [Rhinoceros 7](https://www.rhino3d.com/de/7/) / [Grasshopper](https://www.grasshopper3d.com/)
-
-### Dependencies
-1. [COMPAS](https://compas.dev)
-2. [COMPAS Fab](https://gramaziokohler.github.io/compas_fab/latest/)
-3. [COMPAS eve](https://github.com/gramaziokohler/compas_eve/tree/main)
-
-## Getting started with this project
-
-### Installing Dependencies
-Enabling communication between grasshopper and your application with MQTT
-1. Install compas_eve on your working environment and Rhino
-```
-conda activate <environment_name>
-pip install git+https://github.com/gramaziokohler/compas_eve@main
-```
-
-2. If your host (broker) for messages is not localhost. DISABLE your Firewall or Ensure that the required ports for MQTT (typically 1883 or 8883 for secure connections) are open and accessible.
-
-3. Possible public hosts for MQTT
-    - [HiveMQ Cloud](https://www.hivemq.com/mqtt-cloud-broker/)
-    - [CloudMQTT](https://www.cloudmqtt.com/)
-    - [Eclipse Mosquitto](https://mosquitto.org/)
-
+<img width="718" alt="Screenshot 2023-10-30 at 10 55 29" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e6c67897-379b-4180-9481-79d43805842c">
+   
+2. Android SDK (when developing for Android) - should be installed when installing Unity.
+3. [Rhinoceros 7](https://www.rhino3d.com/de/7/) / [Grasshopper](https://www.grasshopper3d.com/)
 
 
 ### Unity
