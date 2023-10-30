@@ -11,23 +11,20 @@ Firebase Installations Quickstart
 
 ### Unity
 
-1. Relink the VuforiaPackage and accept the Developer Agreement
-
-    - Before opening the project - download, copy and paste the following Vuforia Tarball Package into the Unity Project:
-      
-    project path […] / Packages/com.ptc.vuforia.engine-10.18.4.tgz.
-
-    https://drive.google.com/file/d/1nfvQRbzSj2HSMrrA4bCLXUkwQfWudjQT/view?usp=share_link
+1. Accept the Developer Agreement
 
     - In Unity, go through the following steps in order to accept Vuforia’s Developer Agreement:
-    Help - Vuforia Engine - Show Developer Agreement -> Accept
-       
+      Help - Vuforia Engine - Show Developer Agreement -> Accept
+       <img width="499" alt="Screenshot 2023-10-30 at 11 27 16" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/8f08fced-6fd9-4662-a77e-a390f20be665">
+
 2. Import Ros# into the project
 
     - In case you don’t have a Unity ID yet, go to the Unity website and register an account.
       https://id.unity.com/en/conversations/5c9a9838-2b4d-4c7e-bc53-d31475d0ba8001af 
     - Following that, go to the Asset Store and add Ros# to your asset list:
-https://assetstore.unity.com/packages/tools/physics/ros-107085
+      https://assetstore.unity.com/packages/tools/physics/ros-107085
+      <img width="488" alt="Screenshot 2023-10-30 at 11 28 14" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/3d207ce7-09eb-4e0b-b37f-09afa575621a">
+
     - In Unity’s Package Manager Window open the Packages drop-down menu and choose My Assets.  Make sure you are loading all your assets in the list.
     - Download and import Ros# to the project 
 
