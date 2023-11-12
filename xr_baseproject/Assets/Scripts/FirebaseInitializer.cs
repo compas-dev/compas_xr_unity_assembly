@@ -15,14 +15,57 @@ public class FirebaseInitializer : MonoBehaviour
     public TMP_InputField storageBucketInput;
     public TMP_InputField projectIdInput;
 
-    private void Start()
+    public UserInputs userInputs;
+    private MqttController mqttController;
+
+    private void Awake()
     {
-        applicationIdInput.text = "1:641027065982:android:ad03c691095c1507dab02f";
-        apiKeyInput.text = "AIzaSyCrvr3FD8TxvdxTFqPvRM4z-Qs4841-s7A";
-        databaseUrlInput.text = "https://cdf-project-f570f-default-rtdb.europe-west1.firebasedatabase.app";
-        storageBucketInput.text = "cdf-project-f570f.appspot.com";
-        projectIdInput.text = "cdf-project-f570f";
+        // Find the MqttController in the scene and subscribe to its onUserInputsUpdated event
+        mqttController = FindObjectOfType<MqttController>();
+        if (mqttController != null)
+        {
+            mqttController.onUserInputsUpdated.AddListener(UpdateInputFields);
+        }
     }
+
+     private void Start()
+    {
+        applicationIdInput.text = userInputs.appId;
+        apiKeyInput.text = userInputs.apiKey;
+        databaseUrlInput.text = userInputs.databaseUrl;
+        storageBucketInput.text = userInputs.storageBucket;
+        projectIdInput.text = userInputs.projectId;
+    }
+
+    private void UpdateInputFields()
+    {
+        applicationIdInput.text = mqttController.userInputs.appId;
+        apiKeyInput.text = mqttController.userInputs.apiKey;
+        databaseUrlInput.text = mqttController.userInputs.databaseUrl;
+        storageBucketInput.text = mqttController.userInputs.storageBucket;
+        projectIdInput.text = mqttController.userInputs.projectId;
+    }
+
+
+    // private void Update()
+    // {
+    //     applicationIdInput.text = userInputs.appId;
+    //     apiKeyInput.text = userInputs.apiKey;
+    //     databaseUrlInput.text = userInputs.databaseUrl;
+    //     storageBucketInput.text = userInputs.storageBucket;
+    //     projectIdInput.text = userInputs.projectId;
+    // }
+
+    //   private void Start()
+    // {
+    //     userInputs.appId = applicationIdInput.text;
+    //     userInputs.apiKey = apiKeyInput.text;
+    //     userInputs.databaseUrl = databaseUrlInput.text;
+    //     userInputs.storageBucket = storageBucketInput.text;
+    //     userInputs.projectId = projectIdInput.text;
+        
+    //     Debug.Log(userInputs.appId);
+    // }
 
     public void ChangeScene(string sceneName)
     {
@@ -50,6 +93,12 @@ public class FirebaseInitializer : MonoBehaviour
             DatabaseUrl = databaseUrl,
             StorageBucket = storageBucket,
             ProjectId = projectId,
+
+            // AppId = userInputs.appId,
+            // ApiKey = userInputs.apiKey,
+            // DatabaseUrl = userInputs.databaseUrl,
+            // StorageBucket = userInputs.storageBucket,
+            // ProjectId = userInputs.projectId,
         };
 
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
