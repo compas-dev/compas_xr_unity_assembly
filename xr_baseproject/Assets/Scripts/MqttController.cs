@@ -9,17 +9,14 @@ using UnityEngine.Events;
 public class MqttController : MonoBehaviour
 {
     public string nameController = "Controller 1";
-    public string tagOfTheMQTTReceiver="";
-    public MqttReceiver _eventSender;
+    //public string tagOfTheMQTTReceiver="";
+    private MqttReceiver _eventSender;
 
-    //public FirebaseInitializer firebaseInitializer;
-    public UserInputs userInputs;
-    public UnityEvent onUserInputsUpdated;
-  
-    
+    public SaveAppSettings saveAppSettings;
+
   void Start()
   {
-    _eventSender=GameObject.FindGameObjectsWithTag(tagOfTheMQTTReceiver)[0].gameObject.GetComponent<MqttReceiver>();
+    _eventSender = GetComponent<MqttReceiver>();
     _eventSender.OnMessageArrived += OnMessageArrivedHandler;
   }
 
@@ -27,29 +24,20 @@ public class MqttController : MonoBehaviour
   {
     Debug.Log("Event Fired. The message, from Object " + nameController +" is = " + newMsg);
 
-    // Dictionary<string, string> resultDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(newMsg);
-    // resultJson = resultDict["result"];
-    // Dictionary<string, string> resultDataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(resultJson); 
-
     Dictionary<string, string> resultDataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(newMsg);
 
-    userInputs.appId = resultDataDict["appId"];
-    userInputs.apiKey = resultDataDict["apiKey"];
-    userInputs.databaseUrl = resultDataDict["databaseUrl"];
-    userInputs.storageBucket = resultDataDict["storageBucket"];
-    userInputs.projectId = resultDataDict["projectId"];
+    FirebaseManager.Instance.appId = resultDataDict["appId"];
+    FirebaseManager.Instance.apiKey = resultDataDict["apiKey"];
+    FirebaseManager.Instance.databaseUrl = resultDataDict["databaseUrl"];
+    FirebaseManager.Instance.storageBucket = resultDataDict["storageBucket"];
+    FirebaseManager.Instance.projectId = resultDataDict["projectId"];
 
-    // Notify all listeners that the user inputs have been updated
-    if (onUserInputsUpdated != null)
-    {
-        onUserInputsUpdated.Invoke();
-    }
-
-    //Debug.Log(userInputs.apiKey);
-    
-   }
-    //string apiKey = resultDataDict["apiKey"];
-    //instantiate class & overwrite parameters
-    //Debug.Log("API Key: " + apiKey); 
+    saveAppSettings.UpdateInputFields();
 
   }
+  
+}
+
+  
+
+

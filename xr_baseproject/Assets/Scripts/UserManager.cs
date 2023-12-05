@@ -2,14 +2,39 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Firebase.Database;
+using Firebase.Extensions;
 using Newtonsoft.Json;
 using UnityEngine.SceneManagement; // Added namespace for scene management
 
 public class UserManager : MonoBehaviour
 {
+
     private string userID;
     private DatabaseReference dbReference_root;
     public TMPro.TMP_InputField Username;
+
+    public class User
+{
+    public Dictionary<string, Device> devices;
+
+    public User()
+    {
+        devices = new Dictionary<string, Device>();
+    }
+}
+
+[System.Serializable]
+public class Device
+{
+    public List<string> dates;
+
+    public Device()
+    {
+        dates = new List<string>();
+    }
+}
+
+    
 
     // Start is called before the first frame update
     void Start()
@@ -45,7 +70,7 @@ public class UserManager : MonoBehaviour
         string playerName = Username.text.ToLower();
 
         // Check if the user with the same playerName exists in the database
-        dbReference_root.Child("Users").Child(playerName).GetValueAsync().ContinueWith(task =>
+        dbReference_root.Child("Users").Child(playerName).GetValueAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -71,7 +96,7 @@ public class UserManager : MonoBehaviour
 
                     currentDates.Add(time);
                     print("added time");
-                    dbReference_root.Child("Users").Child(playerName).Child("devices").Child(userID).Child("dates").SetValueAsync(currentDates).ContinueWith(t =>
+                    dbReference_root.Child("Users").Child(playerName).Child("devices").Child(userID).Child("dates").SetValueAsync(currentDates).ContinueWithOnMainThread(t =>
                     {
                         if (t.IsFaulted)
                         {
@@ -87,7 +112,7 @@ public class UserManager : MonoBehaviour
                 else
                 {   
                     // Device does not exist, create a new "devices" node
-                    dbReference_root.Child("Users").Child(playerName).Child("devices").Child(userID).Child("dates").Child("0").SetValueAsync(time).ContinueWith(t =>
+                    dbReference_root.Child("Users").Child(playerName).Child("devices").Child(userID).Child("dates").Child("0").SetValueAsync(time).ContinueWithOnMainThread(t =>
                     {
                         if (t.IsFaulted)
                         {
@@ -109,7 +134,7 @@ public class UserManager : MonoBehaviour
                 newDevice.dates.Add(time);
                 newUser.devices.Add(userID, newDevice);
                 string json = JsonConvert.SerializeObject(newUser);
-                dbReference_root.Child("Users").Child(playerName).SetRawJsonValueAsync(json).ContinueWith(t =>
+                dbReference_root.Child("Users").Child(playerName).SetRawJsonValueAsync(json).ContinueWithOnMainThread(t =>
                 {
                     if (t.IsFaulted)
                     {

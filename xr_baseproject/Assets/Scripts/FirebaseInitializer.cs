@@ -1,107 +1,43 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Firebase;
+using Firebase.Extensions;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using TMPro;
 using System.Collections;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 
 public class FirebaseInitializer : MonoBehaviour
 {
-    public TMP_InputField applicationIdInput;
-    public TMP_InputField apiKeyInput;
-    public TMP_InputField databaseUrlInput;
-    public TMP_InputField storageBucketInput;
-    public TMP_InputField projectIdInput;
+    public MqttReceiver mqttReceiver;
 
-    public UserInputs userInputs;
-    private MqttController mqttController;
-
-    private void Awake()
+    public void Start()
     {
-        // Find the MqttController in the scene and subscribe to its onUserInputsUpdated event
-        mqttController = FindObjectOfType<MqttController>();
-        if (mqttController != null)
+         mqttReceiver = FindObjectOfType<MqttReceiver>();
+        if (mqttReceiver == null)
         {
-            mqttController.onUserInputsUpdated.AddListener(UpdateInputFields);
+            Debug.LogError("MqttReceiver not found in the scene.");
         }
-    }
-
-     private void Start()
-    {
-        applicationIdInput.text = userInputs.appId;
-        apiKeyInput.text = userInputs.apiKey;
-        databaseUrlInput.text = userInputs.databaseUrl;
-        storageBucketInput.text = userInputs.storageBucket;
-        projectIdInput.text = userInputs.projectId;
-    }
-
-    private void UpdateInputFields()
-    {
-        applicationIdInput.text = mqttController.userInputs.appId;
-        apiKeyInput.text = mqttController.userInputs.apiKey;
-        databaseUrlInput.text = mqttController.userInputs.databaseUrl;
-        storageBucketInput.text = mqttController.userInputs.storageBucket;
-        projectIdInput.text = mqttController.userInputs.projectId;
-    }
-
-
-    // private void Update()
-    // {
-    //     applicationIdInput.text = userInputs.appId;
-    //     apiKeyInput.text = userInputs.apiKey;
-    //     databaseUrlInput.text = userInputs.databaseUrl;
-    //     storageBucketInput.text = userInputs.storageBucket;
-    //     projectIdInput.text = userInputs.projectId;
-    // }
-
-    //   private void Start()
-    // {
-    //     userInputs.appId = applicationIdInput.text;
-    //     userInputs.apiKey = apiKeyInput.text;
-    //     userInputs.databaseUrl = databaseUrlInput.text;
-    //     userInputs.storageBucket = storageBucketInput.text;
-    //     userInputs.projectId = projectIdInput.text;
-        
-    //     Debug.Log(userInputs.appId);
-    // }
-
-    public void ChangeScene(string sceneName)
-    {
-        SceneManager.LoadScene(sceneName);
-    }
-
-    public void printsmth()
-    {
-        Debug.Log("test");
     }
 
     public void InitializeFirebase()
     {
         Debug.Log("We are starting to initialize Firebase");
-        string appId = applicationIdInput.text;
-        string apiKey = apiKeyInput.text;
-        System.Uri databaseUrl = new System.Uri(databaseUrlInput.text);
-        string storageBucket = storageBucketInput.text;
-        string projectId = projectIdInput.text;
+        Debug.Log("Test Print" + " " + FirebaseManager.Instance.appId);
 
         AppOptions options = new AppOptions
         {
-            AppId = appId,
-            ApiKey = apiKey,
-            DatabaseUrl = databaseUrl,
-            StorageBucket = storageBucket,
-            ProjectId = projectId,
-
-            // AppId = userInputs.appId,
-            // ApiKey = userInputs.apiKey,
-            // DatabaseUrl = userInputs.databaseUrl,
-            // StorageBucket = userInputs.storageBucket,
-            // ProjectId = userInputs.projectId,
+            AppId = FirebaseManager.Instance.appId,
+            ApiKey = FirebaseManager.Instance.apiKey,
+            DatabaseUrl = new System.Uri(FirebaseManager.Instance.databaseUrl),
+            StorageBucket = FirebaseManager.Instance.storageBucket,
+            ProjectId = FirebaseManager.Instance.projectId,
         };
 
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             Firebase.DependencyStatus dependencyStatus = task.Result;
             if (dependencyStatus == Firebase.DependencyStatus.Available)
@@ -113,8 +49,13 @@ public class FirebaseInitializer : MonoBehaviour
                     Debug.Log("Firebase Initialized Successfully");
                     Debug.Log($"App Name: {app.Name}");
 
+                    //Disconnect from MQTT
+                    mqttReceiver.Disconnect();
+                    Debug.Log("Disconnected from MQTT");
+
                     // Load the new scene
-                    StartCoroutine(ChangeSceneAfterInitialization("Log"));
+                    ChangeScene("Log");
+                    
                 }
                 else
                 {
@@ -128,9 +69,9 @@ public class FirebaseInitializer : MonoBehaviour
         });
     }
 
-    private IEnumerator ChangeSceneAfterInitialization(string sceneName)
+    private void ChangeScene(string sceneName)
     {
-        yield return null; // Wait for the next frame
-        ChangeScene(sceneName);
+        SceneManager.LoadScene(sceneName);
     }
+
 }

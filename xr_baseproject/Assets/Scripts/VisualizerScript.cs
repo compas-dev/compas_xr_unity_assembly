@@ -5,48 +5,59 @@ using UnityEngine.UI;
 
 public class VisualizerScript : MonoBehaviour
 {
-
-    //private variables
-    public GameObject Preview_Builder;
-    public GameObject ID_Button;
-    public GameObject ObjectLength_Button;
-    public GameObject Robot_Button;
-    public GameObject Background;
-
-
+    // Private variables
+    private GameObject Preview_Builder;
+    private GameObject ID_Button;
+    private GameObject ObjectLength_Button;
+    private GameObject Robot_Button;
+    private GameObject Background;
 
     // Start is called before the first frame update
     void Start()
     {
-        //For each button, define OnClick Action and prefab
+        // Find GameObjects by name
+        Preview_Builder = GameObject.Find("Preview_Builder");
+        ID_Button = GameObject.Find("ID_Button");
+        ObjectLength_Button = GameObject.Find("ObjectLength_Button");
+        Robot_Button = GameObject.Find("Robot_Button");
+        Background = GameObject.Find("Background_Visualizer");
+
+        // Ensure all GameObjects were found
+        if (!Preview_Builder || !ID_Button || !ObjectLength_Button || !Robot_Button || !Background)
+        {
+            Debug.LogError("One or more GameObjects were not found. Please check their names.");
+            return;
+        }
+
+        // For each button, define OnClick Action and prefab
         Button btn = GetComponent<Button>();
-        btn.onClick.AddListener(Visualizer_Toggle);
-        Background.SetActive(false);
+        if (btn != null)
+        {
+            btn.onClick.AddListener(Visualizer_Toggle);
+        }
+        else
+        {
+            Debug.LogError("Button component not found on the GameObject.");
+        }
 
-
+        // Initially hide all menu buttons
+        SetMenuButtonsActive(false);
     }
 
-     //Toggle ON and OFF the dropdown submenu options
+    // Toggle ON and OFF the dropdown submenu options
     private void Visualizer_Toggle()
     {
-        //deactivate the buttons if they are on
-        if (Robot_Button.activeSelf == true)
-        {
-            Preview_Builder.SetActive(false);
-            ID_Button.SetActive(false);
-            ObjectLength_Button.SetActive(false);
-            Robot_Button.SetActive(false);
-            Background.SetActive(false);
-        }
-        else 
-        {
-            Preview_Builder.SetActive(true);
-            ID_Button.SetActive(true);
-            ObjectLength_Button.SetActive(true);
-            Robot_Button.SetActive(true);
-            Background.SetActive(true);
-        }
+        // Toggle the active state of the buttons
+        SetMenuButtonsActive(!Robot_Button.activeSelf);
     }
 
-
+    // Helper method to set the active state of menu buttons
+    private void SetMenuButtonsActive(bool isActive)
+    {
+        Preview_Builder.SetActive(isActive);
+        ID_Button.SetActive(isActive);
+        ObjectLength_Button.SetActive(isActive);
+        Robot_Button.SetActive(isActive);
+        Background.SetActive(isActive);
+    }
 }
