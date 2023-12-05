@@ -16,11 +16,8 @@ using Firebase.Auth;
 using System.IO;
 using System.Diagnostics;
 using UnityEngine.Networking;
-// using NUnit.Framework;
 using System.Linq;
 using System.Linq.Expressions;
-// using UnityEditor;
-
 
 public class DataItemDictEventArgs : EventArgs
 {
@@ -150,15 +147,13 @@ public class DatabaseManager : MonoBehaviour
         //Fetch Building plan data with event trigger
         FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), true);
     }
-    async Task<List<FileMetadata>> GetFilesInFolder(string path) //TODO: CONSTRUCT PATH DYNAMICLY FROM APPLICATION INFO.
+    async Task<List<FileMetadata>> GetFilesInFolder(string path)
     {
         //This will need to change
-        // string storageBucket = ...
-        // string baseUrl = "https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={path}/&delimiter=/"
+        string storageBucket = FirebaseManager.Instance.storageBucket;
+        string baseUrl = $"https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={path}/&delimiter=/";
 
-        //TODO: THIS NEEDS TO BE MORE DYNAMIC
-        // const string baseUrl = "https://firebasestorage.googleapis.com/v0/b/test-project-94f41.appspot.com/o?prefix=obj_storage/timber_assembly_test/&delimiter=/";
-        const string baseUrl = "https://firebasestorage.googleapis.com/v0/b/test-project-94f41.appspot.com/o?prefix=obj_storage/buildingplan_test/&delimiter=/";
+        // const string baseUrl = "https://firebasestorage.googleapis.com/v0/b/test-project-94f41.appspot.com/o?prefix=obj_storage/buildingplan_test/&delimiter=/"; //Hardcoded value for example
  
         UnityEngine.Debug.Log($"BaseUrl: {baseUrl}");
 
