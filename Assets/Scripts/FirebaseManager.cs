@@ -16,11 +16,11 @@ public sealed class FirebaseManager
     public string projectId;
 
     FirebaseManager() {
-      appId = "6:641027065982:android:ad03c691095c1507dab02f";
-      apiKey = "AIzaSyCrvr3FD8TxvdxTFqPvRM4z-Qs4841-s7A";
-      databaseUrl = "https://cdf-project-f570f-default-rtdb.europe-west1.firebasedatabase.app";
-      storageBucket = "cdf-project-f570f.appspot.com";
-      projectId = "cdf-project-f570f";
+      appId = "1:116159730378:android:32163738e6393f7a0b5a33";
+      apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
+      databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
+      storageBucket = "test-project-94f41.appspot.com";
+      projectId = "test-project-94f41";
     }
 
     public static FirebaseManager Instance
