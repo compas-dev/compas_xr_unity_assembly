@@ -61,20 +61,20 @@ public class InstantiateObjects : MonoBehaviour
         Elements = GameObject.Find("Elements");
 
         //Find Initial Materials
-        // BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
-        // UnbuiltMaterial = GameObject.Find("Materials").FindObject("Unbuilt").GetComponentInChildren<Renderer>().material;
-        // HumanBuiltMaterial = GameObject.Find("Materials").FindObject("HumanBuilt").GetComponentInChildren<Renderer>().material;
-        // HumanUnbuiltMaterial = GameObject.Find("Materials").FindObject("HumanUnbuilt").GetComponentInChildren<Renderer>().material;
-        // RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
-        // RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
+        BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
+        UnbuiltMaterial = GameObject.Find("Materials").FindObject("Unbuilt").GetComponentInChildren<Renderer>().material;
+        HumanBuiltMaterial = GameObject.Find("Materials").FindObject("HumanBuilt").GetComponentInChildren<Renderer>().material;
+        HumanUnbuiltMaterial = GameObject.Find("Materials").FindObject("HumanUnbuilt").GetComponentInChildren<Renderer>().material;
+        RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
+        RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
 
 
-        BuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.90f);
-        UnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.25f);
-        HumanBuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.90f);
-        HumanUnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.30f);
-        RobotBuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.90f);
-        RobotUnbuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.30f);
+        // BuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.90f);
+        // UnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.25f);
+        // HumanBuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.90f);
+        // HumanUnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.30f);
+        // RobotBuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.90f);
+        // RobotUnbuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.30f);
     }
     
 
@@ -253,7 +253,7 @@ public class InstantiateObjects : MonoBehaviour
     public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
     {
         //Get Object Renderer
-        Renderer m_renderer= gamobj.GetComponentInChildren<Renderer>();
+        Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
         
         if (built)
         {          
