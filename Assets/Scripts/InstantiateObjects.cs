@@ -266,6 +266,9 @@ public class InstantiateObjects : MonoBehaviour
             //Color For Unbuilt Objects
             m_renderer.material = UnbuiltMaterial;
         }
+
+        Debug.Log($"Coloring {gamobj.name} as {m_renderer.material.name}");
+        Debug.Log($"Color of {gamobj.name} is {m_renderer.material.color}");
     }
     public void ColorHumanOrRobot (string placed_by, bool Built, GameObject gamobj)
     {
