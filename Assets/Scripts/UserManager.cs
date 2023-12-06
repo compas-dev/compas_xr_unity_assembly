@@ -65,7 +65,7 @@ public class Device
         {
             GameObject UsernameInputMessage = GameObject.Find("Canvas").FindObject("UsernameInputMessage");
             UsernameInputMessage.SetActive(true);
-            Debug.LogError("Username is not assigned or empty!");
+            Debug.Log("Username is not assigned or empty!");
             return;
         }
         
