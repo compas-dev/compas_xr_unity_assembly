@@ -28,7 +28,7 @@ public class Eventmanager : MonoBehaviour
         FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
         
         //Get Reference for the correct application settings. To dynamically connect to different RTDB and Storage.
-        settings_reference =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
+        settings_reference =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings2");
         
         //Add script components to objects in the scene
         databaseManager = Databasemanager.AddComponent<DatabaseManager>();  

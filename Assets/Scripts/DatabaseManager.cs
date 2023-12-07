@@ -411,7 +411,7 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////////// Input Data Handlers //////////////////////////////////
-    public Node NodeDesearializer(string key, object jsondata)
+  public Node NodeDesearializer(string key, object jsondata)
     {
         Dictionary<string, object> dict = new Dictionary<string, object>();
         dict.Add(key, jsondata);
@@ -428,6 +428,18 @@ public class DatabaseManager : MonoBehaviour
         node.part = new Part();
         node.attributes = new Attributes();
         node.part.frame = new Frame();
+
+        //Try get value type to ignore joints
+        if (jsonDataDict.TryGetValue("type", out object type))
+        {
+            if((string)jsonDataDict["type"] == "joint")
+            {
+                node.type_id = key; 
+                UnityEngine.Debug.Log("This is a joint");
+                return node;
+            }
+            UnityEngine.Debug.Log($"type is: {type}");
+        }
 
         //Set values for base node class //TODO: Add try get value for safety?
         node.type_id = jsonDataDict["type_id"].ToString();
@@ -459,6 +471,7 @@ public class DatabaseManager : MonoBehaviour
         
         return node;
     }
+
     private void GeometricDesctiptionSelector(string type_data, Dictionary<string, object> jsonDataDict, Node node)
     {
         switch (type_data)

@@ -12,6 +12,9 @@ public class VisualizerScript : MonoBehaviour
     private GameObject Robot_Button;
     private GameObject Background;
 
+    private bool isActorViewActive = false; // Track the current view state
+    private InstantiateObjects instantiateObjectsScript; // Reference to InstantiateObjects script
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,6 +32,14 @@ public class VisualizerScript : MonoBehaviour
             return;
         }
 
+        // Find and assign the InstantiateObjects script
+        instantiateObjectsScript = FindObjectOfType<InstantiateObjects>();
+        if (instantiateObjectsScript == null)
+        {
+            Debug.LogError("InstantiateObjects script not found in the scene.");
+            return;
+        }
+
         // For each button, define OnClick Action and prefab
         Button btn = GetComponent<Button>();
         if (btn != null)
@@ -43,12 +54,29 @@ public class VisualizerScript : MonoBehaviour
         // Initially hide all menu buttons
         SetMenuButtonsActive(false);
     }
-
     // Toggle ON and OFF the dropdown submenu options
     private void Visualizer_Toggle()
     {
         // Toggle the active state of the buttons
         SetMenuButtonsActive(!Robot_Button.activeSelf);
+    }
+
+    public void PreviewBuilder_Toggle()
+    {
+        // Toggle the view state for Preview Builder
+        isActorViewActive = !isActorViewActive;
+
+        // Apply the appropriate coloring based on the current view state
+        if (isActorViewActive)
+        {
+            // Apply color based on actor
+            instantiateObjectsScript.ApplyColorBasedOnActor();
+        }
+        else
+        {
+            // Apply color based on built/unbuilt state
+            instantiateObjectsScript.ApplyColorBasedOnBuildState();
+        }
     }
 
     // Helper method to set the active state of menu buttons

@@ -23,7 +23,7 @@ namespace JSON
         public Frame frame { get; set; }
     }
 
-    [System.Serializable]
+     [System.Serializable]
     public class Attributes
     {
         public bool is_built { get; set;}
@@ -32,6 +32,9 @@ namespace JSON
         public float length { get; set; }
         public float width { get; set; }
         public float height { get; set; }
+        
+        //TODO: GET RID OF?
+        public string type { get; set; }
     } 
 
     [System.Serializable]

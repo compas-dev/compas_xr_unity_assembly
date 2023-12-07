@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465788, g: 0.49641287, b: 0.5748173, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1844,6 +1844,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 323120358030472278}
+  - component: {fileID: 323120358030472279}
   m_Layer: 0
   m_Name: DatabaseManager
   m_TagString: Untagged
@@ -1866,6 +1867,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &323120358030472279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 323120358030472276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16876f30301bd8a468acea3ddc71f225, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!222 &351983572804166567
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4771,6 +4784,18 @@ MonoBehaviour:
           m_StringArgument: Preview Bulider Button
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1061000375}
+        m_TargetAssemblyTypeName: VisualizerScript, Assembly-CSharp
+        m_MethodName: PreviewBuilder_Toggle
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4853279419034919853
 GameObject:
   m_ObjectHideFlags: 0
@@ -6600,6 +6625,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8241677100294568831}
+  - component: {fileID: 8241677100294568832}
   m_Layer: 0
   m_Name: Instantiate
   m_TagString: Untagged
@@ -6622,6 +6648,32 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8241677100294568832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8241677100294568829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b972f3121498f24eb51bac94d1803e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BuiltMaterial: {fileID: 2100000, guid: 0937c96798456f645bb75ec25ee4b229, type: 2}
+  UnbuiltMaterial: {fileID: 2100000, guid: 1807133d9f217a449be4fa522ee1a318, type: 2}
+  HumanBuiltMaterial: {fileID: 2100000, guid: 87e49ce2243b4184c8bc5cd6298b6dcf, type: 2}
+  HumanUnbuiltMaterial: {fileID: 2100000, guid: eadba74859147e6458d5aafe8c577479, type: 2}
+  RobotBuiltMaterial: {fileID: 2100000, guid: 16e97044d4742724390d7debb424c871, type: 2}
+  RobotUnbuiltMaterial: {fileID: 2100000, guid: 588c0b3cf70badb47b8db2eb4c1aa505, type: 2}
+  StoredObjects: {fileID: 0}
+  Elements: {fileID: 0}
+  Joints: {fileID: 0}
+  Robots: {fileID: 0}
+  testMaterial: {fileID: 0}
+  geometry_1: {fileID: 0}
+  geometry_2: {fileID: 0}
+  geometry_3: {fileID: 0}
 --- !u!1 &8264809170558212156
 GameObject:
   m_ObjectHideFlags: 0

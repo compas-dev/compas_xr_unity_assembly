@@ -55,6 +55,19 @@ public class InstantiateObjects : MonoBehaviour
     //PRIVATE IN SCRIPT USE OBJECTS
     private ARRaycastManager rayManager;
 
+    private DatabaseManager databaseManager;
+
+    void Start()
+    {
+        // Find and assign the DatabaseManager script
+        databaseManager = FindObjectOfType<DatabaseManager>();
+        if (databaseManager == null)
+        {
+            Debug.LogError("DatabaseManager script not found in the scene.");
+            return;
+        }
+    }
+
     public void Awake()
     {
         //Find Parent Object to Store Our Items in.
@@ -303,6 +316,39 @@ public class InstantiateObjects : MonoBehaviour
             }
         }
     }
+
+public void ApplyColorBasedOnBuildState()
+ {
+    if (databaseManager.BuildingPlanDataDict != null)
+        {
+            foreach (var entry in databaseManager.BuildingPlanDataDict)
+            {
+                GameObject gameObject = GameObject.Find(entry.Key);
+                if (gameObject != null)
+                {
+                    ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject);
+                }
+            }
+        }
+ }
+
+public void ApplyColorBasedOnActor()
+{
+    if (databaseManager.BuildingPlanDataDict != null)
+        {
+            foreach (var entry in databaseManager.BuildingPlanDataDict)
+            {
+                GameObject gameObject = GameObject.Find(entry.Key);
+                if (gameObject != null)
+                {
+                    ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject);
+                }
+            }
+        }
+}
+
+
+    
     public Material CreateMaterial(float red, float green, float blue, float alpha)
     {
         Material mat = new Material(Shader.Find("Standard"));
