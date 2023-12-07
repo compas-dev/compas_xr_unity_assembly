@@ -32,6 +32,9 @@ namespace JSON
         public float length { get; set; }
         public float width { get; set; }
         public float height { get; set; }
+        
+        //TODO: GET RID OF?
+        public string type { get; set; }
     } 
 
     [System.Serializable]
@@ -66,4 +69,23 @@ namespace JSON
         public System.Int64 priority { get; set; }
     }
     
+
+    ///////////////Classes for QR Desearialization/////////////////////
+    
+    [System.Serializable]
+    public class JSONQRData
+    {
+        public Dictionary<string, QRcode> frame { get; set; } 
+    }
+    
+    [System.Serializable]
+    public class QRcode
+    {
+        public string Key { get; set; }
+        public float[] point;
+        public float[] quaternion;
+        public float[] xaxis;
+        public float[] yaxis;
+
+    }
 }

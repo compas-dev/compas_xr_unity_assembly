@@ -34,23 +34,14 @@ public class InstantiateObjects : MonoBehaviour
     public Material RobotBuiltMaterial;
     public Material RobotUnbuiltMaterial;
 
-    public GameObject StoredObjects; //Parent for testing placement.
+    public GameObject QRMarkers; //Parent for storing QR Codes.
     public GameObject Elements; //Our Parent Object for the Elements
-    public GameObject Joints; //Our Parent Object for the joints
-    public GameObject Robots; //Our parent object for the robots
 
     public delegate void InitialElementsPlaced(object source, EventArgs e);
     public event InitialElementsPlaced PlacedInitialElements;
     
-
-    
     private GameObject geometry_object; 
 
-    public Material testMaterial;
-
-    public GameObject geometry_1;
-    public GameObject geometry_2;
-    public GameObject geometry_3;
 
     //PRIVATE IN SCRIPT USE OBJECTS
     private ARRaycastManager rayManager;
@@ -59,6 +50,7 @@ public class InstantiateObjects : MonoBehaviour
     {
         //Find Parent Object to Store Our Items in.
         Elements = GameObject.Find("Elements");
+        QRMarkers = GameObject.Find("QRMarkers");
 
         //Find Initial Materials
         BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
@@ -68,13 +60,8 @@ public class InstantiateObjects : MonoBehaviour
         RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
         RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
 
-
-        // BuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.90f);
-        // UnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.25f);
-        // HumanBuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.90f);
-        // HumanUnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.30f);
-        // RobotBuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.90f);
-        // RobotUnbuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.30f);
+        //Find QRMarkers Parent Object
+        QRMarkers = GameObject.Find("QRMarkers");
     }
     
 
@@ -218,13 +205,58 @@ public class InstantiateObjects : MonoBehaviour
             return element;
         
     }
+    public void placeQRMarkersDict(Dictionary<string, QRcode> QRDataDict)
+    {
+        if (QRDataDict != null)
+        {
+            Debug.Log($"Number of QR Markers = {QRDataDict.Count}");
+            
+            //loop through the dictionary and print out the key
+            foreach (KeyValuePair<string, QRcode> entry in QRDataDict)
+            {
+                if (entry.Value != null)
+                {
+                    placeQRMarker(entry.Value);
+                }
+
+            }
+        }
+        else
+        {
+            Debug.LogWarning("The dictionary is null");
+        }
+    }
+    private void placeQRMarker(QRcode QRData)
+    {
+        //get position
+        Vector3 position = new Vector3(QRData.point[0], QRData.point[2], QRData.point[1]);
+        
+        //get rotation - Was previously done with quaternion.
+        Vector3 x_vec_right = new Vector3(QRData.xaxis[0], QRData.xaxis[1], QRData.xaxis[2]);
+        Vector3 y_vec_right  = new Vector3(QRData.yaxis[0], QRData.yaxis[1], QRData.yaxis[2]);
+        Vector3 z_vec_right  = Vector3.Cross(y_vec_right, x_vec_right).normalized;
+
+        //calculate transformation form right handed to left handed coordinate system
+        (Vector3 x_vec,Vector3 y_vec,Vector3 z_vec) = rhToLh(x_vec_right,y_vec_right,z_vec_right);
+        Quaternion rotation = rotateInstance(x_vec,y_vec,z_vec);
+
+        //Find the correct QR Marker
+        GameObject qrmarker = QRMarkers.FindObject("Marker_"+QRData.Key);
+
+        //Move QR into the correct place.
+        qrmarker.transform.position = position;
+        qrmarker.transform.rotation = rotation;
+    }
 
 /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
+    //TODO: UPDATE TO TAKE A LIST OF POINTS?
     public Vector3 getPosition(Step step)
     {
         Vector3 position = new Vector3(step.data.location.point[0], step.data.location.point[2], step.data.location.point[1]);
         return position;
     }
+    
+    //TODO: UPDATE TO TAKE A LIST OF VECTORS?
     public (Vector3, Vector3, Vector3) getRotation(Step step)
     {
         Vector3 x_vec_right = new Vector3(step.data.location.xaxis[0], step.data.location.xaxis[1], step.data.location.xaxis[2]);
@@ -324,6 +356,8 @@ public class InstantiateObjects : MonoBehaviour
     {
         Debug.Log("Database is loaded." + " " + "Number of nodes stored as a dict= " + e.BuildingPlanDataDict.Count);
         placeElementsDict(e.BuildingPlanDataDict);
+        //TODO: THIS NEEDS TO BE MOVED
+        placeQRMarkersDict(e.QRCodeDataDict);
     }
     public void OnDatabaseUpdate(object source, UpdateDataItemsDictEventArgs eventArgs)
     {

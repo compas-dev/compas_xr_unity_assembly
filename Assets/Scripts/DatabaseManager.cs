@@ -22,6 +22,8 @@ using System.Linq.Expressions;
 public class DataItemDictEventArgs : EventArgs
 {
     public Dictionary<string, Step> BuildingPlanDataDict { get; set; }
+
+    public Dictionary<string, QRcode> QRCodeDataDict { get; set; }
 }
 
 public class UpdateDataItemsDictEventArgs : EventArgs
@@ -45,12 +47,14 @@ public class DatabaseManager : MonoBehaviour
     // Firebase database references
     private DatabaseReference dbreference_assembly;
     private DatabaseReference dbreference_buildingplan;
+    private DatabaseReference QRCodeReference;
     private StorageReference storageReference;
 
 
     // Data structures to store nodes and steps
     public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
     public Dictionary<string, Step> BuildingPlanDataDict { get; private set; } = new Dictionary<string, Step>();
+    public Dictionary<string, QRcode> QRCodeDataDict { get; private set; } = new Dictionary<string, QRcode>();
 
 
     //Data Structure to Store Application Settings
@@ -109,15 +113,20 @@ public class DatabaseManager : MonoBehaviour
         //Create DB Reference Always
         dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
-
+        QRCodeReference = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
+        
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
         {
+            //Fetch QR Data no event trigger
+            FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), false);
+            
             //Fetch Assembly Data no event trigger
             FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot), false);
 
             //Fetch Building plan data with event trigger
             FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), true);
+
         }
         
         //Else trigger download.
@@ -141,6 +150,9 @@ public class DatabaseManager : MonoBehaviour
         //Fetch Storage Data
         await FetchStorageData(files);
 
+        //Fetch QR Data no event trigger
+        FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), false);
+        
         //Fetch Assembly Data no event trigger
         FetchRTDData(dbref, snapshot => DeserializeDataSnapshot(snapshot), false);
         
@@ -237,7 +249,7 @@ public class DatabaseManager : MonoBehaviour
 
         if (eventtrigger)
         {
-            OnDatabaseInitializedDict(BuildingPlanDataDict); 
+            OnDatabaseInitializedDict(BuildingPlanDataDict, QRCodeDataDict); 
         }
     }      
     public void PushAllData(Dictionary<string, Step> BuildingPlanDataDict) 
@@ -310,6 +322,28 @@ public class DatabaseManager : MonoBehaviour
 
         UnityEngine.Debug.Log("Number of steps stored as a dictionary = " + BuildingPlanDataDict.Count);
     }
+    private void DesearializeQRSnapshot(DataSnapshot snapshot)
+    {
+        foreach (DataSnapshot childSnapshot in snapshot.Children)
+        {    
+            string key = childSnapshot.Key;
+            string jsondatastring = childSnapshot.GetRawJsonValue();
+            
+            if (!string.IsNullOrEmpty(jsondatastring))
+            {
+                UnityEngine.Debug.Log("QR Code Data:" + jsondatastring);
+                QRcode newValue = JsonConvert.DeserializeObject<QRcode>(jsondatastring);
+                QRCodeDataDict[key] = newValue;
+                QRCodeDataDict[key].Key = key;
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("You did not set your QR Code data properly");
+            }
+        }
+
+        //TODO: FIND A WAY TO INSTANTIATE QR CODES HERE.
+    }
 
 /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
     private void CleanObjectStorageFolder()
@@ -351,7 +385,7 @@ public class DatabaseManager : MonoBehaviour
             // Set default values for properties that may be null
             return true;
         }
-        UnityEngine.Debug.Log($"node.key is: '{node.type_id}'");
+        UnityEngine.Debug.Log($"node.type_id is: '{node.type_id}'");
         return false;
     }
     private bool IsValidStep(Step step)
@@ -428,6 +462,18 @@ public class DatabaseManager : MonoBehaviour
         node.part = new Part();
         node.attributes = new Attributes();
         node.part.frame = new Frame();
+
+        //Try get value type to ignore joints
+        if (jsonDataDict.TryGetValue("type", out object type))
+        {
+            if((string)jsonDataDict["type"] == "joint")
+            {
+                node.type_id = key; 
+                UnityEngine.Debug.Log("This is a joint");
+                return node;
+            }
+            UnityEngine.Debug.Log($"type is: {type}");
+        }
 
         //Set values for base node class //TODO: Add try get value for safety?
         node.type_id = jsonDataDict["type_id"].ToString();
@@ -698,10 +744,10 @@ public class DatabaseManager : MonoBehaviour
     }
 
     // Event handling for database initialization
-    protected virtual void OnDatabaseInitializedDict(Dictionary<string, Step> BuildingPlanDataDict)
+    protected virtual void OnDatabaseInitializedDict(Dictionary<string, Step> BuildingPlanDataDict, Dictionary<string, QRcode> QRCodeDataDict)
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "Database dict is null!");
-        DatabaseInitializedDict(this, new DataItemDictEventArgs() { BuildingPlanDataDict = BuildingPlanDataDict });
+        DatabaseInitializedDict(this, new DataItemDictEventArgs() { BuildingPlanDataDict = BuildingPlanDataDict, QRCodeDataDict = QRCodeDataDict });
     } 
     protected virtual void OnDatabaseUpdate(Step newValue, string key)
     {
