@@ -200,3 +200,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 cdf_ARjck/Assets/Firebase/Plugins/x86_64/FirebaseCppApp-11_2_0.dll
+
+QCAR/*
