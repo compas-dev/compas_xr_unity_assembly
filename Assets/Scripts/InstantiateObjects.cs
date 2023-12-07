@@ -79,10 +79,10 @@ public class InstantiateObjects : MonoBehaviour
         Debug.Log($"Placing element {step.data.element_ids[0]}");
 
         //get position
-        Vector3 position = getPosition(step);
+        Vector3 position = getPosition(step.data.location.point);
         
         //get rotation
-        (Vector3 x_rh,Vector3 y_rh,Vector3 z_rh) = getRotation(step);
+        (Vector3 x_rh,Vector3 y_rh,Vector3 z_rh) = getRotation(step.data.location.xaxis, step.data.location.yaxis);
         (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = rhToLh(x_rh,y_rh,z_rh);
         Quaternion rotation = rotateInstance(x_lh,y_lh,z_lh);
 
@@ -229,38 +229,38 @@ public class InstantiateObjects : MonoBehaviour
     private void placeQRMarker(QRcode QRData)
     {
         //get position
-        Vector3 position = new Vector3(QRData.point[0], QRData.point[2], QRData.point[1]);
-        
-        //get rotation - Was previously done with quaternion.
-        Vector3 x_vec_right = new Vector3(QRData.xaxis[0], QRData.xaxis[1], QRData.xaxis[2]);
-        Vector3 y_vec_right  = new Vector3(QRData.yaxis[0], QRData.yaxis[1], QRData.yaxis[2]);
-        Vector3 z_vec_right  = Vector3.Cross(y_vec_right, x_vec_right).normalized;
+        Vector3 position = getPosition(QRData.point);
+        // Debug.Log($"Placing QR Marker {QRData.Key} at {position}");
 
-        //calculate transformation form right handed to left handed coordinate system
-        (Vector3 x_vec,Vector3 y_vec,Vector3 z_vec) = rhToLh(x_vec_right,y_vec_right,z_vec_right);
-        Quaternion rotation = rotateInstance(x_vec,y_vec,z_vec);
+        //get rotation
+        (Vector3 x_rh,Vector3 y_rh,Vector3 z_rh) = getRotation(QRData.xaxis, QRData.yaxis);
+        (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = rhToLh(x_rh,y_rh,z_rh);
+        Quaternion rotation = rotateInstance(x_lh,y_lh,z_lh);
 
         //Find the correct QR Marker
         GameObject qrmarker = QRMarkers.FindObject("Marker_"+QRData.Key);
+        Debug.Log($"Placing QR Marker {QRData.Key} at {position} with rotation {rotation}");
 
-        //Move QR into the correct place.
-        qrmarker.transform.position = position;
-        qrmarker.transform.rotation = rotation;
+        qrmarker.GetComponent<MarkerData>().translationVector = -position;
+
+        qrmarker.GetComponent<MarkerData>().MarkerQuatRotation = rotation;
+
+        // //Move QR into the correct place.
+        // qrmarker.transform.position = position;
+        // qrmarker.transform.rotation = rotation;
     }
 
 /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
-    //TODO: UPDATE TO TAKE A LIST OF POINTS?
-    public Vector3 getPosition(Step step)
+    public Vector3 getPosition(float[] pointlist)
     {
-        Vector3 position = new Vector3(step.data.location.point[0], step.data.location.point[2], step.data.location.point[1]);
+        Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
         return position;
     }
     
-    //TODO: UPDATE TO TAKE A LIST OF VECTORS?
-    public (Vector3, Vector3, Vector3) getRotation(Step step)
+    public (Vector3, Vector3, Vector3) getRotation(float[] x_vecdata, float [] y_vecdata)
     {
-        Vector3 x_vec_right = new Vector3(step.data.location.xaxis[0], step.data.location.xaxis[1], step.data.location.xaxis[2]);
-        Vector3 y_vec_right  = new Vector3(step.data.location.yaxis[0], step.data.location.yaxis[1], step.data.location.yaxis[2]);
+        Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
+        Vector3 y_vec_right  = new Vector3(y_vecdata[0], y_vecdata[1], y_vecdata[2]);
         Vector3 z_vec_right  = Vector3.Cross(y_vec_right, x_vec_right).normalized;
         return (x_vec_right, y_vec_right, z_vec_right);
     } 
