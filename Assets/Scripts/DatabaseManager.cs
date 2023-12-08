@@ -50,7 +50,7 @@ public class DatabaseManager : MonoBehaviour
     // Firebase database references
     private DatabaseReference dbreference_assembly;
     private DatabaseReference dbreference_buildingplan;
-    private DatabaseReference QRCodeReference;
+    private DatabaseReference dbreference_qrcodes;
     private StorageReference storageReference;
 
 
@@ -121,13 +121,13 @@ public class DatabaseManager : MonoBehaviour
         //Create DB Reference Always
         dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
-        QRCodeReference = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
+        dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
         
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
         {
             //Fetch QR Data no event trigger
-            FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
+            FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
             FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
@@ -159,7 +159,7 @@ public class DatabaseManager : MonoBehaviour
         await FetchStorageData(files);
 
         //Fetch QR Data no event trigger
-        FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
+        FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
         
         //Fetch Assembly Data no event trigger
         FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
@@ -637,7 +637,9 @@ public class DatabaseManager : MonoBehaviour
         dbreference_assembly.ChildRemoved += OnAssemblyChanged;
 
         //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
-
+        dbreference_assembly.ChildAdded += OnQRChanged;
+        dbreference_assembly.ChildChanged += OnQRChanged;
+        dbreference_assembly.ChildRemoved += OnQRChanged;
 
     }
 
@@ -757,6 +759,23 @@ public class DatabaseManager : MonoBehaviour
         
         UnityEngine.Debug.Log("Assembly Changed");
         FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
+    }
+
+    //TODO: Test
+    public void OnQRChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null) {
+        UnityEngine.Debug.LogError($"Database error: {args.DatabaseError}");
+        return;
+        }
+
+        if (args.Snapshot == null) {
+            UnityEngine.Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            return;
+        }
+        
+        UnityEngine.Debug.Log("QRCodes Changed");
+        FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
     }
 
     // Event handling for database initialization
