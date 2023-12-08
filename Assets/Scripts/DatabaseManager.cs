@@ -636,10 +636,10 @@ public class DatabaseManager : MonoBehaviour
         dbreference_assembly.ChildChanged += OnAssemblyChanged;
         dbreference_assembly.ChildRemoved += OnAssemblyChanged;
 
-        //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
-        dbreference_assembly.ChildAdded += OnQRChanged;
-        dbreference_assembly.ChildChanged += OnQRChanged;
-        dbreference_assembly.ChildRemoved += OnQRChanged;
+        //Add Listners for the Assembly //TODO: CRITICAL: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
+        // dbreference_qrcodes.ChildAdded += OnQRChanged;
+        // dbreference_qrcodes.ChildChanged += OnQRChanged;
+        // dbreference_qrcodes.ChildRemoved += OnQRChanged;
 
     }
 
