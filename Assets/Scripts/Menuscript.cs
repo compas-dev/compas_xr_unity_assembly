@@ -21,6 +21,7 @@ public class Menuscript : MonoBehaviour
         Info_Button = GameObject.Find("Info_Button");
         Background = GameObject.Find("Background_Menu");
         Communication = GameObject.Find("Communication");
+        
 
         // Ensure all GameObjects were found
         if (!Reload_Button || !Editor_Button || !Info_Button || !Background || !Communication)

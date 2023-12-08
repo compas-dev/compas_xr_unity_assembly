@@ -22,7 +22,10 @@ using System.Linq.Expressions;
 public class DataItemDictEventArgs : EventArgs
 {
     public Dictionary<string, Step> BuildingPlanDataDict { get; set; }
+}
 
+public class TrackingDataDictEventArgs : EventArgs
+{
     public Dictionary<string, QRcode> QRCodeDataDict { get; set; }
 }
 
@@ -63,8 +66,13 @@ public class DatabaseManager : MonoBehaviour
     // Define event delegates and events
     public delegate void StoreDataDictEventHandler(object source, DataItemDictEventArgs e); 
     public event StoreDataDictEventHandler DatabaseInitializedDict;
+    
+    public delegate void TrackingDataDictEventHandler(object source, TrackingDataDictEventArgs e); 
+    public event TrackingDataDictEventHandler TrackingDictReceived;
+
     public delegate void UpdateDataDictEventHandler(object source, UpdateDataItemsDictEventArgs e); 
     public event UpdateDataDictEventHandler DatabaseUpdate;
+
     public delegate void StoreApplicationSettings(object source, ApplicationSettingsEventArgs e);
     public event StoreApplicationSettings ApplicationSettingUpdate;
 
@@ -119,13 +127,13 @@ public class DatabaseManager : MonoBehaviour
         if (e.Settings.storagename == "None")
         {
             //Fetch QR Data no event trigger
-            FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), false);
+            FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
-            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot), false);
+            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
 
             //Fetch Building plan data with event trigger
-            FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), true);
+            FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), "DataitemDict");
 
         }
         
@@ -142,22 +150,22 @@ public class DatabaseManager : MonoBehaviour
             List<FileMetadata> files = await GetFilesInFolder(path);
 
             //Fetch Data from both storage and Realtime Database.
-            FetchAllData(files, dbreference_assembly);
+            FetchAllData(files);
         }
     }
-    private async void FetchAllData(List<FileMetadata> files, DatabaseReference dbref)
+    private async void FetchAllData(List<FileMetadata> files)
     {
         //Fetch Storage Data
         await FetchStorageData(files);
 
         //Fetch QR Data no event trigger
-        FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), false);
+        FetchRTDData(QRCodeReference, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
         
         //Fetch Assembly Data no event trigger
-        FetchRTDData(dbref, snapshot => DeserializeDataSnapshot(snapshot), false);
+        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
         
         //Fetch Building plan data with event trigger
-        FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), true);
+        FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), "DataitemDict");
     }
     async Task<List<FileMetadata>> GetFilesInFolder(string path)
     {
@@ -227,7 +235,7 @@ public class DatabaseManager : MonoBehaviour
         //Await all download tasks are done before refreshing.
         await Task.WhenAll(downloadTasks);
     }      
-    public async void FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, bool eventtrigger)
+    public async void FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
         {
@@ -247,9 +255,14 @@ public class DatabaseManager : MonoBehaviour
             }
         });
 
-        if (eventtrigger)
+        if (eventname != null && eventname == "DataitemDict")
         {
-            OnDatabaseInitializedDict(BuildingPlanDataDict, QRCodeDataDict); 
+            OnDatabaseInitializedDict(BuildingPlanDataDict); 
+        }
+
+        if (eventname != null && eventname == "TrackingDict")
+        {
+            OnTrackingDataReceived(QRCodeDataDict);
         }
     }      
     public void PushAllData(Dictionary<string, Step> BuildingPlanDataDict) 
@@ -618,10 +631,13 @@ public class DatabaseManager : MonoBehaviour
         dbreference_buildingplan.ChildChanged += OnChildChanged;
         dbreference_buildingplan.ChildRemoved += OnChildRemoved;
         
-        //Add Listners for the Assembly
+        //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
         dbreference_assembly.ChildAdded += OnAssemblyChanged;
         dbreference_assembly.ChildChanged += OnAssemblyChanged;
         dbreference_assembly.ChildRemoved += OnAssemblyChanged;
+
+        //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
+
 
     }
 
@@ -740,15 +756,21 @@ public class DatabaseManager : MonoBehaviour
         }
         
         UnityEngine.Debug.Log("Assembly Changed");
-        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot), false);
+        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
     }
 
     // Event handling for database initialization
-    protected virtual void OnDatabaseInitializedDict(Dictionary<string, Step> BuildingPlanDataDict, Dictionary<string, QRcode> QRCodeDataDict)
+    protected virtual void OnDatabaseInitializedDict(Dictionary<string, Step> BuildingPlanDataDict)
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "Database dict is null!");
-        DatabaseInitializedDict(this, new DataItemDictEventArgs() { BuildingPlanDataDict = BuildingPlanDataDict, QRCodeDataDict = QRCodeDataDict });
-    } 
+        DatabaseInitializedDict(this, new DataItemDictEventArgs() {BuildingPlanDataDict = BuildingPlanDataDict});
+    }
+    protected virtual void OnTrackingDataReceived(Dictionary<string, QRcode> QRCodeDataDict)
+    {
+        UnityEngine.Assertions.Assert.IsNotNull(TrackingDictReceived, "Tracking Dict is null!");
+        UnityEngine.Debug.Log("Tracking Data Received");
+        TrackingDictReceived(this, new TrackingDataDictEventArgs() {QRCodeDataDict = QRCodeDataDict});
+    }
     protected virtual void OnDatabaseUpdate(Step newValue, string key)
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "new dict is null!");

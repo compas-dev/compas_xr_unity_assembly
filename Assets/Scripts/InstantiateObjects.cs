@@ -256,7 +256,6 @@ public class InstantiateObjects : MonoBehaviour
         Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
         return position;
     }
-    
     public (Vector3, Vector3, Vector3) getRotation(float[] x_vecdata, float [] y_vecdata)
     {
         Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
@@ -274,7 +273,7 @@ public class InstantiateObjects : MonoBehaviour
         return (x_vec, y_vec, z_vec);
     } 
 
-    //rotate elements 
+    //rotate elements
     public Quaternion rotateInstance(Vector3 x_vec, Vector3 y_vec, Vector3 z_vec)
     {
         Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
@@ -356,8 +355,6 @@ public class InstantiateObjects : MonoBehaviour
     {
         Debug.Log("Database is loaded." + " " + "Number of nodes stored as a dict= " + e.BuildingPlanDataDict.Count);
         placeElementsDict(e.BuildingPlanDataDict);
-        //TODO: THIS NEEDS TO BE MOVED
-        placeQRMarkersDict(e.QRCodeDataDict);
     }
     public void OnDatabaseUpdate(object source, UpdateDataItemsDictEventArgs eventArgs)
     {
