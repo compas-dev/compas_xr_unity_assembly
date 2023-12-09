@@ -16,6 +16,7 @@ using Extentions;
 using Dummiesman;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
+using UnityEngine.InputSystem;
 
 
 //scripts to initiate all geometries in the scene
@@ -25,6 +26,9 @@ public class InstantiateObjects : MonoBehaviour
 
     //DATA STRUCTURE ITEMS
     public Dictionary<string, Node> DataItemDict;
+    
+    //OTHER Sript Objects
+    public DatabaseManager databaseManager;
 
     //INPUT MATERIALS AND OBJECTS
     public Material BuiltMaterial;
@@ -34,13 +38,18 @@ public class InstantiateObjects : MonoBehaviour
     public Material RobotBuiltMaterial;
     public Material RobotUnbuiltMaterial;
 
-    public GameObject QRMarkers; //Parent for storing QR Codes.
-    public GameObject Elements; //Our Parent Object for the Elements
+    //Parent Objects
+    public GameObject QRMarkers; 
+    public GameObject Elements;
 
+    //EVENTS
     public delegate void InitialElementsPlaced(object source, EventArgs e);
     public event InitialElementsPlaced PlacedInitialElements;
     
-    private GameObject geometry_object; 
+    //Private IN SCRIPT USE OBJECTS
+    private GameObject geometry_object;
+    private string CurrentStep;
+    private string LastWrittenStep = "0";
 
 
     //PRIVATE IN SCRIPT USE OBJECTS
@@ -62,6 +71,9 @@ public class InstantiateObjects : MonoBehaviour
 
         //Find QRMarkers Parent Object
         QRMarkers = GameObject.Find("QRMarkers");
+
+        //Find Database Manager script to write functions.
+        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
     }
     
 
@@ -70,11 +82,11 @@ public class InstantiateObjects : MonoBehaviour
     {
         foreach (Step step in DataItems)
             {
-                placeElement(step);
+                // placeElement(step);
             }
 
     }
-    public void placeElement(Step step)
+    public void placeElement(string Key, Step step)
     {
         Debug.Log($"Placing element {step.data.element_ids[0]}");
 
@@ -106,13 +118,26 @@ public class InstantiateObjects : MonoBehaviour
 
         //Set parent and name
         elementPrefab.transform.SetParent(Elements.transform, false);
+        
+        //TODO: SHOULD THIS BE BY THE STEP ID INSTEAD? THEN WHEN WE TOUCH FIND AN OBJECT WE CAN FIND IT BY NAME, BUT WE CANNOT ASSOCIATE OBJECTS IN THE SCENE WITH THING IN UNITY.
         elementPrefab.name = step.data.element_ids[0];
 
         //Get the nested Object from the .Obj so we can adapt colors
         GameObject child_object = elementPrefab.FindObject("Mesh 0");
 
-        //Set color for human or machine and Built or Unbuilt
-        ColorBuiltOrUnbuilt(step.data.is_built, child_object);
+        if(CurrentStep != null && CurrentStep == Key)
+        {
+            //Color it Human or Robot Built
+            // ColorHumanOrRobot(step.data.actor, step.data.is_built, child_object);
+            FindCurrentStep();
+
+        }
+        else
+        {
+            //Color it Built or Unbuilt
+            ColorBuiltOrUnbuilt(step.data.is_built, child_object);
+        }
+
     }
     public void placeElementsDict(Dictionary<string, Step> BuildingPlanDataDict)
     {
@@ -125,11 +150,10 @@ public class InstantiateObjects : MonoBehaviour
             {
                 if (entry.Value != null)
                 {
-                    placeElement(entry.Value);
+                    placeElement(entry.Key, entry.Value);
                 }
 
             }
-
             //Trigger event that all initial objects have been placed
             OnInitialObjectsPlaced();
         }
@@ -205,6 +229,7 @@ public class InstantiateObjects : MonoBehaviour
             return element;
         
     }
+    //TODO: REMOVE THIS FUNCTION, BUT DISCUSS WITH DANIELA
     public void placeQRMarkersDict(Dictionary<string, QRcode> QRDataDict)
     {
         if (QRDataDict != null)
@@ -226,6 +251,7 @@ public class InstantiateObjects : MonoBehaviour
             Debug.LogWarning("The dictionary is null");
         }
     }
+    //TODO: REMOVE THIS FUNCTION, BUT DISCUSS WITH DANIELA
     private void placeQRMarker(QRcode QRData)
     {
         //get position
@@ -263,8 +289,6 @@ public class InstantiateObjects : MonoBehaviour
         Vector3 z_vec_right  = Vector3.Cross(y_vec_right, x_vec_right).normalized;
         return (x_vec_right, y_vec_right, z_vec_right);
     } 
-
-    //calculate transformation form right handed to left handed coordinate system
     public (Vector3, Vector3, Vector3) rhToLh(Vector3 x_vec_right, Vector3 y_vec_right, Vector3 z_vec_right)
     {        
         Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
@@ -272,8 +296,6 @@ public class InstantiateObjects : MonoBehaviour
         Vector3 y_vec = Vector3.Cross(x_vec, z_vec).normalized;
         return (x_vec, y_vec, z_vec);
     } 
-
-    //rotate elements
     public Quaternion rotateInstance(Vector3 x_vec, Vector3 y_vec, Vector3 z_vec)
     {
         Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
@@ -350,6 +372,127 @@ public class InstantiateObjects : MonoBehaviour
         return mat;
     }
 
+/////////////////////////////////// UICONTROL ////////////////////////////////////////
+    public void FindCurrentStep()
+    {
+        //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
+        for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
+        {
+            //Set data items
+            Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
+
+            //Find the first unbuilt element
+            if(step.data.is_built == false)
+            {
+                //Set Current Element
+                SetCurrentStep(i.ToString());
+                
+                //Set Last Written Element only if it is not == 0
+                if(i.ToString() != "0")
+                {
+                    //Set Last Written Element
+                    LastWrittenStep = (i- 1).ToString();
+                    Debug.Log($"Last Written Step is {LastWrittenStep}");
+                }
+
+                break;
+            }
+        }
+    }
+    public void NextElementButton()
+    {
+        for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
+        {
+            //Set data items
+            Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
+            string ObjectKey = step.data.element_ids[0];
+
+            //Find Gameobject
+            GameObject element = Elements.FindObject(ObjectKey);
+
+            if(element != null)
+            {
+                //ONLY WAY TO FIX IF SOMEONE CHANGES THE ONE YOU ARE WORKING ON.
+                if(step.data.is_built == true)
+                {
+                    //Color Previous step object as built or unbuilt
+                    ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Mesh 0"));
+                }
+                //Find the first unbuilt element
+                else
+                {
+                    // Set First Found Element as Current Step
+                    step.data.is_built = true;
+
+                    //SET LAST WRITTEN ELEMENT
+                    LastWrittenStep = i.ToString();
+
+                    //WRITE INFORMATION TO DATABASE...HAS TO STAY HERE
+                    databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(i.ToString()), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[i.ToString()]));
+                    
+                    //TODO: THIS IS VERY DUMB, BUT IT WORKS... IT CANNOT BE AS SIMPLE AS ADDING 1 THOUGH.
+                    FindCurrentStep();
+                    
+                    break;
+                }
+            }
+
+        }
+
+    }
+    public void SetCurrentStep(string key)
+    {
+        //Set current element name
+        CurrentStep = key;
+
+        //Find the step in the dictoinary
+        Step step = databaseManager.BuildingPlanDataDict[key];
+
+        //Find Gameobject Associated with that step
+        GameObject element = Elements.FindObject(step.data.element_ids[0]);
+
+        if(element != null)
+        {
+            //Color it Human or Robot Built
+            ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject("Mesh 0"));
+            Debug.Log($"Current Step is {CurrentStep}");
+        }
+
+        //Update Onscreen Text
+
+        //Push Current key to the firebase
+
+        
+    }
+    public void PreviousElementButton()
+    {
+        if(LastWrittenStep != null)
+        {
+            //Find Gameobject
+            GameObject element = Elements.FindObject(databaseManager.BuildingPlanDataDict[LastWrittenStep].data.element_ids[0]);
+            GameObject previouselement = Elements.FindObject(databaseManager.BuildingPlanDataDict[CurrentStep].data.element_ids[0]);
+
+            if(element != null && previouselement != null)
+            {
+                //Set the element to unbuilt
+                Step step = databaseManager.BuildingPlanDataDict[LastWrittenStep];
+                step.data.is_built = false;
+
+                //Push to the database
+                databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
+
+                //PreviousStep Data
+                Step previousstep = databaseManager.BuildingPlanDataDict[CurrentStep];
+
+                //Color Previous step object as built or unbuilt
+                ColorBuiltOrUnbuilt(previousstep.data.is_built, previouselement);
+
+                //Set the current element to the last written element
+                SetCurrentStep(LastWrittenStep);
+            }
+        }
+    }
+
 /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
     public void OnDatabaseInitializedDict(object source, DataItemDictEventArgs e)
     {
@@ -362,27 +505,28 @@ public class InstantiateObjects : MonoBehaviour
         if (eventArgs.NewValue == null)
         {
             Debug.Log("Object will be removed");
-            RemoveObjects(eventArgs.Key);
+            RemoveObjects(eventArgs.NewValue.data.element_ids[0]);
         }
         else
         {
             Debug.Log("Object will be instantiated");
             InstantiateChangedKeys(eventArgs.NewValue, eventArgs.Key);
         }
+
     }
     private void InstantiateChangedKeys(Step newValue, string key)
     {
-        if (GameObject.Find(key) != null)
+        if (GameObject.Find(newValue.data.element_ids[0]) != null)
         {
-            Debug.Log("Deleting old object with key" + key);
-            GameObject oldObject = GameObject.Find(key);
+            Debug.Log("Deleting old object with key" + newValue.data.element_ids[0]);
+            GameObject oldObject = GameObject.Find(newValue.data.element_ids[0]);
             Destroy(oldObject);
         }
         else
         {
             Debug.Log( $"Could Not find Object with key: {key}");
         }
-        placeElement(newValue);
+        placeElement(key, newValue);
     }
     private void RemoveObjects(string key)
     {
@@ -401,5 +545,6 @@ public class InstantiateObjects : MonoBehaviour
     protected virtual void OnInitialObjectsPlaced()
     {
         PlacedInitialElements(this, EventArgs.Empty);
+        FindCurrentStep();
     }
 }

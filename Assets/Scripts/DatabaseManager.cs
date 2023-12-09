@@ -18,6 +18,7 @@ using System.Diagnostics;
 using UnityEngine.Networking;
 using System.Linq;
 using System.Linq.Expressions;
+using Unity.VisualScripting;
 
 public class DataItemDictEventArgs : EventArgs
 {
@@ -48,10 +49,11 @@ public class UpdateDatabaseReferenceEventArgs: EventArgs
 public class DatabaseManager : MonoBehaviour
 {
     // Firebase database references
-    private DatabaseReference dbreference_assembly;
-    private DatabaseReference dbreference_buildingplan;
-    private DatabaseReference dbreference_qrcodes;
-    private StorageReference storageReference;
+    public DatabaseReference dbreference_assembly;
+    public DatabaseReference dbreference_buildingplan;
+    public DatabaseReference dbreference_qrcodes;
+    public DatabaseReference dbrefernece_currentelement;
+    public StorageReference storageReference;
 
 
     // Data structures to store nodes and steps
@@ -122,6 +124,7 @@ public class DatabaseManager : MonoBehaviour
         dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
+        dbrefernece_currentelement = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("current_element");
         
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
@@ -265,9 +268,9 @@ public class DatabaseManager : MonoBehaviour
             OnTrackingDataReceived(QRCodeDataDict);
         }
     }      
-    public void PushAllData(Dictionary<string, Step> BuildingPlanDataDict) 
+    public void PushAllData(DatabaseReference dbref, string Data)
     {
-        dbreference_buildingplan.SetRawJsonValueAsync(JsonConvert.SerializeObject(BuildingPlanDataDict));
+        dbref.SetRawJsonValueAsync(Data);
     }
 
 /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
@@ -312,6 +315,9 @@ public class DatabaseManager : MonoBehaviour
         UnityEngine.Debug.Log("Number of nodes stored as a dictionary = " + DataItemDict.Count);
 
     }
+    
+    //TODO: MIGHT NEED TO CHANGE THIS TO ITERATE THROUGH IN ORDER LIKE PREVIOUS.
+    //TODO: THIS ASSUMPTION NEEDS TO BE EITHER MADE OR NOT. BUILDING PLAN ALWAYS FULL 0 to LENGTH... BUT ASSEMBLY CAN BE MISSING.
     private void DesearialaizeStepSnapshot(DataSnapshot snapshot)
     {
         BuildingPlanDataDict.Clear();
@@ -579,6 +585,10 @@ public class DatabaseManager : MonoBehaviour
         step.data = new Data();
         step.data.location = new Frame();
 
+        //Set values for base node class to keep data structure consistent
+        step.dtype = (string)jsonDataDict["dtype"];
+        step.guid = (string)jsonDataDict["guid"];
+
         //Access nested information
         Dictionary<string, object> dataDict = jsonDataDict["data"] as Dictionary<string, object>;
         Dictionary<string, object> locationDataDict = dataDict["location"] as Dictionary<string, object>;
@@ -654,6 +664,7 @@ public class DatabaseManager : MonoBehaviour
 
         var key = args.Snapshot.Key;
         var childSnapshot = args.Snapshot.GetValue(true);
+        UnityEngine.Debug.Log($"ON CHILD ADDED {key}");
 
         if (childSnapshot != null)
         {
@@ -670,7 +681,7 @@ public class DatabaseManager : MonoBehaviour
                 {
                     UnityEngine.Debug.Log($"The key '{key}' does not exist in the dictionary");
                     BuildingPlanDataDict.Add(key, newValue);
-                    BuildingPlanDataDict[key].data.element_ids[0] = key;
+                    // BuildingPlanDataDict[key].data.element_ids[0] = key;
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
@@ -696,6 +707,7 @@ public class DatabaseManager : MonoBehaviour
 
         string key = args.Snapshot.Key;
         var childSnapshot = args.Snapshot.GetValue(true);
+        UnityEngine.Debug.Log($"ON CHILD CHANGED {key}");
 
         if (childSnapshot != null)
         {
@@ -704,7 +716,8 @@ public class DatabaseManager : MonoBehaviour
             if(IsValidStep(newValue))
             {
                 BuildingPlanDataDict[key] = newValue;
-                BuildingPlanDataDict[key].data.element_ids[0] = key;
+                //TODO: HAD TO GET RID OF THIS LINE BECAUSE IT ASSUMSES THAT THE ELELMENT ID AND STEP KEY ARE THE SAME.
+                // BuildingPlanDataDict[key].data.element_ids[0] = key;
             }
             else
             {

@@ -12,15 +12,30 @@ public class Menuscript : MonoBehaviour
     private GameObject Background;
     private GameObject Communication;
 
+
+    //Script References
+    private InstantiateObjects instantiateObjects;
+
     // Start is called before the first frame update
     void Start()
     {
+        //Find Instantiate Objects Script
+        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+        
         // Find GameObjects by name
         Reload_Button = GameObject.Find("Reload_Button");
         Editor_Button = GameObject.Find("Editor_Button");
         Info_Button = GameObject.Find("Info_Button");
         Background = GameObject.Find("Background_Menu");
         Communication = GameObject.Find("Communication");
+
+        //Find the Button for the next and previous elements.
+        Button NextElementButton = GameObject.Find("Next_Geometry").GetComponent<Button>();
+        Button PreviousElementButton = GameObject.Find("Previous_Geometry").GetComponent<Button>();
+        
+        //Add Listners for on click actions
+        NextElementButton.onClick.AddListener(instantiateObjects.NextElementButton);
+        PreviousElementButton.onClick.AddListener(instantiateObjects.PreviousElementButton);
         
 
         // Ensure all GameObjects were found
