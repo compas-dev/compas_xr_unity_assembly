@@ -119,7 +119,7 @@ public class InstantiateObjects : MonoBehaviour
         //Set parent and name
         elementPrefab.transform.SetParent(Elements.transform, false);
         
-        //TODO: SHOULD THIS BE BY THE STEP ID INSTEAD? THEN WHEN WE TOUCH FIND AN OBJECT WE CAN FIND IT BY NAME, BUT WE CANNOT ASSOCIATE OBJECTS IN THE SCENE WITH THING IN UNITY.
+        //TODO: Need to store step name information in the gameobject somewhere
         elementPrefab.name = step.data.element_ids[0];
 
         //Get the nested Object from the .Obj so we can adapt colors
@@ -293,6 +293,7 @@ public class InstantiateObjects : MonoBehaviour
     {        
         Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
         Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
+        //TODO: This line below could be a problem line. places elements correctly for timbers, but I am not sure if it only works for timbers or all assemblies.
         Vector3 y_vec = Vector3.Cross(x_vec, z_vec).normalized;
         return (x_vec, y_vec, z_vec);
     } 

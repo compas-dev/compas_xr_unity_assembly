@@ -29,11 +29,9 @@ public class QRTrackingScript : MonoBehaviour
         Elements = GameObject.Find("Elements");
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Debug.Log("QRCodeDataDict.Count :" + QRCodeDataDict.Count);
-        Debug.Log("Elements OUTSIDE:" + Elements);
+
         if (QRCodeDataDict.Count > 0 && Elements != null)
         {
             pos = Vector3.zero;
@@ -65,7 +63,7 @@ public class QRTrackingScript : MonoBehaviour
                     }
                     Vector3 position_data = instantiateObjects.getPosition(QRCodeDataDict[key].point);
                     pos = TranslatedPosition(qrObject, position_data);
-                    Quaternion rot = qrObject.transform.rotation; //* qrObject.GetComponent<MarkerData>().MarkerQuatRotation; //TODO: Check this rotation with multiple QR codes at weird angles.
+                    Quaternion rot = qrObject.transform.rotation; //* qrObject.GetComponent<MarkerData>().MarkerQuatRotation; *instantiate //TODO: Check this rotation with multiple QR codes at weird angles.
                     Elements.transform.rotation = rot;
                     Elements.transform.position = pos;
                     Debug.Log($"TRANSFORMING ROTATION {qrObject.name}");
@@ -88,11 +86,10 @@ public class QRTrackingScript : MonoBehaviour
         QRCodeDataDict = e.QRCodeDataDict;
     }
 
-    public void printQRCode(string GameobjectName)
-    {
-        Debug.Log("QR Code Detected");
-        Debug.Log(GameobjectName);
-        string objectName = gameObject.name;
-        Debug.Log("QR Code Detected on " + objectName);
-    }
+    // //TESTING
+    // (Vector3 x_rh,Vector3 y_rh,Vector3 z_rh) = instantiateObjects.getRotation(QRCodeDataDict[key].xaxis, QRCodeDataDict[key].yaxis);
+    // (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = instantiateObjects.rhToLh(x_rh,y_rh,z_rh);
+    // Quaternion rotation_data = instantiateObjects.rotateInstance(x_lh,y_lh,z_lh);
+                    
+
 }
