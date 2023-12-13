@@ -17,6 +17,7 @@ using Dummiesman;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
 using UnityEngine.InputSystem;
+// using System.Numerics;
 
 
 //scripts to initiate all geometries in the scene
@@ -74,6 +75,24 @@ public class InstantiateObjects : MonoBehaviour
 
         //Find Database Manager script to write functions.
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+
+        
+        GameObject frame = GameObject.Find("Frame_test");
+
+        GameObject test = Instantiate(frame, frame.transform.position, frame.transform.rotation);
+        GameObject test_2 = Instantiate(frame, frame.transform.position, frame.transform.rotation);
+        Debug.Log($"This is your frame object {test} and this is the second one {test_2}");
+
+        Vector3 cross_1 = Vector3.Cross(new Vector3(1f,0f,0f), new Vector3(0f,0f,1f));
+        Vector3 cross_2 = Vector3.Cross(new Vector3(0f,0f,1f), new Vector3(1f,0f,0f));
+
+        Vector3 newPosition = test.transform.position + cross_1 * 0.5f;
+        test.transform.position = newPosition;
+        test.name = "CROSS_1";
+
+        Vector3 newPosition_2 = test_2.transform.position + cross_2 * 0.5f;
+        test_2.transform.position = newPosition_2;
+        test_2.name = "CROSS_2";
     }
     
 
@@ -86,6 +105,7 @@ public class InstantiateObjects : MonoBehaviour
             }
 
     }
+    //TODO: Place Elements buildingplan and assembly.
     public void placeElement(string Key, Step step)
     {
         Debug.Log($"Placing element {step.data.element_ids[0]}");
@@ -94,9 +114,14 @@ public class InstantiateObjects : MonoBehaviour
         Vector3 position = getPosition(step.data.location.point);
         
         //get rotation
-        (Vector3 x_rh,Vector3 y_rh,Vector3 z_rh) = getRotation(step.data.location.xaxis, step.data.location.yaxis);
-        (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = rhToLh(x_rh,y_rh,z_rh);
-        Quaternion rotation = rotateInstance(x_lh,y_lh,z_lh);
+        (Vector3 x_rh,Vector3 y_rh) = getRotation(step.data.location.xaxis, step.data.location.yaxis);
+        (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = rhToLh(x_rh,y_rh);
+
+        //rotate vectors
+        (Vector3 x_lh_rot,Vector3 y_lh_rot,Vector3 z_lh_rot) = rotateVectors(x_lh,y_lh,z_lh);
+        
+        //Old code
+        Quaternion rotation = rotateInstance(y_lh_rot,z_lh_rot);
 
         //instantiate a geometry at this position and rotation
         GameObject geometry_object = gameobjectTypeSelector(step);
@@ -110,16 +135,26 @@ public class InstantiateObjects : MonoBehaviour
         //Instantiate new gameObject from the existing selected gameobjects.
         GameObject elementPrefab = Instantiate(geometry_object, position, rotation);
         
-        //Destroy Initial gameobject that is made.
-        if (geometry_object != null)
-        {
-            Destroy(geometry_object);
-        }
+        GameObject testframe = GameObject.Find("Frame_test");
+        
+        //TODO: FRAME VISUALIZARTION
+        GameObject randomObject = Instantiate(testframe, position, rotation);
+        randomObject.transform.SetParent(Elements.transform, false);
+        randomObject.name = $"Frame Test: {step.data.element_ids[0]}";
+        GameObject childobject = randomObject.FindObject("default");
+        MeshRenderer objectrenderer = childobject.GetComponentInChildren<MeshRenderer>();
+        objectrenderer.enabled = true;
+        
+        // Destroy Initial gameobject that is made.
+        // if (geometry_object != null)
+        // {
+        //     Destroy(geometry_object);
+        // }
 
         //Set parent and name
         elementPrefab.transform.SetParent(Elements.transform, false);
         
-        //TODO: Need to store step name information in the gameobject somewhere
+        //TODO: NAME AFTER THE STEP ID
         elementPrefab.name = step.data.element_ids[0];
 
         //Get the nested Object from the .Obj so we can adapt colors
@@ -229,52 +264,6 @@ public class InstantiateObjects : MonoBehaviour
             return element;
         
     }
-    //TODO: REMOVE THIS FUNCTION, BUT DISCUSS WITH DANIELA
-    public void placeQRMarkersDict(Dictionary<string, QRcode> QRDataDict)
-    {
-        if (QRDataDict != null)
-        {
-            Debug.Log($"Number of QR Markers = {QRDataDict.Count}");
-            
-            //loop through the dictionary and print out the key
-            foreach (KeyValuePair<string, QRcode> entry in QRDataDict)
-            {
-                if (entry.Value != null)
-                {
-                    placeQRMarker(entry.Value);
-                }
-
-            }
-        }
-        else
-        {
-            Debug.LogWarning("The dictionary is null");
-        }
-    }
-    //TODO: REMOVE THIS FUNCTION, BUT DISCUSS WITH DANIELA
-    private void placeQRMarker(QRcode QRData)
-    {
-        //get position
-        Vector3 position = getPosition(QRData.point);
-        // Debug.Log($"Placing QR Marker {QRData.Key} at {position}");
-
-        //get rotation
-        (Vector3 x_rh,Vector3 y_rh,Vector3 z_rh) = getRotation(QRData.xaxis, QRData.yaxis);
-        (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = rhToLh(x_rh,y_rh,z_rh);
-        Quaternion rotation = rotateInstance(x_lh,y_lh,z_lh);
-
-        //Find the correct QR Marker
-        GameObject qrmarker = QRMarkers.FindObject("Marker_"+QRData.Key);
-        Debug.Log($"Placing QR Marker {QRData.Key} at {position} with rotation {rotation}");
-
-        qrmarker.GetComponent<MarkerData>().translationVector = -position;
-
-        qrmarker.GetComponent<MarkerData>().MarkerQuatRotation = rotation;
-
-        // //Move QR into the correct place.
-        // qrmarker.transform.position = position;
-        // qrmarker.transform.rotation = rotation;
-    }
 
 /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
     public Vector3 getPosition(float[] pointlist)
@@ -282,26 +271,64 @@ public class InstantiateObjects : MonoBehaviour
         Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
         return position;
     }
-    public (Vector3, Vector3, Vector3) getRotation(float[] x_vecdata, float [] y_vecdata)
+    public (Vector3, Vector3) getRotation(float[] x_vecdata, float [] y_vecdata)
     {
         Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
         Vector3 y_vec_right  = new Vector3(y_vecdata[0], y_vecdata[1], y_vecdata[2]);
-        Vector3 z_vec_right  = Vector3.Cross(y_vec_right, x_vec_right).normalized;
-        return (x_vec_right, y_vec_right, z_vec_right);
+        return (x_vec_right, y_vec_right);
     } 
-    public (Vector3, Vector3, Vector3) rhToLh(Vector3 x_vec_right, Vector3 y_vec_right, Vector3 z_vec_right)
+    public (Vector3, Vector3, Vector3) rhToLh(Vector3 x_vec_right, Vector3 y_vec_right)
     {        
         Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
         Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
         //TODO: This line below could be a problem line. places elements correctly for timbers, but I am not sure if it only works for timbers or all assemblies.
-        Vector3 y_vec = Vector3.Cross(x_vec, z_vec).normalized;
+        //270 degree rotation(y_vec needs negative because this returns posative)
+        //THIS IS THE CORRECT ONE.
+        Vector3 y_vec = Vector3.Cross(z_vec, x_vec); //.normalized;
+        //270 degree rotation (y_vec stays positive because this is negative)
+        // Vector3 y_vec = Vector3.Cross(x_vec, z_vec);
         return (x_vec, y_vec, z_vec);
+        // return (x_vec, y_vec, z_vec);
     } 
-    public Quaternion rotateInstance(Vector3 x_vec, Vector3 y_vec, Vector3 z_vec)
+
+    //THIS Function is only done to fix discrepencies from import.
+    public (Vector3, Vector3, Vector3) rotateVectors(Vector3 x_vec, Vector3 y_vec, Vector3 z_vec)
     {
+        //FIRST ROTATE 180 DEGREES AROUND Z AXIS
+        Quaternion z_rotation = Quaternion.AngleAxis(180, z_vec);
+        x_vec = z_rotation * x_vec;
+        y_vec = z_rotation * y_vec;
+        z_vec = z_rotation * z_vec;
+
+        //THEN ROTATE 270 DEGREES AROUND X AXIS
+        Quaternion rotation_x = Quaternion.AngleAxis(90f, x_vec);
+        x_vec = rotation_x * x_vec;
+        y_vec = rotation_x * y_vec;
+        z_vec = rotation_x * z_vec;
+        return (x_vec, y_vec, z_vec);
+    }
+
+    public Quaternion rotateInstance(Vector3 y_vec, Vector3 z_vec)
+    {
+        Debug.Log($"Vector_y: {y_vec}");
+        Debug.Log($"Vector_z: {z_vec}");
         Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
         return rotation;
     }
+
+    //     public (Vector3, Vector3, Vector3) rhToLh(Vector3 x_vec_right, Vector3 y_vec_right, Vector3 z_vec_right)
+    // {        
+    //     Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
+    //     Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
+    //     //TODO: This line below could be a problem line. places elements correctly for timbers, but I am not sure if it only works for timbers or all assemblies.
+    //     Vector3 y_vec = Vector3.Cross(x_vec, z_vec).normalized;
+    //     return (x_vec, -y_vec, z_vec);
+    // } 
+    // public Quaternion rotateInstance(Vector3 x_vec, Vector3 y_vec, Vector3 z_vec)
+    // {
+    //     Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
+    //     return rotation;
+    // }
 
 /////////////////////////////// Material and colors ////////////////////////////////////////
     public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
