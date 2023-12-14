@@ -299,7 +299,7 @@ public class DatabaseManager : MonoBehaviour
         {
             string key = childSnapshot.Key;
             var json_data = childSnapshot.GetValue(true);
-            Node node_data = NodeDesearializer(key, json_data);
+            Node node_data = NodeDeserializer(key, json_data);
             
             if (IsValidNode(node_data))
             {
@@ -315,9 +315,6 @@ public class DatabaseManager : MonoBehaviour
         UnityEngine.Debug.Log("Number of nodes stored as a dictionary = " + DataItemDict.Count);
 
     }
-    
-    //TODO: MIGHT NEED TO CHANGE THIS TO ITERATE THROUGH IN ORDER LIKE PREVIOUS.
-    //TODO: THIS ASSUMPTION NEEDS TO BE EITHER MADE OR NOT. BUILDING PLAN ALWAYS FULL 0 to LENGTH... BUT ASSEMBLY CAN BE MISSING.
     private void DesearialaizeStepSnapshot(DataSnapshot snapshot)
     {
         BuildingPlanDataDict.Clear();
@@ -326,7 +323,7 @@ public class DatabaseManager : MonoBehaviour
         {
             string key = childSnapshot.Key;
             var json_data = childSnapshot.GetValue(true);
-            Step step_data = StepDesearilizer(key, json_data);
+            Step step_data = StepDeserializer(key, json_data);
             
             if (IsValidStep(step_data))
             {
@@ -464,12 +461,9 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////////// Input Data Handlers //////////////////////////////////
-    public Node NodeDesearializer(string key, object jsondata)
+    public Node NodeDeserializer(string key, object jsondata)
     {
-        Dictionary<string, object> dict = new Dictionary<string, object>();
-        dict.Add(key, jsondata);
-
-        Dictionary<string, object> jsonDataDict = dict[key] as Dictionary<string, object>;
+        Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
 
         // Access nested values 
         Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
@@ -573,7 +567,7 @@ public class DatabaseManager : MonoBehaviour
                 break;
         }
     }
-    public Step StepDesearilizer(string key, object jsondata)
+    public Step StepDeserializer(string key, object jsondata)
     {
         Dictionary<string, object> dict = new Dictionary<string, object>();
         dict.Add(key, jsondata);
@@ -668,7 +662,7 @@ public class DatabaseManager : MonoBehaviour
 
         if (childSnapshot != null)
         {
-            Step newValue = StepDesearilizer(key, childSnapshot);
+            Step newValue = StepDeserializer(key, childSnapshot);
            
             //make a new entry in the dictionary if it doesnt already exist
             if (IsValidStep(newValue))
@@ -711,13 +705,12 @@ public class DatabaseManager : MonoBehaviour
 
         if (childSnapshot != null)
         {
-            Step newValue = StepDesearilizer(key, childSnapshot);
+            Step newValue = StepDeserializer(key, childSnapshot);
+            //TODO: IF KEY IS LOWER THEN MY CURRENT KEY Do nothing.
             
             if(IsValidStep(newValue))
             {
                 BuildingPlanDataDict[key] = newValue;
-                //TODO: HAD TO GET RID OF THIS LINE BECAUSE IT ASSUMSES THAT THE ELELMENT ID AND STEP KEY ARE THE SAME.
-                // BuildingPlanDataDict[key].data.element_ids[0] = key;
             }
             else
             {

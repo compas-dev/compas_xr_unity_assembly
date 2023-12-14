@@ -4,13 +4,14 @@ using JSON;
 using Unity.Mathematics;
 using UnityEngine;
 using Vuforia;
+using Instantiate;
 
 public class QRTrackingScript : MonoBehaviour
 {
     public string GameobjectName;
     private GameObject Elements;
 
-    private InstantiateObjects instantiateObjects;
+    public InstantiateObjects instantiateObjects;
 
     public Dictionary<string, QRcode> QRCodeDataDict = new Dictionary<string, QRcode>();
 
@@ -58,33 +59,30 @@ public class QRTrackingScript : MonoBehaviour
 
                         lastQrName = qrObject.name;
                     }
+                    
+                    //Fetch position data from the dictionary
                     Vector3 position_data = instantiateObjects.getPosition(QRCodeDataDict[key].point);
 
-
-                    //TESTING
-                    (Vector3 x_rh,Vector3 y_rh) = instantiateObjects.getRotation(QRCodeDataDict[key].xaxis, QRCodeDataDict[key].yaxis);
-                    (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = instantiateObjects.rhToLh(x_rh,y_rh);    
-                    // (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = QRrhToLh(x_rh,y_rh);
-                    // (Vector3 x_lh_rot,Vector3 y_lh_rot,Vector3 z_lh_rot) = instantiateObjects.rotateVectors(x_lh,y_lh,z_lh);
-                    // Quaternion rotation_data = instantiateObjects.rotateInstance(y_lh,z_lh);
-                    Quaternion rotation_data = instantiateObjects.rotateInstance(y_lh, z_lh);
-                    // Quaternion rotation_data = new Quaternion(QRCodeDataDict[key].quaternion[1],QRCodeDataDict[key].quaternion[2], QRCodeDataDict[key].quaternion[3], QRCodeDataDict[key].quaternion[0]);
+                    //Fetch rotation data from the dictionary
+                    InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(QRCodeDataDict[key].xaxis, QRCodeDataDict[key].yaxis);
                     
+                    Quaternion rotationQuaternion = instantiateObjects.FromRhinoToUnity(rotationData, false);
+                    
+                    // (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = instantiateObjects.rhToLh(x_rh,y_rh);
+                    // Quaternion rotationQuaternion = instantiateObjects.rotateInstance(y_lh, z_lh);
+                    // Quaternion rotationQuaternion
 
-                    //Inverted both of these rotations.... I am not sure if this is meant to tell me a larger issue or not...
-                    Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotation_data);//* qrObject.GetComponent<MarkerData>().MarkerQuatRotation; *instantiate //TODO: Check this rotation with multiple QR codes at weird angles.
+                    //Set Design Objects rotation to the rotation based on Observed rotation and Inverse rotation of physical QR
+                    Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
                     Elements.transform.rotation = rot;
 
-                    
-                    pos = TranslatedPosition(qrObject, position_data, rotation_data);
+                    //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
+                    pos = TranslatedPosition(qrObject, position_data, rotationQuaternion);
 
-                    
-                    Debug.Log($"ROTATION Combined is:  {rot}");
-                    // Debug.Log($"ROTATION data is:  {rotation_data}");
-                    Debug.Log($"ROTATION qrObject is:  {qrObject.transform.rotation}");
-                    
+                    //Set the position of the design object to the translated position                    
                     Elements.transform.position = pos;
-                    Debug.Log($"TRANSFORMING ROTATION {qrObject.name}");
+
+                    Debug.Log($"QR: Translation from QR object: {qrObject.name}");
                 }
             }
         }
@@ -93,25 +91,15 @@ public class QRTrackingScript : MonoBehaviour
 
     private Vector3 TranslatedPosition(GameObject gobject, Vector3 position, Quaternion Individualrotation)
     {
-        //Added individual rotation of the object... adding the objects rotation to the before moving its position.
-        Vector3 pos = gobject.transform.position + (gobject.transform.rotation * Quaternion.Inverse(Individualrotation) * -position); //gobject.GetComponent<MarkerData>().translationVector
+        //Position determined by positioning the QR codes observed position and rotation and translating by position vector and the inverse of the QR rotation
+        Vector3 pos = gobject.transform.position + (gobject.transform.rotation * Quaternion.Inverse(Individualrotation) * -position);
         return pos;
-        
     }
     
     public void OnTrackingInformationReceived(object source, TrackingDataDictEventArgs e)
     {
         Debug.Log("Database is loaded." + " " + "Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
         QRCodeDataDict = e.QRCodeDataDict;
-    }
-
-    public (Vector3, Vector3, Vector3) QRrhToLh(Vector3 x_vec_right, Vector3 y_vec_right)
-    {        
-        Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
-        Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
-        //TODO: This line below could be a problem line. places elements correctly for timbers, but I am not sure if it only works for timbers or all assemblies.
-        Vector3 y_vec = Vector3.Cross(z_vec, x_vec).normalized;
-        return (x_vec, y_vec, z_vec);
     }
                     
 

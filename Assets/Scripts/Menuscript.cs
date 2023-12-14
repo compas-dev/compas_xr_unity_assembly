@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Instantiate;
 
 public class Menuscript : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class Menuscript : MonoBehaviour
 
 
     //Script References
-    private InstantiateObjects instantiateObjects;
+    public InstantiateObjects instantiateObjects;
 
     // Start is called before the first frame update
     void Start()
