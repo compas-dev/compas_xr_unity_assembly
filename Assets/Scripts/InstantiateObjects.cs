@@ -30,6 +30,7 @@ namespace Instantiate
         
         //OTHER Sript Objects
         public DatabaseManager databaseManager;
+        public UIFunctionalities UIFunctionalities;
 
         //INPUT MATERIALS AND OBJECTS
         public Material BuiltMaterial;
@@ -49,8 +50,6 @@ namespace Instantiate
         
         //Private IN SCRIPT USE OBJECTS
         private GameObject geometry_object;
-        private string CurrentStep;
-        private string LastWrittenStep = "0";
 
         public struct Rotation
         {
@@ -68,13 +67,13 @@ namespace Instantiate
             OnAwakeInitilization();
         }
         
-    /////////////////////////////// INSTANTIATE OBJECTS ////////////////////////////////////////
-    
+    /////////////////////////////// INSTANTIATE OBJECTS //////////////////////////////////////////
         private void OnAwakeInitilization()
         {
-            //Find Database Manager script to write functions.
+            //Find Additional Scripts.
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
-            
+            UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
             QRMarkers = GameObject.Find("QRMarkers");
@@ -87,23 +86,20 @@ namespace Instantiate
             RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
             RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
 
-            //Find QRMarkers Parent Object
-            QRMarkers = GameObject.Find("QRMarkers");
-
         }
         public void placeElements(List<Step> DataItems) 
         {
+            int i = 0;
             foreach (Step step in DataItems)
                 {
-                    // placeElement(step);
+                    placeElement(i.ToString(), step);
+                    i++;
                 }
 
         }
-        
-        //TODO: Place Elements buildingplan and assembly.
         public void placeElement(string Key, Step step)
         {
-            Debug.Log($"Placing element {step.data.element_ids[0]}");
+            Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
 
             //get position
             Vector3 positionData = getPosition(step.data.location.point);
@@ -119,7 +115,7 @@ namespace Instantiate
 
             if (geometry_object == null)
             {
-                Debug.Log($"This key is null {step.data.element_ids[0]}");
+                Debug.Log($"This key:{step.data.element_ids[0]} from Step: {Key} is null");
                 return;
             }
 
@@ -135,25 +131,69 @@ namespace Instantiate
             //Set parent and name
             elementPrefab.transform.SetParent(Elements.transform, false);
             
-            //TODO: NAME AFTER THE STEP ID
-            elementPrefab.name = step.data.element_ids[0];
+            //Name the object afte the step number... might be better to get the step_id in the building plan from Chen.
+            elementPrefab.name = Key;
 
-            //Get the nested Object from the .Obj so we can adapt colors only the first object
-            GameObject child_object = elementPrefab.transform.GetChild(0).gameObject;
-
-            if(CurrentStep != null && CurrentStep == Key)
+            //Get the nested gameobject from the .Obj so we can adapt colors only the first object
+            GameObject geometryObject = elementPrefab.transform.GetChild(0).gameObject;
+            geometryObject.name = "Geometry";
+            
+            if(UIFunctionalities.CurrentStep != null && UIFunctionalities.CurrentStep == Key)
             {
                 //Color it Human or Robot Built
-                // ColorHumanOrRobot(step.data.actor, step.data.is_built, child_object);
-                FindCurrentStep();
+                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+                // UIFunctionalities.FindCurrentStep(false);
 
             }
             else
             {
                 //Color it Built or Unbuilt
-                ColorBuiltOrUnbuilt(step.data.is_built, child_object);
+                ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
             }
 
+        }
+        public void placeElementAssembly(string Key, Node node)
+        {
+            Debug.Log($"Placing element {node.type_id}");
+
+            //get position
+            Vector3 positionData = getPosition(node.part.frame.point);
+            
+            //get rotation
+            Rotation rotationData = getRotation(node.part.frame.xaxis, node.part.frame.yaxis);
+            
+            //Define Object Rotation
+            Quaternion rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
+
+            //instantiate a geometry at this position and rotation
+            GameObject geometry_object = gameobjectTypeSelectorAssembly(node);
+
+            if (geometry_object == null)
+            {
+                Debug.Log($"This key is null {node.type_id}");
+                return;
+            }
+
+            //Instantiate new gameObject from the existing selected gameobjects.
+            GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
+            
+            // Destroy Initial gameobject that is made.
+            if (geometry_object != null)
+            {
+                Destroy(geometry_object);
+            }
+
+            //Set parent and name
+            elementPrefab.transform.SetParent(Elements.transform, false);
+            
+            //Name the object after the node number
+            elementPrefab.name = node.type_id;
+
+            //Get the nested Object from the .Obj so we can adapt colors only the first object
+            GameObject child_object = elementPrefab.transform.GetChild(0).gameObject;
+
+            //Color it Built or Unbuilt
+            ColorBuiltOrUnbuilt(node.attributes.is_built, child_object);
         }
         public void placeElementsDict(Dictionary<string, Step> BuildingPlanDataDict)
         {
@@ -178,12 +218,15 @@ namespace Instantiate
                 Debug.LogWarning("The dictionary is null");
             }
         }   
+        
+        //TODO: Add Empty Parent object to the GameObject and name the child Object Geometry to match the .obj file.
+        //TODO: Add a Colider
         public GameObject gameobjectTypeSelector(Step step)
         {
 
             if (step == null)
             {
-                Debug.LogWarning("Node is null. Cannot determine GameObject type.");
+                Debug.LogWarning("Step is null. Cannot determine GameObject type.");
                 return null;
             }
 
@@ -191,7 +234,7 @@ namespace Instantiate
 
             switch (step.data.geometry)
                 {
-                    //TODO:REVIEW THE SIZE AND SCALE OF THESE 
+                    //TODO:REVIEW THE SIZE AND SCALE OF THESE
                     case "0.Cylinder":
                         //Define the Size of the Cylinder from the data values
                         float cylinderRadius = DataItemDict[step.data.element_ids[0].ToString()].attributes.width;
@@ -242,6 +285,73 @@ namespace Instantiate
                 }
 
                 Debug.Log($"Element type {step.data.geometry}");
+                return element;
+            
+        }
+        public GameObject gameobjectTypeSelectorAssembly(Node node)
+        {
+
+            if (node == null)
+            {
+                Debug.LogWarning("Node is null. Cannot determine GameObject type.");
+                return null;
+            }
+
+            GameObject element;
+
+            switch (node.type_data)
+                {
+                    //TODO:REVIEW THE SIZE AND SCALE OF THESE 
+                    case "0.Cylinder":
+                        //Define the Size of the Cylinder from the data values
+                        float cylinderRadius = node.attributes.width;
+                        float cylinderHeight = node.attributes.height;
+                        Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight, cylinderRadius*2);
+                        
+                        //Create and Scale Element
+                        element = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        element.transform.localScale = cylindersize;
+                        break;
+
+                    case "1.Box":                    
+                        //Define the Size of the Cube from the data values
+                        Vector3 cubesize = new Vector3(node.attributes.width, node.attributes.height, node.attributes.length);
+                        
+                        //Create and Scale Element
+                        element = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        element.transform.localScale = cubesize;
+                        break;
+
+                    case "2.ObjFile":
+
+                        string basepath = Application.persistentDataPath;
+                        string folderpath = Path.Combine(basepath, "Object_Storage");
+                        string filepath = Path.Combine(folderpath, node.type_id+".obj");
+
+                        if (File.Exists(filepath))
+                        {
+                            element =  new OBJLoader().Load(filepath);
+                            
+                        }
+                        else
+                        {
+                            element = null;
+                            Debug.Log ("ObjPrefab is null");
+                        }
+                        
+                        break;
+
+                    case "3.Mesh":
+                        //TODO: CONFIRM FETCH OBJECT AS OBJ OR CREATE OBJECT FROM PROVIDED DATA.
+                        element = null;
+                        break;
+
+                    default:
+                        Debug.LogWarning($"No element type found for type node: {node.type_id} of type: {node.type_data}");
+                        return null;
+                }
+
+                Debug.Log($"Element: {node.type_id} type: {node.type_data}");
                 return element;
             
         }
@@ -320,7 +430,7 @@ namespace Instantiate
             return rotation;
         }
 
-        //These functions are done to fix discrepencies from obj import.
+        //Functions for obj imort correctoin.
         public Rotation ZRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3
@@ -381,9 +491,6 @@ namespace Instantiate
                 //Color For Unbuilt Objects
                 m_renderer.material = UnbuiltMaterial;
             }
-
-            Debug.Log($"Coloring {gamobj.name} as {m_renderer.material.name}");
-            Debug.Log($"Color of {gamobj.name} is {m_renderer.material.color}");
         }
         public void ColorHumanOrRobot (string placed_by, bool Built, GameObject gamobj)
         {
@@ -418,7 +525,7 @@ namespace Instantiate
                 }
             }
         }
-        public Material CreateMaterial(float red, float green, float blue, float alpha)
+        public Material CreateMaterial(float red, float green, float blue, float alpha) //TODO: Color is incorrect
         {
             Material mat = new Material(Shader.Find("Standard"));
             mat.SetColor("_Color",  new Color(red, green, blue, alpha));
@@ -434,127 +541,6 @@ namespace Instantiate
             return mat;
         }
 
-    /////////////////////////////////// UICONTROL ////////////////////////////////////////
-        public void FindCurrentStep()
-        {
-            //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
-            for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
-            {
-                //Set data items
-                Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
-
-                //Find the first unbuilt element
-                if(step.data.is_built == false)
-                {
-                    //Set Current Element
-                    SetCurrentStep(i.ToString());
-                    
-                    //Set Last Written Element only if it is not == 0
-                    if(i.ToString() != "0")
-                    {
-                        //Set Last Written Element
-                        LastWrittenStep = (i- 1).ToString();
-                        Debug.Log($"Last Written Step is {LastWrittenStep}");
-                    }
-
-                    break;
-                }
-            }
-        }
-        public void NextElementButton()
-        {
-            for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
-            {
-                //Set data items
-                Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
-                string ObjectKey = step.data.element_ids[0];
-
-                //Find Gameobject
-                GameObject element = Elements.FindObject(ObjectKey);
-
-                if(element != null)
-                {
-                    //ONLY WAY TO FIX IF SOMEONE CHANGES THE ONE YOU ARE WORKING ON.
-                    if(step.data.is_built == true)
-                    {
-                        //Color Previous step object as built or unbuilt
-                        ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Mesh 0"));
-                    }
-                    //Find the first unbuilt element
-                    else
-                    {
-                        // Set First Found Element as Current Step
-                        step.data.is_built = true;
-
-                        //SET LAST WRITTEN ELEMENT
-                        LastWrittenStep = i.ToString();
-
-                        //WRITE INFORMATION TO DATABASE...HAS TO STAY HERE
-                        databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(i.ToString()), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[i.ToString()]));
-                        
-                        //TODO: THIS IS VERY DUMB, BUT IT WORKS... IT CANNOT BE AS SIMPLE AS ADDING 1 THOUGH.
-                        FindCurrentStep();
-                        
-                        break;
-                    }
-                }
-
-            }
-
-        }
-        public void SetCurrentStep(string key)
-        {
-            //Set current element name
-            CurrentStep = key;
-
-            //Find the step in the dictoinary
-            Step step = databaseManager.BuildingPlanDataDict[key];
-
-            //Find Gameobject Associated with that step
-            GameObject element = Elements.FindObject(step.data.element_ids[0]);
-
-            if(element != null)
-            {
-                //Color it Human or Robot Built
-                ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject("Mesh 0"));
-                Debug.Log($"Current Step is {CurrentStep}");
-            }
-
-            //Update Onscreen Text
-
-            //Push Current key to the firebase
-
-            
-        }
-        public void PreviousElementButton()
-        {
-            if(LastWrittenStep != null)
-            {
-                //Find Gameobject
-                GameObject element = Elements.FindObject(databaseManager.BuildingPlanDataDict[LastWrittenStep].data.element_ids[0]);
-                GameObject previouselement = Elements.FindObject(databaseManager.BuildingPlanDataDict[CurrentStep].data.element_ids[0]);
-
-                if(element != null && previouselement != null)
-                {
-                    //Set the element to unbuilt
-                    Step step = databaseManager.BuildingPlanDataDict[LastWrittenStep];
-                    step.data.is_built = false;
-
-                    //Push to the database
-                    databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
-
-                    //PreviousStep Data
-                    Step previousstep = databaseManager.BuildingPlanDataDict[CurrentStep];
-
-                    //Color Previous step object as built or unbuilt
-                    ColorBuiltOrUnbuilt(previousstep.data.is_built, previouselement);
-
-                    //Set the current element to the last written element
-                    SetCurrentStep(LastWrittenStep);
-                }
-            }
-        }
-
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, DataItemDictEventArgs e)
         {
@@ -567,7 +553,7 @@ namespace Instantiate
             if (eventArgs.NewValue == null)
             {
                 Debug.Log("Object will be removed");
-                RemoveObjects(eventArgs.NewValue.data.element_ids[0]);
+                RemoveObjects(eventArgs.Key);
             }
             else
             {
@@ -578,10 +564,10 @@ namespace Instantiate
         }
         private void InstantiateChangedKeys(Step newValue, string key)
         {
-            if (GameObject.Find(newValue.data.element_ids[0]) != null)
+            if (GameObject.Find(key) != null)
             {
-                Debug.Log("Deleting old object with key" + newValue.data.element_ids[0]);
-                GameObject oldObject = GameObject.Find(newValue.data.element_ids[0]);
+                Debug.Log("Deleting old object with key" + key);
+                GameObject oldObject = GameObject.Find(key);
                 Destroy(oldObject);
             }
             else
@@ -607,7 +593,7 @@ namespace Instantiate
         protected virtual void OnInitialObjectsPlaced()
         {
             PlacedInitialElements(this, EventArgs.Empty);
-            FindCurrentStep();
+            UIFunctionalities.FindCurrentStep(true);
         }
     }
 }

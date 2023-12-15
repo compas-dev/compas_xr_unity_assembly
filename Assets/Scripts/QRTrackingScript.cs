@@ -37,13 +37,10 @@ public class QRTrackingScript : MonoBehaviour
         if (QRCodeDataDict.Count > 0 && Elements != null)
         {
             pos = Vector3.zero;
-            Debug.Log("QRCodeDataDict.Count > 0" + QRCodeDataDict.Count);
-            Debug.Log($"Elements is: {Elements}");
 
             foreach (string key in QRCodeDataDict.Keys)
             {
-                GameObject qrObject = GameObject.Find("Marker_" + key);
-                Debug.Log($"YOUR KEY IS {key}");                
+                GameObject qrObject = GameObject.Find("Marker_" + key);              
 
                 if (qrObject != null && qrObject.transform.position != Vector3.zero)
                 {
