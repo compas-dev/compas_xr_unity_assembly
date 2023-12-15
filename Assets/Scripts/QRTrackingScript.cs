@@ -66,11 +66,8 @@ public class QRTrackingScript : MonoBehaviour
                     //Fetch rotation data from the dictionary
                     InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(QRCodeDataDict[key].xaxis, QRCodeDataDict[key].yaxis);
                     
-                    Quaternion rotationQuaternion = instantiateObjects.FromRhinoToUnity(rotationData, false);
-                    
-                    // (Vector3 x_lh,Vector3 y_lh,Vector3 z_lh) = instantiateObjects.rhToLh(x_rh,y_rh);
-                    // Quaternion rotationQuaternion = instantiateObjects.rotateInstance(y_lh, z_lh);
-                    // Quaternion rotationQuaternion
+                    //Convert Firebase rotation data to Quaternion rotation. Additionally
+                    Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
 
                     //Set Design Objects rotation to the rotation based on Observed rotation and Inverse rotation of physical QR
                     Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);

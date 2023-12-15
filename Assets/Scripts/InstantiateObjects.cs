@@ -72,6 +72,9 @@ namespace Instantiate
     
         private void OnAwakeInitilization()
         {
+            //Find Database Manager script to write functions.
+            databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+            
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
             QRMarkers = GameObject.Find("QRMarkers");
@@ -87,28 +90,6 @@ namespace Instantiate
             //Find QRMarkers Parent Object
             QRMarkers = GameObject.Find("QRMarkers");
 
-            //Find Database Manager script to write functions.
-            databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
-
-            
-            //TODO: GET RID OF FRAME VISUALIZARTION
-            GameObject frame = GameObject.Find("Frame_test");
-
-            GameObject test = Instantiate(frame, frame.transform.position, frame.transform.rotation);
-            GameObject test_2 = Instantiate(frame, frame.transform.position, frame.transform.rotation);
-            Debug.Log($"This is your frame object {test} and this is the second one {test_2}");
-
-            Vector3 cross_1 = Vector3.Cross(new Vector3(1f,0f,0f), new Vector3(0f,0f,1f));
-            Vector3 cross_2 = Vector3.Cross(new Vector3(0f,0f,1f), new Vector3(1f,0f,0f));
-
-            Vector3 newPosition = test.transform.position + cross_1 * 0.5f;
-            test.transform.position = newPosition;
-            test.name = "CROSS_1";
-
-            Vector3 newPosition_2 = test_2.transform.position + cross_2 * 0.5f;
-            test_2.transform.position = newPosition_2;
-            test_2.name = "CROSS_2";
-
         }
         public void placeElements(List<Step> DataItems) 
         {
@@ -118,6 +99,7 @@ namespace Instantiate
                 }
 
         }
+        
         //TODO: Place Elements buildingplan and assembly.
         public void placeElement(string Key, Step step)
         {
@@ -129,7 +111,8 @@ namespace Instantiate
             //get rotation
             Rotation rotationData = getRotation(step.data.location.xaxis, step.data.location.yaxis);
             
-            Quaternion rotationQuaternion = FromRhinoToUnity(rotationData, true);
+            //Define Object Rotation
+            Quaternion rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
 
             //instantiate a geometry at this position and rotation
             GameObject geometry_object = gameobjectTypeSelector(step);
@@ -142,15 +125,6 @@ namespace Instantiate
 
             //Instantiate new gameObject from the existing selected gameobjects.
             GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
-                    
-            //TODO: GET RID OF FRAME VISUALIZARTION
-            GameObject testframe = GameObject.Find("Frame_test");
-            GameObject randomObject = Instantiate(testframe, positionData, rotationQuaternion);
-            randomObject.transform.SetParent(Elements.transform, false);
-            randomObject.name = $"Frame Test: {step.data.element_ids[0]}";
-            GameObject childobject = randomObject.FindObject("default");
-            MeshRenderer objectrenderer = childobject.GetComponentInChildren<MeshRenderer>();
-            objectrenderer.enabled = true;
             
             // Destroy Initial gameobject that is made.
             if (geometry_object != null)
@@ -164,8 +138,8 @@ namespace Instantiate
             //TODO: NAME AFTER THE STEP ID
             elementPrefab.name = step.data.element_ids[0];
 
-            //Get the nested Object from the .Obj so we can adapt colors
-            GameObject child_object = elementPrefab.FindObject("Mesh 0");
+            //Get the nested Object from the .Obj so we can adapt colors only the first object
+            GameObject child_object = elementPrefab.transform.GetChild(0).gameObject;
 
             if(CurrentStep != null && CurrentStep == Key)
             {
@@ -273,21 +247,23 @@ namespace Instantiate
         }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
-        
         //Handle rotation of objects from Rhino to Unity. With option to add additional rotation around for .obj files.
-        public Quaternion FromRhinoToUnity(Rotation rotation, bool objZ_up)
+        public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
+            //Set Unity Rotation
             Rotation rotationLh = rhToLh(rotation.x , rotation.y);
+
+            Rotation Zrotation = ZRotation(rotationLh);
 
             Rotation ObjectRotation;
 
             if (objZ_up == true)
             {
-                ObjectRotation = ZXRotation(rotationLh);
+                ObjectRotation = XRotation(Zrotation);
             }
             else
             {
-                ObjectRotation = rotationLh;
+                ObjectRotation = Zrotation;
             }
 
             //Rotate Instance
@@ -295,7 +271,16 @@ namespace Instantiate
 
             return rotationQuaternion;
         } 
+        public Quaternion FromUnityRotation(Rotation rotation)
+        {   
+            //Right hand to left hand conversion
+            Rotation rotationLh = rhToLh(rotation.x , rotation.y);
 
+            //Set Unity Rotation
+            Quaternion rotationQuaternion = GetQuaternion(rotationLh.y, rotationLh.z);
+
+            return rotationQuaternion;
+        } 
         public Vector3 getPosition(float[] pointlist)
         {
             Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
@@ -329,22 +314,40 @@ namespace Instantiate
 
             return rotationLh;
         } 
+        public Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
+        {
+            Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
+            return rotation;
+        }
 
-        //THIS Function is only done to fix discrepencies from import.
-        //TODO: Name: FromRhinoToUnity
-        //TODO: First rotate the object and then do right hand to left hand conversion.
-        public Rotation ZXRotation(Rotation ZUpRotation)
+        //These functions are done to fix discrepencies from obj import.
+        public Rotation ZRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3
-            Vector3 x_vec = ZUpRotation.x;
-            Vector3 z_vec = ZUpRotation.z;
-            Vector3 y_vec = ZUpRotation.y;
+            Vector3 x_vec = ObjectRotation.x;
+            Vector3 z_vec = ObjectRotation.z;
+            Vector3 y_vec = ObjectRotation.y;
             
             //FIRST ROTATE 180 DEGREES AROUND Z AXIS
             Quaternion z_rotation = Quaternion.AngleAxis(180, z_vec);
             x_vec = z_rotation * x_vec;
             y_vec = z_rotation * y_vec;
             z_vec = z_rotation * z_vec;
+
+            //Reconstruct new rotation struct from manipulated vectors
+            Rotation ZXrotation;
+            ZXrotation.x = x_vec;
+            ZXrotation.y = y_vec;
+            ZXrotation.z = z_vec;
+
+            return ZXrotation;
+        }
+        public Rotation XRotation(Rotation ObjectRotation)
+        {
+            //Deconstruct Rotation Struct into Vector3
+            Vector3 x_vec = ObjectRotation.x;
+            Vector3 z_vec = ObjectRotation.z;
+            Vector3 y_vec = ObjectRotation.y;
 
             //THEN ROTATE 90 DEGREES AROUND X AXIS
             Quaternion rotation_x = Quaternion.AngleAxis(90f, x_vec);
@@ -360,13 +363,6 @@ namespace Instantiate
 
             return ZXrotation;
         }
-
-        public Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
-        {
-            Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
-            return rotation;
-        }
-
 
     /////////////////////////////// Material and colors ////////////////////////////////////////
         public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)

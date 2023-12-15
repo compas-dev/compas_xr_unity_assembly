@@ -78,6 +78,7 @@ public class DatabaseManager : MonoBehaviour
     public delegate void StoreApplicationSettings(object source, ApplicationSettingsEventArgs e);
     public event StoreApplicationSettings ApplicationSettingUpdate;
 
+    
     //Define HTTP request response classes
     class ListFilesResponse
     {
@@ -90,6 +91,9 @@ public class DatabaseManager : MonoBehaviour
         public string name { get; set; }
         public string bucket { get; set; }
     }
+
+    //Define bool to set object orientation
+    public bool objectOrientation;
 
     void Awake()
     {
@@ -143,6 +147,9 @@ public class DatabaseManager : MonoBehaviour
         //Else trigger download.
         else
         {
+            //Set Obj Orientation bool
+            objectOrientation = e.Settings.objorientation;
+            
             //Storage Reference from data fetched
             storageReference = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storagename);
             string basepath = storageReference.Path;
