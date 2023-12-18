@@ -3243,7 +3243,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -4255,6 +4255,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61eeb85533cede741b136c48d2e53f6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  databaseManager: {fileID: 0}
+  instantiateObjects: {fileID: 0}
+  NextGeometryButtonObject: {fileID: 0}
+  PreviousGeometryButtonObject: {fileID: 0}
+  PreviewGeometrySliderObject: {fileID: 0}
+  Elements: {fileID: 0}
+  QRMarkers: {fileID: 0}
+  CurrentStep: 
+  LastWrittenStep: 0
+  NextButtonPressed: 0
+  PreviousButtonClicked: 0
+  CurrentStepText: {fileID: 0}
 --- !u!4 &2091641913
 Transform:
   m_ObjectHideFlags: 0
@@ -7222,7 +7234,7 @@ GameObject:
   - component: {fileID: 3404359653586024610}
   - component: {fileID: 4874160953161268290}
   m_Layer: 5
-  m_Name: Current_Stick_Text
+  m_Name: Current_Element_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

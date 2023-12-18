@@ -6,6 +6,11 @@ using UnityEngine.UI;
 using Instantiate;
 using JSON;
 using Newtonsoft.Json;
+using System;
+using System.Linq;
+using System.Xml.Linq;
+using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
 
 public class UIFunctionalities : MonoBehaviour
 {
@@ -51,9 +56,17 @@ public class UIFunctionalities : MonoBehaviour
 
     //In script use variables
     public string CurrentStep;
+    
+    //TODO: This could have a better name... it is actually not last written step but Previous step to current step.
     public string LastWrittenStep = "0";
     public bool NextButtonPressed = false;
+    public bool PreviousButtonClicked = false;
 
+    //On Screen Text
+    public TMPro.TMP_Text CurrentStepText;
+
+    //Touch Input Variables
+    private ARRaycastManager rayManager;
     
     void Start()
     {
@@ -69,6 +82,7 @@ public class UIFunctionalities : MonoBehaviour
     /////////////////////////////////////////// UI Control ////////////////////////////////////////////////////
     private void OnAwakeInitilization()
     {
+        /////////////////////////////////////////// Initial Elements ////////////////////////////////////////////
         //Find Other Scripts
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
@@ -93,7 +107,8 @@ public class UIFunctionalities : MonoBehaviour
         VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
-        
+
+        /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
         PreviewBuilderButtonObject = VisibilityMenuObject.FindObject("Preview_Builder");
         Button PreviewBuilderButton = PreviewBuilderButtonObject.GetComponent<Button>();
@@ -115,7 +130,7 @@ public class UIFunctionalities : MonoBehaviour
         ObjectLengthsButton.onClick.AddListener(() => print_string_on_click("Object Lengths Button Clicked"));;
     
        
-       
+        /////////////////////////////////////////// Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
         InfoButtonObject = MenuButtonObject.FindObject("Info_Button");
         Button InfoButton = InfoButtonObject.GetComponent<Button>();
@@ -142,7 +157,7 @@ public class UIFunctionalities : MonoBehaviour
         BuildStatusButton.onClick.AddListener(() => print_string_on_click("Build Status Editor Button Clicked"));;
 
 
-
+        /////////////////////////////////////////// Primary UI Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
         NextGeometryButtonObject = GameObject.Find("Next_Geometry");
         Button NextGeometryButton = NextGeometryButtonObject.GetComponent<Button>();
@@ -156,9 +171,14 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         PreviewGeometrySliderObject = GameObject.Find("GeometrySlider");
         Slider PreviousGeometrySlider = PreviewGeometrySliderObject.GetComponent<Slider>();
-        // PreviousGeometrySlider.onValueChanged.AddListener(() => print_string_on_click("Previous Object Button Clicked"));;
+        PreviousGeometrySlider.onValueChanged.AddListener(PreviewGeometrySlider);;
+
+        //Find Text Objects
+        GameObject CurrentStepTextObject = GameObject.Find("Current_Element_Text");
+        CurrentStepText = CurrentStepTextObject.GetComponent<TMPro.TMP_Text>();
 
 
+        /////////////////////////////////////////// Set Toggles ////////////////////////////////////////////
         //Add Listners for Visibility Toggle on and off.
         VisibilityMenuToggle.onValueChanged.AddListener(delegate {
         ToggleVisibilityMenu(VisibilityMenuToggle);
@@ -174,7 +194,6 @@ public class UIFunctionalities : MonoBehaviour
         ToggleEditor(EditorToggle);
         });
 
-        //TODO: FIND ON SCREEN TEXT OBJECTS
     }
     public void ToggleVisibilityMenu(Toggle toggle)
     {
@@ -259,6 +278,9 @@ public class UIFunctionalities : MonoBehaviour
                 BuilderEditorButtonObject.SetActive(true);
                 BuildStatusButtonObject.SetActive(true);
 
+                //Control Selectable objects in scene
+                ColliderControler();
+                
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, Yellow);
 
@@ -289,6 +311,8 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
+    
+    //TODO: THIS COULD BE A SIMPLE BUT HELPFUL UPDATE... I is an input, and on initilization the input is zero, but inside of button functions input is much higher.
     public void FindCurrentStep(bool writeCurrentStep)
     {
         //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
@@ -302,21 +326,23 @@ public class UIFunctionalities : MonoBehaviour
             {
                 //Set Current Element
                 SetCurrentStep(i.ToString(), writeCurrentStep);
-                
-                //Set Last Written Element only if it is not == 0
-                if(i.ToString() != "0")
-                {
-                    //Set Last Written Element
-                    LastWrittenStep = (i- 1).ToString();
-                    Debug.Log($"Last Written Step is {LastWrittenStep}");
-                }
 
                 break;
             }
         }
     }
-    
-    //TODO: ADD BOOL...
+    public void OnCurrentStepChanged(string newCurrentStep)
+    {
+        //Find correct information for current object on my device
+        Step step = databaseManager.BuildingPlanDataDict[CurrentStep];
+        GameObject currentElement = Elements.FindObject(CurrentStep);
+
+        //Color current step on this phone as built or unbuilt
+        instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, currentElement.FindObject("Geometry"));
+
+        //Set Current Step
+        SetCurrentStep(newCurrentStep, false);
+    }
     public void NextElementButton()
     {
         Debug.Log("Next Element Button Pressed");
@@ -350,14 +376,15 @@ public class UIFunctionalities : MonoBehaviour
                     //Color Previous step object as built or unbuilt
                     instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
 
-                    //SET LAST WRITTEN ELEMENT
-                    LastWrittenStep = i.ToString();
-
                     //WRITE INFORMATION TO DATABASE...HAS TO STAY HERE
                     databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(i.ToString()), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[i.ToString()]));
                     
-                    //TODO: THIS SHOULD WORK BY ADDING 1
-                    FindCurrentStep(false);
+                    //Set current element as this step + 1
+                    SetCurrentStep((i + 1).ToString(), true);
+
+                    //Find current step loop was run to avoid async if someone builds one in front of me...
+                    //This could be improved though... I could write a function that starts at a point and goes to the end of the dictionary looking for the first false... Then sets that as my current element.
+                    // FindCurrentStep(false);
                     
                     break;
                 }
@@ -384,8 +411,14 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log($"Current Step is {CurrentStep}");
         }
 
+        //Set Last written step
+        if (key != "0")
+        {
+            LastWrittenStep = (int.Parse(key) - 1).ToString();
+        }
+        
         //Update Onscreen Text
-        //.......
+        CurrentStepText.text = CurrentStep;
         
         //Bool to control writing to the database
         if(write)
@@ -395,18 +428,25 @@ public class UIFunctionalities : MonoBehaviour
         }
         
     }
-    
-    //TODO: GETS STUCK AND I AM NOT SURE WHY. JUST CHECK IT.
     public void PreviousElementButton()
     {
         if(LastWrittenStep != null)
         {
+            //Set Previous Button Pressed to true
+            PreviousButtonClicked = true;
+            
+            //Previous element button clicked
+            Debug.Log("Previous Element Button Pressed");
+            
             //Find Gameobject
             GameObject element = Elements.FindObject(LastWrittenStep);
+            Debug.Log($"Last Written Step is {LastWrittenStep}");
             GameObject previouselement = Elements.FindObject(CurrentStep);
+            Debug.Log($"Current Step is {CurrentStep}");
 
             if(element != null && previouselement != null)
             {
+                Debug.Log("Entered loop");
                 //Set the element to unbuilt
                 Step step = databaseManager.BuildingPlanDataDict[LastWrittenStep];
                 step.data.is_built = false;
@@ -414,11 +454,11 @@ public class UIFunctionalities : MonoBehaviour
                 //PreviousStep Data
                 Step previousstep = databaseManager.BuildingPlanDataDict[CurrentStep];
 
-                //Push to the database
-                databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
-
                 //Color Previous step object as built or unbuilt
                 instantiateObjects.ColorBuiltOrUnbuilt(previousstep.data.is_built, previouselement);
+
+                //Push to the database
+                databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
 
                 //Set the current element to the last written element
                 SetCurrentStep(LastWrittenStep, true);
@@ -426,6 +466,41 @@ public class UIFunctionalities : MonoBehaviour
         }
     }
 
+    //TODO: Is there a better way to update this then calling it in every time a button is pressed?
+    public void PreviewGeometrySlider(float value)
+    {
+        if (CurrentStep != null)
+        {
+            Debug.Log("You are changing the Preview Geometry");
+            int min = Convert.ToInt16(CurrentStep);
+            float SliderValue = value;
+            int ElementsTotal = databaseManager.BuildingPlanDataDict.Count;
+            float SliderMax = 1; //Input Slider Max Value == 1
+            float SliderMin = 0; // Input Slider Min Value == 0
+                
+            float SliderRemaped = GameObjectExtensions.Remap(SliderValue, SliderMin, SliderMax, min, ElementsTotal); 
+
+            foreach(int index in Enumerable.Range(min, ElementsTotal))
+            {
+                string elementName = index.ToString();
+                int InstanceNumber = Convert.ToInt16(elementName);
+
+                GameObject element = Elements.FindObject(elementName);
+                
+                if (element != null)
+                {
+                    if (InstanceNumber > SliderRemaped)
+                    {
+                        element.SetActive(false); 
+                    }
+                    else
+                    {
+                        element.SetActive(true);
+                    }
+                }
+            }
+        }
+    }
     
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     
@@ -434,7 +509,87 @@ public class UIFunctionalities : MonoBehaviour
     
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
+    
+    private void ColliderControler()
+    {
+        //Set data items
+        Step Currentstep = databaseManager.BuildingPlanDataDict[CurrentStep];
+    
+        for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
+        {
+            //Set data items
+            Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
 
+            //Find Gameobject
+            Collider ElementCollider = Elements.FindObject(i.ToString()).FindObject("Geometry").GetComponent<Collider>();
+
+            if(ElementCollider != null)
+            {
+                //Find the first unbuilt element
+                if(step.data.priority == Currentstep.data.priority)
+                {
+                    //Set Collider to true
+                    ElementCollider.enabled = true;
+                }
+                else
+                {
+                    //Set Collider to false
+                    ElementCollider.enabled = false;
+                }
+            }
+            
+        }
+    }
+
+    // private GameObject SelectedObject(GameObject activeGameObject = null)
+    // {
+    //     if (Application.isEditor)
+    //     {
+    //         Ray ray = arCamera.ScreenPointToRay(Input.mousePosition);
+    //         RaycastHit hitObject;
+
+    //         Debug.Log("Looking for your Joint To Select");
+
+    //         if (Physics.Raycast(ray, out hitObject))
+    //         {
+    //             if (hitObject.collider.tag != "plane")
+    //             {
+    //                 activeGameObject = hitObject.collider.gameObject;
+    //                 Debug.Log(activeGameObject);
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         Touch touch = Input.GetTouch(0);
+    //         Debug.Log("Your touch sir :)" + Input.touchCount);
+    //         Debug.Log("Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
+
+    //         if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
+    //         {
+    //             List<ARRaycastHit> hits = new List<ARRaycastHit>();
+    //             Debug.Log ("YOU HITS SIR" + hits);
+    //             rayManager.Raycast(touch.position, hits);
+
+    //             if (hits.Count > 0)
+    //             {
+    //                 Ray ray = arCamera.ScreenPointToRay(touch.position);
+    //                 RaycastHit hitObject;
+
+    //                 if (Physics.Raycast(ray, out hitObject))
+    //                 {
+    //                     if (hitObject.collider.tag != "plane")
+    //                     {
+    //                         activeGameObject = hitObject.collider.gameObject;
+    //                         Debug.Log(activeGameObject);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     return activeGameObject;
+    // }
 
 }
 

@@ -14,11 +14,12 @@ using Firebase;
 using Firebase.Storage;
 using Firebase.Auth;
 using System.IO;
-using System.Diagnostics;
 using UnityEngine.Networking;
 using System.Linq;
 using System.Linq.Expressions;
 using Unity.VisualScripting;
+using Instantiate;
+
 
 public class DataItemDictEventArgs : EventArgs
 {
@@ -113,6 +114,7 @@ public class DatabaseManager : MonoBehaviour
 
         //Find UI Functionalities
         UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+
     }
     public async void FetchSettingsData(DatabaseReference settings_reference)
     {
@@ -121,7 +123,7 @@ public class DatabaseManager : MonoBehaviour
         {
             if (task.IsFaulted)
             {
-                UnityEngine.Debug.LogError("Error fetching data from Firebase");
+                Debug.LogError("Error fetching data from Firebase");
                 print("Error Fetching Settings Data");
                 return;
             }
@@ -166,7 +168,7 @@ public class DatabaseManager : MonoBehaviour
             storageReference = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storagename);
             string basepath = storageReference.Path;
             string path = basepath.Substring(1);
-            UnityEngine.Debug.Log($"Path for download on FB Storage: {path}");
+            Debug.Log($"Path for download on FB Storage: {path}");
 
             //Get a list of files from the storage location
             List<FileMetadata> files = await GetFilesInFolder(path);
@@ -197,7 +199,7 @@ public class DatabaseManager : MonoBehaviour
 
         // const string baseUrl = "https://firebasestorage.googleapis.com/v0/b/test-project-94f41.appspot.com/o?prefix=obj_storage/buildingplan_test/&delimiter=/"; //Hardcoded value for example
  
-        UnityEngine.Debug.Log($"BaseUrl: {baseUrl}");
+        Debug.Log($"BaseUrl: {baseUrl}");
 
         // Send a GET request to the URL
         using (HttpClient client = new HttpClient())
@@ -207,7 +209,7 @@ public class DatabaseManager : MonoBehaviour
             
             // Read the response body
             string responseText = await content.ReadAsStringAsync();
-            UnityEngine.Debug.Log($"HTTP Client Response: {responseText}");
+            Debug.Log($"HTTP Client Response: {responseText}");
 
             // Deserialize the JSON response
             ListFilesResponse responseData = JsonConvert.DeserializeObject<ListFilesResponse>(responseText);
@@ -241,14 +243,14 @@ public class DatabaseManager : MonoBehaviour
                 {
                     foreach (var exception in task.Exception.InnerExceptions)
                     {
-                        UnityEngine.Debug.LogError("Error fetching data from Firebase: " + exception.Message);
+                        Debug.LogError("Error fetching data from Firebase: " + exception.Message);
                     }
                     return;
                 }
 
                 if (task.IsCompleted)
                 {
-                    UnityEngine.Debug.Log($"Downloaded file to path '{savefilepath}'");
+                    Debug.Log($"Downloaded file to path '{savefilepath}'");
                     CheckPathExistance(savefilepath);
                 }
             }));
@@ -257,13 +259,15 @@ public class DatabaseManager : MonoBehaviour
         //Await all download tasks are done before refreshing.
         await Task.WhenAll(downloadTasks);
     }      
-    public async void FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
+    
+    //TODO: CHANGED TO TASK FOR AWAITABLE... CURRENTLY NOT AWAITED IN MOST PLACES BECAUSE WE WERE AWAITING INSIDE THE METHOD, BUT STILL TOO SLOW FOR CURRENTSTEP.
+    public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
-                UnityEngine.Debug.LogError("Error fetching data from Firebase");
+                Debug.LogError("Error fetching data from Firebase");
                 return;
             }
 
@@ -300,12 +304,12 @@ public class DatabaseManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(AppData))
         {
-            UnityEngine.Debug.Log("Application Settings:" + AppData);
+            Debug.Log("Application Settings:" + AppData);
             applicationSettings = JsonConvert.DeserializeObject<ApplicationSettings>(AppData);
         }
         else
         {
-            UnityEngine.Debug.LogWarning("You did not set your settings data properly");
+            Debug.LogWarning("You did not set your settings data properly");
         }
     
         OnSettingsUpdate(applicationSettings);
@@ -327,11 +331,11 @@ public class DatabaseManager : MonoBehaviour
             }
             else
             {
-                UnityEngine.Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
             }
         }
         
-        UnityEngine.Debug.Log("Number of nodes stored as a dictionary = " + DataItemDict.Count);
+        Debug.Log("Number of nodes stored as a dictionary = " + DataItemDict.Count);
 
     }
     private void DesearialaizeStepSnapshot(DataSnapshot snapshot)
@@ -350,11 +354,11 @@ public class DatabaseManager : MonoBehaviour
             }
             else
             {
-                UnityEngine.Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
+                Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
             }
         }
 
-        UnityEngine.Debug.Log("Number of steps stored as a dictionary = " + BuildingPlanDataDict.Count);
+        Debug.Log("Number of steps stored as a dictionary = " + BuildingPlanDataDict.Count);
     }
     private void DesearializeQRSnapshot(DataSnapshot snapshot)
     {
@@ -365,34 +369,33 @@ public class DatabaseManager : MonoBehaviour
             
             if (!string.IsNullOrEmpty(jsondatastring))
             {
-                UnityEngine.Debug.Log("QR Code Data:" + jsondatastring);
+                Debug.Log("QR Code Data:" + jsondatastring);
                 QRcode newValue = JsonConvert.DeserializeObject<QRcode>(jsondatastring);
                 QRCodeDataDict[key] = newValue;
                 QRCodeDataDict[key].Key = key;
             }
             else
             {
-                UnityEngine.Debug.LogWarning("You did not set your QR Code data properly");
+                Debug.LogWarning("You did not set your QR Code data properly");
             }
         }
 
     }
-    
-    //TODO: CHECK IF ISSUES HERE.
     private void DesearializeCurrentStep(DataSnapshot snapshot)
     {
-        foreach (DataSnapshot childSnapshot in snapshot.Children)
-        {    
-            string jsondatastring = (string)childSnapshot.GetValue(true);
-            
-            if (!string.IsNullOrEmpty(jsondatastring))
-            {
-                TempDatabaseCurrentStep = jsondatastring;
-            }
-            else
-            {
-                UnityEngine.Debug.LogWarning("Current Element Did not produce a value");
-            }
+        Debug.Log("I am inside the Current Element Changed Event");
+  
+        string jsondatastring = snapshot.GetRawJsonValue();
+        Debug.Log("Current Element Data:" + jsondatastring);
+        
+        if (!string.IsNullOrEmpty(jsondatastring))
+        {
+            TempDatabaseCurrentStep = jsondatastring;
+        }
+        else
+        {
+            Debug.LogWarning("Current Element Did not produce a value");
+            TempDatabaseCurrentStep = null;
         }
     }
 
@@ -410,7 +413,7 @@ public class DatabaseManager : MonoBehaviour
             System.IO.DirectoryInfo di = new DirectoryInfo(folderpath);
             foreach (FileInfo file in di.GetFiles())
             {
-                UnityEngine.Debug.Log("Deleted Files: " + file);
+                Debug.Log("Deleted Files: " + file);
                 file.Delete();
             }
         }
@@ -436,7 +439,7 @@ public class DatabaseManager : MonoBehaviour
             // Set default values for properties that may be null
             return true;
         }
-        UnityEngine.Debug.Log($"node.type_id is: '{node.type_id}'");
+        Debug.Log($"node.type_id is: '{node.type_id}'");
         return false;
     }
     private bool IsValidStep(Step step)
@@ -456,7 +459,7 @@ public class DatabaseManager : MonoBehaviour
             // Set default values for properties that may be null
             return true;
         }
-        UnityEngine.Debug.Log($"node.key is: '{step.data.element_ids[0]}'");
+        Debug.Log($"node.key is: '{step.data.element_ids[0]}'");
         return false;
     }
     public string print_out_data(DatabaseReference dbreference_assembly)
@@ -466,7 +469,7 @@ public class DatabaseManager : MonoBehaviour
         {
             if (task.IsFaulted)
             {
-                UnityEngine.Debug.Log("error");
+                Debug.Log("error");
             }
             else if (task.IsCompleted)
             {
@@ -474,7 +477,7 @@ public class DatabaseManager : MonoBehaviour
 
                 // Raw JSON string of everything inside node
                 jsondata = dataSnapshot.GetRawJsonValue(); 
-                UnityEngine.Debug.Log("all nodes" + jsondata);
+                Debug.Log("all nodes" + jsondata);
             }
         });
         return jsondata;
@@ -486,11 +489,11 @@ public class DatabaseManager : MonoBehaviour
 
         if (File.Exists(path))
         {
-            UnityEngine.Debug.Log($"File Exists @ {path}");
+            Debug.Log($"File Exists @ {path}");
         }
         else
         {
-            UnityEngine.Debug.Log($"File does not exist @ {path}");
+            Debug.Log($"File does not exist @ {path}");
         }
 
     }
@@ -517,10 +520,10 @@ public class DatabaseManager : MonoBehaviour
             if((string)jsonDataDict["type"] == "joint")
             {
                 node.type_id = key; 
-                UnityEngine.Debug.Log("This is a joint");
+                Debug.Log("This is a joint");
                 return node;
             }
-            UnityEngine.Debug.Log($"type is: {type}");
+            Debug.Log($"type is: {type}");
         }
 
         //Set values for base node class //TODO: Add try get value for safety?
@@ -540,7 +543,7 @@ public class DatabaseManager : MonoBehaviour
         }
         else
         {
-            UnityEngine.Debug.Log("One of the Frame lists is null");
+            Debug.Log("One of the Frame lists is null");
         }
                 
         //Add Items to the attributes dictionary depending on the type of geometry
@@ -594,11 +597,11 @@ public class DatabaseManager : MonoBehaviour
                 break;
                 
             case "3.Mesh":
-                UnityEngine.Debug.Log("Mesh");
+                Debug.Log("Mesh");
                 break;
 
             default:
-                UnityEngine.Debug.Log("Default");
+                Debug.Log("Default");
                 break;
         }
     }
@@ -626,6 +629,15 @@ public class DatabaseManager : MonoBehaviour
         step.data.is_planned = (bool)dataDict["is_planned"];
         step.data.priority = (System.Int64)dataDict["priority"];
 
+        //TODO: CHECKING DIVICE ID
+        // if ((string)dataDict["device_id"] == "GH-PC"))
+        // {
+        //     step.data.device_id = SystemInfo.deviceUniqueIdentifier;
+        // }    
+        // else
+        // {
+        //     step.data.device_id = (string)dataDict["device_id"];
+        // }
         
         //List Conversions System.double items to float for use in instantiation & Int64 to int & Object to string
         List<object> pointslist = locationDataDict["point"] as List<object>;
@@ -651,7 +663,7 @@ public class DatabaseManager : MonoBehaviour
         }
         else
         {
-            UnityEngine.Debug.Log("One of the Location lists is null");
+            Debug.Log("One of the Location lists is null");
         }
 
         return step;
@@ -678,7 +690,10 @@ public class DatabaseManager : MonoBehaviour
         // dbreference_qrcodes.ChildRemoved += OnQRChanged;
 
         //Add Listners for the Current Element //TODO: CHECK IF THIS GETS ADDED ON THE FIRST TIME THROUGH
-        dbrefernece_currentstep.ChildChanged += OnCurrentElementChanged;
+        dbrefernece_currentstep.ValueChanged += OnCurrentElementChanged;
+        // dbrefernece_currentstep.ChildAdded += OnCurrentElementChanged;
+        // dbrefernece_currentstep.ChildChanged += OnCurrentElementChanged;
+        // dbrefernece_currentstep.ChildRemoved += OnCurrentElementChanged;
 
     }
 
@@ -687,13 +702,13 @@ public class DatabaseManager : MonoBehaviour
     {
         if (args.DatabaseError != null)
         {
-            UnityEngine.Debug.LogError(args.DatabaseError.Message);
+            Debug.LogError(args.DatabaseError.Message);
             return;
         }
 
         var key = args.Snapshot.Key;
         var childSnapshot = args.Snapshot.GetValue(true);
-        UnityEngine.Debug.Log($"ON CHILD ADDED {key}");
+        Debug.Log($"ON CHILD ADDED {key}");
 
         if (childSnapshot != null)
         {
@@ -704,11 +719,11 @@ public class DatabaseManager : MonoBehaviour
             {
                 if (DataItemDict.ContainsKey(key))
                 {
-                    UnityEngine.Debug.Log("The key already exists in the dictionary");
+                    Debug.Log("The key already exists in the dictionary");
                 }
                 else
                 {
-                    UnityEngine.Debug.Log($"The key '{key}' does not exist in the dictionary");
+                    Debug.Log($"The key '{key}' does not exist in the dictionary");
                     BuildingPlanDataDict.Add(key, newValue);
                     // BuildingPlanDataDict[key].data.element_ids[0] = key;
 
@@ -718,56 +733,65 @@ public class DatabaseManager : MonoBehaviour
             }
             else
             {
-                UnityEngine.Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
+                Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
             }
         }
     }
     
-    //TODO: CHECK HERE IF ISSUES
     public void OnChildChanged(object sender, Firebase.Database.ChildChangedEventArgs args) 
     {
         if (args.DatabaseError != null) {
-        UnityEngine.Debug.LogError($"Database error: {args.DatabaseError}");
+        Debug.LogError($"Database error: {args.DatabaseError}");
         return;
         }
 
         if (args.Snapshot == null) {
-            UnityEngine.Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
             return;
         }
 
         string key = args.Snapshot.Key;
         var childSnapshot = args.Snapshot.GetValue(true);
-        UnityEngine.Debug.Log($"ON CHILD CHANGED {key}");
+        Debug.Log($"ON CHILD CHANGED {key}");
 
         if (childSnapshot != null)
         {
             Step newValue = StepDeserializer(key, childSnapshot);
             int keyInt = Convert.ToInt32(key);
             int currentStepint = Convert.ToInt32(UIFunctionalities.CurrentStep);
-            UnityEngine.Debug.Log($"HERE: Key: {keyInt} Current Step: {currentStepint}");
+            Debug.Log($"HERE: Key: {keyInt} Current Step: {currentStepint}");
             
-            //If key is lower then current element and the next button was pressed then do nothing
+            //SAFETY CHECKS FOR BUTTON FUNCTIONS WRITING.
+            //If key is lower then current element and the next button was pressed then do nothing: COULD DO JUST BOOL.
+            //TODO: THIS CAN BE SIMPLIFIED BY DEVICE ID CHECKING
             if (keyInt < currentStepint && UIFunctionalities.NextButtonPressed == true)
             {
                 UIFunctionalities.NextButtonPressed = false;
-                UnityEngine.Debug.Log("Key is lower then the current step and you pressed the next button.");
+                Debug.Log("Key is lower then the current step and you pressed the next button. So i will not place another object.");
                 return;
             }
-            
+            //If key is higher then current element and the previous button was pressed then do nothing: COULD DO JUST BOOL.
+            else if (keyInt == currentStepint && UIFunctionalities.PreviousButtonClicked == true)
+            {
+                UIFunctionalities.PreviousButtonClicked = false;
+                Debug.Log("Key is == to the current step and previous button was pressed. So i will not place another object.");
+                return;
+            } 
+
             else
             {    
                 if(IsValidStep(newValue))
                 {
+                    //TODO: NewValue.device_id = this device id;
                     BuildingPlanDataDict[key] = newValue;
                 }
                 else
                 {
-                    UnityEngine.Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                    Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
                 }
 
-                UnityEngine.Debug.Log($"HandleChildChanged - The key of the changed Step is {key}");
-                UnityEngine.Debug.Log("newData[key] = " + BuildingPlanDataDict[key]);
+                Debug.Log($"HandleChildChanged - The key of the changed Step is {key}");
+                Debug.Log("newData[key] = " + BuildingPlanDataDict[key]);
                 
                 //Instantiate new object
                 OnDatabaseUpdate(newValue, key);
@@ -778,7 +802,7 @@ public class DatabaseManager : MonoBehaviour
     {
         if (args.DatabaseError != null)
         {
-            UnityEngine.Debug.LogError(args.DatabaseError.Message);
+            Debug.LogError(args.DatabaseError.Message);
             return;
         }
 
@@ -791,76 +815,82 @@ public class DatabaseManager : MonoBehaviour
             if (BuildingPlanDataDict.ContainsKey(key))
             {
                 Step newValue = null;
-                UnityEngine.Debug.Log("The key exists in the dictionary and is going to be removed");
+                Debug.Log("The key exists in the dictionary and is going to be removed");
                 BuildingPlanDataDict.Remove(key);
                 OnDatabaseUpdate(newValue, key);
             }
             else
             {
-                UnityEngine.Debug.Log("The key does not exist in the dictionary");
+                Debug.Log("The key does not exist in the dictionary");
             }
         }
     }  
     public void OnAssemblyChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
     {
         if (args.DatabaseError != null) {
-        UnityEngine.Debug.LogError($"Database error: {args.DatabaseError}");
+        Debug.LogError($"Database error: {args.DatabaseError}");
         return;
         }
 
         if (args.Snapshot == null) {
-            UnityEngine.Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
             return;
         }
         
-        UnityEngine.Debug.Log("Assembly Changed");
+        Debug.Log("Assembly Changed");
         FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
     }
     public void OnQRChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
     {
         if (args.DatabaseError != null) {
-        UnityEngine.Debug.LogError($"Database error: {args.DatabaseError}");
+        Debug.LogError($"Database error: {args.DatabaseError}");
         return;
         }
 
         if (args.Snapshot == null) {
-            UnityEngine.Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
             return;
         }
         
-        UnityEngine.Debug.Log("QRCodes Changed");
+        Debug.Log("QRCodes Changed");
         FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
     }
 
-    //TODO: ADDED
-    public void OnCurrentElementChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
+    public async void OnCurrentElementChanged(object sender, Firebase.Database.ValueChangedEventArgs args)
     {
        
         if (args.DatabaseError != null) {
-        UnityEngine.Debug.LogError($"Database error: {args.DatabaseError}");
+        Debug.LogError($"Database error: {args.DatabaseError}");
         return;
         }
 
         if (args.Snapshot == null) {
-            UnityEngine.Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
             return;
         }
         
-        UnityEngine.Debug.Log("Current Element Changed");
+        Debug.Log("Current Element Changed");
         
         //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
         TempDatabaseCurrentStep = null;
         
-        FetchRTDData(dbrefernece_currentstep, snapshot => DesearializeCurrentStep(snapshot));
-
+        await FetchRTDData(dbrefernece_currentstep, snapshot => DesearializeCurrentStep(snapshot));
+    
         if (TempDatabaseCurrentStep != null && TempDatabaseCurrentStep != UIFunctionalities.CurrentStep)
         {
-            UnityEngine.Debug.Log($"Current Element Changed and is now: {TempDatabaseCurrentStep}");
-            UIFunctionalities.SetCurrentStep(TempDatabaseCurrentStep, false);
+            Debug.Log($"Current Element Changed and is now: {TempDatabaseCurrentStep}");
+
+            //Update Current Step method
+            UIFunctionalities.OnCurrentStepChanged(TempDatabaseCurrentStep);
+        }
+        if(TempDatabaseCurrentStep == UIFunctionalities.CurrentStep)
+        {
+            Debug.Log($"Current Element Changed but is the same as the current step: {TempDatabaseCurrentStep}");
         }
         else
         {
-            UnityEngine.Debug.LogWarning("Current Element is null");
+            Debug.Log($"Retreived Element is: {TempDatabaseCurrentStep} and Current Element in app is: {UIFunctionalities.CurrentStep}");
+            Debug.LogWarning("Current Element is null");
         }
     }
     
@@ -874,7 +904,7 @@ public class DatabaseManager : MonoBehaviour
     protected virtual void OnTrackingDataReceived(Dictionary<string, QRcode> QRCodeDataDict)
     {
         UnityEngine.Assertions.Assert.IsNotNull(TrackingDictReceived, "Tracking Dict is null!");
-        UnityEngine.Debug.Log("Tracking Data Received");
+        Debug.Log("Tracking Data Received");
         TrackingDictReceived(this, new TrackingDataDictEventArgs() {QRCodeDataDict = QRCodeDataDict});
     }
     protected virtual void OnDatabaseUpdate(Step newValue, string key)

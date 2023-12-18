@@ -135,21 +135,10 @@ namespace Instantiate
             elementPrefab.name = Key;
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
-            GameObject geometryObject = elementPrefab.transform.GetChild(0).gameObject;
-            geometryObject.name = "Geometry";
+            GameObject geometryObject = elementPrefab.FindObject("Geometry");
             
-            if(UIFunctionalities.CurrentStep != null && UIFunctionalities.CurrentStep == Key)
-            {
-                //Color it Human or Robot Built
-                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-                // UIFunctionalities.FindCurrentStep(false);
-
-            }
-            else
-            {
-                //Color it Built or Unbuilt
-                ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
-            }
+            //Color it Built or Unbuilt
+            ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
 
         }
         public void placeElementAssembly(string Key, Node node)
@@ -264,12 +253,33 @@ namespace Instantiate
                         if (File.Exists(filepath))
                         {
                             element =  new OBJLoader().Load(filepath);
-                            
                         }
                         else
                         {
                             element = null;
                             Debug.Log ("ObjPrefab is null");
+                        }
+
+                        //Change Objects Name and Add collider
+                        if (element!=null && element.transform.childCount > 0)
+                        {
+                            GameObject child_object = element.transform.GetChild(0).gameObject;
+                            child_object.name = "Geometry";
+
+                            //Add a collider to the object
+                            BoxCollider collider = child_object.AddComponent<BoxCollider>();
+
+                            //Mesh Object size to define the size of the collider
+                            Vector3 MeshSize = child_object.GetComponent<MeshRenderer>().bounds.size;
+
+                            //Scale Original Size by just a bit to make sure the collider is not too small.
+                            Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
+
+                            //Set the collider size
+                            collider.size = colliderSize;
+
+                            Debug.Log($"Atempting to add colider to object {element.name}");
+
                         }
                         
                         break;

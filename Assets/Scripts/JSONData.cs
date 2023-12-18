@@ -58,6 +58,7 @@ namespace JSON
     [System.Serializable]
     public class Data
     {
+        //TODO: divice_id: string
         public string[] element_ids { get; set; }
         public string actor { get; set; }
         public Frame location { get; set; }
