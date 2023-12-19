@@ -1,8 +1,8 @@
     // Create a class structure that matches the JSON data
-using System;
-using System.Collections;
+// using System;
+// using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+// using UnityEngine;
 
 namespace JSON
 {   
@@ -32,8 +32,6 @@ namespace JSON
         public float length { get; set; }
         public float width { get; set; }
         public float height { get; set; }
-        
-        //TODO: GET RID OF?
         public string type { get; set; }
     } 
 
@@ -48,6 +46,13 @@ namespace JSON
     /////////////// Classes For Step Desearialization///////////////////
     
     [System.Serializable]
+    public class BulidingPlanData
+    {
+        public string LastBuiltIndex { get; set; }
+        public Dictionary<string, Step> steps { get; set; }
+    }
+    
+    [System.Serializable]
     public class Step
     {
         public Data data { get; set; }
@@ -58,7 +63,7 @@ namespace JSON
     [System.Serializable]
     public class Data
     {
-        //TODO: divice_id: string
+        public string device_id { get; set; }
         public string[] element_ids { get; set; }
         public string actor { get; set; }
         public Frame location { get; set; }
@@ -67,7 +72,7 @@ namespace JSON
         public bool is_built { get; set; }
         public bool is_planned { get; set; }
         public int[] elements_held { get; set; }
-        public System.Int64 priority { get; set; }
+        public int priority { get; set; }
     }
     
 

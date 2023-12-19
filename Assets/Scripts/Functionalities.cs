@@ -41,6 +41,18 @@ namespace Extentions
         
             return to;
         }
+
+        public static bool IsPointerOverUIObject(Vector2 touchPosition)
+        {
+            //checking if we are touching a button
+            PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
+            pointerEventData.position = touchPosition;
+            List<RaycastResult> raycastResults = new List<RaycastResult>();
+
+            EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+
+            return raycastResults.Count > 0;
+        }
     }   
 
 }

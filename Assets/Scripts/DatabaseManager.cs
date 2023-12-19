@@ -19,10 +19,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using Unity.VisualScripting;
 using Instantiate;
+using Google.MiniJSON;
 
 
 public class DataItemDictEventArgs : EventArgs
 {
+    //THIS CAN PASS JUST THE CLASS BUILDING PLAN DATA
     public Dictionary<string, Step> BuildingPlanDataDict { get; set; }
 }
 
@@ -56,6 +58,8 @@ public class DatabaseManager : MonoBehaviour
     public DatabaseReference dbrefernece_currentstep;
     public StorageReference storageReference;
 
+    public DatabaseReference dbreference_BUILDINGPLANTEST;
+
 
     // Data structures to store nodes and steps
     public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
@@ -79,6 +83,8 @@ public class DatabaseManager : MonoBehaviour
 
     public delegate void StoreApplicationSettings(object source, ApplicationSettingsEventArgs e);
     public event StoreApplicationSettings ApplicationSettingUpdate;
+
+
 
     
     //Define HTTP request response classes
@@ -141,12 +147,16 @@ public class DatabaseManager : MonoBehaviour
         //Create DB Reference Always
         dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
+        dbreference_BUILDINGPLANTEST = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data");
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
         dbrefernece_currentstep = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("currentstep");
         
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
         {
+            // //TESTING FETCHING WHOLE BUILDING PLAN
+            FetchRTDData(dbreference_BUILDINGPLANTEST, snapshot => DesearializeBuildingPlan(snapshot));
+            
             //Fetch QR Data no event trigger
             FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
             
@@ -181,6 +191,9 @@ public class DatabaseManager : MonoBehaviour
     {
         //Fetch Storage Data
         await FetchStorageData(files);
+
+        //TESTING FETCHING WHOLE BUILDING PLAN
+        FetchRTDData(dbreference_BUILDINGPLANTEST, snapshot => DesearializeBuildingPlan(snapshot));
 
         //Fetch QR Data no event trigger
         FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
@@ -260,7 +273,6 @@ public class DatabaseManager : MonoBehaviour
         await Task.WhenAll(downloadTasks);
     }      
     
-    //TODO: CHANGED TO TASK FOR AWAITABLE... CURRENTLY NOT AWAITED IN MOST PLACES BECAUSE WE WERE AWAITING INSIDE THE METHOD, BUT STILL TOO SLOW FOR CURRENTSTEP.
     public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
@@ -291,6 +303,8 @@ public class DatabaseManager : MonoBehaviour
             OnTrackingDataReceived(QRCodeDataDict);
         }
     }      
+    
+    //TODO: WRITE Searilization into the database
     public void PushAllData(DatabaseReference dbref, string Data)
     {
         dbref.SetRawJsonValueAsync(Data);
@@ -346,7 +360,7 @@ public class DatabaseManager : MonoBehaviour
         {
             string key = childSnapshot.Key;
             var json_data = childSnapshot.GetValue(true);
-            Step step_data = StepDeserializer(key, json_data);
+            Step step_data = StepDeserializer(json_data);
             
             if (IsValidStep(step_data))
             {
@@ -397,6 +411,14 @@ public class DatabaseManager : MonoBehaviour
             Debug.LogWarning("Current Element Did not produce a value");
             TempDatabaseCurrentStep = null;
         }
+    }
+
+    private void DesearializeBuildingPlan(DataSnapshot snapshot)
+    {
+        var jsondata = snapshot.GetValue(true);
+        
+        BuildingPlanDeserializer(jsondata);
+        
     }
 
 /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
@@ -499,6 +521,49 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////////// Input Data Handlers //////////////////////////////////
+    
+    private void BuildingPlanDeserializer(object jsondata)
+    {
+        Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
+        
+        //Create new building plan instance
+        BulidingPlanData buidingPlanData = new BulidingPlanData();
+        buidingPlanData.steps = new Dictionary<string, Step>();
+        
+        //Attempt to get last built index and if it doesn't exist set it to null
+        if (jsonDataDict.TryGetValue("LastBuiltIndex", out object last_built_index))
+        {
+            buidingPlanData.LastBuiltIndex = last_built_index.ToString();
+        }
+        else
+        {
+            buidingPlanData.LastBuiltIndex = null;
+        }
+
+        //Try to access steps as dictionary... might need to be a list
+        List<object> stepsList = jsonDataDict["steps"] as List<object>;
+
+        //Loop through steps desearialize and check if they are valid
+        for(int i =0 ; i < stepsList.Count; i++)
+        {
+            string key = i.ToString();
+            Debug.Log($"THIS IS I: {i}");
+            var json_data = stepsList[i];
+
+            Step step_data = StepDeserializer(json_data);
+            
+            if (IsValidStep(step_data))
+            {
+                buidingPlanData.steps[key] = step_data;
+                Debug.Log($"Step {key} successfully added to the building plan dictionary");
+            }
+            else
+            {
+                Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
+            }
+        }
+        
+    }
     public Node NodeDeserializer(string key, object jsondata)
     {
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
@@ -605,7 +670,7 @@ public class DatabaseManager : MonoBehaviour
                 break;
         }
     }
-    public Step StepDeserializer(string key, object jsondata)
+    public Step StepDeserializer(object jsondata)
     {
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
 
@@ -627,18 +692,8 @@ public class DatabaseManager : MonoBehaviour
         step.data.geometry = (string)dataDict["geometry"];
         step.data.is_built = (bool)dataDict["is_built"];
         step.data.is_planned = (bool)dataDict["is_planned"];
-        step.data.priority = (System.Int64)dataDict["priority"];
+        step.data.priority = (int)(long)dataDict["priority"];
 
-        //TODO: CHECKING DIVICE ID
-        // if ((string)dataDict["device_id"] == "GH-PC"))
-        // {
-        //     step.data.device_id = SystemInfo.deviceUniqueIdentifier;
-        // }    
-        // else
-        // {
-        //     step.data.device_id = (string)dataDict["device_id"];
-        // }
-        
         //List Conversions System.double items to float for use in instantiation & Int64 to int & Object to string
         List<object> pointslist = locationDataDict["point"] as List<object>;
         List<object> xaxislist = locationDataDict["xaxis"] as List<object>;
@@ -646,6 +701,7 @@ public class DatabaseManager : MonoBehaviour
         List<object> element_ids = dataDict["element_ids"] as List<object>;
         List<object> instructions = dataDict["instructions"] as List<object>;
         List<object> elements_held = dataDict["elements_held"] as List<object>;
+        
 
         if (pointslist != null &&
             xaxislist != null &&
@@ -678,7 +734,17 @@ public class DatabaseManager : MonoBehaviour
         dbreference_buildingplan.ChildAdded += OnChildAdded;
         dbreference_buildingplan.ChildChanged += OnChildChanged;
         dbreference_buildingplan.ChildRemoved += OnChildRemoved;
+
+        /*
+        //Updated listners for building plan steps
+        dbreference_BUILDINGPLANTEST.Child("steps").ChildAdded += OnChildAdded;
+        dbreference_BUILDINGPLANTEST.Child("steps").ChildChanged += OnChildChanged;
+        dbreference_BUILDINGPLANTEST.Child("steps").ChildRemoved += OnChildRemoved;
         
+        //Updated listeners for building plan last built index
+        dbreference_BUILDINGPLANTEST.Child("LastBuiltIndex").ValueChanged += OnCurrentElementChanged;
+        */
+
         //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
         dbreference_assembly.ChildAdded += OnAssemblyChanged;
         dbreference_assembly.ChildChanged += OnAssemblyChanged;
@@ -712,7 +778,7 @@ public class DatabaseManager : MonoBehaviour
 
         if (childSnapshot != null)
         {
-            Step newValue = StepDeserializer(key, childSnapshot);
+            Step newValue = StepDeserializer(childSnapshot);
            
             //make a new entry in the dictionary if it doesnt already exist
             if (IsValidStep(newValue))
@@ -756,45 +822,37 @@ public class DatabaseManager : MonoBehaviour
 
         if (childSnapshot != null)
         {
-            Step newValue = StepDeserializer(key, childSnapshot);
-            int keyInt = Convert.ToInt32(key);
-            int currentStepint = Convert.ToInt32(UIFunctionalities.CurrentStep);
-            Debug.Log($"HERE: Key: {keyInt} Current Step: {currentStepint}");
+            Step newValue = StepDeserializer(childSnapshot);
             
-            //SAFETY CHECKS FOR BUTTON FUNCTIONS WRITING.
-            //If key is lower then current element and the next button was pressed then do nothing: COULD DO JUST BOOL.
-            //TODO: THIS CAN BE SIMPLIFIED BY DEVICE ID CHECKING
-            if (keyInt < currentStepint && UIFunctionalities.NextButtonPressed == true)
+            if (newValue.data.device_id != null)
             {
-                UIFunctionalities.NextButtonPressed = false;
-                Debug.Log("Key is lower then the current step and you pressed the next button. So i will not place another object.");
-                return;
-            }
-            //If key is higher then current element and the previous button was pressed then do nothing: COULD DO JUST BOOL.
-            else if (keyInt == currentStepint && UIFunctionalities.PreviousButtonClicked == true)
-            {
-                UIFunctionalities.PreviousButtonClicked = false;
-                Debug.Log("Key is == to the current step and previous button was pressed. So i will not place another object.");
-                return;
-            } 
-
-            else
-            {    
-                if(IsValidStep(newValue))
+                //Check if the change is from me or from someone else
+                if (newValue.data.device_id == SystemInfo.deviceUniqueIdentifier)
                 {
-                    //TODO: NewValue.device_id = this device id;
-                    BuildingPlanDataDict[key] = newValue;
+                    Debug.Log($"I changed element {key}");
+                    return;
                 }
                 else
-                {
-                    Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
-                }
+                {    
+                    if(IsValidStep(newValue))
+                    {
+                        BuildingPlanDataDict[key] = newValue;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                    }
 
-                Debug.Log($"HandleChildChanged - The key of the changed Step is {key}");
-                Debug.Log("newData[key] = " + BuildingPlanDataDict[key]);
-                
-                //Instantiate new object
-                OnDatabaseUpdate(newValue, key);
+                    Debug.Log($"HandleChildChanged - The key of the changed Step is {key}");
+                    Debug.Log("newData[key] = " + BuildingPlanDataDict[key]);
+                    
+                    //Instantiate new object
+                    OnDatabaseUpdate(newValue, key);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Device ID for changed Child is null");
             }
         }
     }
@@ -896,6 +954,7 @@ public class DatabaseManager : MonoBehaviour
     
 
     // Event handling for database initialization
+    //TODO: THIS BECOMES A CLASS INSTANCE OF BUILDINGPLANDATA
     protected virtual void OnDatabaseInitializedDict(Dictionary<string, Step> BuildingPlanDataDict)
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "Database dict is null!");

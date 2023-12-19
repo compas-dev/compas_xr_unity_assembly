@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Xml.Linq;
 using UnityEngine.XR.ARFoundation;
+using UnityEngine.EventSystems;
 using UnityEngine.XR.ARSubsystems;
 
 public class UIFunctionalities : MonoBehaviour
@@ -54,8 +55,11 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject Elements;
     public GameObject QRMarkers;
 
-    //In script use variables
-    public string CurrentStep;
+    //AR Camera and Touch GameObjects
+    public Camera arCamera;
+    private GameObject activeGameObject;
+    private GameObject temporaryObject;
+    private int mode = 0;
     
     //TODO: This could have a better name... it is actually not last written step but Previous step to current step.
     public string LastWrittenStep = "0";
@@ -67,6 +71,9 @@ public class UIFunctionalities : MonoBehaviour
 
     //Touch Input Variables
     private ARRaycastManager rayManager;
+
+    //In script use variables
+    public string CurrentStep;
     
     void Start()
     {
@@ -107,6 +114,18 @@ public class UIFunctionalities : MonoBehaviour
         VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
+
+        //Find AR Camera
+        arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();
+
+        if (arCamera != null)
+        {
+            Debug.Log("Found AR Camera");
+        }
+        else
+        {
+            Debug.LogWarning("Could not find AR Camera");
+        }
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -347,9 +366,6 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log("Next Element Button Pressed");
         
-        //Set Next Button Pressed to true
-        NextButtonPressed = true;
-
         for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
         {
             //Set data items
@@ -432,9 +448,6 @@ public class UIFunctionalities : MonoBehaviour
     {
         if(LastWrittenStep != null)
         {
-            //Set Previous Button Pressed to true
-            PreviousButtonClicked = true;
-            
             //Previous element button clicked
             Debug.Log("Previous Element Button Pressed");
             
@@ -465,8 +478,6 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-
-    //TODO: Is there a better way to update this then calling it in every time a button is pressed?
     public void PreviewGeometrySlider(float value)
     {
         if (CurrentStep != null)
@@ -530,6 +541,9 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Set Collider to true
                     ElementCollider.enabled = true;
+
+                    //TODO: CHANGE COLOR SO IT IS CLEAR TO THE USER WHICH ONES CAN BE SELECTED
+                    //............
                 }
                 else
                 {
@@ -540,56 +554,215 @@ public class UIFunctionalities : MonoBehaviour
             
         }
     }
+    private GameObject SelectedObject(GameObject activeGameObject = null)
+    {
+        if (Application.isEditor)
+        {
+            Ray ray = arCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hitObject;
 
-    // private GameObject SelectedObject(GameObject activeGameObject = null)
-    // {
-    //     if (Application.isEditor)
-    //     {
-    //         Ray ray = arCamera.ScreenPointToRay(Input.mousePosition);
-    //         RaycastHit hitObject;
+            Debug.Log("Looking for your Joint To Select");
 
-    //         Debug.Log("Looking for your Joint To Select");
+            if (Physics.Raycast(ray, out hitObject))
+            {
+                if (hitObject.collider.tag != "plane")
+                {
+                    activeGameObject = hitObject.collider.gameObject;
+                    Debug.Log(activeGameObject);
+                }
+            }
+        }
+        else
+        {
+            Touch touch = Input.GetTouch(0);
+            Debug.Log("Your touch sir :)" + Input.touchCount);
+            Debug.Log("Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
 
-    //         if (Physics.Raycast(ray, out hitObject))
-    //         {
-    //             if (hitObject.collider.tag != "plane")
-    //             {
-    //                 activeGameObject = hitObject.collider.gameObject;
-    //                 Debug.Log(activeGameObject);
-    //             }
-    //         }
-    //     }
-    //     else
-    //     {
-    //         Touch touch = Input.GetTouch(0);
-    //         Debug.Log("Your touch sir :)" + Input.touchCount);
-    //         Debug.Log("Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
+            if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
+            {
+                List<ARRaycastHit> hits = new List<ARRaycastHit>();
+                Debug.Log ("YOU HITS SIR" + hits);
+                rayManager.Raycast(touch.position, hits);
 
-    //         if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
-    //         {
-    //             List<ARRaycastHit> hits = new List<ARRaycastHit>();
-    //             Debug.Log ("YOU HITS SIR" + hits);
-    //             rayManager.Raycast(touch.position, hits);
+                if (hits.Count > 0)
+                {
+                    Ray ray = arCamera.ScreenPointToRay(touch.position);
+                    RaycastHit hitObject;
 
-    //             if (hits.Count > 0)
-    //             {
-    //                 Ray ray = arCamera.ScreenPointToRay(touch.position);
-    //                 RaycastHit hitObject;
+                    if (Physics.Raycast(ray, out hitObject))
+                    {
+                        if (hitObject.collider.tag != "plane")
+                        {
+                            activeGameObject = hitObject.collider.gameObject;
+                            Debug.Log(activeGameObject);
+                        }
+                    }
+                }
+            }
+        }
 
-    //                 if (Physics.Raycast(ray, out hitObject))
-    //                 {
-    //                     if (hitObject.collider.tag != "plane")
-    //                     {
-    //                         activeGameObject = hitObject.collider.gameObject;
-    //                         Debug.Log(activeGameObject);
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
+        return activeGameObject;
+    }
+    
+    //To diferentiate between editor and running on the phone just for testing
+    private void SearchInput()
+    {
+        if (Application.isEditor)
+        {   
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (EventSystem.current.IsPointerOverGameObject())
+                {
+                    return;
+                }
 
-    //     return activeGameObject;
-    // }
+                if (mode == 2) // EDIT MODE
+                {
+                    Debug.Log("***MODE 2***");
+                    EditMode();
+                }
 
+                else
+                {
+                    Debug.Log("Press a button to initialize a mode");
+                }
+            }
+        }
+        else
+        {
+            SearchTouch();
+        }
+    }
+
+    private void SearchTouch()
+    {
+        if (Input.touchCount > 0) //if there is an input..           
+        {
+            if (PhysicRayCastBlockedByUi(Input.GetTouch(0).position))
+            {
+                if (mode == 2) //EDIT MODE
+                {
+                    Debug.Log("***MODE 2***");
+                    EditMode();                     
+                }
+
+                else
+                {
+                    Debug.Log("Press a button to initialize a mode");
+                }
+            }
+        }
+    }
+
+    private bool PhysicRayCastBlockedByUi(Vector2 touchPosition)
+    {
+        //creating a Boolean value if we are touching a button
+        if (GameObjectExtensions.IsPointerOverUIObject(touchPosition))
+        {
+            Debug.Log("YOU CANT FIND YOUR OBJECT INSIDE PHYSICRAYCAST...");
+            return false;
+        }
+        return true;
+    }
+
+    private void EditMode()
+    {
+        activeGameObject = SelectedObject();
+        
+        if (Input.touchCount == 1) //try and locate the selected object only when we click, not on update
+        {
+            activeGameObject = SelectedObject();
+        }
+
+        if (activeGameObject != null)
+        {
+            // _EditorCurrentStickText(activeGameObject);
+            temporaryObject = activeGameObject;
+            //TODO: Color the object the correct color
+
+            addBoundingBox(temporaryObject);
+        }
+
+        else
+        {
+            if (GameObject.Find("BoundingArea") != null)
+            {
+                DestroyBoundingBoxFixStickColor();
+            }
+        }
+    }
+
+    private void addBoundingBox(GameObject gameObj) // Still need to fix it is so weird.
+    {
+        DestroyBoundingBoxFixStickColor(); //destroy the bounding box
+
+        //create a primitive cube
+        GameObject boundingArea = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+
+        //add name
+        boundingArea.name = "BoundingArea";
+
+        //add material
+        boundingArea.GetComponent<Renderer>().material = instantiateObjects.HumanUnbuiltMaterial;
+
+
+        //use collider to find object bounds
+        Collider collider = gameObj.GetComponent<Collider>();
+        Vector3 center = collider.bounds.center;
+        float radius = collider.bounds.extents.magnitude;
+        Debug.Log("RADIUS BOUNDING BOX = " + radius);
+
+        // destroy any Collider component
+        if (boundingArea.GetComponent<Rigidbody>() != null)
+        {
+            Destroy(boundingArea.GetComponent<BoxCollider>());
+        }
+        if (boundingArea.GetComponent<Collider>() != null)
+        {
+            Destroy(boundingArea.GetComponent<BoxCollider>());
+        }
+
+        // scale the bounding box according to the bounds values
+        boundingArea.transform.localScale = new Vector3(radius * 0.5f, radius * 0.5f, radius * 0.5f);
+        boundingArea.transform.localPosition = center;
+        boundingArea.transform.rotation = gameObj.transform.rotation;
+
+        boundingArea.transform.SetParent(gameObj.transform);
+    }
+
+    private void DestroyBoundingBoxFixStickColor()
+    {
+
+        //destroy the previous bounding box
+
+        if (GameObject.Find("BoundingArea") != null)
+        {
+            GameObject Box = GameObject.Find("BoundingArea");
+            var element = Box.transform.parent;
+
+            if (element != null)
+            {
+                if (CurrentStep != null)
+                {
+                    if (element.name != CurrentStep)
+                    {
+
+                        Step step = databaseManager.BuildingPlanDataDict[element.name];
+                        
+                        instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.gameObject.FindObject("Geometry"));                          
+                        
+                    }
+                }
+
+                // else
+                // {
+                //    stick.GetComponentInChildren<Renderer>().material = UnbuiltMaterial; 
+                // }
+            }
+
+            Destroy(GameObject.Find("BoundingArea"));
+        }
+
+    }
 }
 
