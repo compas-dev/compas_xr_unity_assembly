@@ -12,12 +12,30 @@ public class VisualizerScript : MonoBehaviour
     private GameObject Robot_Button;
     private GameObject Background;
 
-    private bool isActorViewActive = false; // Track the current view state
-    private InstantiateObjects instantiateObjectsScript; // Reference to InstantiateObjects script
+    //private bool isActorViewActive = false; // Track the current view state
+    private InstantiateObjects instantiateObjectsScript; 
+    private DatabaseManager databaseManager;
+
 
     // Start is called before the first frame update
     void Start()
     {
+        // Find and assign the InstantiateObjects script
+        instantiateObjectsScript = FindObjectOfType<InstantiateObjects>();
+        if (instantiateObjectsScript == null)
+        {
+            Debug.LogError("InstantiateObjects script not found in the scene.");
+            return;
+        }
+
+        // Find and assign the DatabaseManager script
+        databaseManager = FindObjectOfType<DatabaseManager>();
+        if (databaseManager == null)
+        {
+            Debug.LogError("DatabaseManager script not found in the scene.");
+            return;
+        }
+
         // Find GameObjects by name
         Preview_Builder = GameObject.Find("Preview_Builder");
         ID_Button = GameObject.Find("ID_Button");
@@ -29,14 +47,6 @@ public class VisualizerScript : MonoBehaviour
         if (!Preview_Builder || !ID_Button || !ObjectLength_Button || !Robot_Button || !Background)
         {
             Debug.LogError("One or more GameObjects were not found. Please check their names.");
-            return;
-        }
-
-        // Find and assign the InstantiateObjects script
-        instantiateObjectsScript = FindObjectOfType<InstantiateObjects>();
-        if (instantiateObjectsScript == null)
-        {
-            Debug.LogError("InstantiateObjects script not found in the scene.");
             return;
         }
 
@@ -54,29 +64,12 @@ public class VisualizerScript : MonoBehaviour
         // Initially hide all menu buttons
         SetMenuButtonsActive(false);
     }
+
     // Toggle ON and OFF the dropdown submenu options
     private void Visualizer_Toggle()
     {
         // Toggle the active state of the buttons
         SetMenuButtonsActive(!Robot_Button.activeSelf);
-    }
-
-    public void PreviewBuilder_Toggle()
-    {
-        // Toggle the view state for Preview Builder
-        isActorViewActive = !isActorViewActive;
-
-        // Apply the appropriate coloring based on the current view state
-        if (isActorViewActive)
-        {
-            // Apply color based on actor
-            instantiateObjectsScript.ApplyColorBasedOnActor();
-        }
-        else
-        {
-            // Apply color based on built/unbuilt state
-            instantiateObjectsScript.ApplyColorBasedOnBuildState();
-        }
     }
 
     // Helper method to set the active state of menu buttons
@@ -88,4 +81,93 @@ public class VisualizerScript : MonoBehaviour
         Robot_Button.SetActive(isActive);
         Background.SetActive(isActive);
     }
+
+
+
+    public void ToggleVisualizationMode()
+    {
+        // Check the current mode and toggle it
+        if (instantiateObjectsScript.currentMode != InstantiateObjects.VisualizationMode.ActorView)
+        {
+            // If current mode is BuiltUnbuilt, switch to ActorView
+            instantiateObjectsScript.currentMode = InstantiateObjects.VisualizationMode.ActorView;
+
+         
+            instantiateObjectsScript.ApplyColorBasedOnActor();
+        }
+        else if (instantiateObjectsScript.currentMode != InstantiateObjects.VisualizationMode.BuiltUnbuilt)
+        {
+            // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
+            instantiateObjectsScript.currentMode = InstantiateObjects.VisualizationMode.BuiltUnbuilt;
+
+            instantiateObjectsScript.ApplyColorBasedOnBuildState();
+        }
+        else 
+        {
+        Debug.Log("Error: Visualization Mode not found");
+        }
+    }
+
+
+    // ID BUTTON
+    // public void IDText_Toggle()
+    // {
+    //     isTextAndImageVisible = !isTextAndImageVisible;
+        
+    //     if (instantiateObjectsScript != null && instantiateObjectsScript.Elements != null)
+    //     {
+    //         foreach (Transform child in instantiateObjectsScript.Elements.transform)
+    //         {
+    //             // Toggle Text Object
+    //             Transform textChild = child.Find(child.name + " Text");
+    //             if (textChild != null)
+    //                 {
+    //                     textChild.gameObject.SetActive(!textChild.gameObject.activeSelf);
+    //                 }
+
+    //             // Toggle Circle Image Object
+    //             Transform circleImageChild = child.Find("circleImage(Clone)");
+    //             if (circleImageChild != null)
+    //                 {
+    //                     circleImageChild.gameObject.SetActive(!circleImageChild.gameObject.activeSelf);
+    //                 }
+    //             }
+    //     }
+    //     else
+    //     {
+    //         Debug.LogError("InstantiateObjects script or Elements object not set.");
+    //     }
+    // }
+
+    public void IDText_Toggle()
+    {
+        if (instantiateObjectsScript != null && instantiateObjectsScript.Elements != null)
+        {
+            // Update the visibility state
+            instantiateObjectsScript.isTextAndImageVisible = !instantiateObjectsScript.isTextAndImageVisible;
+
+            foreach (Transform child in instantiateObjectsScript.Elements.transform)
+            {
+                // Toggle Text Object
+                Transform textChild = child.Find(child.name + " Text");
+                if (textChild != null)
+                {
+                    textChild.gameObject.SetActive(instantiateObjectsScript.isTextAndImageVisible);
+                }
+                // Toggle Circle Image Object
+                Transform circleImageChild = child.Find("circleImage(Clone)");
+                if (circleImageChild != null)
+                {
+                    circleImageChild.gameObject.SetActive(instantiateObjectsScript.isTextAndImageVisible);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("InstantiateObjects script or Elements object not set.");
+        }
+    }
+
+ 
+
 }

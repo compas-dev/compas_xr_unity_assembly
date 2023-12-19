@@ -42,6 +42,8 @@ public class UpdateDatabaseReferenceEventArgs: EventArgs
     
 public class DatabaseManager : MonoBehaviour
 {
+    public GameObject TagsPrefab;
+
     // Firebase database references
     private DatabaseReference dbreference_assembly;
     private DatabaseReference dbreference_buildingplan;

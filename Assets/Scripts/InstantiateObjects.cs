@@ -16,7 +16,7 @@ using Extentions;
 using Dummiesman;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
-
+using TMPro;
 
 //scripts to initiate all geometries in the scene
 
@@ -41,7 +41,6 @@ public class InstantiateObjects : MonoBehaviour
 
     public delegate void InitialElementsPlaced(object source, EventArgs e);
     public event InitialElementsPlaced PlacedInitialElements;
-    
 
     
     private GameObject geometry_object; 
@@ -52,13 +51,19 @@ public class InstantiateObjects : MonoBehaviour
     public GameObject geometry_2;
     public GameObject geometry_3;
 
+    public bool isTextAndImageVisible = false;
+
+
     //PRIVATE IN SCRIPT USE OBJECTS
     private ARRaycastManager rayManager;
-
+    
+    public VisualizationMode currentMode = VisualizationMode.BuiltUnbuilt;
     private DatabaseManager databaseManager;
 
-    void Start()
-    {
+    private GameObject circleImageTemplate;
+
+    public void Awake()
+    {   
         // Find and assign the DatabaseManager script
         databaseManager = FindObjectOfType<DatabaseManager>();
         if (databaseManager == null)
@@ -66,10 +71,24 @@ public class InstantiateObjects : MonoBehaviour
             Debug.LogError("DatabaseManager script not found in the scene.");
             return;
         }
-    }
 
-    public void Awake()
-    {
+        // Find the "ImageTags" GameObject
+        GameObject imageTags = GameObject.Find("ImageTags");
+        if (imageTags == null)
+            {
+                Debug.LogError("ImageTags GameObject not found in the scene.");
+                return;
+            }
+
+        // Find the "CircleImage" child within "ImageTags"
+        circleImageTemplate = imageTags.transform.Find("circleImage")?.gameObject;
+        if (circleImageTemplate == null)
+            {
+                Debug.LogError("CircleImage GameObject not found as a child of ImageTags.");
+                return;
+            }
+
+
         //Find Parent Object to Store Our Items in.
         Elements = GameObject.Find("Elements");
 
@@ -80,14 +99,6 @@ public class InstantiateObjects : MonoBehaviour
         HumanUnbuiltMaterial = GameObject.Find("Materials").FindObject("HumanUnbuilt").GetComponentInChildren<Renderer>().material;
         RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
         RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
-
-
-        // BuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.90f);
-        // UnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 1.00f, 0.25f);
-        // HumanBuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.90f);
-        // HumanUnbuiltMaterial = CreateMaterial(1.00f, 1.00f, 0.00f, 0.30f);
-        // RobotBuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.90f);
-        // RobotUnbuiltMaterial = CreateMaterial(0.00f, 1.00f, 1.00f, 0.30f);
     }
     
 
@@ -95,11 +106,12 @@ public class InstantiateObjects : MonoBehaviour
     public void placeElements(List<Step> DataItems) 
     {
         foreach (Step step in DataItems)
-            {
-                placeElement(step);
-            }
+        {
+            placeElement(step);
+        }
 
     }
+
     public void placeElement(Step step)
     {
         Debug.Log($"Placing element {step.data.element_ids[0]}");
@@ -123,6 +135,7 @@ public class InstantiateObjects : MonoBehaviour
 
         //Instantiate new gameObject from the existing selected gameobjects.
         GameObject elementPrefab = Instantiate(geometry_object, position, rotation);
+
         
         //Destroy Initial gameobject that is made.
         if (geometry_object != null)
@@ -137,9 +150,103 @@ public class InstantiateObjects : MonoBehaviour
         //Get the nested Object from the .Obj so we can adapt colors
         GameObject child_object = elementPrefab.FindObject("Mesh 0");
 
-        //Set color for human or machine and Built or Unbuilt
-        ColorBuiltOrUnbuilt(step.data.is_built, child_object);
+
+        //Set the color of the objects based on the current mode
+        switch (currentMode)
+        {
+            case VisualizationMode.BuiltUnbuilt:
+                ColorBuiltOrUnbuilt(step.data.is_built, child_object);
+                break;
+
+            case VisualizationMode.ActorView:
+                ColorHumanOrRobot(step.data.actor, step.data.is_built, child_object);
+                break;
+        }
+        
+        // Create and attach text label to the GameObject
+        CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
+        CreateCircleImageForTag(elementPrefab);
+        
+        // Set initial visibility based on the current state
+        SetInitialVisibility(elementPrefab);
     }
+
+    private void SetInitialVisibility(GameObject elementPrefab)
+    {
+        Transform textChild = elementPrefab.transform.Find(elementPrefab.name + " Text");
+        if (textChild != null)
+        {
+            textChild.gameObject.SetActive(isTextAndImageVisible);
+        }
+
+        Transform circleImageChild = elementPrefab.transform.Find("circleImage(Clone)"); 
+        if (circleImageChild != null)
+        {
+            circleImageChild.gameObject.SetActive(isTextAndImageVisible);
+        }
+    }
+
+    private void CreateIndexTextForGameObject(GameObject gameObject, string text)
+    {
+        // Create a new GameObject for the text
+        GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
+        TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
+
+        IndexText.text = text;
+        IndexText.fontSize = 1f;
+        IndexText.alignment = TextAlignmentOptions.Center;
+
+        // Calculate the center of the GameObject
+        GameObject childobject = gameObject.FindObject("Mesh 0");
+        Renderer renderer = childobject.GetComponent<Renderer>();
+        Vector3 center = Vector3.zero;
+        center = renderer.bounds.center;
+
+        // Offset the position slightly above the GameObject
+        float verticalOffset = 0.13f;
+        Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
+
+        IndexTextContainer.transform.position = textPosition;
+        IndexTextContainer.transform.rotation = Quaternion.identity;
+        IndexTextContainer.transform.SetParent(gameObject.transform);
+
+        // Add billboard effect(object rotating with camera)
+        Billboard billboard = IndexTextContainer.AddComponent<Billboard>();
+    
+        // Initially set the text as inactive
+        IndexTextContainer.SetActive(false);   
+
+    }
+
+    private void CreateCircleImageForTag(GameObject parentObject)
+    {
+        if (circleImageTemplate == null)
+        {
+            Debug.LogError("CircleImage template is not found or not assigned.");
+            return;
+        }
+
+        // Find the center of the parent object's renderer
+        Renderer renderer = parentObject.GetComponentInChildren<Renderer>();
+        if (renderer == null)
+        {
+            Debug.LogError("Renderer not found in the parent object.");
+            return;
+        }
+        Vector3 centerPosition = renderer.bounds.center;
+
+        // Define the vertical offset 
+        float verticalOffset = 0.13f;
+        Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+
+        // Instantiate the image object at the offset position
+        GameObject circleImage = Instantiate(circleImageTemplate, offsetPosition, Quaternion.identity, parentObject.transform);
+        circleImage.SetActive(false);
+
+        // Add billboard effect
+        Billboard billboard = circleImage.AddComponent<Billboard>();
+    }
+
     public void placeElementsDict(Dictionary<string, Step> BuildingPlanDataDict)
     {
         if (BuildingPlanDataDict != null)
@@ -164,6 +271,7 @@ public class InstantiateObjects : MonoBehaviour
             Debug.LogWarning("The dictionary is null");
         }
     }   
+
     public GameObject gameobjectTypeSelector(Step step)
     {
 
@@ -238,6 +346,7 @@ public class InstantiateObjects : MonoBehaviour
         Vector3 position = new Vector3(step.data.location.point[0], step.data.location.point[2], step.data.location.point[1]);
         return position;
     }
+
     public (Vector3, Vector3, Vector3) getRotation(Step step)
     {
         Vector3 x_vec_right = new Vector3(step.data.location.xaxis[0], step.data.location.xaxis[1], step.data.location.xaxis[2]);
@@ -283,6 +392,7 @@ public class InstantiateObjects : MonoBehaviour
         Debug.Log($"Coloring {gamobj.name} as {m_renderer.material.name}");
         Debug.Log($"Color of {gamobj.name} is {m_renderer.material.color}");
     }
+
     public void ColorHumanOrRobot (string placed_by, bool Built, GameObject gamobj)
     {
         
@@ -317,38 +427,47 @@ public class InstantiateObjects : MonoBehaviour
         }
     }
 
-public void ApplyColorBasedOnBuildState()
- {
-    if (databaseManager.BuildingPlanDataDict != null)
-        {
-            foreach (var entry in databaseManager.BuildingPlanDataDict)
+    // Apply color for objects based on Built or Unbuilt state
+    public void ApplyColorBasedOnBuildState()
+    {
+        if (databaseManager.BuildingPlanDataDict != null)
             {
-                GameObject gameObject = GameObject.Find(entry.Key);
-                if (gameObject != null)
+                foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataDict)
                 {
-                    ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject);
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    if (gameObject != null)
+                    {
+                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject);
+                    }
                 }
             }
-        }
- }
+    }
 
-public void ApplyColorBasedOnActor()
-{
-    if (databaseManager.BuildingPlanDataDict != null)
-        {
-            foreach (var entry in databaseManager.BuildingPlanDataDict)
+    //Apply color for objects based on Actor View state
+    public void ApplyColorBasedOnActor()
+    {
+        if (databaseManager.BuildingPlanDataDict != null)
             {
-                GameObject gameObject = GameObject.Find(entry.Key);
-                if (gameObject != null)
+                foreach (var entry in databaseManager.BuildingPlanDataDict)
                 {
-                    ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject);
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    if (gameObject != null)
+                    {
+                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject);
+                    }
                 }
             }
-        }
-}
+    }
 
 
-    
+    public enum VisualizationMode
+    {
+        BuiltUnbuilt = 0,
+        ActorView = 1
+    }
+
+
+/////////////////////////////// MATERIAL CREATION ////////////////////////////////////////
     public Material CreateMaterial(float red, float green, float blue, float alpha)
     {
         Material mat = new Material(Shader.Find("Standard"));
