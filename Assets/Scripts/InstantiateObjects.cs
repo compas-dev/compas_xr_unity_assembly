@@ -39,6 +39,7 @@ namespace Instantiate
         public Material HumanUnbuiltMaterial;
         public Material RobotBuiltMaterial;
         public Material RobotUnbuiltMaterial;
+        public Material LockedObjectMaterial;
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -85,6 +86,7 @@ namespace Instantiate
             HumanUnbuiltMaterial = GameObject.Find("Materials").FindObject("HumanUnbuilt").GetComponentInChildren<Renderer>().material;
             RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
             RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
+            LockedObjectMaterial = GameObject.Find("Materials").FindObject("LockedObjects").GetComponentInChildren<Renderer>().material;
 
         }
         public void placeElements(List<Step> DataItems) 
@@ -209,7 +211,7 @@ namespace Instantiate
         }   
         
         //TODO: Add Empty Parent object to the GameObject and name the child Object Geometry to match the .obj file.
-        //TODO: Add a Colider
+        //TODO: Add a Colider - Everything but Obj files.
         public GameObject gameobjectTypeSelector(Step step)
         {
 
@@ -551,11 +553,44 @@ namespace Instantiate
             return mat;
         }
 
+        //TODO: AND IF NOT EQUAL TO CURRENT STEP.
+        // Apply color for objects based on Built or Unbuilt state
+        public void ApplyColorBasedOnBuildState()
+        {
+            if (databaseManager.BuildingPlanDataDict != null)
+                {
+                    foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
+                    {
+                        GameObject gameObject = GameObject.Find(entry.Key);
+                        if (gameObject != null)
+                        {
+                            ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject);
+                        }
+                    }
+                }
+        }
+
+        //Apply color for objects based on Actor View state
+        public void ApplyColorBasedOnActor()
+        {
+            if (databaseManager.BuildingPlanDataDict != null)
+                {
+                    foreach (var entry in databaseManager.BuildingPlanDataDict)
+                    {
+                        GameObject gameObject = GameObject.Find(entry.Key);
+                        if (gameObject != null)
+                        {
+                            ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject);
+                        }
+                    }
+                }
+        }
+
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, DataItemDictEventArgs e)
         {
-            Debug.Log("Database is loaded." + " " + "Number of nodes stored as a dict= " + e.BuildingPlanDataDict.Count);
-            placeElementsDict(e.BuildingPlanDataDict);
+            Debug.Log("Database is loaded." + " " + "Number of nodes stored as a dict= " + e.BuildingPlanDataItem.steps.Count);
+            placeElementsDict(e.BuildingPlanDataItem.steps);
         }
         public void OnDatabaseUpdate(object source, UpdateDataItemsDictEventArgs eventArgs)
         {
@@ -603,7 +638,9 @@ namespace Instantiate
         protected virtual void OnInitialObjectsPlaced()
         {
             PlacedInitialElements(this, EventArgs.Empty);
-            UIFunctionalities.FindCurrentStep(true);
+
+            //TODO: FIND CURRENT STEP AND LAST BUILT STEP
+            databaseManager.FindInitialElement();
         }
     }
 }

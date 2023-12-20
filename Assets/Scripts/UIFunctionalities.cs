@@ -13,6 +13,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.ARSubsystems;
 
+
 public class UIFunctionalities : MonoBehaviour
 {
     //Other Scripts for inuse objects
@@ -21,6 +22,13 @@ public class UIFunctionalities : MonoBehaviour
     
     //Primary UI Objects
     public GameObject NextGeometryButtonObject;
+
+    //////////////////////////////////////////////////////////////////////////
+    public GameObject PushAllDataTEST;
+
+    public string TESTKey;
+    //////////////////////////////////////////////////////////////////////////
+
     public GameObject PreviousGeometryButtonObject;
     public GameObject PreviewGeometrySliderObject;
         
@@ -61,8 +69,6 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject temporaryObject;
     private int mode = 0;
     
-    //TODO: This could have a better name... it is actually not last written step but Previous step to current step.
-    public string LastWrittenStep = "0";
     public bool NextButtonPressed = false;
     public bool PreviousButtonClicked = false;
 
@@ -83,7 +89,7 @@ public class UIFunctionalities : MonoBehaviour
 
     void Update()
     {
-        
+        SearchControler();
     }
 
     /////////////////////////////////////////// UI Control ////////////////////////////////////////////////////
@@ -115,17 +121,8 @@ public class UIFunctionalities : MonoBehaviour
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
 
-        //Find AR Camera
+        //Find AR Camera gameObject
         arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();
-
-        if (arCamera != null)
-        {
-            Debug.Log("Found AR Camera");
-        }
-        else
-        {
-            Debug.LogWarning("Could not find AR Camera");
-        }
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -181,6 +178,13 @@ public class UIFunctionalities : MonoBehaviour
         NextGeometryButtonObject = GameObject.Find("Next_Geometry");
         Button NextGeometryButton = NextGeometryButtonObject.GetComponent<Button>();
         NextGeometryButton.onClick.AddListener(NextElementButton);;
+
+        //////////////////////////////////////////////////////////////////////////
+        //Find Object, Button, and Add Listener for OnClick method
+        PushAllDataTEST = GameObject.Find("PushAllData");
+        Button PushAllDataTESTButton = PushAllDataTEST.GetComponent<Button>();
+        PushAllDataTESTButton.onClick.AddListener(PushAllDataTESTFunction);;
+        //////////////////////////////////////////////////////////////////////////
 
         //Find Object, Button, and Add Listener for OnClick method
         PreviousGeometryButtonObject = GameObject.Find("Previous_Geometry");
@@ -299,6 +303,9 @@ public class UIFunctionalities : MonoBehaviour
 
                 //Control Selectable objects in scene
                 ColliderControler();
+
+                //Update mode so we know to search for touch input
+                TouchSearchModeControler(1);
                 
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, Yellow);
@@ -310,6 +317,12 @@ public class UIFunctionalities : MonoBehaviour
                 EditorBackground.SetActive(false);
                 BuilderEditorButtonObject.SetActive(false);
                 BuildStatusButtonObject.SetActive(false);
+
+                //Update mode so we are no longer searching for touch
+                TouchSearchModeControler(0);
+
+                //Color Elements by build status
+                instantiateObjects.ApplyColorBasedOnBuildState();
 
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, White);
@@ -330,92 +343,70 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
-    
-    //TODO: THIS COULD BE A SIMPLE BUT HELPFUL UPDATE... I is an input, and on initilization the input is zero, but inside of button functions input is much higher.
-    public void FindCurrentStep(bool writeCurrentStep)
-    {
-        //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
-        for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
-        {
-            //Set data items
-            Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
-
-            //Find the first unbuilt element
-            if(step.data.is_built == false)
-            {
-                //Set Current Element
-                SetCurrentStep(i.ToString(), writeCurrentStep);
-
-                break;
-            }
-        }
-    }
-    public void OnCurrentStepChanged(string newCurrentStep)
-    {
-        //Find correct information for current object on my device
-        Step step = databaseManager.BuildingPlanDataDict[CurrentStep];
-        GameObject currentElement = Elements.FindObject(CurrentStep);
-
-        //Color current step on this phone as built or unbuilt
-        instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, currentElement.FindObject("Geometry"));
-
-        //Set Current Step
-        SetCurrentStep(newCurrentStep, false);
-    }
     public void NextElementButton()
     {
         Debug.Log("Next Element Button Pressed");
         
-        for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
-        {
-            //Set data items
-            Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
+        // for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
+        // {
+        //     //Set data items
+        //     Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
 
-            //Find Gameobject
-            GameObject element = Elements.FindObject(i.ToString());
+        //     //Find Gameobject
+        //     GameObject element = Elements.FindObject(i.ToString());
 
-            if(element != null)
-            {
-                //ONLY WAY TO FIX IF SOMEONE CHANGES THE ONE YOU ARE WORKING ON.
-                if(step.data.is_built == true)
-                {
-                    //Color Previous step object as built or unbuilt
-                    instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
-                }
+        //     if(element != null)
+        //     {
+        //         //ONLY WAY TO FIX IF SOMEONE CHANGES THE ONE YOU ARE WORKING ON.
+        //         if(step.data.is_built == true)
+        //         {
+        //             //Color Previous step object as built or unbuilt
+        //             instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
+        //         }
 
-                //Find the first unbuilt element
-                else
-                {
-                    // Set First Found Element as Current Step
-                    step.data.is_built = true;
+        //         //Find the first unbuilt element
+        //         else
+        //         {
+        //             // Set First Found Element as Current Step
+        //             step.data.is_built = true;
 
-                    //Color Previous step object as built or unbuilt
-                    instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
+        //             //Color Previous step object as built or unbuilt
+        //             instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
 
-                    //WRITE INFORMATION TO DATABASE...HAS TO STAY HERE
-                    databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(i.ToString()), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[i.ToString()]));
+        //             //WRITE INFORMATION TO DATABASE...HAS TO STAY HERE
+        //             // databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(i.ToString()), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[i.ToString()]));
                     
-                    //Set current element as this step + 1
-                    SetCurrentStep((i + 1).ToString(), true);
+        //             //Set current element as this step + 1
+        //             SetCurrentStep((i + 1).ToString(), true);
 
-                    //Find current step loop was run to avoid async if someone builds one in front of me...
-                    //This could be improved though... I could write a function that starts at a point and goes to the end of the dictionary looking for the first false... Then sets that as my current element.
-                    // FindCurrentStep(false);
+        //             //Find current step loop was run to avoid async if someone builds one in front of me...
+        //             //This could be improved though... I could write a function that starts at a point and goes to the end of the dictionary looking for the first false... Then sets that as my current element.
+        //             // FindCurrentStep(false);
                     
-                    break;
-                }
-            }
+        //             break;
+        //         }
+        //     }
 
-        }
+        // }
 
     }
+
+    public void PushAllDataTESTFunction()
+    {
+        Debug.Log($"I am pushing all data to the database for test key {TESTKey}");
+        Debug.Log($"LastBuiltIndex is {databaseManager.BuildingPlanDataItem.LastBuiltIndex}");
+
+        databaseManager.PushAllDataBuildingPlan(TESTKey);
+
+    }
+
     public void SetCurrentStep(string key, bool write)
     {
         //Set current element name
         CurrentStep = key;
 
         //Find the step in the dictoinary
-        Step step = databaseManager.BuildingPlanDataDict[key];
+        Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
         //Find Gameobject Associated with that step
         GameObject element = Elements.FindObject(key);
@@ -426,12 +417,6 @@ public class UIFunctionalities : MonoBehaviour
             instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject("Geometry"));
             Debug.Log($"Current Step is {CurrentStep}");
         }
-
-        //Set Last written step
-        if (key != "0")
-        {
-            LastWrittenStep = (int.Parse(key) - 1).ToString();
-        }
         
         //Update Onscreen Text
         CurrentStepText.text = CurrentStep;
@@ -440,43 +425,43 @@ public class UIFunctionalities : MonoBehaviour
         if(write)
         {
             //Push Current key to the firebase
-            databaseManager.PushAllData(databaseManager.dbrefernece_currentstep, CurrentStep);
+            databaseManager.PushStringData(databaseManager.dbrefernece_currentstep, CurrentStep);
         }
         
     }
     public void PreviousElementButton()
     {
-        if(LastWrittenStep != null)
-        {
-            //Previous element button clicked
+        // if(LastWrittenStep != null)
+        // {
+        //     //Previous element button clicked
             Debug.Log("Previous Element Button Pressed");
             
-            //Find Gameobject
-            GameObject element = Elements.FindObject(LastWrittenStep);
-            Debug.Log($"Last Written Step is {LastWrittenStep}");
-            GameObject previouselement = Elements.FindObject(CurrentStep);
-            Debug.Log($"Current Step is {CurrentStep}");
+        //     //Find Gameobject
+        //     GameObject element = Elements.FindObject(LastWrittenStep);
+        //     Debug.Log($"Last Written Step is {LastWrittenStep}");
+        //     GameObject previouselement = Elements.FindObject(CurrentStep);
+        //     Debug.Log($"Current Step is {CurrentStep}");
 
-            if(element != null && previouselement != null)
-            {
-                Debug.Log("Entered loop");
-                //Set the element to unbuilt
-                Step step = databaseManager.BuildingPlanDataDict[LastWrittenStep];
-                step.data.is_built = false;
+        //     if(element != null && previouselement != null)
+        //     {
+        //         Debug.Log("Entered loop");
+        //         //Set the element to unbuilt
+        //         Step step = databaseManager.BuildingPlanDataDict[LastWrittenStep];
+        //         step.data.is_built = false;
 
-                //PreviousStep Data
-                Step previousstep = databaseManager.BuildingPlanDataDict[CurrentStep];
+        //         //PreviousStep Data
+        //         Step previousstep = databaseManager.BuildingPlanDataDict[CurrentStep];
 
-                //Color Previous step object as built or unbuilt
-                instantiateObjects.ColorBuiltOrUnbuilt(previousstep.data.is_built, previouselement);
+        //         //Color Previous step object as built or unbuilt
+        //         instantiateObjects.ColorBuiltOrUnbuilt(previousstep.data.is_built, previouselement);
 
-                //Push to the database
-                databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
+        //         //Push to the database
+        //         // databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
 
-                //Set the current element to the last written element
-                SetCurrentStep(LastWrittenStep, true);
-            }
-        }
+        //         //Set the current element to the last written element
+        //         SetCurrentStep(LastWrittenStep, true);
+        //     }
+        // }
     }
     public void PreviewGeometrySlider(float value)
     {
@@ -520,7 +505,37 @@ public class UIFunctionalities : MonoBehaviour
     
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
-    
+    public void TouchSearchModeControler(int modetype)
+    {
+        if (modetype == 1)
+            {        
+                //Enable Editor Selected Stick text and disable current stick text 
+                //.... Previously controlled as sepert text objects
+
+                mode = 1; // for editing existing objects
+                Debug.Log ("You have set Mode 1: Element Search");
+            }
+
+        else
+            {
+               //Enable Editor Selected Stick text and disable current stick text 
+                //.... Previously controlled as sepert text objects
+
+                mode = 0; // setting back to original mode
+
+                //Destroy active bounding box
+                DestroyBoundingBoxFixElementColor();
+                activeGameObject = null;
+                Debug.Log ("You have set Mode 0");
+            }
+    }
+    private void SearchControler()
+    {
+        if (mode == 1)
+        {
+            SearchInput();
+        }
+    }
     private void ColliderControler()
     {
         //Set data items
@@ -531,8 +546,10 @@ public class UIFunctionalities : MonoBehaviour
             //Set data items
             Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
 
-            //Find Gameobject
-            Collider ElementCollider = Elements.FindObject(i.ToString()).FindObject("Geometry").GetComponent<Collider>();
+            //Find Gameobject Collider and Renderer
+            GameObject element = Elements.FindObject(i.ToString()).FindObject("Geometry");
+            Collider ElementCollider = element.FindObject("Geometry").GetComponent<Collider>();
+            Renderer ElementRenderer = element.FindObject("Geometry").GetComponent<Renderer>();
 
             if(ElementCollider != null)
             {
@@ -541,14 +558,14 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Set Collider to true
                     ElementCollider.enabled = true;
-
-                    //TODO: CHANGE COLOR SO IT IS CLEAR TO THE USER WHICH ONES CAN BE SELECTED
-                    //............
                 }
                 else
                 {
                     //Set Collider to false
                     ElementCollider.enabled = false;
+
+                    //Update Renderer for Objects that cannot be selected
+                    ElementRenderer.material = instantiateObjects.LockedObjectMaterial;
                 }
             }
             
@@ -560,8 +577,6 @@ public class UIFunctionalities : MonoBehaviour
         {
             Ray ray = arCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hitObject;
-
-            Debug.Log("Looking for your Joint To Select");
 
             if (Physics.Raycast(ray, out hitObject))
             {
@@ -575,13 +590,10 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Touch touch = Input.GetTouch(0);
-            Debug.Log("Your touch sir :)" + Input.touchCount);
-            Debug.Log("Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
 
             if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
             {
                 List<ARRaycastHit> hits = new List<ARRaycastHit>();
-                Debug.Log ("YOU HITS SIR" + hits);
                 rayManager.Raycast(touch.position, hits);
 
                 if (hits.Count > 0)
@@ -603,8 +615,6 @@ public class UIFunctionalities : MonoBehaviour
 
         return activeGameObject;
     }
-    
-    //To diferentiate between editor and running on the phone just for testing
     private void SearchInput()
     {
         if (Application.isEditor)
@@ -616,7 +626,7 @@ public class UIFunctionalities : MonoBehaviour
                     return;
                 }
 
-                if (mode == 2) // EDIT MODE
+                if (mode == 1) // EDIT MODE
                 {
                     Debug.Log("***MODE 2***");
                     EditMode();
@@ -633,14 +643,13 @@ public class UIFunctionalities : MonoBehaviour
             SearchTouch();
         }
     }
-
     private void SearchTouch()
     {
         if (Input.touchCount > 0) //if there is an input..           
         {
             if (PhysicRayCastBlockedByUi(Input.GetTouch(0).position))
             {
-                if (mode == 2) //EDIT MODE
+                if (mode == 1) //EDIT MODE
                 {
                     Debug.Log("***MODE 2***");
                     EditMode();                     
@@ -653,7 +662,6 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-
     private bool PhysicRayCastBlockedByUi(Vector2 touchPosition)
     {
         //creating a Boolean value if we are touching a button
@@ -664,7 +672,6 @@ public class UIFunctionalities : MonoBehaviour
         }
         return true;
     }
-
     private void EditMode()
     {
         activeGameObject = SelectedObject();
@@ -687,14 +694,13 @@ public class UIFunctionalities : MonoBehaviour
         {
             if (GameObject.Find("BoundingArea") != null)
             {
-                DestroyBoundingBoxFixStickColor();
+                DestroyBoundingBoxFixElementColor();
             }
         }
     }
-
     private void addBoundingBox(GameObject gameObj) // Still need to fix it is so weird.
     {
-        DestroyBoundingBoxFixStickColor(); //destroy the bounding box
+        DestroyBoundingBoxFixElementColor(); //destroy the bounding box
 
         //create a primitive cube
         GameObject boundingArea = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -727,10 +733,12 @@ public class UIFunctionalities : MonoBehaviour
         boundingArea.transform.localPosition = center;
         boundingArea.transform.rotation = gameObj.transform.rotation;
 
-        boundingArea.transform.SetParent(gameObj.transform);
-    }
+        //Set parent as the step Item from the dictionary
+        var stepParent = gameObj.transform.parent;
 
-    private void DestroyBoundingBoxFixStickColor()
+        boundingArea.transform.SetParent(stepParent);
+    }
+    private void DestroyBoundingBoxFixElementColor()
     {
 
         //destroy the previous bounding box
@@ -754,10 +762,6 @@ public class UIFunctionalities : MonoBehaviour
                     }
                 }
 
-                // else
-                // {
-                //    stick.GetComponentInChildren<Renderer>().material = UnbuiltMaterial; 
-                // }
             }
 
             Destroy(GameObject.Find("BoundingArea"));

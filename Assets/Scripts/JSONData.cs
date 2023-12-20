@@ -26,6 +26,7 @@ namespace JSON
     [System.Serializable]
     public class Attributes
     {
+        // public string device_id { get; set; }
         public bool is_built { get; set;}
         public bool is_planned { get; set;}
         public string placed_by { get; set; }
@@ -46,7 +47,7 @@ namespace JSON
     /////////////// Classes For Step Desearialization///////////////////
     
     [System.Serializable]
-    public class BulidingPlanData
+    public class BuildingPlanData
     {
         public string LastBuiltIndex { get; set; }
         public Dictionary<string, Step> steps { get; set; }
