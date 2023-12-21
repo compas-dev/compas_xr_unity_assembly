@@ -557,7 +557,7 @@ namespace Instantiate
         // Apply color for objects based on Built or Unbuilt state
         public void ApplyColorBasedOnBuildState()
         {
-            if (databaseManager.BuildingPlanDataDict != null)
+            if (databaseManager.BuildingPlanDataItem.steps != null)
                 {
                     foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
                     {
@@ -573,9 +573,9 @@ namespace Instantiate
         //Apply color for objects based on Actor View state
         public void ApplyColorBasedOnActor()
         {
-            if (databaseManager.BuildingPlanDataDict != null)
+            if (databaseManager.BuildingPlanDataItem.steps != null)
                 {
-                    foreach (var entry in databaseManager.BuildingPlanDataDict)
+                    foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                     {
                         GameObject gameObject = GameObject.Find(entry.Key);
                         if (gameObject != null)

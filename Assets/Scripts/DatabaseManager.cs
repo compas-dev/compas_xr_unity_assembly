@@ -56,6 +56,10 @@ public class DatabaseManager : MonoBehaviour
     // Firebase database references
     public DatabaseReference dbreference_assembly;
     public DatabaseReference dbreference_buildingplan;
+
+    public DatabaseReference Listner_steps;
+    public DatabaseReference Listner_lastbuiltindex;
+
     public DatabaseReference dbreference_qrcodes;
     public DatabaseReference dbrefernece_currentstep;
     public StorageReference storageReference;
@@ -65,7 +69,7 @@ public class DatabaseManager : MonoBehaviour
     public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
     
     //This could go away....
-    public Dictionary<string, Step> BuildingPlanDataDict { get; private set; } = new Dictionary<string, Step>();
+    // public Dictionary<string, Step> BuildingPlanDataDict { get; private set; } = new Dictionary<string, Step>();
 
     public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
     public Dictionary<string, QRcode> QRCodeDataDict { get; private set; } = new Dictionary<string, QRcode>();
@@ -149,15 +153,16 @@ public class DatabaseManager : MonoBehaviour
         //Create DB Reference Always
         dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data");
+        
+        Listner_steps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
+        Listner_lastbuiltindex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
+
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
         dbrefernece_currentstep = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("currentstep");
         
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
         {
-            // //TESTING FETCHING WHOLE BUILDING PLAN
-            // FetchRTDData(dbreference_BUILDINGPLANTEST, snapshot => DesearializeBuildingPlan(snapshot));
-            
             //Fetch QR Data no event trigger
             FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
             
@@ -204,7 +209,7 @@ public class DatabaseManager : MonoBehaviour
     }
     async Task<List<FileMetadata>> GetFilesInFolder(string path)
     {
-        //This will need to change
+        //Building the storage url dynamically
         string storageBucket = FirebaseManager.Instance.storageBucket;
         string baseUrl = $"https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={path}/&delimiter=/";
 
@@ -301,7 +306,6 @@ public class DatabaseManager : MonoBehaviour
         }
     }      
     
-    //TODO: WRITE Searilization into the database
     public void PushAllDataBuildingPlan(string key)
     {
         //Find step that I changed in the building plan and add my custom device id.
@@ -310,8 +314,25 @@ public class DatabaseManager : MonoBehaviour
 
         print_data_types(specificstep, "Pushed Step");
 
-        //Searilize the data for push to firebase
+        // //Searilize the data for push to firebase
+        // Dictionary<string, object> testStructure = new Dictionary<string, object>();
+        // testStructure.Add("LastBuiltIndex", BuildingPlanDataItem.LastBuiltIndex);
+
+        // List<Step> stepsList = new List<Step>();
+        // for(int i =0 ; i < BuildingPlanDataItem.steps.Count; i++)
+        // {
+        //     stepsList.Add(BuildingPlanDataItem.steps[i.ToString()]);
+        // }
+        
+        // testStructure.Add("steps", stepsList);
+        
+        // string dataTEST = JsonConvert.SerializeObject(testStructure);
+        // Debug.Log($"TEST: All Pushed Data LISTS: {dataTEST}");
+
+
+
         string data = JsonConvert.SerializeObject(BuildingPlanDataItem);
+        // Debug.Log($"TEST: All Pushed Data: {data}");
         
         //Push the data to firebase
         dbreference_buildingplan.SetRawJsonValueAsync(data);
@@ -380,7 +401,7 @@ public class DatabaseManager : MonoBehaviour
     {
         
         //TODO: This should be building plan data.steps.Clear()
-        BuildingPlanDataDict.Clear();
+        // BuildingPlanDataDict.Clear();
 
         foreach (DataSnapshot childSnapshot in snapshot.Children)
         {
@@ -390,7 +411,7 @@ public class DatabaseManager : MonoBehaviour
             
             if (IsValidStep(step_data))
             {
-                BuildingPlanDataDict[key] = step_data;
+                // BuildingPlanDataDict[key] = step_data;
             }
             else
             {
@@ -398,7 +419,7 @@ public class DatabaseManager : MonoBehaviour
             }
         }
 
-        Debug.Log("Number of steps stored as a dictionary = " + BuildingPlanDataDict.Count);
+        // Debug.Log("Number of steps stored as a dictionary = " + BuildingPlanDataDict.Count);
     }
     private void DesearializeQRSnapshot(DataSnapshot snapshot)
     {
@@ -433,7 +454,7 @@ public class DatabaseManager : MonoBehaviour
         
         if (!string.IsNullOrEmpty(jsondatastring))
         {
-            TempDatabaseLastBuiltStep = jsondatastring;
+            TempDatabaseLastBuiltStep = JsonConvert.DeserializeObject<string>(jsondatastring);
         }
         else
         {
@@ -836,12 +857,15 @@ public class DatabaseManager : MonoBehaviour
         // dbreference_buildingplan.ChildRemoved += OnChildRemoved;
 
         //Updated listners for building plan steps
-        dbreference_buildingplan.Child("steps").ChildAdded += OnChildAdded;
-        dbreference_buildingplan.Child("steps").ChildChanged += OnChildChanged;
-        dbreference_buildingplan.Child("steps").ChildRemoved += OnChildRemoved;
+        Listner_steps.ChildAdded += OnChildAdded;
+        Listner_steps.ChildChanged += OnChildChanged;
+        Listner_steps.ChildRemoved += OnChildRemoved;
+        Debug.Log("BUILDING PLAN LISTNERS steps" + Listner_steps);
         
         //Updated listeners for building plan last built index
-        dbreference_buildingplan.Child("LastBuiltIndex").ValueChanged += OnLastBuiltIndexChanged;
+        Listner_lastbuiltindex.ValueChanged += OnLastBuiltIndexChanged;
+        Debug.Log("BUILDING PLAN LISTNERS last built index" + Listner_lastbuiltindex);
+
 
         //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
         dbreference_assembly.ChildAdded += OnAssemblyChanged;
@@ -888,8 +912,7 @@ public class DatabaseManager : MonoBehaviour
                 else
                 {
                     Debug.Log($"The key '{key}' does not exist in the dictionary");
-                    BuildingPlanDataDict.Add(key, newValue);
-                    // BuildingPlanDataDict[key].data.element_ids[0] = key;
+                    BuildingPlanDataItem.steps.Add(key, newValue);
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
@@ -1055,7 +1078,7 @@ public class DatabaseManager : MonoBehaviour
         //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
         TempDatabaseLastBuiltStep = null;
         
-        await FetchRTDData(dbreference_buildingplan.Child("LastBuiltIndex"), snapshot => DesearializeLastBuiltIndex(snapshot));
+        await FetchRTDData(Listner_lastbuiltindex, snapshot => DesearializeLastBuiltIndex(snapshot));
     
         if (TempDatabaseLastBuiltStep != null)
         {

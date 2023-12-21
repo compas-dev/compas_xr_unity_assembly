@@ -470,7 +470,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log("You are changing the Preview Geometry");
             int min = Convert.ToInt16(CurrentStep);
             float SliderValue = value;
-            int ElementsTotal = databaseManager.BuildingPlanDataDict.Count;
+            int ElementsTotal = databaseManager.BuildingPlanDataItem.steps.Count;
             float SliderMax = 1; //Input Slider Max Value == 1
             float SliderMin = 0; // Input Slider Min Value == 0
                 
@@ -539,12 +539,12 @@ public class UIFunctionalities : MonoBehaviour
     private void ColliderControler()
     {
         //Set data items
-        Step Currentstep = databaseManager.BuildingPlanDataDict[CurrentStep];
+        Step Currentstep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
     
-        for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
+        for (int i =0 ; i < databaseManager.BuildingPlanDataItem.steps.Count; i++)
         {
             //Set data items
-            Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
+            Step step = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
 
             //Find Gameobject Collider and Renderer
             GameObject element = Elements.FindObject(i.ToString()).FindObject("Geometry");
@@ -755,7 +755,7 @@ public class UIFunctionalities : MonoBehaviour
                     if (element.name != CurrentStep)
                     {
 
-                        Step step = databaseManager.BuildingPlanDataDict[element.name];
+                        Step step = databaseManager.BuildingPlanDataItem.steps[element.name];
                         
                         instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.gameObject.FindObject("Geometry"));                          
                         
