@@ -8,10 +8,12 @@ using JSON;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using TMPro;
 using System.Xml.Linq;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.ARSubsystems;
+using System.Globalization;
 
 
 public class UIFunctionalities : MonoBehaviour
@@ -20,22 +22,26 @@ public class UIFunctionalities : MonoBehaviour
     public DatabaseManager databaseManager;
     public InstantiateObjects instantiateObjects;
     
-    //Primary UI Objects
-    public GameObject NextGeometryButtonObject;
-
-    //////////////////////////////////////////////////////////////////////////
-    public GameObject PushAllDataTEST;
-
-    public string TESTKey;
-    //////////////////////////////////////////////////////////////////////////
-
-    public GameObject PreviousGeometryButtonObject;
-    public GameObject PreviewGeometrySliderObject;
-        
     //Toggle GameObjects
     private GameObject VisibilityMenuObject;
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
+    private GameObject StepSearchToggleObject;
+    
+    //Primary UI Objects
+    public GameObject ConstantUIPanelObjects;
+    public GameObject NextGeometryButtonObject;
+    public GameObject PreviousGeometryButtonObject;
+    public GameObject PreviewGeometrySliderObject;
+    public GameObject IsBuiltPanelObjects;
+    public GameObject IsBuiltButtonObject;
+    public GameObject IsBuiltCoverButton;
+    private Button IsBuiltButton;
+    public GameObject IsbuiltButtonImage;
+    public Slider PreviewGeometrySlider;
+    private TMP_InputField StepSearchInputField;
+    private GameObject StepSearchObjects;
+    private GameObject StepSearchButtonObject; 
 
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
@@ -58,6 +64,8 @@ public class UIFunctionalities : MonoBehaviour
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
     private Color White = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+    private Color TranspWhite = new Color(1.0f, 1.0f, 1.0f, 0.4f);
+    private Color TranspGrey = new Color(0.7843137f, 0.7843137f, 0.7843137f, 0.4f);
 
     //Parent Objects for gameObjects
     public GameObject Elements;
@@ -73,7 +81,8 @@ public class UIFunctionalities : MonoBehaviour
     public bool PreviousButtonClicked = false;
 
     //On Screen Text
-    public TMPro.TMP_Text CurrentStepText;
+    public TMP_Text CurrentStepText;
+    public TMP_Text LastBuiltIndexText;
 
     //Touch Input Variables
     private ARRaycastManager rayManager;
@@ -95,7 +104,7 @@ public class UIFunctionalities : MonoBehaviour
     /////////////////////////////////////////// UI Control ////////////////////////////////////////////////////
     private void OnAwakeInitilization()
     {
-        /////////////////////////////////////////// Initial Elements ////////////////////////////////////////////
+        /////////////////////////////////////////// Initial Elements & Toggles ////////////////////////////////////////////
         //Find Other Scripts
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
@@ -111,6 +120,10 @@ public class UIFunctionalities : MonoBehaviour
         //Find toggles for menu
         MenuButtonObject = GameObject.Find("Menu_Toggle");
         Toggle MenuToggle = MenuButtonObject.GetComponent<Toggle>();
+
+        //Find toggle for step search
+        StepSearchToggleObject = GameObject.Find("StepSearchToggle");
+        Toggle StepSearchToggle = StepSearchToggleObject.GetComponent<Toggle>();
 
         //Find toggle for editor... Slightly different then the other two because it is off on start.
         EditorToggleObject = MenuButtonObject.FindObject("Editor_Toggle");
@@ -174,32 +187,46 @@ public class UIFunctionalities : MonoBehaviour
 
 
         /////////////////////////////////////////// Primary UI Buttons ////////////////////////////////////////////
+        
+        //Constant UI Pannel
+        ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
+        
         //Find Object, Button, and Add Listener for OnClick method
         NextGeometryButtonObject = GameObject.Find("Next_Geometry");
         Button NextGeometryButton = NextGeometryButtonObject.GetComponent<Button>();
-        NextGeometryButton.onClick.AddListener(NextElementButton);;
-
-        //////////////////////////////////////////////////////////////////////////
-        //Find Object, Button, and Add Listener for OnClick method
-        PushAllDataTEST = GameObject.Find("PushAllData");
-        Button PushAllDataTESTButton = PushAllDataTEST.GetComponent<Button>();
-        PushAllDataTESTButton.onClick.AddListener(PushAllDataTESTFunction);;
-        //////////////////////////////////////////////////////////////////////////
+        NextGeometryButton.onClick.AddListener(NextStepButton);;
 
         //Find Object, Button, and Add Listener for OnClick method
         PreviousGeometryButtonObject = GameObject.Find("Previous_Geometry");
         Button PreviousGeometryButton = PreviousGeometryButtonObject.GetComponent<Button>();
-        PreviousGeometryButton.onClick.AddListener(PreviousElementButton);;
+        PreviousGeometryButton.onClick.AddListener(PreviousStepButton);;
+
+        //Find Object, Slider, and Add Listener for OnClick method
+        PreviewGeometrySliderObject = GameObject.Find("GeometrySlider");
+        PreviewGeometrySlider = PreviewGeometrySliderObject.GetComponent<Slider>();
+        PreviewGeometrySlider.onValueChanged.AddListener(PreviewGeometrySliderSetVisibilty);;
 
         //Find Object, Button, and Add Listener for OnClick method
-        PreviewGeometrySliderObject = GameObject.Find("GeometrySlider");
-        Slider PreviousGeometrySlider = PreviewGeometrySliderObject.GetComponent<Slider>();
-        PreviousGeometrySlider.onValueChanged.AddListener(PreviewGeometrySlider);;
+        IsBuiltPanelObjects = ConstantUIPanelObjects.FindObject("IsBuiltPanel"); 
+        IsBuiltButtonObject = IsBuiltPanelObjects.FindObject("IsBuiltButton");
+        IsBuiltCoverButton = IsBuiltPanelObjects.FindObject("IsBuiltCoverButton");
+        IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
+        IsBuiltButton = IsBuiltButtonObject.GetComponent<Button>();
+        IsBuiltButton.onClick.AddListener(ModifyCurrentStepBuildStatus);;
+
+        //Find Step Search Objects
+        StepSearchObjects = ConstantUIPanelObjects.FindObject("StepSearchObjects");
+        StepSearchInputField = StepSearchObjects.FindObject("StepSearchInputField").GetComponent<TMP_InputField>();;
+        StepSearchButtonObject = StepSearchObjects.FindObject("SearchForStepButton");
+        Button StepSearchButton = StepSearchButtonObject.GetComponent<Button>();
+        StepSearchButton.onClick.AddListener(() => print_string_on_click("Step Search Button Clicked"));;
 
         //Find Text Objects
-        GameObject CurrentStepTextObject = GameObject.Find("Current_Element_Text");
+        GameObject CurrentStepTextObject = GameObject.Find("Current_Index_Text");
         CurrentStepText = CurrentStepTextObject.GetComponent<TMPro.TMP_Text>();
 
+        GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltIndex_Text");
+        LastBuiltIndexText = LastBuiltIndexTextObject.GetComponent<TMPro.TMP_Text>();
 
         /////////////////////////////////////////// Set Toggles ////////////////////////////////////////////
         //Add Listners for Visibility Toggle on and off.
@@ -215,6 +242,11 @@ public class UIFunctionalities : MonoBehaviour
         //Add Listners for Editor Toggle on and off.
         EditorToggle.onValueChanged.AddListener(delegate {
         ToggleEditor(EditorToggle);
+        });
+
+        //Add Listners for Step Search Toggle on and off.
+        StepSearchToggle.onValueChanged.AddListener(delegate {
+        ToggleStepSearch(StepSearchToggle);
         });
 
     }
@@ -333,6 +365,39 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Editor Menu.");
         }  
     }
+    public void ToggleStepSearch(Toggle toggle)
+    {
+        if (StepSearchObjects != null && IsBuiltPanelObjects != null)
+        {    
+            if (toggle.isOn)
+            {             
+                //Set Visibility of buttons
+                IsBuiltPanelObjects.SetActive(false);
+                StepSearchObjects.SetActive(true);
+                
+                //Set color of toggle
+                SetUIObjectColor(StepSearchToggleObject, Yellow);
+
+            }
+            else
+            {
+                //Set Visibility of buttons
+                StepSearchObjects.SetActive(false);
+                IsBuiltPanelObjects.SetActive(true);
+
+                //Set color of toggle
+                SetUIObjectColor(StepSearchToggleObject, White);
+
+                //Update Is Built Button
+                Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
+                IsBuiltButtonGraphicsControler(currentStep.data.is_built, currentStep.data.actor);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
+        }  
+    }
     private void SetUIObjectColor(GameObject Button, Color color)
     {
         Button.GetComponent<Image>().color = color;
@@ -343,65 +408,39 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
-    public void NextElementButton()
+    public void NextStepButton()
     {
+        //Press Next Element Button
         Debug.Log("Next Element Button Pressed");
         
-        // for (int i =0 ; i < databaseManager.BuildingPlanDataDict.Count; i++)
-        // {
-        //     //Set data items
-        //     Step step = databaseManager.BuildingPlanDataDict[i.ToString()];
+        //If current step is not null and smaller then the length of the list
+        if(CurrentStep != null)
+        {
+            int CurrentStepInt = Convert.ToInt16(CurrentStep);
 
-        //     //Find Gameobject
-        //     GameObject element = Elements.FindObject(i.ToString());
-
-        //     if(element != null)
-        //     {
-        //         //ONLY WAY TO FIX IF SOMEONE CHANGES THE ONE YOU ARE WORKING ON.
-        //         if(step.data.is_built == true)
-        //         {
-        //             //Color Previous step object as built or unbuilt
-        //             instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
-        //         }
-
-        //         //Find the first unbuilt element
-        //         else
-        //         {
-        //             // Set First Found Element as Current Step
-        //             step.data.is_built = true;
-
-        //             //Color Previous step object as built or unbuilt
-        //             instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.FindObject("Geometry"));
-
-        //             //WRITE INFORMATION TO DATABASE...HAS TO STAY HERE
-        //             // databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(i.ToString()), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[i.ToString()]));
-                    
-        //             //Set current element as this step + 1
-        //             SetCurrentStep((i + 1).ToString(), true);
-
-        //             //Find current step loop was run to avoid async if someone builds one in front of me...
-        //             //This could be improved though... I could write a function that starts at a point and goes to the end of the dictionary looking for the first false... Then sets that as my current element.
-        //             // FindCurrentStep(false);
-                    
-        //             break;
-        //         }
-        //     }
-
-        // }
+            if(CurrentStepInt < databaseManager.BuildingPlanDataItem.steps.Count - 1)
+            {
+                //Set current element as this step + 1
+                SetCurrentStep((CurrentStepInt + 1).ToString(), false);
+            }  
+        }
 
     }
-
-    public void PushAllDataTESTFunction()
-    {
-        Debug.Log($"I am pushing all data to the database for test key {TESTKey}");
-        Debug.Log($"LastBuiltIndex is {databaseManager.BuildingPlanDataItem.LastBuiltIndex}");
-
-        databaseManager.PushAllDataBuildingPlan(TESTKey);
-
-    }
-
     public void SetCurrentStep(string key, bool write)
     {
+        //If the current step is not null find the previous current step and color it bulit or unbuilt.
+        if(CurrentStep != null)
+        {
+            //Find Gameobject Associated with that step
+            GameObject previousStepElement = Elements.FindObject(CurrentStep);
+
+            if(previousStepElement != null)
+            {
+                //Color it Human or Robot Built
+                instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.is_built, previousStepElement.FindObject("Geometry"));
+            }
+        }
+                
         //Set current element name
         CurrentStep = key;
 
@@ -421,49 +460,39 @@ public class UIFunctionalities : MonoBehaviour
         //Update Onscreen Text
         CurrentStepText.text = CurrentStep;
         
-        //Bool to control writing to the database
+        //Write Current Step to the database under my name
         if(write)
         {
+            //TODO: This needs to be more complex.
             //Push Current key to the firebase
             databaseManager.PushStringData(databaseManager.dbrefernece_currentstep, CurrentStep);
         }
+
+        //Update Preview Geometry the visulization is remapped correctly
+        PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
         
+        //Update Is Built Button
+        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.actor);
     }
-    public void PreviousElementButton()
+    public void PreviousStepButton()
     {
-        // if(LastWrittenStep != null)
-        // {
-        //     //Previous element button clicked
-            Debug.Log("Previous Element Button Pressed");
-            
-        //     //Find Gameobject
-        //     GameObject element = Elements.FindObject(LastWrittenStep);
-        //     Debug.Log($"Last Written Step is {LastWrittenStep}");
-        //     GameObject previouselement = Elements.FindObject(CurrentStep);
-        //     Debug.Log($"Current Step is {CurrentStep}");
+        //Previous element button clicked
+        Debug.Log("Previous Element Button Pressed");
 
-        //     if(element != null && previouselement != null)
-        //     {
-        //         Debug.Log("Entered loop");
-        //         //Set the element to unbuilt
-        //         Step step = databaseManager.BuildingPlanDataDict[LastWrittenStep];
-        //         step.data.is_built = false;
+        //If current step is not null and greater then Zero add subtract 1
+        if(CurrentStep != null)
+        {
+          int CurrentStepInt = Convert.ToInt16(CurrentStep);
 
-        //         //PreviousStep Data
-        //         Step previousstep = databaseManager.BuildingPlanDataDict[CurrentStep];
+            if(CurrentStepInt > 0)
+            {
+                //Set current element as this step - 1
+                SetCurrentStep((CurrentStepInt - 1).ToString(), false);
+            }  
+        }       
 
-        //         //Color Previous step object as built or unbuilt
-        //         instantiateObjects.ColorBuiltOrUnbuilt(previousstep.data.is_built, previouselement);
-
-        //         //Push to the database
-        //         // databaseManager.PushAllData(databaseManager.dbreference_buildingplan.Child(LastWrittenStep), JsonConvert.SerializeObject(databaseManager.BuildingPlanDataDict[LastWrittenStep]));
-
-        //         //Set the current element to the last written element
-        //         SetCurrentStep(LastWrittenStep, true);
-        //     }
-        // }
     }
-    public void PreviewGeometrySlider(float value)
+    public void PreviewGeometrySliderSetVisibilty(float value)
     {
         if (CurrentStep != null)
         {
@@ -496,6 +525,98 @@ public class UIFunctionalities : MonoBehaviour
                 }
             }
         }
+    }
+    public void IsBuiltButtonGraphicsControler(bool builtStatus, string Actor)
+    {
+        if (IsBuiltPanelObjects.activeSelf)
+        {
+            if (builtStatus)
+            {
+                IsbuiltButtonImage.SetActive(true);
+                IsBuiltButtonObject.GetComponent<Image>().color = TranspGrey;
+            }
+            else
+            {
+                IsbuiltButtonImage.SetActive(false);
+                IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
+            }
+
+            if (Actor != "HUMAN")
+            {
+                IsBuiltButton.interactable = false;
+                
+                if(IsBuiltCoverButton.activeSelf == false)
+                {
+                    IsBuiltCoverButton.SetActive(true);
+                }
+            }
+            else
+            {
+                IsBuiltButton.interactable = true;
+                
+                if(IsBuiltCoverButton.activeSelf == true)
+                {
+                    IsBuiltCoverButton.SetActive(false);
+                }
+
+            }
+        }
+    }
+    public void ModifyCurrentStepBuildStatus()
+    {
+        Debug.Log($"Modifying Build Status of: {CurrentStep}");
+
+        //Find the step in the dictoinary
+        Step step = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
+
+        //Change Build Status
+        if(step.data.is_built)
+        {
+            //Change Build Status
+            step.data.is_built = false;
+
+            //Find the closest item that was built to my current item and make that the last built
+            int CurrentStepInt = Convert.ToInt16(CurrentStep);
+
+            //TODO: CHECK THIS...
+            Debug.Log("This is working?");
+            for(int i = CurrentStepInt; i > 0; i--)
+            {
+                Debug.Log("This is working? 2");
+                if(databaseManager.BuildingPlanDataItem.steps[i.ToString()].data.is_built)
+                {
+                    Debug.Log("This is working?3");
+                    //Change LastBuiltIndex
+                    databaseManager.BuildingPlanDataItem.LastBuiltIndex = i.ToString();
+                    SetLastBuiltText(i.ToString());
+                    break;
+                }
+            }
+
+        }
+        else
+        {
+            //Change Build Status
+            step.data.is_built = true;
+
+            //Change LastBuiltIndex
+            databaseManager.BuildingPlanDataItem.LastBuiltIndex = CurrentStep;
+            SetLastBuiltText(CurrentStep);
+        }
+
+        //Update color
+        instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(CurrentStep).FindObject("Geometry"));
+        
+        //Update Is Built Button
+        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.actor);
+
+        //Push Data to the database
+        databaseManager.PushAllDataBuildingPlan(CurrentStep);
+    }
+    public void SetLastBuiltText(string key)
+    {
+        //Set Last Built Text
+        LastBuiltIndexText.text = $"Last Built Step : {key}";
     }
     
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////

@@ -298,13 +298,10 @@ public class DatabaseManager : MonoBehaviour
         }
     }      
     public void PushAllDataBuildingPlan(string key)
-    {
+    {        
         //Find step that I changed in the building plan and add my custom device id.
         Step specificstep = BuildingPlanDataItem.steps[key];
         specificstep.data.device_id = SystemInfo.deviceUniqueIdentifier;
-
-        // Dictionary<string, object> stepDict = new Dictionary<string, object>();
-        GameObjectExtensions.PrintStepDataTypes(specificstep, key + "Pushed Step");
 
         //Searilize the data for push to firebase
         string data = JsonConvert.SerializeObject(BuildingPlanDataItem);
@@ -376,7 +373,6 @@ public class DatabaseManager : MonoBehaviour
     {
         foreach (DataSnapshot childSnapshot in snapshot.Children)
         {    
-            Debug.Log("I am not stuck here QR");
             string key = childSnapshot.Key;
             string jsondatastring = childSnapshot.GetRawJsonValue();
             
@@ -498,7 +494,6 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log($"node.key is: '{step.data.element_ids[0]}'");
         return false;
     }
-
     private bool AreEqualSteps(Step step ,Step NewStep)
     {
         // Basic validation: Check if two steps are equal
@@ -523,7 +518,6 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log($"Steps with elementID : {step.data.element_ids[0]} and {NewStep.data.element_ids[0]} are not equal");
         return false;
     }
-
     public string print_out_data(DatabaseReference dbreference_assembly)
     {
         string jsondata = "";
@@ -573,7 +567,7 @@ public class DatabaseManager : MonoBehaviour
             if(step.data.is_built == false)
             {
                 //Set Current Element
-                UIFunctionalities.SetCurrentStep(i.ToString(), true);
+                UIFunctionalities.SetCurrentStep(i.ToString(), false);
 
                 break;
             }
@@ -820,11 +814,14 @@ public class DatabaseManager : MonoBehaviour
         dbreference_assembly.ChildRemoved += OnAssemblyChanged;
 
         //Add Listners for the QR codes //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
-        // dbreference_qrcodes.ChildAdded += OnQRChanged;
-        // dbreference_qrcodes.ChildChanged += OnQRChanged;
-        // dbreference_qrcodes.ChildRemoved += OnQRChanged;
+        dbreference_qrcodes.ChildAdded += OnQRChanged;
+        dbreference_qrcodes.ChildChanged += OnQRChanged;
+        dbreference_qrcodes.ChildRemoved += OnQRChanged;
 
         //Add Listners for current step
+        // dbrefernece_currentstep.ChildAdded += OnUserAdded;
+        // dbrefernece_currentstep.ChildChanged += OnUserChanged;
+        // dbrefernece_currentstep.ChildRemoved += OnUserRemoved;
 
     }
 
@@ -1024,11 +1021,12 @@ public class DatabaseManager : MonoBehaviour
         {
             if(TempDatabaseLastBuiltStep != BuildingPlanDataItem.LastBuiltIndex)
             {
+                // Update Last Built Index
                 BuildingPlanDataItem.LastBuiltIndex = TempDatabaseLastBuiltStep;
                 Debug.Log($"Last Built Index is now {BuildingPlanDataItem.LastBuiltIndex}");
 
-                //TODO: UPDATE ONSCREEN TEXT
-                //....
+                // Update On Screen Text
+                UIFunctionalities.SetLastBuiltText(BuildingPlanDataItem.LastBuiltIndex);
             }
             else
             {
