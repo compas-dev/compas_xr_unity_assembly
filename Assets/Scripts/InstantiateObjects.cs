@@ -14,6 +14,7 @@ using ApplicationInfo;
 using JSON;
 using Extentions;
 using Dummiesman;
+using TMPro;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
 using UnityEngine.InputSystem;
@@ -46,12 +47,26 @@ namespace Instantiate
         public GameObject QRMarkers; 
         public GameObject Elements;
 
-        //EVENTS
+        //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
         public event InitialElementsPlaced PlacedInitialElements;
         
+        //Control Visulization Modes
+        public class ModeControler
+        {
+            public bool ActorView { get; set; }
+            
+            //Can be adapted to more then just a bool (for example we used multiple touch modes last project)
+            public int EditMode { get; set; }
+            public bool TagsMode { get; set; }
+        }
+
+        //Make Initial Visulization controler
+        public ModeControler visulizationMode = new ModeControler();
+
         //Private IN SCRIPT USE OBJECTS
         private GameObject geometry_object;
+        private GameObject IdxImage;
 
         public struct Rotation
         {
@@ -89,7 +104,17 @@ namespace Instantiate
             RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
             LockedObjectMaterial = GameObject.Find("Materials").FindObject("LockedObjects").GetComponentInChildren<Renderer>().material;
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
+
+            IdxImage = GameObject.Find("IdxTags").FindObject("Circle");
+
+
+            //Set Initial Visulization Modes
+            visulizationMode.ActorView = false;
+            visulizationMode.TagsMode = false;
+            visulizationMode.EditMode = 0;
+
         }
+
         public void placeElements(List<Step> DataItems) 
         {
             int i = 0;
@@ -139,9 +164,39 @@ namespace Instantiate
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
             GameObject geometryObject = elementPrefab.FindObject("Geometry");
-            
-            //Color it Built or Unbuilt
-            ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
+
+            // Create and attach text label to the GameObject
+            // CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
+            // CreateCircleImageForTag(elementPrefab);
+
+            //Set Color Based on Visulization Mode
+            if(visulizationMode.ActorView)
+            {
+                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+            }
+            else
+            {
+                ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
+            }
+
+            //Check if the visulization tags mode is on
+            if (visulizationMode.TagsMode)
+            {
+                //Set tag and Image visibility if the mode is on
+                elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
+                elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
+            }
+
+            //Check if Editor Mode is on and if object priority is not the same as current step
+            if (UIFunctionalities.CurrentStep != null)
+            {
+                if (visulizationMode.EditMode == 1 && step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
+                {
+                    //Disable Collider if edit mode is on and object priority is not the same as current step
+                    elementPrefab.FindObject("Geometry").GetComponent<Collider>().enabled = false;
+                    elementPrefab.FindObject("Geometry").GetComponent<Renderer>().material = LockedObjectMaterial;
+                }
+            }
 
         }
         public void placeElementAssembly(string Key, Node node)
@@ -368,7 +423,73 @@ namespace Instantiate
                 return element;
             
         }
+        private void CreateIndexTextForGameObject(GameObject gameObject, string text)
+        {
+            // Create a new GameObject for the text
+            GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
+            TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
 
+            IndexText.text = text;
+            IndexText.fontSize = 1f;
+            IndexText.alignment = TextAlignmentOptions.Center;
+
+            // Calculate the center of the GameObject
+            GameObject childobject = gameObject.FindObject("Mesh 0");
+            Renderer renderer = childobject.GetComponent<Renderer>();
+            Vector3 center = Vector3.zero;
+            center = renderer.bounds.center;
+
+            // Offset the position slightly above the GameObject
+            float verticalOffset = 0.13f;
+            Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
+
+            IndexTextContainer.transform.position = textPosition;
+            IndexTextContainer.transform.rotation = Quaternion.identity;
+            IndexTextContainer.transform.SetParent(gameObject.transform);
+
+            // Add billboard effect(object rotating with camera)
+            Billboard billboard = IndexTextContainer.AddComponent<Billboard>();
+        
+            // Initially set the text as inactive
+            IndexTextContainer.SetActive(false);   
+
+        }
+        private void CreateCircleImageForTag(GameObject parentObject)
+        {
+            if (IdxImage == null)
+            {
+                Debug.LogError("CircleImage template is not found or not assigned.");
+                return;
+            }
+
+            // Find the center of the parent object's renderer
+            Renderer renderer = parentObject.FindObject("Geometry").GetComponentInChildren<Renderer>();
+            if (renderer == null)
+            {
+                Debug.LogError("Renderer not found in the parent object.");
+                return;
+            }
+
+            Vector3 centerPosition = renderer.bounds.center;
+
+            // Define the vertical offset 
+            float verticalOffset = 0.13f;
+            Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+
+            // Instantiate the image object at the offset position
+            GameObject circleImage = Instantiate(IdxImage, offsetPosition, Quaternion.identity, parentObject.transform);
+
+            //Set name and parent
+            circleImage.transform.SetParent(parentObject.transform);
+            circleImage.name = $"{parentObject.name}IdxImage";
+
+            // Add billboard effect
+            Billboard billboard = circleImage.AddComponent<Billboard>();
+
+            //Set Initial Visivility to false
+            circleImage.SetActive(false);
+        }
+   
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         //Handle rotation of objects from Rhino to Unity. With option to add additional rotation around for .obj files.
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
@@ -554,39 +675,38 @@ namespace Instantiate
             return mat;
         }
 
-        //TODO: AND IF NOT EQUAL TO CURRENT STEP.
         // Apply color for objects based on Built or Unbuilt state
         public void ApplyColorBasedOnBuildState()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
                 {
-                    foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
-                    {
-                        GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject gameObject = GameObject.Find(entry.Key);
 
-                        if (gameObject != null)
-                        {
-                            ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject);
-                        }
+                    if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    {
+                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject.FindObject("Geometry"));
                     }
                 }
+            }
         }
 
         //Apply color for objects based on Actor View state
         public void ApplyColorBasedOnActor()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                 {
-                    foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    
+                    if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        GameObject gameObject = GameObject.Find(entry.Key);
-                        
-                        if (gameObject != null)
-                        {
-                            ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject);
-                        }
+                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject.FindObject("Geometry"));
                     }
                 }
+            }
         }
 
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////

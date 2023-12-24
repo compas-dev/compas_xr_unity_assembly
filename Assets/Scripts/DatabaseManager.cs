@@ -1083,4 +1083,5 @@ public class DatabaseManager : MonoBehaviour
     {
         ApplicationSettingUpdate(this, new ApplicationSettingsEventArgs(){Settings = settings});
     }
+
 }

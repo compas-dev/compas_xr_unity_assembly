@@ -78,9 +78,7 @@ public class UIFunctionalities : MonoBehaviour
     //AR Camera and Touch GameObjects
     public Camera arCamera;
     private GameObject activeGameObject;
-    private GameObject temporaryObject;
-    private int mode = 0;
-    
+    private GameObject temporaryObject;    
 
     //On Screen Text
     public GameObject CurrentStepTextObject;
@@ -149,12 +147,12 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         PreviewBuilderButtonObject = VisibilityMenuObject.FindObject("Preview_Builder");
         Button PreviewBuilderButton = PreviewBuilderButtonObject.GetComponent<Button>();
-        PreviewBuilderButton.onClick.AddListener(() => print_string_on_click("Preview Builder Clicked"));;
+        PreviewBuilderButton.onClick.AddListener(ChangeVisualizationMode);;
 
         //Find Object, Button, and Add Listener for OnClick method
         IDButtonObject = VisibilityMenuObject.FindObject("ID_Button");
         Button IDButton = IDButtonObject.GetComponent<Button>();
-        IDButton.onClick.AddListener(() => print_string_on_click("ID Button Clicked"));;
+        IDButton.onClick.AddListener(IDTextButton);;
 
         //Find Object, Button, and Add Listener for OnClick method
         RobotButtonObject = VisibilityMenuObject.FindObject("Robot_Button");
@@ -723,7 +721,57 @@ public class UIFunctionalities : MonoBehaviour
     }
     
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
-    
+    public void ChangeVisualizationMode()
+    {
+        Debug.Log("Builder View Button Pressed");
+
+        // Check the current mode and toggle it
+        if (instantiateObjects.visulizationMode.ActorView != true)
+        {
+            // If current mode is BuiltUnbuilt, switch to ActorView
+            instantiateObjects.visulizationMode.ActorView = true;
+         
+            instantiateObjects.ApplyColorBasedOnActor();
+
+        }
+        else
+        {
+            // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
+            instantiateObjects.visulizationMode.ActorView = false;
+
+            instantiateObjects.ApplyColorBasedOnBuildState();
+        }
+    }
+    public void IDTextButton()
+    {
+        Debug.Log("ID Text Button Pressed");
+
+        if (instantiateObjects != null && instantiateObjects.Elements != null)
+        {
+            // Update the visibility state
+            instantiateObjects.visulizationMode.TagsMode = !instantiateObjects.visulizationMode.TagsMode;
+
+            foreach (Transform child in instantiateObjects.Elements.transform)
+            {
+                // Toggle Text Object
+                Transform textChild = child.Find(child.name + " Text");
+                if (textChild != null)
+                {
+                    textChild.gameObject.SetActive(instantiateObjects.visulizationMode.TagsMode);
+                }
+                // Toggle Circle Image Object
+                Transform circleImageChild = child.Find(child.name + "IdxImage");
+                if (circleImageChild != null)
+                {
+                    circleImageChild.gameObject.SetActive(instantiateObjects.visulizationMode.TagsMode);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("InstantiateObjects script or Elements object not set.");
+        }
+    }
 
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
     private void ToggleInfo(Toggle toggle)
@@ -822,19 +870,16 @@ public class UIFunctionalities : MonoBehaviour
     {
         if (modetype == 1)
             {        
-                //Enable Editor Selected Stick text and disable current stick text 
-                //.... Previously controlled as sepert text objects
+                //Set Visulization Mode
+                instantiateObjects.visulizationMode.EditMode = 1;
 
-                mode = 1; // for editing existing objects
                 Debug.Log ("You have set Mode 1: Element Search");
             }
 
         else
             {
-               //Enable Editor Selected Stick text and disable current stick text 
-                //.... Previously controlled as sepert text objects
-
-                mode = 0; // setting back to original mode
+                //Set Visulization Mode
+                instantiateObjects.visulizationMode.EditMode = 0; // setting back to original mode
 
                 //Destroy active bounding box
                 DestroyBoundingBoxFixElementColor();
@@ -844,7 +889,7 @@ public class UIFunctionalities : MonoBehaviour
     }
     private void SearchControler()
     {
-        if (mode == 1)
+        if (instantiateObjects.visulizationMode.EditMode == 1)
         {
             SearchInput();
         }
@@ -939,7 +984,7 @@ public class UIFunctionalities : MonoBehaviour
                     return;
                 }
 
-                if (mode == 1) // EDIT MODE
+                if (instantiateObjects.visulizationMode.EditMode == 1) // EDIT MODE
                 {
                     Debug.Log("***MODE 2***");
                     EditMode();
@@ -962,7 +1007,7 @@ public class UIFunctionalities : MonoBehaviour
         {
             if (PhysicRayCastBlockedByUi(Input.GetTouch(0).position))
             {
-                if (mode == 1) //EDIT MODE
+                if (instantiateObjects.visulizationMode.EditMode == 1) //EDIT MODE
                 {
                     Debug.Log("***MODE 2***");
                     EditMode();                     
