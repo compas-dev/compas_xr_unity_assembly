@@ -124,8 +124,8 @@ public class DatabaseManager : MonoBehaviour
     }
     public async void FetchSettingsData(DatabaseReference settings_reference)
     {
-        //TODO: Add Await?
-        settings_reference.GetValueAsync().ContinueWithOnMainThread(task =>
+        //TODO: ADDED AWAIT....
+        await settings_reference.GetValueAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -597,15 +597,12 @@ public class DatabaseManager : MonoBehaviour
 
         //Try to access steps as dictionary... might need to be a list
         List<object> stepsList = jsonDataDict["steps"] as List<object>;
-        Debug.Log($"Steps List : {JsonConvert.SerializeObject(stepsList)}");
 
         //Loop through steps desearialize and check if they are valid
         for(int i =0 ; i < stepsList.Count; i++)
         {
             string key = i.ToString();
-            Debug.Log($"THIS IS I: {i}");
             var json_data = stepsList[i];
-            Debug.Log($"Steps List Item : {JsonConvert.SerializeObject(json_data)}");
 
             Step step_data = StepDeserializer(json_data);
             

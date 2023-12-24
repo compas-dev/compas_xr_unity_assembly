@@ -40,6 +40,7 @@ namespace Instantiate
         public Material RobotBuiltMaterial;
         public Material RobotUnbuiltMaterial;
         public Material LockedObjectMaterial;
+        public Material SearchedObjectMaterial;
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -87,7 +88,7 @@ namespace Instantiate
             RobotBuiltMaterial = GameObject.Find("Materials").FindObject("RobotBuilt").GetComponentInChildren<Renderer>().material;
             RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
             LockedObjectMaterial = GameObject.Find("Materials").FindObject("LockedObjects").GetComponentInChildren<Renderer>().material;
-
+            SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
         }
         public void placeElements(List<Step> DataItems) 
         {
@@ -562,6 +563,7 @@ namespace Instantiate
                     foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
                     {
                         GameObject gameObject = GameObject.Find(entry.Key);
+
                         if (gameObject != null)
                         {
                             ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject);
@@ -578,6 +580,7 @@ namespace Instantiate
                     foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                     {
                         GameObject gameObject = GameObject.Find(entry.Key);
+                        
                         if (gameObject != null)
                         {
                             ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject);

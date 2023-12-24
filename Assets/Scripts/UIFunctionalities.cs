@@ -27,8 +27,11 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
     private GameObject StepSearchToggleObject;
+    private GameObject InfoToggleObject;
+    private GameObject CommunicationToggleObject;
     
     //Primary UI Objects
+    public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
     public GameObject NextGeometryButtonObject;
     public GameObject PreviousGeometryButtonObject;
@@ -50,11 +53,11 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject RobotButtonObject;
     private GameObject ObjectLengthsButtonObject;
 
-    //Menu Toggle Objects
+    //Menu Toggle Button Objects
     private GameObject MenuBackground;
-    private GameObject InfoButtonObject;
     private GameObject ReloadButtonObject;
-    private GameObject CommunicationButtonObject;
+    private GameObject InfoPanelObject;
+    private GameObject CommunicationPanelObject;
 
     //Editor Toggle Objects
     private GameObject EditorBackground;
@@ -77,18 +80,20 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject temporaryObject;
     private int mode = 0;
     
-    public bool NextButtonPressed = false;
-    public bool PreviousButtonClicked = false;
 
     //On Screen Text
+    public GameObject CurrentStepTextObject;
+    public GameObject EditorSelectedTextObject;
     public TMP_Text CurrentStepText;
     public TMP_Text LastBuiltIndexText;
+    public TMP_Text EditorSelectedText;
 
     //Touch Input Variables
     private ARRaycastManager rayManager;
 
     //In script use variables
     public string CurrentStep;
+    public string SearchedStep;
     
     void Start()
     {
@@ -112,6 +117,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
         QRMarkers = GameObject.Find("QRMarkers");
+        CanvasObject = GameObject.Find("Canvas");
         
         //Find toggles for visibility
         VisibilityMenuObject = GameObject.Find("Visibility_Editor");
@@ -161,9 +167,8 @@ public class UIFunctionalities : MonoBehaviour
        
         /////////////////////////////////////////// Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
-        InfoButtonObject = MenuButtonObject.FindObject("Info_Button");
-        Button InfoButton = InfoButtonObject.GetComponent<Button>();
-        InfoButton.onClick.AddListener(() => print_string_on_click("Info Button Clicked"));;
+        InfoToggleObject = MenuButtonObject.FindObject("Info_Button");
+        Toggle InfoToggle = InfoToggleObject.GetComponent<Toggle>();
 
         //Find Object, Button, and Add Listener for OnClick method
         ReloadButtonObject = MenuButtonObject.FindObject("Reload_Button");
@@ -171,20 +176,22 @@ public class UIFunctionalities : MonoBehaviour
         ReloadButton.onClick.AddListener(() => print_string_on_click("Reload Button Clicked"));;
 
         //Find Object, Button, and Add Listener for OnClick method
-        CommunicationButtonObject = MenuButtonObject.FindObject("Communication_Button");
-        Button CommunicationButton = CommunicationButtonObject.GetComponent<Button>();
-        CommunicationButton.onClick.AddListener(() => print_string_on_click("Communication Button Clicked"));;
+        CommunicationToggleObject = MenuButtonObject.FindObject("Communication_Button");
+        Toggle CommunicationToggle = CommunicationToggleObject.GetComponent<Toggle>();
 
         //Find Object, Button, and Add Listener for OnClick method
         BuilderEditorButtonObject = EditorToggleObject.FindObject("Builder_Editor_Button");
         Button BuilderEditorButton = BuilderEditorButtonObject.GetComponent<Button>();
-        BuilderEditorButton.onClick.AddListener(() => print_string_on_click("Builder Editor Button Clicked"));;
+        BuilderEditorButton.onClick.AddListener(TouchModifyActor);;
 
         //Find Object, Button, and Add Listener for OnClick method
         BuildStatusButtonObject = EditorToggleObject.FindObject("Build_Status_Editor");
         Button BuildStatusButton = BuildStatusButtonObject.GetComponent<Button>();
-        BuildStatusButton.onClick.AddListener(() => print_string_on_click("Build Status Editor Button Clicked"));;
+        BuildStatusButton.onClick.AddListener(TouchModifyBuildStatus);;
 
+        //Find Panel Objects used for Info and communication
+        InfoPanelObject = CanvasObject.FindObject("InfoPanel");
+        CommunicationPanelObject = CanvasObject.FindObject("CommunicationPanel");
 
         /////////////////////////////////////////// Primary UI Buttons ////////////////////////////////////////////
         
@@ -212,21 +219,24 @@ public class UIFunctionalities : MonoBehaviour
         IsBuiltCoverButton = IsBuiltPanelObjects.FindObject("IsBuiltCoverButton");
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
         IsBuiltButton = IsBuiltButtonObject.GetComponent<Button>();
-        IsBuiltButton.onClick.AddListener(ModifyCurrentStepBuildStatus);;
+        IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));;
 
         //Find Step Search Objects
         StepSearchObjects = ConstantUIPanelObjects.FindObject("StepSearchObjects");
         StepSearchInputField = StepSearchObjects.FindObject("StepSearchInputField").GetComponent<TMP_InputField>();;
         StepSearchButtonObject = StepSearchObjects.FindObject("SearchForStepButton");
         Button StepSearchButton = StepSearchButtonObject.GetComponent<Button>();
-        StepSearchButton.onClick.AddListener(() => print_string_on_click("Step Search Button Clicked"));;
+        StepSearchButton.onClick.AddListener(SearchStepButton);;
 
         //Find Text Objects
-        GameObject CurrentStepTextObject = GameObject.Find("Current_Index_Text");
+        CurrentStepTextObject = GameObject.Find("Current_Index_Text");
         CurrentStepText = CurrentStepTextObject.GetComponent<TMPro.TMP_Text>();
 
         GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltIndex_Text");
         LastBuiltIndexText = LastBuiltIndexTextObject.GetComponent<TMPro.TMP_Text>();
+
+        EditorSelectedTextObject = CanvasObject.FindObject("Editor_Selected_Text");
+        EditorSelectedText = EditorSelectedTextObject.GetComponent<TMPro.TMP_Text>();
 
         /////////////////////////////////////////// Set Toggles ////////////////////////////////////////////
         //Add Listners for Visibility Toggle on and off.
@@ -247,6 +257,16 @@ public class UIFunctionalities : MonoBehaviour
         //Add Listners for Step Search Toggle on and off.
         StepSearchToggle.onValueChanged.AddListener(delegate {
         ToggleStepSearch(StepSearchToggle);
+        });
+
+        //Add Listners for Info Toggle on and off.
+        InfoToggle.onValueChanged.AddListener(delegate {
+        ToggleInfo(InfoToggle);
+        });
+
+        //Add Listners for Info Toggle on and off.
+        CommunicationToggle.onValueChanged.AddListener(delegate {
+        ToggleCommunication(CommunicationToggle);
         });
 
     }
@@ -287,15 +307,15 @@ public class UIFunctionalities : MonoBehaviour
     }
     public void ToggleMenu(Toggle toggle)
     {
-        if (MenuBackground != null && InfoButtonObject != null && ReloadButtonObject != null && CommunicationButtonObject != null && EditorToggleObject != null)
+        if (MenuBackground != null && InfoToggleObject != null && ReloadButtonObject != null && CommunicationToggleObject != null && EditorToggleObject != null)
         {    
             if (toggle.isOn)
             {             
                 //Set Visibility of buttons
                 MenuBackground.SetActive(true);
-                InfoButtonObject.SetActive(true);
+                InfoToggleObject.SetActive(true);
                 ReloadButtonObject.SetActive(true);
-                CommunicationButtonObject.SetActive(true);
+                CommunicationToggleObject.SetActive(true);
                 EditorToggleObject.SetActive(true);
 
                 //Set color of toggle
@@ -304,14 +324,22 @@ public class UIFunctionalities : MonoBehaviour
             }
             else
             {
+                //Control Menu Internal Toggles
+                if(EditorToggleObject.GetComponent<Toggle>().isOn){
+                    EditorToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                if(InfoToggleObject.GetComponent<Toggle>().isOn){
+                    InfoToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                if(CommunicationToggleObject.GetComponent<Toggle>().isOn){
+                    CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+                }
                 //Set Visibility of buttons
                 MenuBackground.SetActive(false);
-                InfoButtonObject.SetActive(false);
+                InfoToggleObject.SetActive(false);
                 ReloadButtonObject.SetActive(false);
-                CommunicationButtonObject.SetActive(false);
+                CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
-
-                //TODO: Add mode switch for if editor touch mode is on or off. Big improvement from last time where you had to close both in sequence.
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -333,6 +361,10 @@ public class UIFunctionalities : MonoBehaviour
                 BuilderEditorButtonObject.SetActive(true);
                 BuildStatusButtonObject.SetActive(true);
 
+                //Set visibility of on screen text
+                CurrentStepTextObject.SetActive(false);
+                EditorSelectedTextObject.SetActive(true);
+
                 //Control Selectable objects in scene
                 ColliderControler();
 
@@ -349,6 +381,10 @@ public class UIFunctionalities : MonoBehaviour
                 EditorBackground.SetActive(false);
                 BuilderEditorButtonObject.SetActive(false);
                 BuildStatusButtonObject.SetActive(false);
+
+                //Set visibility of on screen text
+                EditorSelectedTextObject.SetActive(false);
+                CurrentStepTextObject.SetActive(true);
 
                 //Update mode so we are no longer searching for touch
                 TouchSearchModeControler(0);
@@ -381,6 +417,18 @@ public class UIFunctionalities : MonoBehaviour
             }
             else
             {
+                //If searched step is not null color it built or unbuilt
+                if(SearchedStep != null)
+                {
+                    GameObject searchedElement = Elements.FindObject(SearchedStep);
+
+                    if(searchedElement != null)
+                    {
+                        //Color Previous one if it is not null
+                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedStep].data.is_built, searchedElement.FindObject("Geometry"));
+                    }
+                }
+                
                 //Set Visibility of buttons
                 StepSearchObjects.SetActive(false);
                 IsBuiltPanelObjects.SetActive(true);
@@ -562,12 +610,12 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    public void ModifyCurrentStepBuildStatus()
+    public void ModifyStepBuildStatus(string key)
     {
-        Debug.Log($"Modifying Build Status of: {CurrentStep}");
+        Debug.Log($"Modifying Build Status of: {key}");
 
         //Find the step in the dictoinary
-        Step step = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
+        Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
         //Change Build Status
         if(step.data.is_built)
@@ -576,16 +624,16 @@ public class UIFunctionalities : MonoBehaviour
             step.data.is_built = false;
 
             //Find the closest item that was built to my current item and make that the last built
-            int CurrentStepInt = Convert.ToInt16(CurrentStep);
+            int StepInt = Convert.ToInt16(key);
 
-            //TODO: CHECK THIS...
-            Debug.Log("This is working?");
-            for(int i = CurrentStepInt; i > 0; i--)
+            //Also Important question... does the Touch Modifier allow overwriting of the last built item?
+            //Iterate through steps backwards to find the last built step....
+            //This could take some more thought, it can either be like this or not overwrite at all and just become what ever it is.
+            //Only scenario where it would be wrong is if I build one and unbuild it directly the last built item will be that one which is incorrect.
+            for(int i = StepInt; i > 0; i--)
             {
-                Debug.Log("This is working? 2");
                 if(databaseManager.BuildingPlanDataItem.steps[i.ToString()].data.is_built)
                 {
-                    Debug.Log("This is working?3");
                     //Change LastBuiltIndex
                     databaseManager.BuildingPlanDataItem.LastBuiltIndex = i.ToString();
                     SetLastBuiltText(i.ToString());
@@ -600,30 +648,136 @@ public class UIFunctionalities : MonoBehaviour
             step.data.is_built = true;
 
             //Change LastBuiltIndex
-            databaseManager.BuildingPlanDataItem.LastBuiltIndex = CurrentStep;
-            SetLastBuiltText(CurrentStep);
+            databaseManager.BuildingPlanDataItem.LastBuiltIndex = key;
+            SetLastBuiltText(key);
         }
 
         //Update color
-        instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(CurrentStep).FindObject("Geometry"));
+        instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(key).FindObject("Geometry"));
         
-        //Update Is Built Button
-        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.actor);
+        //If it is current element update UI graphics and push current element to database
+        if(key == CurrentStep)
+        {    
+            //Update Is Built Button
+            IsBuiltButtonGraphicsControler(step.data.is_built, step.data.actor);
+        
+            //TODO: Push Current Step to the database under device_id
+            //........................
+        }
 
         //Push Data to the database
-        databaseManager.PushAllDataBuildingPlan(CurrentStep);
+        databaseManager.PushAllDataBuildingPlan(key);
     }
     public void SetLastBuiltText(string key)
     {
         //Set Last Built Text
         LastBuiltIndexText.text = $"Last Built Step : {key}";
     }
+    public void SearchStepButton()
+    {
+        //Search for step button clicked
+        Debug.Log("Search for Step Button Pressed");
+
+        //GameObject that the search is looking for
+        GameObject searchedElement = null;
+        
+        //If current step is not null and greater then Zero add subtract 1
+        if(StepSearchInputField.text != null)
+        {
+            searchedElement = Elements.FindObject(StepSearchInputField.text);
+        }
+
+        //If the element was found color the previous object built or unbuilt and replace the variable
+        if(searchedElement != null)
+        {
+            //Color Previous one if it is not null
+            if(SearchedStep != null)
+            {
+                GameObject previousStepElement = Elements.FindObject(SearchedStep);
+
+                if(previousStepElement != null)
+                {
+                    //Color it Human or Robot Built
+                    instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedStep].data.is_built, previousStepElement.FindObject("Geometry"));
+                }
+            }
+            
+            //Set Searched Step
+            SearchedStep = StepSearchInputField.text;
+
+            //Color red for selection color
+            Renderer searchedObjectRenderer = searchedElement.FindObject("Geometry").GetComponent<Renderer>();
+            searchedObjectRenderer.material = instantiateObjects.SearchedObjectMaterial;
+
+            //TODO: ARROW TO STEP
+
+        }
+        else
+        {
+            //TODO: Trigger ON Screen Text that says the step was not found.
+
+            Debug.Log("Could not find the step you are looking for.");
+        }     
+    }
     
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     
 
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
-    
+    private void ToggleInfo(Toggle toggle)
+    {
+        if(InfoPanelObject != null)
+        {
+            if (toggle.isOn)
+            {             
+                //Set Visibility of Information panel
+                InfoPanelObject.SetActive(true);
+
+                //Set color of toggle
+                SetUIObjectColor(InfoToggleObject, Yellow);
+
+            }
+            else
+            {
+                //Set Visibility of Information panel
+                InfoPanelObject.SetActive(false);
+
+                //Set color of toggle
+                SetUIObjectColor(InfoToggleObject, White);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Info Panel.");
+        }
+    }
+    private void ToggleCommunication(Toggle toggle)
+    {
+        if(CommunicationPanelObject != null)
+        {
+            if (toggle.isOn)
+            {             
+                //Set Visibility of Information panel
+                CommunicationPanelObject.SetActive(true);
+
+                //Set color of toggle
+                SetUIObjectColor(CommunicationToggleObject, Yellow);
+
+            }
+            else
+            {
+                //Set Visibility of Information panel
+                CommunicationPanelObject.SetActive(false);
+
+                //Set color of toggle
+                SetUIObjectColor(CommunicationToggleObject, White);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Communication Panel.");
+        }
+    }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
     public void TouchSearchModeControler(int modetype)
@@ -804,10 +958,19 @@ public class UIFunctionalities : MonoBehaviour
 
         if (activeGameObject != null)
         {
-            // _EditorCurrentStickText(activeGameObject);
+            //Set On screen text object to the correct name
+            EditorSelectedText.text = activeGameObject.transform.parent.name;
+            
+            //Set temporary object as the active game object
             temporaryObject = activeGameObject;
-            //TODO: Color the object the correct color
 
+            //String name of the parent object to find element in the dictionary
+            string activeGameObjectParentname = activeGameObject.transform.parent.name;
+            
+            //Color the object based on human or robot
+            instantiateObjects.ColorHumanOrRobot(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.actor, databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.is_built, activeGameObject);
+            
+            //Add Bounding Box for Object
             addBoundingBox(temporaryObject);
         }
 
@@ -837,7 +1000,6 @@ public class UIFunctionalities : MonoBehaviour
         Collider collider = gameObj.GetComponent<Collider>();
         Vector3 center = collider.bounds.center;
         float radius = collider.bounds.extents.magnitude;
-        Debug.Log("RADIUS BOUNDING BOX = " + radius);
 
         // destroy any Collider component
         if (boundingArea.GetComponent<Rigidbody>() != null)
@@ -889,5 +1051,51 @@ public class UIFunctionalities : MonoBehaviour
         }
 
     }
+    private void TouchModifyBuildStatus()
+    {
+        Debug.Log("Build Status Button Pressed");
+        
+        if (activeGameObject != null)
+        {
+            ModifyStepBuildStatus(activeGameObject.transform.parent.name);
+        }
+    }
+    private void TouchModifyActor()
+    {
+        Debug.Log("Actor Modifier Button Pressed");
+        
+        if (activeGameObject != null)
+        {
+            ModifyStepActor(activeGameObject.transform.parent.name);
+        }
+    }
+    public void ModifyStepActor(string key)
+    {
+        Debug.Log($"Modifying Actor of: {key}");
+
+        //Find the step in the dictoinary
+        Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
+        //Change Build Status
+        if(step.data.actor == "HUMAN")
+        {
+            //Change Builder
+            step.data.actor = "ROBOT";
+        }
+        else
+        {
+            //Change Builder
+            step.data.actor = "HUMAN";
+        }
+
+        //Update color
+        instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(key).FindObject("Geometry"));
+        
+
+        //Push Data to the database
+        databaseManager.PushAllDataBuildingPlan(key);
+    }
+
+
 }
 
