@@ -21,6 +21,7 @@ public class UIFunctionalities : MonoBehaviour
     //Other Scripts for inuse objects
     public DatabaseManager databaseManager;
     public InstantiateObjects instantiateObjects;
+    public Eventmanager eventManager;
     
     //Toggle GameObjects
     private GameObject VisibilityMenuObject;
@@ -113,6 +114,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find Other Scripts
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+        eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -173,7 +175,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         ReloadButtonObject = MenuButtonObject.FindObject("Reload_Button");
         Button ReloadButton = ReloadButtonObject.GetComponent<Button>();
-        ReloadButton.onClick.AddListener(() => print_string_on_click("Reload Button Clicked"));;
+        ReloadButton.onClick.AddListener(ReloadApplication);;
 
         //Find Object, Button, and Add Listener for OnClick method
         CommunicationToggleObject = MenuButtonObject.FindObject("Communication_Button");
@@ -777,6 +779,42 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find Communication Panel.");
         }
+    }
+    private void ReloadApplication()
+    {
+        Debug.Log("Reload Button Pressed");
+        
+        //Remove listners - This is important to not add multiple listners in the application
+        databaseManager.RemoveListners();
+
+        //Clear all elements in the scene
+        if (Elements.transform.childCount > 0)
+        {
+            foreach (Transform child in Elements.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        //Put all QR Markers back to Origin Location
+        if (QRMarkers.transform.childCount > 0)
+        {        
+            foreach (Transform child in QRMarkers.transform)
+            {
+                child.transform.position = Vector3.zero;
+                child.transform.rotation = Quaternion.identity;
+            }
+        }
+
+        //Clear all dictionaries
+        databaseManager.BuildingPlanDataItem.steps.Clear();
+        databaseManager.DataItemDict.Clear();
+        databaseManager.QRCodeDataDict.Clear();
+        // databaseManager.CurrentUsersDict.Clear();
+
+        //Fetch settings data again
+        databaseManager.FetchSettingsData(eventManager.settings_reference);
+
     }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////

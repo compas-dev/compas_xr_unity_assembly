@@ -17,7 +17,6 @@ public class Eventmanager : MonoBehaviour
     public GameObject Checkfirebase;
     public GameObject QRTracking;
     public DatabaseReference dbreference_design;
-
     public DatabaseReference settings_reference;
     DatabaseManager databaseManager;
 

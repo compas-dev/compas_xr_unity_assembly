@@ -124,7 +124,6 @@ public class DatabaseManager : MonoBehaviour
     }
     public async void FetchSettingsData(DatabaseReference settings_reference)
     {
-        //TODO: ADDED AWAIT....
         await settings_reference.GetValueAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
@@ -794,9 +793,11 @@ public class DatabaseManager : MonoBehaviour
 
 /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
 
-    // Add a listener for firebase child events
+    // Add listeners and remove them for firebase child events
     public void AddListeners(object source, EventArgs args)
     {        
+        Debug.Log("Adding Listners");
+        
         //Updated listners for building plan steps
         dbreference_steps.ChildAdded += OnChildAdded;
         dbreference_steps.ChildChanged += OnChildChanged;
@@ -819,6 +820,34 @@ public class DatabaseManager : MonoBehaviour
         // dbrefernece_currentstep.ChildAdded += OnUserAdded;
         // dbrefernece_currentstep.ChildChanged += OnUserChanged;
         // dbrefernece_currentstep.ChildRemoved += OnUserRemoved;
+
+    }
+    public void RemoveListners()
+    {        
+        Debug.Log("Removing the listeners");
+
+        //Updated listners for building plan steps
+        dbreference_steps.ChildAdded -= OnChildAdded;
+        dbreference_steps.ChildChanged -= OnChildChanged;
+        dbreference_steps.ChildRemoved -= OnChildRemoved;
+        
+        //Updated listeners for building plan last built index
+        dbreference_LastBuiltIndex.ValueChanged -= OnLastBuiltIndexChanged;
+
+        //Add Listners for the Assembly 
+        dbreference_assembly.ChildAdded -= OnAssemblyChanged;
+        dbreference_assembly.ChildChanged -= OnAssemblyChanged;
+        dbreference_assembly.ChildRemoved -= OnAssemblyChanged;
+
+        //Add Listners for the QR codes 
+        dbreference_qrcodes.ChildAdded -= OnQRChanged;
+        dbreference_qrcodes.ChildChanged -= OnQRChanged;
+        dbreference_qrcodes.ChildRemoved -= OnQRChanged;
+
+        //Add Listners for current step
+        // dbrefernece_currentstep.ChildAdded -= OnUserAdded;
+        // dbrefernece_currentstep.ChildChanged -= OnUserChanged;
+        // dbrefernece_currentstep.ChildRemoved -= OnUserRemoved;
 
     }
 
