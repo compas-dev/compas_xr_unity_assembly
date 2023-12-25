@@ -70,6 +70,7 @@ namespace Instantiate
         private GameObject geometry_object;
         private GameObject IdxImage;
         private GameObject SelectionArrow;
+        private GameObject NewUserArrow;
 
         public struct Rotation
         {
@@ -111,7 +112,8 @@ namespace Instantiate
             
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("IdxTags").FindObject("Circle");
-            SelectionArrow = GameObject.Find("SelectionArrow").FindObject("Arrow");
+            SelectionArrow = GameObject.Find("SelectionArrows").FindObject("Arrow");
+            NewUserArrow = GameObject.Find("SelectionArrows").FindObject("NewUserArrow");
 
             //Set Initial Visulization Modes
             visulizationMode.ActorView = false;
@@ -500,7 +502,7 @@ namespace Instantiate
             //Set Initial Visivility to false
             circleImage.SetActive(false);
         }
-        public void ArrowInstantiator(GameObject parentObject, string itemKey)
+        public void ArrowInstantiator(GameObject parentObject, string itemKey, bool newUserArrow = false)
         {            
             if (SelectionArrow == null)
             {
@@ -529,9 +531,18 @@ namespace Instantiate
             Rotation rotationlh = rhToLh(arrowRotation.x , arrowRotation.y);
             Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
 
-            // Instantiate the image object at the offset position
-            GameObject newArrow = Instantiate(SelectionArrow, offsetPosition, rotationQuaternion, parentObject.transform);
+            //Set new arrow item
+            GameObject newArrow = null;
 
+            // Instantiate arrow at the offset position
+            if (newUserArrow)
+            {
+                newArrow = Instantiate(NewUserArrow, offsetPosition, rotationQuaternion, parentObject.transform);
+            }
+            else
+            {
+                newArrow = Instantiate(SelectionArrow, offsetPosition, rotationQuaternion, parentObject.transform);
+            }
             //Set name and parent
             newArrow.transform.SetParent(parentObject.transform);
             newArrow.name = $"{parentObject.name} Arrow";
@@ -551,7 +562,7 @@ namespace Instantiate
             userObject.transform.rotation = Quaternion.identity;
 
             //Instantiate Arrow
-            ArrowInstantiator(userObject, itemKey);
+            ArrowInstantiator(userObject, itemKey, true);
         }
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         //Handle rotation of objects from Rhino to Unity. With option to add additional rotation around for .obj files.
@@ -793,7 +804,6 @@ namespace Instantiate
             }
 
         }
-
         public void OnUserInfoUpdate(object source, UserInfoDataItemsDictEventArgs eventArgs)
         {
             Debug.Log("User Info is loaded." + " " + "Key of node updated= " + eventArgs.Key);
@@ -808,9 +818,9 @@ namespace Instantiate
                 {
                     //Remove existing Arrow
                     RemoveObjects(eventArgs.Key + " Arrow");
-                    
+
                     //Instantiate new Arrow
-                    ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep);
+                    ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
                 }
                 else
                 {
