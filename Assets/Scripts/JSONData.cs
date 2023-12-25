@@ -95,4 +95,14 @@ namespace JSON
         public float[] yaxis;
 
     }
+
+    ////////////////Classes for User Current Informatoin/////////////////////
+    
+    [System.Serializable]
+    public class UserCurrentInfo
+    {
+        public string currentStep { get; set; }
+        public string timeStamp { get; set; }
+        
+    }
 }

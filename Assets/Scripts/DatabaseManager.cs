@@ -38,6 +38,11 @@ public class UpdateDataItemsDictEventArgs : EventArgs
     public Step NewValue { get; set; }
     public string Key { get; set; }
 }
+public class UserInfoDataItemsDictEventArgs : EventArgs
+{
+    public UserCurrentInfo UserInfo { get; set; }
+    public string Key { get; set; }
+}
 
 public class ApplicationSettingsEventArgs : EventArgs
 {
@@ -59,7 +64,7 @@ public class DatabaseManager : MonoBehaviour
     public DatabaseReference dbreference_LastBuiltIndex;
 
     public DatabaseReference dbreference_qrcodes;
-    public DatabaseReference dbrefernece_currentstep;
+    public DatabaseReference dbrefernece_usersCurrentSteps;
     public StorageReference storageReference;
 
 
@@ -67,7 +72,7 @@ public class DatabaseManager : MonoBehaviour
     public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
     public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
     public Dictionary<string, QRcode> QRCodeDataDict { get; private set; } = new Dictionary<string, QRcode>();
-
+    public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
 
     //Data Structure to Store Application Settings
     public ApplicationSettings applicationSettings;
@@ -85,6 +90,9 @@ public class DatabaseManager : MonoBehaviour
 
     public delegate void StoreApplicationSettings(object source, ApplicationSettingsEventArgs e);
     public event StoreApplicationSettings ApplicationSettingUpdate;
+    
+    public delegate void UpdateUserInfoEventHandler(object source, UserInfoDataItemsDictEventArgs e);
+    public event UpdateUserInfoEventHandler UserInfoUpdate;
 
 
     //Define HTTP request response classes
@@ -149,7 +157,7 @@ public class DatabaseManager : MonoBehaviour
         dbreference_steps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
         dbreference_LastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
-        dbrefernece_currentstep = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("currentstep");
+        dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrenStep");
         
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
@@ -377,7 +385,6 @@ public class DatabaseManager : MonoBehaviour
             
             if (!string.IsNullOrEmpty(jsondatastring))
             {
-                Debug.Log("QR Code Data:" + jsondatastring);
                 QRcode newValue = JsonConvert.DeserializeObject<QRcode>(jsondatastring);
                 QRCodeDataDict[key] = newValue;
                 QRCodeDataDict[key].Key = key;
@@ -390,9 +397,7 @@ public class DatabaseManager : MonoBehaviour
 
     }
     private void DesearializeLastBuiltIndex(DataSnapshot snapshot)
-    {
-        Debug.Log("I am inside the LastBuiltIndex Changed Event");
-  
+    {  
         string jsondatastring = snapshot.GetRawJsonValue();
         Debug.Log("Last Bulit Index Data:" + jsondatastring);
         
@@ -402,7 +407,7 @@ public class DatabaseManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Current Element Did not produce a value");
+            Debug.LogWarning("Last Built Index Did not produce a value");
             TempDatabaseLastBuiltStep = null;
         }
     }
@@ -552,8 +557,6 @@ public class DatabaseManager : MonoBehaviour
         }
 
     }
-
-    //TODO: This will run once on start, but it will be find last written step & set current step.
     public void FindInitialElement()
     {
         //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
@@ -566,7 +569,7 @@ public class DatabaseManager : MonoBehaviour
             if(step.data.is_built == false)
             {
                 //Set Current Element
-                UIFunctionalities.SetCurrentStep(i.ToString(), false);
+                UIFunctionalities.SetCurrentStep(i.ToString());
 
                 break;
             }
@@ -790,6 +793,19 @@ public class DatabaseManager : MonoBehaviour
 
         return step;
     }
+    public UserCurrentInfo UserInfoDeserilizer(object jsondata)
+    {
+        Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
+
+        //Create class instances of node elements
+        UserCurrentInfo userCurrentInfo = new UserCurrentInfo();
+
+        //Set values for base node class to keep data structure consistent
+        userCurrentInfo.currentStep = (string)jsonDataDict["currentStep"];
+        userCurrentInfo.timeStamp = (string)jsonDataDict["timeStamp"];
+
+        return userCurrentInfo;
+    }
 
 /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
 
@@ -816,10 +832,10 @@ public class DatabaseManager : MonoBehaviour
         dbreference_qrcodes.ChildChanged += OnQRChanged;
         dbreference_qrcodes.ChildRemoved += OnQRChanged;
 
-        //Add Listners for current step
-        // dbrefernece_currentstep.ChildAdded += OnUserAdded;
-        // dbrefernece_currentstep.ChildChanged += OnUserChanged;
-        // dbrefernece_currentstep.ChildRemoved += OnUserRemoved;
+        // Add Listners for current step
+        dbrefernece_usersCurrentSteps.ChildAdded += OnUserAdded;
+        dbrefernece_usersCurrentSteps.ChildChanged += OnUserChanged;
+        dbrefernece_usersCurrentSteps.ChildRemoved += OnUserRemoved;
 
     }
     public void RemoveListners()
@@ -845,9 +861,9 @@ public class DatabaseManager : MonoBehaviour
         dbreference_qrcodes.ChildRemoved -= OnQRChanged;
 
         //Add Listners for current step
-        // dbrefernece_currentstep.ChildAdded -= OnUserAdded;
-        // dbrefernece_currentstep.ChildChanged -= OnUserChanged;
-        // dbrefernece_currentstep.ChildRemoved -= OnUserRemoved;
+        dbrefernece_usersCurrentSteps.ChildAdded -= OnUserAdded;
+        dbrefernece_usersCurrentSteps.ChildChanged -= OnUserChanged;
+        dbrefernece_usersCurrentSteps.ChildRemoved -= OnUserRemoved;
 
     }
 
@@ -993,6 +1009,121 @@ public class DatabaseManager : MonoBehaviour
             }
         }
     }  
+    public void OnUserAdded(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null) {
+        Debug.LogError($"Database error: {args.DatabaseError}");
+        return;
+        }
+
+        if (args.Snapshot == null) {
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            return;
+        }
+
+        string key = args.Snapshot.Key;
+        var childSnapshot = args.Snapshot.GetValue(true);
+
+        if (childSnapshot != null)
+        {
+            UserCurrentInfo newValue = UserInfoDeserilizer(childSnapshot);
+            
+            //make a new entry in the dictionary if it doesnt already exist
+            if (newValue != null)
+            {
+                if (UserCurrentStepDict.ContainsKey(key))
+                {
+                    Debug.Log($"This User {key} already exists in the dictionary");
+                }
+                else
+                {
+                    Debug.Log($"The key '{key}' does not exist in the dictionary");
+                    UserCurrentStepDict.Add(key, newValue);
+
+                    //Instantiate new object
+                    OnUserInfoUpdated(newValue, key);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
+            }
+        }
+    }
+    public void OnUserChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null) {
+        Debug.LogError($"Database error: {args.DatabaseError}");
+        return;
+        }
+
+        if (args.Snapshot == null) {
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            return;
+        }
+
+        string key = args.Snapshot.Key;
+        var childSnapshot = args.Snapshot.GetValue(true);
+
+        if (childSnapshot != null)
+        {
+            UserCurrentInfo newValue = UserInfoDeserilizer(childSnapshot);
+            
+            //Check: if the current step update was from me or not.
+            if (key != SystemInfo.deviceUniqueIdentifier)
+            {    
+                Debug.Log($"User {key} updated their current step");
+
+
+                Debug.Log($"I entered here for key {key}");
+                if(newValue != null)
+                {
+                    UserCurrentStepDict[key] = newValue;
+                }
+                else
+                {
+                    Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                }
+
+                Debug.Log($"Handle Changed User INfo - User {key} updated their current step to {newValue.currentStep}");
+                
+                //Instantiate new object
+                OnUserInfoUpdated(newValue, key);
+            }
+            else
+            {
+                Debug.Log("I updated my current key");
+            }
+
+        }
+    }
+    public void OnUserRemoved(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null) {
+        Debug.LogError($"Database error: {args.DatabaseError}");
+        return;
+        }
+        
+        string key = args.Snapshot.Key;
+        string childSnapshot = args.Snapshot.GetRawJsonValue();
+        
+        if (!string.IsNullOrEmpty(childSnapshot))
+        {
+            //remove an entry in the dictionary
+            if (UserCurrentStepDict.ContainsKey(key))
+            {
+                UserCurrentInfo newValue = null;
+                Debug.Log("The key exists in the dictionary and is going to be removed");
+                UserCurrentStepDict.Remove(key);
+                OnUserInfoUpdated(newValue, key);
+            }
+            else
+            {
+                Debug.Log("The key does not exist in the dictionary");
+            }
+        }
+
+    }
     public void OnAssemblyChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
     {
         if (args.DatabaseError != null) {
@@ -1078,6 +1209,11 @@ public class DatabaseManager : MonoBehaviour
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "new dict is null!");
         DatabaseUpdate(this, new UpdateDataItemsDictEventArgs() {NewValue = newValue, Key = key });
+    }
+    protected virtual void OnUserInfoUpdated(UserCurrentInfo newValue, string key)
+    {
+        UnityEngine.Assertions.Assert.IsNotNull(UserInfoUpdate, "new dict is null!");
+        UserInfoUpdate(this, new UserInfoDataItemsDictEventArgs() {UserInfo = newValue, Key = key });
     }
     protected virtual void OnSettingsUpdate(ApplicationSettings settings)
     {

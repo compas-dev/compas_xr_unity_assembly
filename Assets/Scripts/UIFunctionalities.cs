@@ -91,7 +91,7 @@ public class UIFunctionalities : MonoBehaviour
     private ARRaycastManager rayManager;
 
     //In script use variables
-    public string CurrentStep;
+    public string CurrentStep = null;
     public string SearchedStep;
     
     void Start()
@@ -469,16 +469,19 @@ public class UIFunctionalities : MonoBehaviour
             if(CurrentStepInt < databaseManager.BuildingPlanDataItem.steps.Count - 1)
             {
                 //Set current element as this step + 1
-                SetCurrentStep((CurrentStepInt + 1).ToString(), false);
+                SetCurrentStep((CurrentStepInt + 1).ToString());
             }  
         }
 
     }
-    public void SetCurrentStep(string key, bool write)
+    public void SetCurrentStep(string key)
     {
         //If the current step is not null find the previous current step and color it bulit or unbuilt.
         if(CurrentStep != null)
         {
+            //Find Arrow and Destroy it
+            instantiateObjects.RemoveObjects($"{CurrentStep} Arrow");
+            
             //Find Gameobject Associated with that step
             GameObject previousStepElement = Elements.FindObject(CurrentStep);
 
@@ -508,13 +511,20 @@ public class UIFunctionalities : MonoBehaviour
         //Update Onscreen Text
         CurrentStepText.text = CurrentStep;
         
-        //Write Current Step to the database under my name
-        if(write)
-        {
-            //TODO: This needs to be more complex.
-            //Push Current key to the firebase
-            databaseManager.PushStringData(databaseManager.dbrefernece_currentstep, CurrentStep);
-        }
+        //Instantiate an arrow at the current step
+        instantiateObjects.ArrowInstantiator(element, CurrentStep);
+
+        //Write Current Step to the database under my device name
+        UserCurrentInfo userCurrentInfo = new UserCurrentInfo();
+        userCurrentInfo.currentStep = CurrentStep;
+        userCurrentInfo.timeStamp = (System.DateTime.UtcNow.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss"));
+
+        //Add to the UserCurrentStepDict
+        databaseManager.UserCurrentStepDict[SystemInfo.deviceUniqueIdentifier] = userCurrentInfo;
+
+        //Push Current key to the firebase
+        databaseManager.PushStringData(databaseManager.dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
+    
 
         //Update Preview Geometry the visulization is remapped correctly
         PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
@@ -535,7 +545,7 @@ public class UIFunctionalities : MonoBehaviour
             if(CurrentStepInt > 0)
             {
                 //Set current element as this step - 1
-                SetCurrentStep((CurrentStepInt - 1).ToString(), false);
+                SetCurrentStep((CurrentStepInt - 1).ToString());
             }  
         }       
 

@@ -57,6 +57,7 @@ public class Eventmanager : MonoBehaviour
 
         //Trigger events for updates in the database.
         databaseManager.DatabaseUpdate += instantiateObjects.OnDatabaseUpdate;
+        databaseManager.UserInfoUpdate += instantiateObjects.OnUserInfoUpdate;
 
     }
 

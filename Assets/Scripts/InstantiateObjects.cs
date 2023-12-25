@@ -46,17 +46,19 @@ namespace Instantiate
         //Parent Objects
         public GameObject QRMarkers; 
         public GameObject Elements;
+        public GameObject UserObjects;
 
         //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
         public event InitialElementsPlaced PlacedInitialElements;
         
-        //Control Visulization Modes
+        //Control Visulization Modes //Pull this into its own script and control it there.
         public class ModeControler
         {
+            //Can be adapted to an enum for different coloring modes
             public bool ActorView { get; set; }
-            
-            //Can be adapted to more then just a bool (for example we used multiple touch modes last project)
+
+            //Can be adapted to an enum for different touch modes            
             public int EditMode { get; set; }
             public bool TagsMode { get; set; }
         }
@@ -67,6 +69,7 @@ namespace Instantiate
         //Private IN SCRIPT USE OBJECTS
         private GameObject geometry_object;
         private GameObject IdxImage;
+        private GameObject SelectionArrow;
 
         public struct Rotation
         {
@@ -94,6 +97,7 @@ namespace Instantiate
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
             QRMarkers = GameObject.Find("QRMarkers");
+            UserObjects = GameObject.Find("UserObjects");
 
             //Find Initial Materials
             BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
@@ -104,9 +108,10 @@ namespace Instantiate
             RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
             LockedObjectMaterial = GameObject.Find("Materials").FindObject("LockedObjects").GetComponentInChildren<Renderer>().material;
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
-
+            
+            //Find GameObjects fo internal use
             IdxImage = GameObject.Find("IdxTags").FindObject("Circle");
-
+            SelectionArrow = GameObject.Find("SelectionArrow").FindObject("Arrow");
 
             //Set Initial Visulization Modes
             visulizationMode.ActorView = false;
@@ -166,11 +171,11 @@ namespace Instantiate
             GameObject geometryObject = elementPrefab.FindObject("Geometry");
 
             // Create and attach text label to the GameObject
-            // CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
-            // CreateCircleImageForTag(elementPrefab);
+            CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
+            CreateCircleImageForTag(elementPrefab);
 
-            //Set Color Based on Visulization Mode
-            if(visulizationMode.ActorView)
+            //Set Color Based on Visulization Mode or if it is equal to my current step
+            if(visulizationMode.ActorView || Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
             }
@@ -428,34 +433,40 @@ namespace Instantiate
             // Create a new GameObject for the text
             GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
             TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
-
+            Debug.Log($"I am here 0 for {gameObject.name}");
             IndexText.text = text;
             IndexText.fontSize = 1f;
             IndexText.alignment = TextAlignmentOptions.Center;
+            Debug.Log($"I am here 1 for {gameObject.name}");
 
             // Calculate the center of the GameObject
-            GameObject childobject = gameObject.FindObject("Mesh 0");
+            GameObject childobject = gameObject.FindObject("Geometry");
             Renderer renderer = childobject.GetComponent<Renderer>();
             Vector3 center = Vector3.zero;
             center = renderer.bounds.center;
+            Debug.Log($"I am here 2 for {gameObject.name}");
 
             // Offset the position slightly above the GameObject
             float verticalOffset = 0.13f;
             Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
+            Debug.Log($"I am here 3 for {gameObject.name}");
 
             IndexTextContainer.transform.position = textPosition;
             IndexTextContainer.transform.rotation = Quaternion.identity;
             IndexTextContainer.transform.SetParent(gameObject.transform);
+            Debug.Log($"I am here 4 for {gameObject.name}");
 
             // Add billboard effect(object rotating with camera)
             Billboard billboard = IndexTextContainer.AddComponent<Billboard>();
+            Debug.Log($"I am here 5 for {gameObject.name}");
         
             // Initially set the text as inactive
             IndexTextContainer.SetActive(false);   
+            Debug.Log($"I am here 6 for {gameObject.name}");
 
         }
         private void CreateCircleImageForTag(GameObject parentObject)
-        {
+        {            
             if (IdxImage == null)
             {
                 Debug.LogError("CircleImage template is not found or not assigned.");
@@ -489,7 +500,59 @@ namespace Instantiate
             //Set Initial Visivility to false
             circleImage.SetActive(false);
         }
-   
+        public void ArrowInstantiator(GameObject parentObject, string itemKey)
+        {            
+            if (SelectionArrow == null)
+            {
+                Debug.LogError("Could Not find SelectionArrow.");
+                return;
+            }
+
+            //Find the center of the Item key object
+            GameObject itemObject = Elements.FindObject(itemKey);
+            Debug.Log("Arrow: " + itemObject.name + itemKey);
+            Renderer renderer = itemObject.FindObject("Geometry").GetComponentInChildren<Renderer>();
+            if (renderer == null)
+            {
+                Debug.LogError("Renderer not found in the parent object.");
+                return;
+            }
+
+            Vector3 centerPosition = renderer.bounds.center;
+
+            // Define the vertical offset 
+            float verticalOffset = 0.13f;
+            Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+
+            //Define rotation for the gameObject.
+            Rotation arrowRotation = getRotation(databaseManager.BuildingPlanDataItem.steps[itemKey].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[itemKey].data.location.yaxis); 
+            Rotation rotationlh = rhToLh(arrowRotation.x , arrowRotation.y);
+            Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
+
+            // Instantiate the image object at the offset position
+            GameObject newArrow = Instantiate(SelectionArrow, offsetPosition, rotationQuaternion, parentObject.transform);
+
+            //Set name and parent
+            newArrow.transform.SetParent(parentObject.transform);
+            newArrow.name = $"{parentObject.name} Arrow";
+
+            //Set Active
+            newArrow.SetActive(true);
+        }
+        public void CreateNewUserObject(string UserInfoname, string itemKey)
+        {
+            GameObject userObject = new GameObject(UserInfoname);
+
+            //Set parent
+            userObject.transform.SetParent(UserObjects.transform);
+
+            //Set position and rotation
+            userObject.transform.position = Vector3.zero;
+            userObject.transform.rotation = Quaternion.identity;
+
+            //Instantiate Arrow
+            ArrowInstantiator(userObject, itemKey);
+        }
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         //Handle rotation of objects from Rhino to Unity. With option to add additional rotation around for .obj files.
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
@@ -730,6 +793,32 @@ namespace Instantiate
             }
 
         }
+
+        public void OnUserInfoUpdate(object source, UserInfoDataItemsDictEventArgs eventArgs)
+        {
+            Debug.Log("User Info is loaded." + " " + "Key of node updated= " + eventArgs.Key);
+            if (eventArgs.UserInfo == null)
+            {
+                Debug.Log($"user {eventArgs.Key} will be removed");
+                RemoveObjects(eventArgs.Key);
+            }
+            else
+            {
+                if (GameObject.Find(eventArgs.Key) != null)
+                {
+                    //Remove existing Arrow
+                    RemoveObjects(eventArgs.Key + " Arrow");
+                    
+                    //Instantiate new Arrow
+                    ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep);
+                }
+                else
+                {
+                    Debug.Log($"Creating a new user object for {eventArgs.Key}");
+                    CreateNewUserObject(eventArgs.Key, eventArgs.UserInfo.currentStep);
+                }
+            }
+        }
         private void InstantiateChangedKeys(Step newValue, string key)
         {
             if (GameObject.Find(key) != null)
@@ -744,7 +833,7 @@ namespace Instantiate
             }
             placeElement(key, newValue);
         }
-        private void RemoveObjects(string key)
+        public void RemoveObjects(string key)
         {
             //Delete old object if it already exists
             if (GameObject.Find(key) != null)
