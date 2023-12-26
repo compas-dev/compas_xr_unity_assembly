@@ -435,36 +435,29 @@ namespace Instantiate
             // Create a new GameObject for the text
             GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
             TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
-            Debug.Log($"I am here 0 for {gameObject.name}");
             IndexText.text = text;
             IndexText.fontSize = 1f;
             IndexText.alignment = TextAlignmentOptions.Center;
-            Debug.Log($"I am here 1 for {gameObject.name}");
 
             // Calculate the center of the GameObject
             GameObject childobject = gameObject.FindObject("Geometry");
             Renderer renderer = childobject.GetComponent<Renderer>();
             Vector3 center = Vector3.zero;
             center = renderer.bounds.center;
-            Debug.Log($"I am here 2 for {gameObject.name}");
 
             // Offset the position slightly above the GameObject
             float verticalOffset = 0.13f;
             Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
-            Debug.Log($"I am here 3 for {gameObject.name}");
 
             IndexTextContainer.transform.position = textPosition;
             IndexTextContainer.transform.rotation = Quaternion.identity;
             IndexTextContainer.transform.SetParent(gameObject.transform);
-            Debug.Log($"I am here 4 for {gameObject.name}");
 
             // Add billboard effect(object rotating with camera)
             Billboard billboard = IndexTextContainer.AddComponent<Billboard>();
-            Debug.Log($"I am here 5 for {gameObject.name}");
         
             // Initially set the text as inactive
             IndexTextContainer.SetActive(false);   
-            Debug.Log($"I am here 6 for {gameObject.name}");
 
         }
         private void CreateCircleImageForTag(GameObject parentObject)
@@ -564,6 +557,7 @@ namespace Instantiate
             //Instantiate Arrow
             ArrowInstantiator(userObject, itemKey, true);
         }
+    
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         //Handle rotation of objects from Rhino to Unity. With option to add additional rotation around for .obj files.
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
