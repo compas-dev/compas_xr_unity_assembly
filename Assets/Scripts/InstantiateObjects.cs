@@ -15,6 +15,7 @@ using JSON;
 using Extentions;
 using Dummiesman;
 using TMPro;
+using ApplicationModeControler;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
 using UnityEngine.InputSystem;
@@ -51,20 +52,9 @@ namespace Instantiate
         //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
         public event InitialElementsPlaced PlacedInitialElements;
-        
-        //Control Visulization Modes //Pull this into its own script and control it there.
-        public class ModeControler
-        {
-            //Can be adapted to an enum for different coloring modes
-            public bool ActorView { get; set; }
-
-            //Can be adapted to an enum for different touch modes            
-            public int EditMode { get; set; }
-            public bool TagsMode { get; set; }
-        }
 
         //Make Initial Visulization controler
-        public ModeControler visulizationMode = new ModeControler();
+        public ModeControler visulizationController = new ModeControler();
 
         //Private IN SCRIPT USE OBJECTS
         private GameObject geometry_object;
@@ -116,9 +106,9 @@ namespace Instantiate
             NewUserArrow = GameObject.Find("SelectionArrows").FindObject("NewUserArrow");
 
             //Set Initial Visulization Modes
-            visulizationMode.ActorView = false;
-            visulizationMode.TagsMode = false;
-            visulizationMode.EditMode = 0;
+            visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+            visulizationController.TouchMode = TouchMode.None;
+            visulizationController.TagsMode = false;
 
         }
 
@@ -176,33 +166,45 @@ namespace Instantiate
             CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
             CreateCircleImageForTag(elementPrefab);
 
-            //Set Color Based on Visulization Mode or if it is equal to my current step
-            if(visulizationMode.ActorView || Key == UIFunctionalities.CurrentStep)
+            //Set Color Based on Visulization Mode
+            switch (visulizationController.VisulizationMode)
             {
-                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-            }
-            else
-            {
-                ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
+                case VisulizationMode.BuiltUnbuilt:
+                    ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
+                    break;
+                case VisulizationMode.ActorView:
+                    ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+                    break;
             }
 
+            //Set Touch mode based on Touch Mode
+            switch (visulizationController.TouchMode)
+            {
+                case TouchMode.None:
+                    //Do nothing
+                    break;
+                case TouchMode.ElementEditSelection:
+                    //Disable collider if the element edit selection is on and the element priority is not the same as my current element.
+                    if (step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
+                    {    
+                        elementPrefab.FindObject("Geometry").GetComponent<Collider>().enabled = false;
+                        elementPrefab.FindObject("Geometry").GetComponent<Renderer>().material = LockedObjectMaterial;
+                    }
+                    break;
+            }
+            
             //Check if the visulization tags mode is on
-            if (visulizationMode.TagsMode)
+            if (visulizationController.TagsMode)
             {
                 //Set tag and Image visibility if the mode is on
                 elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
 
-            //Check if Editor Mode is on and if object priority is not the same as current step
-            if (UIFunctionalities.CurrentStep != null)
+            //If the object is equal to the current step also color it human or robot
+            if (Key == UIFunctionalities.CurrentStep)
             {
-                if (visulizationMode.EditMode == 1 && step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
-                {
-                    //Disable Collider if edit mode is on and object priority is not the same as current step
-                    elementPrefab.FindObject("Geometry").GetComponent<Collider>().enabled = false;
-                    elementPrefab.FindObject("Geometry").GetComponent<Renderer>().material = LockedObjectMaterial;
-                }
+                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
             }
 
         }
@@ -338,7 +340,8 @@ namespace Instantiate
                             Vector3 MeshSize = child_object.GetComponent<MeshRenderer>().bounds.size;
 
                             //Scale Original Size by just a bit to make sure the collider is not too small.
-                            Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
+                            // Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
+                            Vector3 colliderSize = new Vector3(1f, 1f, 1f);
 
                             //Set the collider size
                             collider.size = colliderSize;

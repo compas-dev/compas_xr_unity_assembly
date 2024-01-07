@@ -10,6 +10,7 @@ public class QRTrackingScript : MonoBehaviour
 {
     public string GameobjectName;
     private GameObject Elements;
+    private GameObject UserObjects;
 
     public InstantiateObjects instantiateObjects;
 
@@ -27,8 +28,10 @@ public class QRTrackingScript : MonoBehaviour
         //Find the Instantiate Objects game object to call methods from inside the script
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         
-        //Find Elements Game Object
+        //Find GameObjects that need to be transformed
         Elements = GameObject.Find("Elements");
+        UserObjects = GameObject.Find("UserObjects");
+
     }
 
     void Update()
@@ -68,13 +71,17 @@ public class QRTrackingScript : MonoBehaviour
 
                     //Set Design Objects rotation to the rotation based on Observed rotation and Inverse rotation of physical QR
                     Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
+                    
+                    //Transform the rotation of game objects that need to be transformed
                     Elements.transform.rotation = rot;
+                    UserObjects.transform.rotation = rot;
 
                     //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
                     pos = TranslatedPosition(qrObject, position_data, rotationQuaternion);
 
-                    //Set the position of the design object to the translated position                    
+                    //Set the position of the gameobjects object to the translated position                    
                     Elements.transform.position = pos;
+                    UserObjects.transform.position = pos;
 
                     Debug.Log($"QR: Translation from QR object: {qrObject.name}");
                 }

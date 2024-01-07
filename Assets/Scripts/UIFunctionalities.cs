@@ -14,6 +14,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.ARSubsystems;
 using System.Globalization;
+using ApplicationModeControler;
 
 
 public class UIFunctionalities : MonoBehaviour
@@ -39,7 +40,6 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject PreviewGeometrySliderObject;
     public GameObject IsBuiltPanelObjects;
     public GameObject IsBuiltButtonObject;
-    public GameObject IsBuiltCoverButton;
     private Button IsBuiltButton;
     public GameObject IsbuiltButtonImage;
     public Slider PreviewGeometrySlider;
@@ -216,7 +216,6 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         IsBuiltPanelObjects = ConstantUIPanelObjects.FindObject("IsBuiltPanel"); 
         IsBuiltButtonObject = IsBuiltPanelObjects.FindObject("IsBuiltButton");
-        IsBuiltCoverButton = IsBuiltPanelObjects.FindObject("IsBuiltCoverButton");
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
         IsBuiltButton = IsBuiltButtonObject.GetComponent<Button>();
         IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));;
@@ -369,7 +368,7 @@ public class UIFunctionalities : MonoBehaviour
                 ColliderControler();
 
                 //Update mode so we know to search for touch input
-                TouchSearchModeControler(1);
+                TouchSearchModeController(1);
                 
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, Yellow);
@@ -387,7 +386,7 @@ public class UIFunctionalities : MonoBehaviour
                 CurrentStepTextObject.SetActive(true);
 
                 //Update mode so we are no longer searching for touch
-                TouchSearchModeControler(0);
+                TouchSearchModeController(0);
 
                 //Color Elements by build status
                 instantiateObjects.ApplyColorBasedOnBuildState();
@@ -438,7 +437,7 @@ public class UIFunctionalities : MonoBehaviour
 
                 //Update Is Built Button
                 Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
-                IsBuiltButtonGraphicsControler(currentStep.data.is_built, currentStep.data.actor);
+                IsBuiltButtonGraphicsControler(currentStep.data.is_built);
             }
         }
         else
@@ -530,7 +529,7 @@ public class UIFunctionalities : MonoBehaviour
         PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
         
         //Update Is Built Button
-        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.actor);
+        IsBuiltButtonGraphicsControler(step.data.is_built);
     }
     public void PreviousStepButton()
     {
@@ -584,7 +583,7 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    public void IsBuiltButtonGraphicsControler(bool builtStatus, string Actor)
+    public void IsBuiltButtonGraphicsControler(bool builtStatus)
     {
         if (IsBuiltPanelObjects.activeSelf)
         {
@@ -597,26 +596,6 @@ public class UIFunctionalities : MonoBehaviour
             {
                 IsbuiltButtonImage.SetActive(false);
                 IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
-            }
-
-            if (Actor != "HUMAN")
-            {
-                IsBuiltButton.interactable = false;
-                
-                if(IsBuiltCoverButton.activeSelf == false)
-                {
-                    IsBuiltCoverButton.SetActive(true);
-                }
-            }
-            else
-            {
-                IsBuiltButton.interactable = true;
-                
-                if(IsBuiltCoverButton.activeSelf == true)
-                {
-                    IsBuiltCoverButton.SetActive(false);
-                }
-
             }
         }
     }
@@ -669,7 +648,7 @@ public class UIFunctionalities : MonoBehaviour
         if(key == CurrentStep)
         {    
             //Update Is Built Button
-            IsBuiltButtonGraphicsControler(step.data.is_built, step.data.actor);
+            IsBuiltButtonGraphicsControler(step.data.is_built);
         
             //TODO: Push Current Step to the database under device_id
             //........................
@@ -736,20 +715,30 @@ public class UIFunctionalities : MonoBehaviour
         Debug.Log("Builder View Button Pressed");
 
         // Check the current mode and toggle it
-        if (instantiateObjects.visulizationMode.ActorView != true)
+        if (instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.ActorView)
         {
             // If current mode is BuiltUnbuilt, switch to ActorView
-            instantiateObjects.visulizationMode.ActorView = true;
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.ActorView;
          
             instantiateObjects.ApplyColorBasedOnActor();
 
+            // Color the button if it is on
+            SetUIObjectColor(PreviewBuilderButtonObject, Yellow);
+
+        }
+        else if(instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.BuiltUnbuilt)
+        {
+            // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+
+            instantiateObjects.ApplyColorBasedOnBuildState();
+
+            // Color the button if it is on
+            SetUIObjectColor(PreviewBuilderButtonObject, White);
         }
         else
         {
-            // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
-            instantiateObjects.visulizationMode.ActorView = false;
-
-            instantiateObjects.ApplyColorBasedOnBuildState();
+            Debug.LogWarning("Error: Visulization Mode does not exist.");
         }
     }
     public void IDTextButton()
@@ -759,7 +748,7 @@ public class UIFunctionalities : MonoBehaviour
         if (instantiateObjects != null && instantiateObjects.Elements != null)
         {
             // Update the visibility state
-            instantiateObjects.visulizationMode.TagsMode = !instantiateObjects.visulizationMode.TagsMode;
+            instantiateObjects.visulizationController.TagsMode = !instantiateObjects.visulizationController.TagsMode;
 
             foreach (Transform child in instantiateObjects.Elements.transform)
             {
@@ -767,14 +756,24 @@ public class UIFunctionalities : MonoBehaviour
                 Transform textChild = child.Find(child.name + " Text");
                 if (textChild != null)
                 {
-                    textChild.gameObject.SetActive(instantiateObjects.visulizationMode.TagsMode);
+                    textChild.gameObject.SetActive(instantiateObjects.visulizationController.TagsMode);
                 }
                 // Toggle Circle Image Object
                 Transform circleImageChild = child.Find(child.name + "IdxImage");
                 if (circleImageChild != null)
                 {
-                    circleImageChild.gameObject.SetActive(instantiateObjects.visulizationMode.TagsMode);
+                    circleImageChild.gameObject.SetActive(instantiateObjects.visulizationController.TagsMode);
                 }
+            }
+
+            // Color the button if it is on
+            if (instantiateObjects.visulizationController.TagsMode)
+            {
+                SetUIObjectColor(IDButtonObject, Yellow);
+            }
+            else
+            {
+                SetUIObjectColor(IDButtonObject, White);
             }
         }
         else
@@ -876,30 +875,32 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
-    public void TouchSearchModeControler(int modetype)
+    
+    //TODO: This mode controller could be improved
+    public void TouchSearchModeController(int modetype)
     {
         if (modetype == 1)
             {        
                 //Set Visulization Mode
-                instantiateObjects.visulizationMode.EditMode = 1;
+                instantiateObjects.visulizationController.TouchMode = TouchMode.ElementEditSelection;
 
-                Debug.Log ("You have set Mode 1: Element Search");
+                Debug.Log ("***TouchMode: ELEMENT EDIT MODE***");
             }
 
         else
             {
                 //Set Visulization Mode
-                instantiateObjects.visulizationMode.EditMode = 0; // setting back to original mode
+                instantiateObjects.visulizationController.TouchMode = TouchMode.None; // setting back to original mode
 
                 //Destroy active bounding box
                 DestroyBoundingBoxFixElementColor();
                 activeGameObject = null;
-                Debug.Log ("You have set Mode 0");
+                Debug.Log ("***TouchMode: NONE***");
             }
     }
     private void SearchControler()
     {
-        if (instantiateObjects.visulizationMode.EditMode == 1)
+        if (instantiateObjects.visulizationController.TouchMode == TouchMode.ElementEditSelection)
         {
             SearchInput();
         }
@@ -926,6 +927,7 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Set Collider to true
                     ElementCollider.enabled = true;
+
                 }
                 else
                 {
@@ -958,21 +960,28 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Touch touch = Input.GetTouch(0);
+            Debug.Log("TOUCH: Your touch sir :)" + Input.touchCount);
+            Debug.Log("TOUCH: Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
 
             if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
             {
                 List<ARRaycastHit> hits = new List<ARRaycastHit>();
+                Debug.Log ("TOUCH: YOU HITS SIR " + hits);
+                Debug.Log ("TOUCH: YOU HITS Count SIR " + hits.Count);
                 rayManager.Raycast(touch.position, hits);
 
+                //TODO: THE PROBLEM IS HERE... HITS IS ALWAYS 0
                 if (hits.Count > 0)
                 {
                     Ray ray = arCamera.ScreenPointToRay(touch.position);
                     RaycastHit hitObject;
+                    Debug.Log ("TOUCH: Your hits count is greater then 0" + hits.Count);
 
                     if (Physics.Raycast(ray, out hitObject))
                     {
                         if (hitObject.collider.tag != "plane")
                         {
+                            Debug.Log("TOUCH: I HIT SOMETHING ");
                             activeGameObject = hitObject.collider.gameObject;
                             Debug.Log(activeGameObject);
                         }
@@ -994,9 +1003,9 @@ public class UIFunctionalities : MonoBehaviour
                     return;
                 }
 
-                if (instantiateObjects.visulizationMode.EditMode == 1) // EDIT MODE
+                if (instantiateObjects.visulizationController.TouchMode == TouchMode.ElementEditSelection) // EDIT MODE
                 {
-                    Debug.Log("***MODE 2***");
+                    Debug.Log("*** ELEMENT SELECTION MODE : Editor ***");
                     EditMode();
                 }
 
@@ -1017,9 +1026,9 @@ public class UIFunctionalities : MonoBehaviour
         {
             if (PhysicRayCastBlockedByUi(Input.GetTouch(0).position))
             {
-                if (instantiateObjects.visulizationMode.EditMode == 1) //EDIT MODE
+                if (instantiateObjects.visulizationController.TouchMode == TouchMode.ElementEditSelection) //EDIT MODE
                 {
-                    Debug.Log("***MODE 2***");
+                    Debug.Log("*** ELEMENT SELECTION MODE: Touch ***");
                     EditMode();                     
                 }
 
@@ -1069,6 +1078,7 @@ public class UIFunctionalities : MonoBehaviour
 
         else
         {
+            Debug.Log("ACTIVE GAME OBJECT IS NULL");
             if (GameObject.Find("BoundingArea") != null)
             {
                 DestroyBoundingBoxFixElementColor();

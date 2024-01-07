@@ -53,6 +53,15 @@ namespace Extentions
 
             EventSystem.current.RaycastAll(pointerEventData, raycastResults);
 
+            if (raycastResults.Count > 0)
+            {
+                Debug.Log($"Touch: Pointer over a UI element > 0 {raycastResults.Count}");
+            }
+            else
+            {
+                Debug.Log($"Touch: Pointer over a UI element NOT > 0 {raycastResults.Count}");
+            }
+
             return raycastResults.Count > 0;
         }
 
