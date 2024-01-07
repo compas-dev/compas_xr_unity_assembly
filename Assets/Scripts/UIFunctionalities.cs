@@ -143,6 +143,19 @@ public class UIFunctionalities : MonoBehaviour
         //Find AR Camera gameObject
         arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();
 
+        //TODO: THIS SHOULD SOLVE THE PROBLEM.
+        //Find the Raycast manager in the script in order to use it to acquire data
+        rayManager = FindObjectOfType<ARRaycastManager>();
+
+        if (rayManager != null)
+        {
+            Debug.Log("Ray Manager Found");
+        }
+        else
+        {
+            Debug.LogWarning("Ray Manager Not Found");
+        }
+
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
         PreviewBuilderButtonObject = VisibilityMenuObject.FindObject("Preview_Builder");
@@ -927,6 +940,13 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Set Collider to true
                     ElementCollider.enabled = true;
+
+                    //TODO: TESTING COLIDERS
+                    // GameObject TestBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    // TestBox.transform.position = element.transform.position;
+                    // TestBox.transform.rotation = element.transform.rotation;
+                    // TestBox.transform.localScale = ElementCollider.bounds.size;
+                    // TestBox.GetComponent<Renderer>().material.color = Color.red;
 
                 }
                 else

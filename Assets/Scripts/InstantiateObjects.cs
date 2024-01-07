@@ -340,8 +340,10 @@ namespace Instantiate
                             Vector3 MeshSize = child_object.GetComponent<MeshRenderer>().bounds.size;
 
                             //Scale Original Size by just a bit to make sure the collider is not too small.
-                            // Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
-                            Vector3 colliderSize = new Vector3(1f, 1f, 1f);
+                            Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
+                            
+                            //TODO: TESTING COLLIDER SIZE
+                            // Vector3 colliderSize = new Vector3(1f, 1f, 1f);
 
                             //Set the collider size
                             collider.size = colliderSize;
@@ -508,7 +510,6 @@ namespace Instantiate
 
             //Find the center of the Item key object
             GameObject itemObject = Elements.FindObject(itemKey);
-            Debug.Log("Arrow: " + itemObject.name + itemKey);
             Renderer renderer = itemObject.FindObject("Geometry").GetComponentInChildren<Renderer>();
             if (renderer == null)
             {
