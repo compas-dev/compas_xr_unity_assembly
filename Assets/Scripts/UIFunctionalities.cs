@@ -28,7 +28,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject VisibilityMenuObject;
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
-    private GameObject StepSearchToggleObject;
+    private GameObject ElementSearchToggleObject;
     private GameObject InfoToggleObject;
     private GameObject CommunicationToggleObject;
     
@@ -52,7 +52,12 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PreviewBuilderButtonObject;
     private GameObject IDButtonObject;
     private GameObject RobotButtonObject;
-    private GameObject ObjectLengthsButtonObject;
+    private GameObject ObjectLengthsToggleObject;
+
+    private GameObject ObjectLengthsUIPanelObjects;
+    private TMP_Text ObjectLengthsText;
+    private GameObject ObjectLengthsTags;
+
 
     //Menu Toggle Button Objects
     private GameObject MenuBackground;
@@ -128,8 +133,8 @@ public class UIFunctionalities : MonoBehaviour
         Toggle MenuToggle = MenuButtonObject.GetComponent<Toggle>();
 
         //Find toggle for step search
-        StepSearchToggleObject = GameObject.Find("StepSearchToggle");
-        Toggle StepSearchToggle = StepSearchToggleObject.GetComponent<Toggle>();
+        ElementSearchToggleObject = GameObject.Find("ElementSearchToggle");
+        Toggle ElementSearchToggle = ElementSearchToggleObject.GetComponent<Toggle>();
 
         //Find toggle for editor... Slightly different then the other two because it is off on start.
         EditorToggleObject = MenuButtonObject.FindObject("Editor_Toggle");
@@ -172,11 +177,23 @@ public class UIFunctionalities : MonoBehaviour
         Button RobotButton = RobotButtonObject.GetComponent<Button>();
         RobotButton.onClick.AddListener(() => print_string_on_click("Robot Button Clicked"));;
 
-        //Find Object, Button, and Add Listener for OnClick method
-        ObjectLengthsButtonObject = VisibilityMenuObject.FindObject("ObjectLength_Button");
-        Button ObjectLengthsButton = ObjectLengthsButtonObject.GetComponent<Button>();
-        ObjectLengthsButton.onClick.AddListener(() => print_string_on_click("Object Lengths Button Clicked"));;
-    
+        //Find Object Lengths Toggle
+        ObjectLengthsToggleObject = VisibilityMenuObject.FindObject("ObjectLength_Button");
+        Toggle ObjectLengthsToggle = ObjectLengthsToggleObject.GetComponent<Toggle>();
+
+        if (ObjectLengthsToggleObject != null)
+        {
+            Debug.Log("Object Lengths Toggle Found");
+        }
+        else
+        {
+            Debug.LogWarning("Object Lengths Toggle Not Found");
+        }
+
+        //Find Objects associated with the Object Lengths Toggle
+        ObjectLengthsUIPanelObjects = CanvasObject.FindObject("ObjectLengthsPanel");
+        ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
+        ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");    
        
         /////////////////////////////////////////// Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -267,8 +284,8 @@ public class UIFunctionalities : MonoBehaviour
         });
 
         //Add Listners for Step Search Toggle on and off.
-        StepSearchToggle.onValueChanged.AddListener(delegate {
-        ToggleStepSearch(StepSearchToggle);
+        ElementSearchToggle.onValueChanged.AddListener(delegate {
+        ToggleElementSearch(ElementSearchToggle);
         });
 
         //Add Listners for Info Toggle on and off.
@@ -281,10 +298,15 @@ public class UIFunctionalities : MonoBehaviour
         ToggleCommunication(CommunicationToggle);
         });
 
+        //Add Listners for Object Lengths.
+        ObjectLengthsToggle.onValueChanged.AddListener(delegate {
+        ToggleObjectLengths(ObjectLengthsToggle);
+        });
+
     }
     public void ToggleVisibilityMenu(Toggle toggle)
     {
-        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotButtonObject != null && ObjectLengthsButtonObject != null && IDButtonObject != null)
+        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotButtonObject != null && ObjectLengthsToggleObject != null && IDButtonObject != null)
         {    
             if (toggle.isOn)
             {             
@@ -292,7 +314,7 @@ public class UIFunctionalities : MonoBehaviour
                 VisualzierBackground.SetActive(true);
                 PreviewBuilderButtonObject.SetActive(true);
                 RobotButtonObject.SetActive(true);
-                ObjectLengthsButtonObject.SetActive(true);
+                ObjectLengthsToggleObject.SetActive(true);
                 IDButtonObject.SetActive(true);
 
                 //Set color of toggle
@@ -305,7 +327,7 @@ public class UIFunctionalities : MonoBehaviour
                 VisualzierBackground.SetActive(false);
                 PreviewBuilderButtonObject.SetActive(false);
                 RobotButtonObject.SetActive(false);
-                ObjectLengthsButtonObject.SetActive(false);
+                ObjectLengthsToggleObject.SetActive(false);
                 IDButtonObject.SetActive(false);
 
                 //Set color of toggle
@@ -413,7 +435,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Editor Menu.");
         }  
     }
-    public void ToggleStepSearch(Toggle toggle)
+    public void ToggleElementSearch(Toggle toggle)
     {
         if (ElementSearchObjects != null && IsBuiltPanelObjects != null)
         {    
@@ -424,7 +446,7 @@ public class UIFunctionalities : MonoBehaviour
                 ElementSearchObjects.SetActive(true);
                 
                 //Set color of toggle
-                SetUIObjectColor(StepSearchToggleObject, Yellow);
+                SetUIObjectColor(ElementSearchToggleObject, Yellow);
 
             }
             else
@@ -446,7 +468,7 @@ public class UIFunctionalities : MonoBehaviour
                 IsBuiltPanelObjects.SetActive(true);
 
                 //Set color of toggle
-                SetUIObjectColor(StepSearchToggleObject, White);
+                SetUIObjectColor(ElementSearchToggleObject, White);
 
                 //Update Is Built Button
                 Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
@@ -457,6 +479,50 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
+    }
+    public void ToggleObjectLengths(Toggle toggle)
+    {
+        Debug.Log("Object Lengths Toggle Pressed");
+
+        if (ObjectLengthsUIPanelObjects != null && ObjectLengthsText != null && ObjectLengthsTags != null)
+        {    
+            if (toggle.isOn)
+            {             
+                //Set Visibility of buttons
+                ObjectLengthsUIPanelObjects.SetActive(true);
+                ObjectLengthsTags.FindObject("P1Tag").SetActive(true);
+                ObjectLengthsTags.FindObject("P2Tag").SetActive(true);
+
+                //Function to calculate distances to the ground and show them
+                if (CurrentStep != null)
+                {    
+                    CalculateandSetLengthPositions(CurrentStep);
+                }
+                else
+                {
+                    Debug.LogWarning("Current Step is null.");
+                }
+
+                //Set color of toggle
+                SetUIObjectColor(ObjectLengthsToggleObject, Yellow);
+
+            }
+            else
+            {
+                //Set Visibility of buttons
+                ObjectLengthsUIPanelObjects.SetActive(false);
+                ObjectLengthsTags.FindObject("P1Tag").SetActive(false);
+                ObjectLengthsTags.FindObject("P2Tag").SetActive(false);
+
+                //Set color of toggle
+                SetUIObjectColor(ObjectLengthsToggleObject, White);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Object Lengths Objects.");
+        }
+        
     }
     private void SetUIObjectColor(GameObject Button, Color color)
     {
@@ -536,7 +602,12 @@ public class UIFunctionalities : MonoBehaviour
 
         //Push Current key to the firebase
         databaseManager.PushStringData(databaseManager.dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
-    
+
+        //Update Lengths if Object Lengths Toggle is on
+        if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
+        {
+            CalculateandSetLengthPositions(CurrentStep);
+        }
 
         //Update Preview Geometry the visulization is remapped correctly
         PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
@@ -836,7 +907,29 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogError("InstantiateObjects script or Elements object not set.");
         }
     }
+    public void CalculateandSetLengthPositions(string key)
+    {
+        //Find Gameobject Associated with that step
+        GameObject element = Elements.FindObject(key);
+        Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
+        //Find gameobject center
+        Vector3 center = element.FindObject("Geometry").GetComponent<Renderer>().bounds.center;
+
+        //Find length from assembly dictionary //TODO: This may cause inacuracies (because of timber cuts and extentions) might be better with the gameobject size
+        float length = databaseManager.DataItemDict[step.data.element_ids[0]].attributes.length;
+
+        //Calculate position of P1 and P2 //TODO: CHECK THIS.
+        Vector3 P1Position = center + element.transform.right * (length / 2);
+        Vector3 P2Position = center + element.transform.right * (length / 2) * -1;
+
+        //Set Positions of P1 and P2
+        ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
+        ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
+
+        //Update Distance Text
+        ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1Position.y, 2)} P2 | {(float)Math.Round(P2Position.y, 2)}";
+    }
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
     private void ToggleInfo(Toggle toggle)
     {
