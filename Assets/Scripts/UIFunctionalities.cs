@@ -43,8 +43,8 @@ public class UIFunctionalities : MonoBehaviour
     private Button IsBuiltButton;
     public GameObject IsbuiltButtonImage;
     public Slider PreviewGeometrySlider;
-    private TMP_InputField StepSearchInputField;
-    private GameObject StepSearchObjects;
+    private TMP_InputField ElementSearchInputField;
+    private GameObject ElementSearchObjects;
     private GameObject StepSearchButtonObject; 
 
     //Visualizer Menu Toggle Objects
@@ -92,7 +92,7 @@ public class UIFunctionalities : MonoBehaviour
 
     //In script use variables
     public string CurrentStep = null;
-    public string SearchedStep;
+    public string SearchedElement;
     
     void Start()
     {
@@ -234,11 +234,11 @@ public class UIFunctionalities : MonoBehaviour
         IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));;
 
         //Find Step Search Objects
-        StepSearchObjects = ConstantUIPanelObjects.FindObject("StepSearchObjects");
-        StepSearchInputField = StepSearchObjects.FindObject("StepSearchInputField").GetComponent<TMP_InputField>();;
-        StepSearchButtonObject = StepSearchObjects.FindObject("SearchForStepButton");
+        ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
+        ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();;
+        StepSearchButtonObject = ElementSearchObjects.FindObject("ElementForStepButton");
         Button StepSearchButton = StepSearchButtonObject.GetComponent<Button>();
-        StepSearchButton.onClick.AddListener(SearchStepButton);;
+        StepSearchButton.onClick.AddListener(SearchElementButton);;
 
         //Find Text Objects
         CurrentStepTextObject = GameObject.Find("Current_Index_Text");
@@ -415,13 +415,13 @@ public class UIFunctionalities : MonoBehaviour
     }
     public void ToggleStepSearch(Toggle toggle)
     {
-        if (StepSearchObjects != null && IsBuiltPanelObjects != null)
+        if (ElementSearchObjects != null && IsBuiltPanelObjects != null)
         {    
             if (toggle.isOn)
             {             
                 //Set Visibility of buttons
                 IsBuiltPanelObjects.SetActive(false);
-                StepSearchObjects.SetActive(true);
+                ElementSearchObjects.SetActive(true);
                 
                 //Set color of toggle
                 SetUIObjectColor(StepSearchToggleObject, Yellow);
@@ -430,19 +430,19 @@ public class UIFunctionalities : MonoBehaviour
             else
             {
                 //If searched step is not null color it built or unbuilt
-                if(SearchedStep != null)
+                if(SearchedElement != null)
                 {
-                    GameObject searchedElement = Elements.FindObject(SearchedStep);
+                    GameObject searchedElement = Elements.FindObject(SearchedElement);
 
                     if(searchedElement != null)
                     {
                         //Color Previous one if it is not null
-                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedStep].data.is_built, searchedElement.FindObject("Geometry"));
+                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElement].data.is_built, searchedElement.FindObject("Geometry"));
                     }
                 }
                 
                 //Set Visibility of buttons
-                StepSearchObjects.SetActive(false);
+                ElementSearchObjects.SetActive(false);
                 IsBuiltPanelObjects.SetActive(true);
 
                 //Set color of toggle
@@ -499,8 +499,8 @@ public class UIFunctionalities : MonoBehaviour
 
             if(previousStepElement != null)
             {
-                //Color it Human or Robot Built
-                instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.is_built, previousStepElement.FindObject("Geometry"));
+                //Color previous object based on Visulization Mode
+                instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[CurrentStep], previousStepElement.FindObject("Geometry"));
             }
         }
                 
@@ -675,7 +675,7 @@ public class UIFunctionalities : MonoBehaviour
         //Set Last Built Text
         LastBuiltIndexText.text = $"Last Built Step : {key}";
     }
-    public void SearchStepButton()
+    public void SearchElementButton()
     {
         //Search for step button clicked
         Debug.Log("Search for Step Button Pressed");
@@ -684,34 +684,76 @@ public class UIFunctionalities : MonoBehaviour
         GameObject searchedElement = null;
         
         //If current step is not null and greater then Zero add subtract 1
-        if(StepSearchInputField.text != null)
+        if(ElementSearchInputField.text != null)
         {
-            searchedElement = Elements.FindObject(StepSearchInputField.text);
+            searchedElement = Elements.FindObject(ElementSearchInputField.text);
         }
 
         //If the element was found color the previous object built or unbuilt and replace the variable
         if(searchedElement != null)
         {
             //Color Previous one if it is not null
-            if(SearchedStep != null)
+            if(SearchedElement != null)
             {
-                GameObject previousStepElement = Elements.FindObject(SearchedStep);
-
-                if(previousStepElement != null)
+                //iterate through building plan to find previous searched element.
+                for (int i =0 ; i < databaseManager.BuildingPlanDataItem.steps.Count; i++)
                 {
-                    //Color it Human or Robot Built
-                    instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedStep].data.is_built, previousStepElement.FindObject("Geometry"));
+                    //Set data items
+                    Step step = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
+
+                    //Check if step element id is equal to the previous searched one
+                    if(step.data.element_ids[0] == SearchedElement)
+                    {
+                        //Find Gameobject Associated with that step
+                        GameObject previousStepElement = Elements.FindObject(i.ToString());
+
+                        if(previousStepElement != null)
+                        {
+                            //Color based on current mode
+                            instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[i.ToString()], previousStepElement.FindObject("Geometry"));
+
+                            //if it is equal to current step color it human or robot
+                            if(i.ToString() == CurrentStep)
+                            {
+                                instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, previousStepElement.FindObject("Geometry"));
+                            }
+
+                        }
+
+                        break;
+                    }
                 }
+
             }
             
             //Set Searched Step
-            SearchedStep = StepSearchInputField.text;
+            SearchedElement = ElementSearchInputField.text;
+            
+            //iterate through building plan to find new searched element.
+            for (int i =0 ; i < databaseManager.BuildingPlanDataItem.steps.Count; i++)
+            {
+                //Set data items
+                Step step = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
 
-            //Color red for selection color
-            Renderer searchedObjectRenderer = searchedElement.FindObject("Geometry").GetComponent<Renderer>();
-            searchedObjectRenderer.material = instantiateObjects.SearchedObjectMaterial;
+                //Check if step element id is equal to the previous searched one
+                if(step.data.element_ids[0] == SearchedElement)
+                {
+                    //Find Gameobject Associated with that step
+                    GameObject NewStepElement = Elements.FindObject(i.ToString());
 
-            //TODO: ARROW TO STEP
+                    if(NewStepElement != null)
+                    {
+                        //Color red for selection color
+                        Renderer searchedObjectRenderer = NewStepElement.FindObject("Geometry").GetComponent<Renderer>();
+                        searchedObjectRenderer.material = instantiateObjects.SearchedObjectMaterial;
+
+                        //TODO: ARROW TO STEP                    
+
+                        break;
+                    }
+                }
+            }
+
 
         }
         else

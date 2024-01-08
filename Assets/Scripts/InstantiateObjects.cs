@@ -166,32 +166,8 @@ namespace Instantiate
             CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
             CreateCircleImageForTag(elementPrefab);
 
-            //Set Color Based on Visulization Mode
-            switch (visulizationController.VisulizationMode)
-            {
-                case VisulizationMode.BuiltUnbuilt:
-                    ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
-                    break;
-                case VisulizationMode.ActorView:
-                    ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-                    break;
-            }
-
-            //Set Touch mode based on Touch Mode
-            switch (visulizationController.TouchMode)
-            {
-                case TouchMode.None:
-                    //Do nothing
-                    break;
-                case TouchMode.ElementEditSelection:
-                    //Disable collider if the element edit selection is on and the element priority is not the same as my current element.
-                    if (step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
-                    {    
-                        elementPrefab.FindObject("Geometry").GetComponent<Collider>().enabled = false;
-                        elementPrefab.FindObject("Geometry").GetComponent<Renderer>().material = LockedObjectMaterial;
-                    }
-                    break;
-            }
+            //Case Switches to evaluate color and touch modes.
+            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
             
             //Check if the visulization tags mode is on
             if (visulizationController.TagsMode)
@@ -681,6 +657,35 @@ namespace Instantiate
         }
 
     /////////////////////////////// Material and colors ////////////////////////////////////////
+        public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, GameObject geometryObject)
+        {
+            //Set Color Based on Visulization Mode
+            switch (visulizationController.VisulizationMode)
+            {
+                case VisulizationMode.BuiltUnbuilt:
+                    ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
+                    break;
+                case VisulizationMode.ActorView:
+                    ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+                    break;
+            }
+
+            //Set Touch mode based on Touch Mode
+            switch (visulizationController.TouchMode)
+            {
+                case TouchMode.None:
+                    //Do nothing
+                    break;
+                case TouchMode.ElementEditSelection:
+                    //Disable collider if the element edit selection is on and the element priority is not the same as my current element.
+                    if (step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
+                    {    
+                        geometryObject.GetComponent<Collider>().enabled = false;
+                        geometryObject.GetComponent<Renderer>().material = LockedObjectMaterial;
+                    }
+                    break;
+            }
+        }
         public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
         {
             //Get Object Renderer
