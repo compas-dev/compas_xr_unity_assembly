@@ -4,7 +4,8 @@ using UnityEngine;
 using Firebase.Database;
 using Firebase.Extensions;
 using Newtonsoft.Json;
-using UnityEngine.SceneManagement; // Added namespace for scene management
+using UnityEngine.SceneManagement;
+using Extentions; // Added namespace for scene management
 
 public class UserManager : MonoBehaviour
 {
@@ -62,7 +63,9 @@ public class Device
 
         if (Username == null || string.IsNullOrWhiteSpace(Username.text))
         {
-            Debug.LogError("Username is not assigned or empty!");
+            GameObject UsernameInputMessage = GameObject.Find("Canvas").FindObject("UsernameInputMessage");
+            UsernameInputMessage.SetActive(true);
+            Debug.Log("Username is not assigned or empty!");
             return;
         }
         
