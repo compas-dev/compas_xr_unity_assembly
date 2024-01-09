@@ -8,12 +8,14 @@ using Firebase.Database;
 using JSON;
 using Firebase.Auth;
 using TMPro;
+using Instantiate;
 
 public class Eventmanager : MonoBehaviour
 {
     public GameObject Databasemanager;
     public GameObject Instantiateobjects;
     public GameObject Checkfirebase;
+    public GameObject QRTracking;
     public DatabaseReference dbreference_design;
 
     public DatabaseReference settings_reference;
@@ -34,6 +36,7 @@ public class Eventmanager : MonoBehaviour
         databaseManager = Databasemanager.AddComponent<DatabaseManager>();  
         InstantiateObjects instantiateObjects = Instantiateobjects.AddComponent<InstantiateObjects>();
         CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
+        QRTrackingScript qrTracking = QRTracking.GetComponent<QRTrackingScript>();
 
         //Initialize Firebase 
         checkFirebase.FirebaseInitialized += Initialized;
@@ -46,6 +49,9 @@ public class Eventmanager : MonoBehaviour
 
         //Initialize the database.. once the database is initialized the objects are instantiated
         databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;
+
+        //Start tracking Codes only once tracking information is received
+        databaseManager.TrackingDictReceived += qrTracking.OnTrackingInformationReceived;
 
         //Add listners after initial objects have been placed to avoid simultanous item placement
         instantiateObjects.PlacedInitialElements += databaseManager.AddListeners;

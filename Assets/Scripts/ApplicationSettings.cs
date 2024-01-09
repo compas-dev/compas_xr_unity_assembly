@@ -10,5 +10,7 @@
         {
             public string parentname {get; set;}
             public string storagename {get; set;}
+
+            public bool objorientation {get; set;}
         }
     }

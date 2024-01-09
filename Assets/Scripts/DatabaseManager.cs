@@ -18,10 +18,16 @@ using System.Diagnostics;
 using UnityEngine.Networking;
 using System.Linq;
 using System.Linq.Expressions;
+using Unity.VisualScripting;
 
 public class DataItemDictEventArgs : EventArgs
 {
     public Dictionary<string, Step> BuildingPlanDataDict { get; set; }
+}
+
+public class TrackingDataDictEventArgs : EventArgs
+{
+    public Dictionary<string, QRcode> QRCodeDataDict { get; set; }
 }
 
 public class UpdateDataItemsDictEventArgs : EventArgs
@@ -43,14 +49,17 @@ public class UpdateDatabaseReferenceEventArgs: EventArgs
 public class DatabaseManager : MonoBehaviour
 {
     // Firebase database references
-    private DatabaseReference dbreference_assembly;
-    private DatabaseReference dbreference_buildingplan;
-    private StorageReference storageReference;
+    public DatabaseReference dbreference_assembly;
+    public DatabaseReference dbreference_buildingplan;
+    public DatabaseReference dbreference_qrcodes;
+    public DatabaseReference dbrefernece_currentelement;
+    public StorageReference storageReference;
 
 
     // Data structures to store nodes and steps
     public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
     public Dictionary<string, Step> BuildingPlanDataDict { get; private set; } = new Dictionary<string, Step>();
+    public Dictionary<string, QRcode> QRCodeDataDict { get; private set; } = new Dictionary<string, QRcode>();
 
 
     //Data Structure to Store Application Settings
@@ -59,11 +68,17 @@ public class DatabaseManager : MonoBehaviour
     // Define event delegates and events
     public delegate void StoreDataDictEventHandler(object source, DataItemDictEventArgs e); 
     public event StoreDataDictEventHandler DatabaseInitializedDict;
+    
+    public delegate void TrackingDataDictEventHandler(object source, TrackingDataDictEventArgs e); 
+    public event TrackingDataDictEventHandler TrackingDictReceived;
+
     public delegate void UpdateDataDictEventHandler(object source, UpdateDataItemsDictEventArgs e); 
     public event UpdateDataDictEventHandler DatabaseUpdate;
+
     public delegate void StoreApplicationSettings(object source, ApplicationSettingsEventArgs e);
     public event StoreApplicationSettings ApplicationSettingUpdate;
 
+    
     //Define HTTP request response classes
     class ListFilesResponse
     {
@@ -76,6 +91,9 @@ public class DatabaseManager : MonoBehaviour
         public string name { get; set; }
         public string bucket { get; set; }
     }
+
+    //Define bool to set object orientation
+    public bool objectOrientation;
 
     void Awake()
     {
@@ -109,20 +127,29 @@ public class DatabaseManager : MonoBehaviour
         //Create DB Reference Always
         dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
-
+        dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
+        dbrefernece_currentelement = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("current_element");
+        
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
         {
+            //Fetch QR Data no event trigger
+            FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
+            
             //Fetch Assembly Data no event trigger
-            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot), false);
+            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
 
             //Fetch Building plan data with event trigger
-            FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), true);
+            FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), "DataitemDict");
+
         }
         
         //Else trigger download.
         else
         {
+            //Set Obj Orientation bool
+            objectOrientation = e.Settings.objorientation;
+            
             //Storage Reference from data fetched
             storageReference = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storagename);
             string basepath = storageReference.Path;
@@ -133,19 +160,22 @@ public class DatabaseManager : MonoBehaviour
             List<FileMetadata> files = await GetFilesInFolder(path);
 
             //Fetch Data from both storage and Realtime Database.
-            FetchAllData(files, dbreference_assembly);
+            FetchAllData(files);
         }
     }
-    private async void FetchAllData(List<FileMetadata> files, DatabaseReference dbref)
+    private async void FetchAllData(List<FileMetadata> files)
     {
         //Fetch Storage Data
         await FetchStorageData(files);
 
+        //Fetch QR Data no event trigger
+        FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
+        
         //Fetch Assembly Data no event trigger
-        FetchRTDData(dbref, snapshot => DeserializeDataSnapshot(snapshot), false);
+        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
         
         //Fetch Building plan data with event trigger
-        FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), true);
+        FetchRTDData(dbreference_buildingplan, snapshot => DesearialaizeStepSnapshot(snapshot), "DataitemDict");
     }
     async Task<List<FileMetadata>> GetFilesInFolder(string path)
     {
@@ -215,7 +245,7 @@ public class DatabaseManager : MonoBehaviour
         //Await all download tasks are done before refreshing.
         await Task.WhenAll(downloadTasks);
     }      
-    public async void FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, bool eventtrigger)
+    public async void FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
         {
@@ -235,14 +265,19 @@ public class DatabaseManager : MonoBehaviour
             }
         });
 
-        if (eventtrigger)
+        if (eventname != null && eventname == "DataitemDict")
         {
             OnDatabaseInitializedDict(BuildingPlanDataDict); 
         }
+
+        if (eventname != null && eventname == "TrackingDict")
+        {
+            OnTrackingDataReceived(QRCodeDataDict);
+        }
     }      
-    public void PushAllData(Dictionary<string, Step> BuildingPlanDataDict) 
+    public void PushAllData(DatabaseReference dbref, string Data)
     {
-        dbreference_buildingplan.SetRawJsonValueAsync(JsonConvert.SerializeObject(BuildingPlanDataDict));
+        dbref.SetRawJsonValueAsync(Data);
     }
 
 /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
@@ -271,7 +306,7 @@ public class DatabaseManager : MonoBehaviour
         {
             string key = childSnapshot.Key;
             var json_data = childSnapshot.GetValue(true);
-            Node node_data = NodeDesearializer(key, json_data);
+            Node node_data = NodeDeserializer(key, json_data);
             
             if (IsValidNode(node_data))
             {
@@ -295,7 +330,7 @@ public class DatabaseManager : MonoBehaviour
         {
             string key = childSnapshot.Key;
             var json_data = childSnapshot.GetValue(true);
-            Step step_data = StepDesearilizer(key, json_data);
+            Step step_data = StepDeserializer(key, json_data);
             
             if (IsValidStep(step_data))
             {
@@ -309,6 +344,28 @@ public class DatabaseManager : MonoBehaviour
         }
 
         UnityEngine.Debug.Log("Number of steps stored as a dictionary = " + BuildingPlanDataDict.Count);
+    }
+    private void DesearializeQRSnapshot(DataSnapshot snapshot)
+    {
+        foreach (DataSnapshot childSnapshot in snapshot.Children)
+        {    
+            string key = childSnapshot.Key;
+            string jsondatastring = childSnapshot.GetRawJsonValue();
+            
+            if (!string.IsNullOrEmpty(jsondatastring))
+            {
+                UnityEngine.Debug.Log("QR Code Data:" + jsondatastring);
+                QRcode newValue = JsonConvert.DeserializeObject<QRcode>(jsondatastring);
+                QRCodeDataDict[key] = newValue;
+                QRCodeDataDict[key].Key = key;
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("You did not set your QR Code data properly");
+            }
+        }
+
+        //TODO: FIND A WAY TO INSTANTIATE QR CODES HERE.
     }
 
 /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
@@ -351,7 +408,7 @@ public class DatabaseManager : MonoBehaviour
             // Set default values for properties that may be null
             return true;
         }
-        UnityEngine.Debug.Log($"node.key is: '{node.type_id}'");
+        UnityEngine.Debug.Log($"node.type_id is: '{node.type_id}'");
         return false;
     }
     private bool IsValidStep(Step step)
@@ -411,12 +468,9 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////////// Input Data Handlers //////////////////////////////////
-    public Node NodeDesearializer(string key, object jsondata)
+    public Node NodeDeserializer(string key, object jsondata)
     {
-        Dictionary<string, object> dict = new Dictionary<string, object>();
-        dict.Add(key, jsondata);
-
-        Dictionary<string, object> jsonDataDict = dict[key] as Dictionary<string, object>;
+        Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
 
         // Access nested values 
         Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
@@ -428,6 +482,18 @@ public class DatabaseManager : MonoBehaviour
         node.part = new Part();
         node.attributes = new Attributes();
         node.part.frame = new Frame();
+
+        //Try get value type to ignore joints
+        if (jsonDataDict.TryGetValue("type", out object type))
+        {
+            if((string)jsonDataDict["type"] == "joint")
+            {
+                node.type_id = key; 
+                UnityEngine.Debug.Log("This is a joint");
+                return node;
+            }
+            UnityEngine.Debug.Log($"type is: {type}");
+        }
 
         //Set values for base node class //TODO: Add try get value for safety?
         node.type_id = jsonDataDict["type_id"].ToString();
@@ -508,7 +574,7 @@ public class DatabaseManager : MonoBehaviour
                 break;
         }
     }
-    public Step StepDesearilizer(string key, object jsondata)
+    public Step StepDeserializer(string key, object jsondata)
     {
         Dictionary<string, object> dict = new Dictionary<string, object>();
         dict.Add(key, jsondata);
@@ -519,6 +585,10 @@ public class DatabaseManager : MonoBehaviour
         Step step = new Step();
         step.data = new Data();
         step.data.location = new Frame();
+
+        //Set values for base node class to keep data structure consistent
+        step.dtype = (string)jsonDataDict["dtype"];
+        step.guid = (string)jsonDataDict["guid"];
 
         //Access nested information
         Dictionary<string, object> dataDict = jsonDataDict["data"] as Dictionary<string, object>;
@@ -572,10 +642,15 @@ public class DatabaseManager : MonoBehaviour
         dbreference_buildingplan.ChildChanged += OnChildChanged;
         dbreference_buildingplan.ChildRemoved += OnChildRemoved;
         
-        //Add Listners for the Assembly
+        //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
         dbreference_assembly.ChildAdded += OnAssemblyChanged;
         dbreference_assembly.ChildChanged += OnAssemblyChanged;
         dbreference_assembly.ChildRemoved += OnAssemblyChanged;
+
+        //Add Listners for the Assembly //TODO: CRITICAL: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
+        // dbreference_qrcodes.ChildAdded += OnQRChanged;
+        // dbreference_qrcodes.ChildChanged += OnQRChanged;
+        // dbreference_qrcodes.ChildRemoved += OnQRChanged;
 
     }
 
@@ -590,10 +665,11 @@ public class DatabaseManager : MonoBehaviour
 
         var key = args.Snapshot.Key;
         var childSnapshot = args.Snapshot.GetValue(true);
+        UnityEngine.Debug.Log($"ON CHILD ADDED {key}");
 
         if (childSnapshot != null)
         {
-            Step newValue = StepDesearilizer(key, childSnapshot);
+            Step newValue = StepDeserializer(key, childSnapshot);
            
             //make a new entry in the dictionary if it doesnt already exist
             if (IsValidStep(newValue))
@@ -606,7 +682,7 @@ public class DatabaseManager : MonoBehaviour
                 {
                     UnityEngine.Debug.Log($"The key '{key}' does not exist in the dictionary");
                     BuildingPlanDataDict.Add(key, newValue);
-                    BuildingPlanDataDict[key].data.element_ids[0] = key;
+                    // BuildingPlanDataDict[key].data.element_ids[0] = key;
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
@@ -632,15 +708,16 @@ public class DatabaseManager : MonoBehaviour
 
         string key = args.Snapshot.Key;
         var childSnapshot = args.Snapshot.GetValue(true);
+        UnityEngine.Debug.Log($"ON CHILD CHANGED {key}");
 
         if (childSnapshot != null)
         {
-            Step newValue = StepDesearilizer(key, childSnapshot);
+            Step newValue = StepDeserializer(key, childSnapshot);
+            //TODO: IF KEY IS LOWER THEN MY CURRENT KEY Do nothing.
             
             if(IsValidStep(newValue))
             {
                 BuildingPlanDataDict[key] = newValue;
-                BuildingPlanDataDict[key].data.element_ids[0] = key;
             }
             else
             {
@@ -694,15 +771,38 @@ public class DatabaseManager : MonoBehaviour
         }
         
         UnityEngine.Debug.Log("Assembly Changed");
-        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot), false);
+        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
+    }
+
+    //TODO: Test
+    public void OnQRChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null) {
+        UnityEngine.Debug.LogError($"Database error: {args.DatabaseError}");
+        return;
+        }
+
+        if (args.Snapshot == null) {
+            UnityEngine.Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            return;
+        }
+        
+        UnityEngine.Debug.Log("QRCodes Changed");
+        FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
     }
 
     // Event handling for database initialization
     protected virtual void OnDatabaseInitializedDict(Dictionary<string, Step> BuildingPlanDataDict)
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "Database dict is null!");
-        DatabaseInitializedDict(this, new DataItemDictEventArgs() { BuildingPlanDataDict = BuildingPlanDataDict });
-    } 
+        DatabaseInitializedDict(this, new DataItemDictEventArgs() {BuildingPlanDataDict = BuildingPlanDataDict});
+    }
+    protected virtual void OnTrackingDataReceived(Dictionary<string, QRcode> QRCodeDataDict)
+    {
+        UnityEngine.Assertions.Assert.IsNotNull(TrackingDictReceived, "Tracking Dict is null!");
+        UnityEngine.Debug.Log("Tracking Data Received");
+        TrackingDictReceived(this, new TrackingDataDictEventArgs() {QRCodeDataDict = QRCodeDataDict});
+    }
     protected virtual void OnDatabaseUpdate(Step newValue, string key)
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "new dict is null!");
