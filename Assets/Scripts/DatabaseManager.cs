@@ -947,12 +947,16 @@ public class DatabaseManager : MonoBehaviour
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
+                    
                 }
             }
             else
             {
                 Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
             }
+
+            //Print out the priority tree as a check
+            Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         }
     } 
     public void OnChildChanged(object sender, Firebase.Database.ChildChangedEventArgs args) 

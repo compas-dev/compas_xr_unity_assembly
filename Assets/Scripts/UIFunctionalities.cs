@@ -46,7 +46,8 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_InputField ElementSearchInputField;
     private GameObject ElementSearchObjects;
     private GameObject SearchElementButtonObject;
-    private GameObject PriorityWarningMessageObject;
+    private GameObject PriorityIncompleteWarningMessageObject;
+    private GameObject PriorityIncorrectWarningMessageObject;
 
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
@@ -70,6 +71,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject EditorBackground;
     private GameObject BuilderEditorButtonObject;
     private GameObject BuildStatusButtonObject;
+    private Button BuildStatusButton;
     
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
@@ -206,7 +208,10 @@ public class UIFunctionalities : MonoBehaviour
         EditorSelectedText = EditorSelectedTextObject.GetComponent<TMPro.TMP_Text>();
 
         //Find Warning messages
-        PriorityWarningMessageObject = CanvasObject.FindObject("PriorityWarningMessage");
+        GameObject MessagesParent = CanvasObject.FindObject("Messages");
+        PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
+        PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
+
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -253,7 +258,7 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Object, Button, and Add Listener for OnClick method
         BuildStatusButtonObject = EditorToggleObject.FindObject("Build_Status_Editor");
-        Button BuildStatusButton = BuildStatusButtonObject.GetComponent<Button>();
+        BuildStatusButton = BuildStatusButtonObject.GetComponent<Button>();
         BuildStatusButton.onClick.AddListener(TouchModifyBuildStatus);;
 
         //Find Panel Objects used for Info and communication
@@ -665,22 +670,84 @@ public class UIFunctionalities : MonoBehaviour
     //Priority checker is set up for temporary priority tree.
     public bool PriorityChecker(Step step)
     {
-            //Check if the current priority is null
-            if(CurrentPriority == null)
-            {
-                Debug.LogError("Current Priority is null.");
-                return false;
-            }
+        //Check if the current priority is null
+        if(CurrentPriority == null)
+        {
+            //Print out the priority tree as a check
+            Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck0): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
+
+            Debug.LogError("Current Priority is null.");
             
-            //Check if they are the same. If they are return true
-            else if (CurrentPriority == step.data.priority.ToString())
+            //Return False to not push data.
+            return false;
+        }
+        
+        //Check if they are the same. If they are return true //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
+        else if (CurrentPriority == step.data.priority.ToString())
+        {
+            Debug.Log($"Priority Check: Current Priority is equal to step priority. Pushing data");
+            
+            //Print out the priority tree as a check
+            Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck1): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
+
+            //Return True to push all the data to the database
+            return true;
+        }
+
+        //Else if the current priority is higher then the step priority loop through all the elements in priority above and unbuild them. This allows you to go back in priority.
+        else if (Convert.ToInt16(CurrentPriority) > step.data.priority)
+        {
+            Debug.Log($"Priority Check: Current Priority is higher then the step priority. Unbuilding elements.");
+        
+            //Loop from steps priority to the highest priority group and unbuild all elements above this one.
+            for(int i = Convert.ToInt16(step.data.priority) + 1; i < databaseManager.PriorityTreeDict.Count; i++)
             {
-                return true;
+                Debug.Log($"Priority Check: Unbuilding Priority: {i}");
+                Debug.Log($"Priority Check: Priority Count {databaseManager.PriorityTreeDict.Count}");
+
+
+                //Find the current priority in the dictionary for iteration
+                List<string> PriorityDataItem = databaseManager.PriorityTreeDict[i.ToString()];
+
+                //Iterate through the Priority tree dictionary to unbuild elements of a higher priority.
+                foreach(string key in PriorityDataItem)
+                {
+                    //Find the step in the dictoinary
+                    Step stepToUnbuild = databaseManager.BuildingPlanDataItem.steps[key];
+
+                    //If step is built unbuild it
+                    if(stepToUnbuild.data.is_built)
+                    {                        
+                        //Unbuild the element
+                        stepToUnbuild.data.is_built = false;
+
+                        //Update color and touch depending on what is on.
+                        instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, Elements.FindObject(key).FindObject("Geometry"));                        
+                    }
+                }
             }
 
-            //If they are not the same find the priority in the dictionary and check if it is complete
-            else
+            //Return True to push all the data to the database
+            return true;
+    
+        }
+        //The priority is higher. Check if all elements in Current Priority are built.
+        else
+        {
+            //if the elements priority is more then 1 greater then current priority return false and signal on screen warning.
+            if(step.data.priority != Convert.ToInt16(CurrentPriority) + 1)
             {
+                Debug.Log($"Priority Check: Current Priority is more then 1 greater then the step priority. Incorrect Priority");
+
+                SignalOnScreenPriorityIncorrectWarning(step.data.priority.ToString(), CurrentPriority);
+
+                //Return False to not push data.
+                return false;
+            }
+
+            //This is the Priority that we want.
+            else
+            {   
                 //New empty list to store unbuilt elements
                 List<string> UnbuiltElements = new List<string>();
                 
@@ -703,17 +770,31 @@ public class UIFunctionalities : MonoBehaviour
                 //If the list is empty return true because all elements of that priority are built
                 if(UnbuiltElements.Count == 0)
                 {
+                    Debug.Log($"Priority Check: Current Priority is complete. Pushing data");
+                    
+                    //Print out the priority tree as a check
+                    Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck2): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
+                    
+                    //Return True to push all data to the database.
                     return true;
                 }
+                
                 //If the list is not empty return false because not all elements of that priority are built and signal on screen warning.
                 else
                 {
-                    SignalOnScreenPriorityWarning(UnbuiltElements, CurrentPriority);
+                    Debug.Log($"Priority Check: Current Priority is not complete. Incomplete Priority");
+                    
+                    //Print out the priority tree as a check
+                    Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck3): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
+
+                    SignalOnScreenPriorityIncompleteWarning(UnbuiltElements, CurrentPriority);
+                    
+                    //Return False to not push data.
                     return false;
                 }
             }
+        }
     }
-
     public void ModifyStepBuildStatus(string key)
     {
         Debug.Log($"Modifying Build Status of: {key}");
@@ -721,6 +802,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
+        //Check if priority is correct.
         if (PriorityChecker(step))
         {
             //Change Build Status
@@ -794,21 +876,43 @@ public class UIFunctionalities : MonoBehaviour
         //Set On Screen Text
         CurrentPriorityText.text = $"Current Priority : {Priority}";
     }
-    private void SignalOnScreenPriorityWarning(List<string> UnbuiltElements, string currentPriority)
+    private void SignalOnScreenPriorityIncompleteWarning(List<string> UnbuiltElements, string currentPriority)
     {
         
-        Debug.Log($"SIGNAL ON SCREEN TEXT ON SCREEN PRIORITY WARNING");
+        Debug.Log($"Priority Warning: Signal On Screen Message for Incomplete Priority.");
 
         //Find text component for on screen message
-        TMP_Text messageComponent = PriorityWarningMessageObject.FindObject("PriorityText").GetComponent<TMP_Text>();
+        TMP_Text messageComponent = PriorityIncompleteWarningMessageObject.FindObject("PriorityIncompleteText").GetComponent<TMP_Text>();
 
         //Define message for the onscreen text
-        string message = $"This element cannot build because the following elements from Current Priority {currentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
+        string message = $"WARNING: This element cannot build because the following elements from Current Priority {currentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
         
-        if(messageComponent != null && message != null && PriorityWarningMessageObject != null)
+        if(messageComponent != null && message != null && PriorityIncompleteWarningMessageObject != null)
         {
             //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(PriorityWarningMessageObject, messageComponent, message);
+            SignalOnScreenMessageWithButton(PriorityIncompleteWarningMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("Priority Message: Could not find message object or message component.");
+        }
+
+    }
+    private void SignalOnScreenPriorityIncorrectWarning(string elementsPriority, string currentPriority)
+    {
+        
+        Debug.Log($"Priority Warning: Signal On Screen Message for Incorrect Priority.");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = PriorityIncorrectWarningMessageObject.FindObject("PriorityIncorrectText").GetComponent<TMP_Text>();
+
+        //Define message for the onscreen text
+        string message = $"WARNING: This elements priority is incorrect. It is priority {elementsPriority} and next priority to build is {Convert.ToInt16(currentPriority) + 1}";
+        
+        if(messageComponent != null && message != null && PriorityIncorrectWarningMessageObject != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(PriorityIncorrectWarningMessageObject, messageComponent, message);
         }
         else
         {
@@ -847,7 +951,6 @@ public class UIFunctionalities : MonoBehaviour
         }  
     }
 
-    
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
     {
@@ -1118,7 +1221,8 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager.BuildingPlanDataItem.steps.Clear();
         databaseManager.DataItemDict.Clear();
         databaseManager.QRCodeDataDict.Clear();
-        // databaseManager.CurrentUsersDict.Clear();
+        databaseManager.UserCurrentStepDict.Clear();
+        databaseManager.PriorityTreeDict.Clear();
 
         //Fetch settings data again
         databaseManager.FetchSettingsData(eventManager.settings_reference);
@@ -1229,13 +1333,6 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Set Collider to true
                     ElementCollider.enabled = true;
-
-                    //TODO: TESTING COLIDERS
-                    // GameObject TestBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    // TestBox.transform.position = element.transform.position;
-                    // TestBox.transform.rotation = element.transform.rotation;
-                    // TestBox.transform.localScale = ElementCollider.bounds.size;
-                    // TestBox.GetComponent<Renderer>().material.color = Color.red;
 
                 }
                 else
@@ -1375,8 +1472,21 @@ public class UIFunctionalities : MonoBehaviour
             //Set temporary object as the active game object
             temporaryObject = activeGameObject;
 
-            //String name of the parent object to find element in the dictionary
+            //String name of the parent object to find step element in the dictionary
             string activeGameObjectParentname = activeGameObject.transform.parent.name;
+
+            Debug.Log($"Active Game Object Priority: {databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority}");
+
+            //If active game objects step priority is higher then current step priority then set builder button to inactive else its active
+            if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(CurrentPriority))
+            {
+                Debug.Log("Priority is higher then current priority. Setting button to inactive.");
+                BuildStatusButton.interactable = false;
+            }
+            else
+            {
+                BuildStatusButton.interactable = true;
+            }
             
             //Color the object based on human or robot
             instantiateObjects.ColorHumanOrRobot(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.actor, databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.is_built, activeGameObject);
