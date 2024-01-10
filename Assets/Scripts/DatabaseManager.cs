@@ -73,6 +73,7 @@ public class DatabaseManager : MonoBehaviour
     public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
     public Dictionary<string, QRcode> QRCodeDataDict { get; private set; } = new Dictionary<string, QRcode>();
     public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
+    public Dictionary<string, List<string>> PriorityTreeDict { get; private set; } = new Dictionary<string, List<string>>();
 
     //Data Structure to Store Application Settings
     public ApplicationSettings applicationSettings;
@@ -587,6 +588,7 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////////// Input Data Handlers //////////////////////////////////  
+    //This also creates the priority tree dictionary, but this is temporary to deal with list problem.
     private BuildingPlanData BuildingPlanDeserializer(object jsondata)
     {
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
@@ -616,12 +618,30 @@ public class DatabaseManager : MonoBehaviour
             string key = i.ToString();
             var json_data = stepsList[i];
 
+            //Create step instance from the information
             Step step_data = StepDeserializer(json_data);
             
+            //Check if step is valid and add it to building plan dictionary
             if (IsValidStep(step_data))
             {
+                //Add step to building plan dictionary
                 buidingPlanData.steps[key] = step_data;
                 Debug.Log($"Step {key} successfully added to the building plan dictionary");
+
+                //Add step to priority tree dictionary
+                if (PriorityTreeDict.ContainsKey(step_data.data.priority.ToString()))
+                {
+                    //If the priority already exists add the key to the list
+                    PriorityTreeDict[step_data.data.priority.ToString()].Add(key);
+                    Debug.Log($"Step {key} successfully added to the priority tree dictionary item {step_data.data.priority.ToString()}");
+                }
+                else
+                {
+                    //If not create a new list and add the key to the list
+                    PriorityTreeDict[step_data.data.priority.ToString()] = new List<string>();
+                    PriorityTreeDict[step_data.data.priority.ToString()].Add(key);
+                    Debug.Log($"Step {key} added a new priority {step_data.data.priority.ToString()} to the priority tree dictionary");
+                }
             }
             else
             {
@@ -629,6 +649,7 @@ public class DatabaseManager : MonoBehaviour
             }
         }
 
+        Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
     public Node NodeDeserializer(string key, object jsondata)
@@ -877,7 +898,8 @@ public class DatabaseManager : MonoBehaviour
 
     }
 
-    // Event handler for BuildingPlan child changes    
+    // Event handler for BuildingPlan child changes
+    // All of them are addapted to adjust the priority tree for now. Also Temporary.
     public void OnChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args) 
     {
         if (args.DatabaseError != null)
@@ -905,6 +927,23 @@ public class DatabaseManager : MonoBehaviour
                 {
                     Debug.Log($"The key '{key}' does not exist in the dictionary");
                     BuildingPlanDataItem.steps.Add(key, newValue);
+
+                    //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+                    //Check if the steps priority is one that I already have in the priority tree dictionary
+                    if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
+                    {
+                        //If the priority already exists add the key to the list
+                        PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                        Debug.Log($"Step {key} successfully added to the priority tree dictionary item {newValue.data.priority.ToString()}");
+                    }
+                    else
+                    {
+                        //If not create a new list and add the key to the list
+                        PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
+                        PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                        Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
+                    }
+                    //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
@@ -951,9 +990,43 @@ public class DatabaseManager : MonoBehaviour
                     //This means that the change was specifically from another device.
                     else
                     {    
-                        Debug.Log($"I entered here for key {key}");
                         if(IsValidStep(newValue))
                         {
+                            //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+                            //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
+                            if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
+                            {
+                                //Remove the old key from the priority tree dictionary
+                                PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
+
+                                //Check if the priority tree value item is null and if so remove it from the dictionary
+                                if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
+                                {
+                                    PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
+                                }
+
+                                //Check if the steps priority is one that I already have in the priority tree dictionary
+                                if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
+                                {
+                                    //If the priority already exists add the key to the list
+                                    PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                    Debug.Log($"Step {key} successfully added to the priority tree dictionary item {newValue.data.priority.ToString()}");
+                                }
+                                else
+                                {
+                                    //If not create a new list and add the key to the list
+                                    PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
+                                    PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                    Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
+                                }
+                            }
+                            else
+                            {
+                                Debug.Log($"The priority of the step {key} did not change");
+                            }
+                            //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+
+                            //Add the new value to the Building plan dictionary
                             BuildingPlanDataItem.steps[key] = newValue;
                         }
                         else
@@ -968,14 +1041,49 @@ public class DatabaseManager : MonoBehaviour
                         OnDatabaseUpdate(newValue, key);
                     }
                 }
-                //Check: This change happened either manually or from grasshopper.
+                //Check: This change happened either manually or from grasshopper. To an object that doesn't have a device id.
                 else
                 {
                     Debug.LogWarning($"Device ID is null: the change for key {key} happened from gh or manually.");
 
                     if(IsValidStep(newValue))
                     {
-                        BuildingPlanDataItem.steps[key] = newValue;
+                        //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+                        //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
+                        if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
+                        {                            
+                            //Remove the old key from the priority tree dictionary
+                            PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
+
+                            //Check if the priority tree value item is null and if so remove it from the dictionary
+                            if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
+                            {
+                                PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
+                            }
+
+                            //Check if the steps priority is one that I already have in the priority tree dictionary
+                            if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
+                            {
+                                //If the priority already exists add the key to the list
+                                PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                Debug.Log($"Step {key} successfully added to the priority tree dictionary item {newValue.data.priority.ToString()}");
+                            }
+                            else
+                            {
+                                //If not create a new list and add the key to the list
+                                PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
+                                PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
+                            }
+                            
+                            BuildingPlanDataItem.steps[key] = newValue;
+                        }
+                        else
+                        {
+                            Debug.Log($"The priority of the step {key} did not change");
+                        }
+                        //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+
                     }
                     else
                     {
@@ -987,7 +1095,11 @@ public class DatabaseManager : MonoBehaviour
                     
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
+
                 }
+
+                //Print out the priority tree as a check
+                Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
             }
 
         }
@@ -1010,7 +1122,22 @@ public class DatabaseManager : MonoBehaviour
             {
                 Step newValue = null;
                 Debug.Log("The key exists in the dictionary and is going to be removed");
+                
+                //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+                //First check thee steps priorty Remove the steps key from the priority tree dictionary
+                PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
+
+                //Check if the priority tree value item is null and if so remove it from the dictionary
+                if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
+                {
+                    PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
+                }
+                //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+                
+                //Remove the step from the building plan dictionary
                 BuildingPlanDataItem.steps.Remove(key);
+
+                //Trigger database event
                 OnDatabaseUpdate(newValue, key);
             }
             else
@@ -1198,6 +1325,9 @@ public class DatabaseManager : MonoBehaviour
 
                 // Update On Screen Text
                 UIFunctionalities.SetLastBuiltText(BuildingPlanDataItem.LastBuiltIndex);
+
+                // Update Current Priority
+                UIFunctionalities.SetCurrentPriority(BuildingPlanDataItem.LastBuiltIndex);
             }
             else
             {

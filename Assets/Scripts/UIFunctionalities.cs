@@ -662,78 +662,57 @@ public class UIFunctionalities : MonoBehaviour
         }
     }
     
-    // TODO: Priority CHECKS... to allow building and not building if current step priority is the same as the last built one.
-    // TODO: Should Current Priority be on the Database? I can also put it in the Building Plan Data Item.
-    // public bool PriorityChecker(Step step)
-    // {
-    //         //Check if the current priority is null
-    //         if(CurrentPriority == null)
-    //         {
-    //             Debug.LogError("Current Priority is null.");
-    //         }
+    //Priority checker is set up for temporary priority tree.
+    public bool PriorityChecker(Step step)
+    {
+            //Check if the current priority is null
+            if(CurrentPriority == null)
+            {
+                Debug.LogError("Current Priority is null.");
+                return false;
+            }
             
-    //         //Check if they are the same. If they are return true
-    //         else if (CurrentPriority == step.data.priority.ToString())
-    //         {
-    //             return true;
-    //         }
+            //Check if they are the same. If they are return true
+            else if (CurrentPriority == step.data.priority.ToString())
+            {
+                return true;
+            }
 
-    //         //If they are not the same check if all items from the current priority are completed
-    //         else
-    //         {
-    //             //TODO: THIS CAN ONLY BE REDUCED IF I CREATE A PRIORITY TREE DICT FROM THE BEGINING AND UPDATE IT ON CHILD EVENTS.
-    //             //TODO: Priority Tree Dict Example: {1: [1,2,3], 2: [4,5,6], 3: [7,8,9]}
-    //             //TODO: ADD PRIORITY TREE SEPERATE FROM THE BUILDING PLAN.
-    //             //Loop though the dictionary and check if all the steps with the previous element
-    //             for (int i = 0; i < databaseManager.BuildingPlanDataItem.steps.Count; i++)
-    //             {
-    //                 Step stepCheck = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
-                    
-    //                 //If step is the priority is the same as the current priority check if it is built
-    //                 if(stepCheck.data.priority.ToString() == CurrentPriority)
-    //                 {
-    //                     //If one is not bulit signal On Screen Message That Item from Current Priority is not built yet and return.
-    //                     if(!stepCheck.data.is_built)
-    //                     {
-    //                         Debug.Log($"SHOW ON SCREEN TEXT: {i} from Current Priority is not built yet.");
-                           
-    //                         //Set Item not built key
-    //                         ItemNotBuilt = i.ToString();
-                         
-    //                         //Set AllItemsBuilt to false
-    //                         AllItemsBuilt = false;
-                         
-    //                         break;
-    //                     }
-    //                 }
-    //             }
-    
-    //             //If all items are built return true
-    //             if(AllItemsBuilt)
-    //             {
-    //                 //Set new priority
-    //                 SetCurrentPriority(step.data.priority.ToString());
-    
-    //                 return true;
-    //             }
-    //             else
-    //             {
-    //                 //Set Current Step to the first item that is not built
-    //                 SignalOnScreenPriorityWarning(ItemNotBuilt);
-    
-    //                 return false;
-    //             }
-    //         }
-    //         TODO: ORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-    //         TODO: Above is the only way to do it where I only update the priority when I need to.
-    //         TODO: Then update priority every time I write.
-    //         TODO: I think it should be like above if we put it on the database: (Otherwise I have to find a way of distinguising that it was me that made that change(not hard I would just compare it against my own))
-    //         TODO: If I don't put it on the database... there would be a short lag where current on my device is different then yours, but either way all the elements of that priority will already be built.
-    //                     if(!stepCheck.data.is_built)
-    //                     {
-    //                         return false;
-    //                     }
-    // }
+            //If they are not the same find the priority in the dictionary and check if it is complete
+            else
+            {
+                //New empty list to store unbuilt elements
+                List<string> UnbuiltElements = new List<string>();
+                
+                //Find the current priority in the dictionary for iteration
+                List<string> PriorityDataItem = databaseManager.PriorityTreeDict[CurrentPriority];
+
+                //Iterate through the Priority tree dictionary to check the elements and if the priority is complete
+                foreach(string element in PriorityDataItem)
+                {
+                    //Find the step in the dictoinary
+                    Step stepToCheck = databaseManager.BuildingPlanDataItem.steps[element];
+
+                    //Check if the element is built
+                    if(!stepToCheck.data.is_built)
+                    {
+                        UnbuiltElements.Add(element);
+                    }
+                }
+
+                //If the list is empty return true because all elements of that priority are built
+                if(UnbuiltElements.Count == 0)
+                {
+                    return true;
+                }
+                //If the list is not empty return false because not all elements of that priority are built and signal on screen warning.
+                else
+                {
+                    SignalOnScreenPriorityWarning(UnbuiltElements, CurrentPriority);
+                    return false;
+                }
+            }
+    }
 
     public void ModifyStepBuildStatus(string key)
     {
@@ -742,21 +721,18 @@ public class UIFunctionalities : MonoBehaviour
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
-        // if (PriorityChecker(step))
-        // {
+        if (PriorityChecker(step))
+        {
             //Change Build Status
             if(step.data.is_built)
             {
                 //Change Build Status
                 step.data.is_built = false;
 
-                //Find the closest item that was built to my current item and make that the last built
+                //Convert my key to an int
                 int StepInt = Convert.ToInt16(key);
 
-                //Also Important question... does the Touch Modifier allow overwriting of the last built item? //TODO: I think this is the best way to handle it.
-                //Iterate through steps backwards to find the last built step....
-                //This could take some more thought, it can either be like this or not overwrite at all and just become what ever it is.
-                //Only scenario where it would be wrong is if I build one and unbuild it directly the last built item will be that one which is incorrect.
+                //Iterate through steps backwards to find the last built step that is closest to my current step
                 for(int i = StepInt; i > 0; i--)
                 {
                     if(databaseManager.BuildingPlanDataItem.steps[i.ToString()].data.is_built)
@@ -765,7 +741,6 @@ public class UIFunctionalities : MonoBehaviour
                         databaseManager.BuildingPlanDataItem.LastBuiltIndex = i.ToString();
                         SetLastBuiltText(i.ToString());
 
-                        //TODO: IDK IF THIS SHOULD HAPPEN EVERY TIME... It depends on how I set up the priority checker.
                         //Set Current Priority
                         SetCurrentPriority(i.ToString());
 
@@ -783,11 +758,8 @@ public class UIFunctionalities : MonoBehaviour
                 databaseManager.BuildingPlanDataItem.LastBuiltIndex = key;
                 SetLastBuiltText(key);
 
-                //TODO: IDK IF THIS SHOULD HAPPEN EVERY TIME... It depends on how I set up the priority checker.
                 //Set Current Priority
                 SetCurrentPriority(key);
-
-
             }
 
             //Update color
@@ -802,7 +774,7 @@ public class UIFunctionalities : MonoBehaviour
 
             //Push Data to the database
             databaseManager.PushAllDataBuildingPlan(key);
-        // }
+        }
 
     }
     public void SetLastBuiltText(string key)
@@ -822,20 +794,59 @@ public class UIFunctionalities : MonoBehaviour
         //Set On Screen Text
         CurrentPriorityText.text = $"Current Priority : {Priority}";
     }
-    private void SignalOnScreenPriorityWarning(string ItemNotBuilt)
+    private void SignalOnScreenPriorityWarning(List<string> UnbuiltElements, string currentPriority)
     {
         
         Debug.Log($"SIGNAL ON SCREEN TEXT ON SCREEN PRIORITY WARNING");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = PriorityWarningMessageObject.FindObject("PriorityText").GetComponent<TMP_Text>();
+
+        //Define message for the onscreen text
+        string message = $"This element cannot build because the following elements from Current Priority {currentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
         
-        if(PriorityWarningMessageObject != null)
+        if(messageComponent != null && message != null && PriorityWarningMessageObject != null)
         {
-            PriorityWarningMessageObject.SetActive(true);
-
-            //Fade out mesage and set activity.
-
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(PriorityWarningMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("Priority Message: Could not find message object or message component.");
         }
 
     }
+    public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent, string message)
+    {
+        if (messageGameObject != null && messageComponent != null)
+        {
+            //Set Text
+            messageComponent.text = message;
+
+            //Set Object Active
+            messageGameObject.SetActive(true);
+
+            //Get Acknowledge button from the child of this panel
+            GameObject AcknowledgeButton = messageGameObject.FindObject("AcknowledgeButton");
+
+            //Check if this item already has a listner or not.
+            if (AcknowledgeButton.GetComponent<Button>().onClick.GetPersistentEventCount() == 0)
+            {
+                //Add Listner for Acknowledge Button
+                AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => messageGameObject.SetActive(false));
+            }
+            else
+            {
+                Debug.LogWarning("ACKNOWLEDGE BUTTON SHOULD ALREADY HAVE A LISTNER THAT SETS IT TO FALSE.");
+            }
+
+        }
+        else
+        {
+            Debug.LogWarning($"Message: Could not find message object or message component inside of GameObject {messageGameObject.name}.");
+        }  
+    }
+
     
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
