@@ -571,6 +571,16 @@ public class DatabaseManager : MonoBehaviour
                 //Set Current Element
                 UIFunctionalities.SetCurrentStep(i.ToString());
 
+                //Set Current Priority as the priority of the first this current step: Should only be done on app start up
+                if (i != 0)
+                {
+                    UIFunctionalities.SetCurrentPriority(i.ToString());
+                }
+                else
+                {
+                    UIFunctionalities.SetCurrentPriority("0");
+                }
+
                 break;
             }
         }
@@ -867,7 +877,7 @@ public class DatabaseManager : MonoBehaviour
 
     }
 
-    // Event handler for child changes    
+    // Event handler for BuildingPlan child changes    
     public void OnChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args) 
     {
         if (args.DatabaseError != null)
@@ -1009,6 +1019,8 @@ public class DatabaseManager : MonoBehaviour
             }
         }
     }  
+    
+    // Event handlers for User Current Step
     public void OnUserAdded(object sender, Firebase.Database.ChildChangedEventArgs args)
     {
         if (args.DatabaseError != null) {
@@ -1124,6 +1136,8 @@ public class DatabaseManager : MonoBehaviour
         }
 
     }
+
+    // Event Handlers for Additional Data
     public void OnAssemblyChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
     {
         if (args.DatabaseError != null) {

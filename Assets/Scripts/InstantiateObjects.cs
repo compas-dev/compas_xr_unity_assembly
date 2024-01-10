@@ -111,7 +111,6 @@ namespace Instantiate
             visulizationController.TagsMode = false;
 
         }
-
         public void placeElements(List<Step> DataItems) 
         {
             int i = 0;
@@ -612,7 +611,7 @@ namespace Instantiate
             return rotation;
         }
 
-        //Functions for obj imort correctoin.
+        //Functions for obj imort correction.
         public Rotation ZRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3
@@ -864,7 +863,7 @@ namespace Instantiate
         {
             PlacedInitialElements(this, EventArgs.Empty);
 
-            //TODO: FIND CURRENT STEP AND LAST BUILT STEP
+            //Find the first unbuilt element in the database
             databaseManager.FindInitialElement();
         }
     }
