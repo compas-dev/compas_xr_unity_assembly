@@ -972,6 +972,10 @@ public class DatabaseManager : MonoBehaviour
         }
 
         string key = args.Snapshot.Key;
+        if (key == null) {
+            Debug.LogWarning("Snapshot key is null. Ignoring the child change.");
+        }
+
         var childSnapshot = args.Snapshot.GetValue(true);
 
         if (childSnapshot != null)

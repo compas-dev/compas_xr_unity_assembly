@@ -168,8 +168,26 @@ namespace Instantiate
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
             
-            //Toggle Objects Evaluater
-            ToggleObjectsEvaluater(Key, step, elementPrefab);
+            //Check if the visulization tags mode is on
+            if (visulizationController.TagsMode)
+            {
+                //Set tag and Image visibility if the mode is on
+                elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
+                elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
+            }
+
+            //TODO: Check if the priority toggle is on... for now just fetch the toggle, but in future make a method that checks all toggles.
+            if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+            {
+                //Color the object based on priority
+                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), geometryObject);
+            }
+
+            //If the object is equal to the current step also color it human or robot
+            if (Key == UIFunctionalities.CurrentStep)
+            {
+                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+            }
 
         }
         public void placeElementAssembly(string Key, Node node)
@@ -645,31 +663,6 @@ namespace Instantiate
         }
 
     /////////////////////////////// Material and colors ////////////////////////////////////////
-        public void ToggleObjectsEvaluater(string itemKey, Step step, GameObject elementPrefab)
-        {
-            //Check if the visulization tags mode is on //TODO: MAKE THIS A TOGGLE
-            if (visulizationController.TagsMode)
-            {
-                //Set tag and Image visibility if the mode is on
-                elementPrefab.FindObject(gameObject.name + " Text").gameObject.SetActive(true);
-                elementPrefab.FindObject(gameObject.name + "IdxImage").gameObject.SetActive(true);
-            }
-
-            //Check if PriorityViewerToggleObject is on
-            if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
-            {
-                //TODO: If option 2 then we just need to check the text if the toggle is on.
-                //Adjust color accordingly
-                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), elementPrefab.FindObject("Geometry"));
-            }
-
-            //If the object is equal to the current step also color it human or robot
-            if (itemKey == UIFunctionalities.CurrentStep)
-            {
-                ColorHumanOrRobot(step.data.actor, step.data.is_built, elementPrefab.FindObject("Geometry"));
-            }
-
-        }
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
@@ -697,6 +690,12 @@ namespace Instantiate
                         geometryObject.GetComponent<Renderer>().material = LockedObjectMaterial;
                     }
                     break;
+            }
+
+            //If Priority Viewer toggle is on then color the add additional color based on priority
+            if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+            {
+                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), geometryObject);
             }
         }
         public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
@@ -824,27 +823,6 @@ namespace Instantiate
             }
         }
 
-        //Apply Control all objects based on Application modes
-        public void ControlObjectsBasedOnApplicationMode()
-        {
-            foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
-            {
-                GameObject gameObject = GameObject.Find(entry.Key);
-                
-                if (gameObject != null)
-                {
-                    //Check modes
-                    ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, entry.Value, gameObject.FindObject("Geometry"));
-                    
-                    //Check toggles
-                    ToggleObjectsEvaluater(entry.Key, entry.Value, gameObject);
-                }
-                else
-                {
-                    Debug.LogWarning($"Could not find object with key: {entry.Key}");
-                }
-            }
-        }
         //Color Managers
         public Material CreateMaterial(float red, float green, float blue, float alpha) //TODO: Color is incorrect
         {

@@ -1158,7 +1158,10 @@ public class UIFunctionalities : MonoBehaviour
             {
             Debug.Log($"Priority Viewer Toggle Object is null {PriorityViewerToggleObject}");
             }
+            
             //Color Elements by visulization mode
+
+
             instantiateObjects.ApplyColorBasedOnBuildState();
 
             //Set UI Color
