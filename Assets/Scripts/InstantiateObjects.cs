@@ -101,7 +101,7 @@ namespace Instantiate
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
-            IdxImage = GameObject.Find("IdxTags").FindObject("Circle");
+            IdxImage = GameObject.Find("IdxTagsTemplates").FindObject("Circle");
             SelectionArrow = GameObject.Find("SelectionArrows").FindObject("Arrow");
             NewUserArrow = GameObject.Find("SelectionArrows").FindObject("NewUserArrow");
 
@@ -168,19 +168,8 @@ namespace Instantiate
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
             
-            //Check if the visulization tags mode is on
-            if (visulizationController.TagsMode)
-            {
-                //Set tag and Image visibility if the mode is on
-                elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
-                elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
-            }
-
-            //If the object is equal to the current step also color it human or robot
-            if (Key == UIFunctionalities.CurrentStep)
-            {
-                ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-            }
+            //Toggle Objects Evaluater
+            ToggleObjectsEvaluater(Key, step, elementPrefab);
 
         }
         public void placeElementAssembly(string Key, Node node)
@@ -656,6 +645,31 @@ namespace Instantiate
         }
 
     /////////////////////////////// Material and colors ////////////////////////////////////////
+        public void ToggleObjectsEvaluater(string itemKey, Step step, GameObject elementPrefab)
+        {
+            //Check if the visulization tags mode is on //TODO: MAKE THIS A TOGGLE
+            if (visulizationController.TagsMode)
+            {
+                //Set tag and Image visibility if the mode is on
+                elementPrefab.FindObject(gameObject.name + " Text").gameObject.SetActive(true);
+                elementPrefab.FindObject(gameObject.name + "IdxImage").gameObject.SetActive(true);
+            }
+
+            //Check if PriorityViewerToggleObject is on
+            if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+            {
+                //TODO: If option 2 then we just need to check the text if the toggle is on.
+                //Adjust color accordingly
+                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), elementPrefab.FindObject("Geometry"));
+            }
+
+            //If the object is equal to the current step also color it human or robot
+            if (itemKey == UIFunctionalities.CurrentStep)
+            {
+                ColorHumanOrRobot(step.data.actor, step.data.is_built, elementPrefab.FindObject("Geometry"));
+            }
+
+        }
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
@@ -735,22 +749,24 @@ namespace Instantiate
                 }
             }
         }
-        public Material CreateMaterial(float red, float green, float blue, float alpha) //TODO: Color is incorrect
+        public void ColorObjectByPriority(string SelectedPriority, string StepPriority, GameObject gamobj)
         {
-            Material mat = new Material(Shader.Find("Standard"));
-            mat.SetColor("_Color",  new Color(red, green, blue, alpha));
-            mat.SetFloat("_Mode", 3);
-            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.EnableKeyword("_ALPHABLEND_ON");
-            mat.SetInt("_ZWrite", 0);
-            mat.DisableKeyword("_ALPHATEST_ON");
-            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            mat.renderQueue = 3000;
+            //Get Object Renderer
+            Renderer m_renderer= gamobj.GetComponentInChildren<Renderer>();
 
-            return mat;
+            //If the steps priority is not the same as the selected priority then color it grey
+            if (StepPriority != SelectedPriority)
+            {
+                Debug.Log($"Coloring object {gamobj.name} grey");
+
+                //Create a new color for the object based on its current color, and add a greyscale blend factor
+                Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
+
+                //Set the object to the new color
+                m_renderer.material.color = objectAdjustedColor;
+            }
         }
-
+        
         // Apply color for objects based on Built or Unbuilt state
         public void ApplyColorBasedOnBuildState()
         {
@@ -785,6 +801,100 @@ namespace Instantiate
             }
         }
 
+        //Apply color for objects based on Priority
+        public void ApplyColorBasedOnPriority(string SelectedPriority)
+        {
+            Debug.Log($"Applying color based on priority: {SelectedPriority}.");
+            if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
+                {
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    
+                    //If the objects are not null color by priority function.
+                    if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
+                    {
+                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), gameObject.FindObject("Geometry"));
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Could not find object with key: {entry.Key}");
+                    }
+                }
+            }
+        }
+
+        //Apply Control all objects based on Application modes
+        public void ControlObjectsBasedOnApplicationMode()
+        {
+            foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
+            {
+                GameObject gameObject = GameObject.Find(entry.Key);
+                
+                if (gameObject != null)
+                {
+                    //Check modes
+                    ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, entry.Value, gameObject.FindObject("Geometry"));
+                    
+                    //Check toggles
+                    ToggleObjectsEvaluater(entry.Key, entry.Value, gameObject);
+                }
+                else
+                {
+                    Debug.LogWarning($"Could not find object with key: {entry.Key}");
+                }
+            }
+        }
+        //Color Managers
+        public Material CreateMaterial(float red, float green, float blue, float alpha) //TODO: Color is incorrect
+        {
+            Material mat = new Material(Shader.Find("Standard"));
+            mat.SetColor("_Color",  new Color(red, green, blue, alpha));
+            mat.SetFloat("_Mode", 3);
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.EnableKeyword("_ALPHABLEND_ON");
+            mat.SetInt("_ZWrite", 0);
+            mat.DisableKeyword("_ALPHATEST_ON");
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.renderQueue = 3000;
+
+            return mat;
+        }
+        public Color AdjustColorByGreyscale(Color originalColor, float factor)
+        {
+            //If Color is not white (Built and Unbuilt Colors)
+            if (originalColor.r != 1.000f && originalColor.g != 1.000f && originalColor.b != 1.000f)
+            {
+                // Factor should be between 0 and 1, where 0 is unchanged and 1 is fully gray
+                factor = Mathf.Clamp01(factor);
+
+                // Convert the original color to grayscale
+                float grayscaleValue = originalColor.r * 0.3f + originalColor.g * 0.59f + originalColor.b * 0.11f;
+
+                // Blend the grayscale color with the original color based on the factor
+                float blendedR = originalColor.r * (1 - factor) + grayscaleValue * factor;
+                float blendedG = originalColor.g * (1 - factor) + grayscaleValue * factor;
+                float blendedB = originalColor.b * (1 - factor) + grayscaleValue * factor;
+
+                // Ensure color values are in the valid range (0 to 1)
+                blendedR = Mathf.Clamp01(blendedR);
+                blendedG = Mathf.Clamp01(blendedG);
+                blendedB = Mathf.Clamp01(blendedB);
+
+                // Create and return the new color
+                Color newColor = new Color(blendedR, blendedG, blendedB, originalColor.a);
+                
+                Debug.Log($"Original Color: {originalColor} New Color: {newColor}");
+                
+                return newColor;
+            }
+            else
+            {
+                Color newColor = new Color(originalColor.r * factor, originalColor.g * factor, originalColor.b * factor, originalColor.a);
+                return newColor;
+            }
+        }
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, DataItemDictEventArgs e)
         {

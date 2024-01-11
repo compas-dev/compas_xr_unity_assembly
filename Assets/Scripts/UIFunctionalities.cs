@@ -15,6 +15,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.XR.ARSubsystems;
 using System.Globalization;
 using ApplicationModeControler;
+using Unity.IO.LowLevel.Unsafe;
 
 
 public class UIFunctionalities : MonoBehaviour
@@ -54,12 +55,12 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PreviewBuilderButtonObject;
     private GameObject IDButtonObject;
     private GameObject RobotToggleObject;
+    private GameObject RobotVisulizationControlObjects;
     private GameObject ObjectLengthsToggleObject;
-
     private GameObject ObjectLengthsUIPanelObjects;
     private TMP_Text ObjectLengthsText;
     private GameObject ObjectLengthsTags;
-    private GameObject RobotVisulizationControlObjects;
+    public GameObject PriorityViewerToggleObject;
 
     //Menu Toggle Button Objects
     private GameObject MenuBackground;
@@ -229,6 +230,10 @@ public class UIFunctionalities : MonoBehaviour
         Toggle RobotToggle = RobotToggleObject.GetComponent<Toggle>();
         RobotVisulizationControlObjects = ConstantUIPanelObjects.FindObject("RobotVisulizationControlObjects");
 
+        //Find Robot toggle and Objects
+        PriorityViewerToggleObject = VisibilityMenuObject.FindObject("PriorityViewer");
+        Toggle PriorityViewerToggle = PriorityViewerToggleObject.GetComponent<Toggle>();
+
         //Find Object Lengths Toggle and Objects
         ObjectLengthsToggleObject = VisibilityMenuObject.FindObject("ObjectLength_Button");
         Toggle ObjectLengthsToggle = ObjectLengthsToggleObject.GetComponent<Toggle>();
@@ -306,10 +311,15 @@ public class UIFunctionalities : MonoBehaviour
         ToggleRobot(RobotToggle);
         });
 
+        //Add Listners for Priority Viewer Toggle.
+        PriorityViewerToggle.onValueChanged.AddListener(delegate {
+        TogglePriority(PriorityViewerToggle);
+        });
+
     }
     public void ToggleVisibilityMenu(Toggle toggle)
     {
-        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDButtonObject != null)
+        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDButtonObject != null && PriorityViewerToggleObject != null)
         {    
             if (toggle.isOn)
             {             
@@ -319,6 +329,7 @@ public class UIFunctionalities : MonoBehaviour
                 RobotToggleObject.SetActive(true);
                 ObjectLengthsToggleObject.SetActive(true);
                 IDButtonObject.SetActive(true);
+                PriorityViewerToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
@@ -332,6 +343,7 @@ public class UIFunctionalities : MonoBehaviour
                 RobotToggleObject.SetActive(false);
                 ObjectLengthsToggleObject.SetActive(false);
                 IDButtonObject.SetActive(false);
+                PriorityViewerToggleObject.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -668,6 +680,17 @@ public class UIFunctionalities : MonoBehaviour
     }
     
     //Priority checker is set up for temporary priority tree.
+    /*
+    
+    TODO: I think I have to put CurrentPriority on the DB
+    Reason 1: If I only go off of last built element then it means that in order to move to the next PR I have to 
+    build the first one in order to update CurrentPriority. Which is actually incorrect because if I unbuild it my LastBuiltIndex
+    iterates through backwards to the first built element which would put me back on the previous priority.
+
+    Reason 2: If I make it so the last built index doesn't do that then my last built index on the DB will be incorrect because I
+    build would update LBI to build the one, and then not when I unbuild it.
+    
+    */
     public bool PriorityChecker(Step step)
     {
         //Check if the current priority is null
@@ -767,6 +790,7 @@ public class UIFunctionalities : MonoBehaviour
                     }
                 }
 
+                //TODO: IF I put current element on the database it the only thing is this has to return a false here and update CurrentPriority and UIGraphics Controler.
                 //If the list is empty return true because all elements of that priority are built
                 if(UnbuiltElements.Count == 0)
                 {
@@ -1114,7 +1138,34 @@ public class UIFunctionalities : MonoBehaviour
             SetUIObjectColor(RobotToggleObject, White);
         }
     }
+    public void TogglePriority(Toggle toggle)
+    {
+        Debug.Log("Priority Toggle Pressed");
 
+        if(toggle.isOn && PriorityViewerToggleObject != null)
+        {
+            //Color Elements Based on Priority
+            instantiateObjects.ApplyColorBasedOnPriority(CurrentPriority);
+
+            //Set UI Color
+            SetUIObjectColor(PriorityViewerToggleObject, Yellow);
+        }
+        else
+        {
+            Debug.Log("Priority Toggle Off");
+            Debug.Log($"Toggle state is {toggle.isOn}");
+            if(PriorityViewerToggleObject == null)
+            {
+            Debug.Log($"Priority Viewer Toggle Object is null {PriorityViewerToggleObject}");
+            }
+            //Color Elements by visulization mode
+            instantiateObjects.ApplyColorBasedOnBuildState();
+
+            //Set UI Color
+            SetUIObjectColor(PriorityViewerToggleObject, White);
+        }
+    }
+    
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
     private void ToggleInfo(Toggle toggle)
     {
