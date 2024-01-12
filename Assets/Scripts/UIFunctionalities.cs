@@ -725,12 +725,11 @@ public class UIFunctionalities : MonoBehaviour
             //Loop from steps priority to the highest priority group and unbuild all elements above this one.
             for(int i = Convert.ToInt16(step.data.priority) + 1; i < databaseManager.PriorityTreeDict.Count; i++)
             {
-                Debug.Log($"Priority Check: Unbuilding Priority: {i}");
-                Debug.Log($"Priority Check: Priority Count {databaseManager.PriorityTreeDict.Count}");
-
 
                 //Find the current priority in the dictionary for iteration
                 List<string> PriorityDataItem = databaseManager.PriorityTreeDict[i.ToString()];
+
+                Debug.Log($"FIX ME: I should be entering here with step {step.data.element_ids[0]}");
 
                 //Iterate through the Priority tree dictionary to unbuild elements of a higher priority.
                 foreach(string key in PriorityDataItem)
@@ -829,7 +828,7 @@ public class UIFunctionalities : MonoBehaviour
         //Check if priority is correct.
         if (PriorityChecker(step))
         {
-            //Change Build Status
+            //Change Build Status //TODO: WHAT DO I DO IF I AM UNBUILDING 0... I think most logical would be to set current priority to 0 do nothing with LastBuiltIndex.
             if(step.data.is_built)
             {
                 //Change Build Status
@@ -839,8 +838,18 @@ public class UIFunctionalities : MonoBehaviour
                 int StepInt = Convert.ToInt16(key);
 
                 //Iterate through steps backwards to find the last built step that is closest to my current step
-                for(int i = StepInt; i > 0; i--)
+                for(int i = StepInt; i >= 0; i--)
                 {
+                    //Check if step int is 0 and then set current priority to 0 and last built index do nothing
+                    if(StepInt == 0)
+                    {
+                        //Set Current Priority but leave last built index alone.
+                        SetCurrentPriority("0");
+
+                        //exit if condition above this one
+                        break;   
+                    }
+
                     if(databaseManager.BuildingPlanDataItem.steps[i.ToString()].data.is_built)
                     {
                         //Change LastBuiltIndex
@@ -889,7 +898,7 @@ public class UIFunctionalities : MonoBehaviour
         LastBuiltIndexText.text = $"Last Built Step : {key}";
     }
     public void SetCurrentPriority(string Key)
-    {
+    {     
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[Key];
         string Priority = step.data.priority.ToString();
@@ -899,6 +908,9 @@ public class UIFunctionalities : MonoBehaviour
 
         //Set On Screen Text
         CurrentPriorityText.text = $"Current Priority : {Priority}";
+        
+        //Print setting current priority
+        Debug.Log($"Setting Current Priority from Key : {Key} to Priority: {step.data.priority.ToString()} ");
     }
     private void SignalOnScreenPriorityIncompleteWarning(List<string> UnbuiltElements, string currentPriority)
     {
