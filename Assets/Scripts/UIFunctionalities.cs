@@ -43,6 +43,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject IsBuiltButtonObject;
     private Button IsBuiltButton;
     public GameObject IsbuiltButtonImage;
+    public GameObject IsbuiltPriorityLockedImage;
     public Slider PreviewGeometrySlider;
     private TMP_InputField ElementSearchInputField;
     private GameObject ElementSearchObjects;
@@ -184,6 +185,7 @@ public class UIFunctionalities : MonoBehaviour
         IsBuiltPanelObjects = ConstantUIPanelObjects.FindObject("IsBuiltPanel"); 
         IsBuiltButtonObject = IsBuiltPanelObjects.FindObject("IsBuiltButton");
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
+        IsbuiltPriorityLockedImage = IsBuiltButtonObject.FindObject("PriorityLockedImage");
         IsBuiltButton = IsBuiltButtonObject.GetComponent<Button>();
         IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));;
 
@@ -204,6 +206,7 @@ public class UIFunctionalities : MonoBehaviour
 
         GameObject CurrentPriorityTextObject = GameObject.Find("CurrentPriority_Text");
         CurrentPriorityText = CurrentPriorityTextObject.GetComponent<TMPro.TMP_Text>();
+        // CurrentPriority = "None";
 
         EditorSelectedTextObject = CanvasObject.FindObject("Editor_Selected_Text");
         EditorSelectedText = EditorSelectedTextObject.GetComponent<TMPro.TMP_Text>();
@@ -425,13 +428,15 @@ public class UIFunctionalities : MonoBehaviour
                 SetCurrentStep((CurrentStepInt + 1).ToString());
             }  
         }
-
     }
     public void SetCurrentStep(string key)
     {
+        Debug.Log("I am here 2-0");
         //If the current step is not null find the previous current step and color it bulit or unbuilt.
         if(CurrentStep != null)
         {
+            Debug.Log("I am here 2-1");
+            
             //Find Arrow and Destroy it
             instantiateObjects.RemoveObjects($"{CurrentStep} Arrow");
             
@@ -442,11 +447,28 @@ public class UIFunctionalities : MonoBehaviour
             {
                 //Color previous object based on Visulization Mode
                 instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[CurrentStep], previousStepElement.FindObject("Geometry"));
+
+                //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
+                if (PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    instantiateObjects.ColorObjectByPriority(CurrentPriority, databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString(), CurrentStep, previousStepElement.FindObject("Geometry"));
+                }
             }
+        }
+
+        if(CurrentStep == null)
+        {
+            Debug.Log("CURRENT STEP IS NULL");
+        }
+        else
+        {
+            Debug.Log($"CURRENT STEP IS {CurrentStep.ToString()}");
         }
                 
         //Set current element name
         CurrentStep = key;
+        Debug.Log("I am here 2-2");
+
 
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
@@ -456,6 +478,8 @@ public class UIFunctionalities : MonoBehaviour
 
         if(element != null)
         {
+            Debug.Log("I am here 2-3");
+            
             //Color it Human or Robot Built
             instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject("Geometry"));
             Debug.Log($"Current Step is {CurrentStep}");
@@ -466,29 +490,40 @@ public class UIFunctionalities : MonoBehaviour
         
         //Instantiate an arrow at the current step
         instantiateObjects.ArrowInstantiator(element, CurrentStep);
+        Debug.Log("I am here 2-4");
+
 
         //Write Current Step to the database under my device name
         UserCurrentInfo userCurrentInfo = new UserCurrentInfo();
         userCurrentInfo.currentStep = CurrentStep;
         userCurrentInfo.timeStamp = (System.DateTime.UtcNow.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss"));
+        Debug.Log("I am here 2-4.5");
+
 
         //Add to the UserCurrentStepDict
         databaseManager.UserCurrentStepDict[SystemInfo.deviceUniqueIdentifier] = userCurrentInfo;
+        Debug.Log("I am here 2-5");
 
         //Push Current key to the firebase
         databaseManager.PushStringData(databaseManager.dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
+        Debug.Log("I am here 2-6");
 
         //Update Lengths if Object Lengths Toggle is on
         if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
         {
             CalculateandSetLengthPositions(CurrentStep);
+            Debug.Log("I am here 2-7");
+
         }
 
         //Update Preview Geometry the visulization is remapped correctly
         PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
+        Debug.Log("I am here 2-8");
         
         //Update Is Built Button
-        IsBuiltButtonGraphicsControler(step.data.is_built);
+        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
+        Debug.Log("I am here 2-9");
+
     }
     public void ToggleElementSearch(Toggle toggle)
     {
@@ -527,7 +562,7 @@ public class UIFunctionalities : MonoBehaviour
 
                 //Update Is Built Button
                 Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
-                IsBuiltButtonGraphicsControler(currentStep.data.is_built);
+                IsBuiltButtonGraphicsControler(currentStep.data.is_built, currentStep.data.priority);
             }
         }
         else
@@ -662,10 +697,27 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    public void IsBuiltButtonGraphicsControler(bool builtStatus)
+    public void IsBuiltButtonGraphicsControler(bool builtStatus, int stepPriority)
     {
         if (IsBuiltPanelObjects.activeSelf)
         {
+            //Check if current priority is null
+            if(CurrentPriority != null)
+            {    
+                //Set priority locked image based on priority comparison
+                if(stepPriority > Convert.ToInt16(CurrentPriority))
+                {
+                    IsbuiltPriorityLockedImage.SetActive(true);
+                    IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
+                }
+                else
+                {
+                    IsbuiltPriorityLockedImage.SetActive(false);
+                    IsBuiltButtonObject.GetComponent<Image>().color = TranspGrey;
+                }
+            }
+
+            //Set is built button graphis based on build status
             if (builtStatus)
             {
                 IsbuiltButtonImage.SetActive(true);
@@ -729,8 +781,6 @@ public class UIFunctionalities : MonoBehaviour
                 //Find the current priority in the dictionary for iteration
                 List<string> PriorityDataItem = databaseManager.PriorityTreeDict[i.ToString()];
 
-                Debug.Log($"FIX ME: I should be entering here with step {step.data.element_ids[0]}");
-
                 //Iterate through the Priority tree dictionary to unbuild elements of a higher priority.
                 foreach(string key in PriorityDataItem)
                 {
@@ -742,10 +792,12 @@ public class UIFunctionalities : MonoBehaviour
                     {                        
                         //Unbuild the element
                         stepToUnbuild.data.is_built = false;
-
-                        //Update color and touch depending on what is on.
-                        instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, Elements.FindObject(key).FindObject("Geometry"));                        
                     }
+
+                    //Update color and touch depending on what is on.
+                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, Elements.FindObject(key).FindObject("Geometry"));                        
+                    
+                
                 }
             }
 
@@ -884,7 +936,7 @@ public class UIFunctionalities : MonoBehaviour
             if(key == CurrentStep)
             {    
                 //Update Is Built Button
-                IsBuiltButtonGraphicsControler(step.data.is_built);
+                IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
             }
 
             //Push Data to the database
@@ -902,6 +954,13 @@ public class UIFunctionalities : MonoBehaviour
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[Key];
         string Priority = step.data.priority.ToString();
+        
+        //If Priority Viewer is on and new priority is not equal to current priority update the priority viewer (only place I can do this)
+        if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && CurrentPriority != Priority)
+        {
+            //Update Priority Viewer
+            instantiateObjects.ApplyColorBasedOnPriority(Priority);
+        }
         
         //Current Priority Text current Priority Items
         CurrentPriority = Priority;
@@ -1172,9 +1231,18 @@ public class UIFunctionalities : MonoBehaviour
             }
             
             //Color Elements by visulization mode
-
-
-            instantiateObjects.ApplyColorBasedOnBuildState();
+            if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.ActorView)
+            {
+                instantiateObjects.ApplyColorBasedOnActor();
+            }
+            else if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.BuiltUnbuilt)
+            {
+                instantiateObjects.ApplyColorBasedOnBuildState();
+            }
+            else
+            {
+                Debug.LogWarning("Could not find Visulization Mode.");
+            }
 
             //Set UI Color
             SetUIObjectColor(PriorityViewerToggleObject, White);

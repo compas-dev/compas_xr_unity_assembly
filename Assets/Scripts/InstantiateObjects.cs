@@ -176,17 +176,17 @@ namespace Instantiate
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
 
-            //TODO: Check if the priority toggle is on... for now just fetch the toggle, but in future make a method that checks all toggles.
+            //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
-                //Color the object based on priority
-                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), geometryObject);
+                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
             }
 
-            //If the object is equal to the current step also color it human or robot
+            //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
             if (Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+                ArrowInstantiator(elementPrefab, Key);
             }
 
         }
@@ -691,12 +691,6 @@ namespace Instantiate
                     }
                     break;
             }
-
-            //If Priority Viewer toggle is on then color the add additional color based on priority
-            if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
-            {
-                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), geometryObject);
-            }
         }
         public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
         {
@@ -748,7 +742,7 @@ namespace Instantiate
                 }
             }
         }
-        public void ColorObjectByPriority(string SelectedPriority, string StepPriority, GameObject gamobj)
+        public void ColorObjectByPriority(string SelectedPriority, string StepPriority,string Key, GameObject gamobj)
         {
             //Get Object Renderer
             Renderer m_renderer= gamobj.GetComponentInChildren<Renderer>();
@@ -764,6 +758,11 @@ namespace Instantiate
                 //Set the object to the new color
                 m_renderer.material.color = objectAdjustedColor;
             }
+            else
+            {
+                //Color based on visulization mode
+                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[Key], gamobj.FindObject("Geometry"));
+            }
         }
         
         // Apply color for objects based on Built or Unbuilt state
@@ -778,6 +777,13 @@ namespace Instantiate
                     if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
                         ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject.FindObject("Geometry"));
+
+                        //Check if Priority Viewer is on and color based on priority also if it is.
+                        if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //TODO: IF Text... this would check the text
+                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject("Geometry"));
+                        }
                     }
                 }
             }
@@ -795,6 +801,13 @@ namespace Instantiate
                     if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
                         ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject.FindObject("Geometry"));
+
+                        //Check if Priority Viewer is on and color based on priority if it is.
+                        if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //TODO: IF Text... this would check the text
+                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject("Geometry"));
+                        }
                     }
                 }
             }
@@ -813,7 +826,7 @@ namespace Instantiate
                     //If the objects are not null color by priority function.
                     if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
                     {
-                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), gameObject.FindObject("Geometry"));
+                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject("Geometry"));
                     }
                     else
                     {

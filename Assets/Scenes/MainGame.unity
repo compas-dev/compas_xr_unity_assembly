@@ -9074,7 +9074,7 @@ GameObject:
   - component: {fileID: 1929922537}
   - component: {fileID: 1929922536}
   m_Layer: 5
-  m_Name: UnlockImage
+  m_Name: PriorityLockedImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9769,6 +9769,7 @@ MonoBehaviour:
   IsBuiltPanelObjects: {fileID: 0}
   IsBuiltButtonObject: {fileID: 0}
   IsbuiltButtonImage: {fileID: 0}
+  IsbuiltPriorityLockedImage: {fileID: 0}
   PreviewGeometrySlider: {fileID: 0}
   PriorityViewerToggleObject: {fileID: 0}
   Elements: {fileID: 0}
@@ -18516,7 +18517,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &6512014007406221874
 MonoBehaviour:
   m_ObjectHideFlags: 0

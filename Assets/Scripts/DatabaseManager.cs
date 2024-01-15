@@ -560,27 +560,30 @@ public class DatabaseManager : MonoBehaviour
     }
     public void FindInitialElement()
     {
+        Debug.Log("I am inside here 1");
         //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
         for (int i =0 ; i < BuildingPlanDataItem.steps.Count; i++)
         {
             //Set data items
             Step step = BuildingPlanDataItem.steps[i.ToString()];
-
+            Debug.Log("I am inside here 2");
             //Find the first unbuilt element
             if(step.data.is_built == false)
             {
-                //Set Current Element
-                UIFunctionalities.SetCurrentStep(i.ToString());
-
-                //Set Current Priority as the priority of the first this current step: Should only be done on app start up
+                //Set Current Priority as the priority of the first this current step. This needs to be done before setting the current step.
                 if (i != 0)
                 {
+                    Debug.Log("I ENTERED 0 IF STATEMENT AND CURRENT PRIORITY IS for key: " + i.ToString() + "priority is : " + step.data.priority.ToString());
                     UIFunctionalities.SetCurrentPriority(i.ToString());
                 }
                 else
                 {
                     UIFunctionalities.SetCurrentPriority("0");
                 }
+
+                //Set Current Element
+                UIFunctionalities.SetCurrentStep(i.ToString());
+                Debug.Log("I am inside here 3");
 
                 break;
             }
