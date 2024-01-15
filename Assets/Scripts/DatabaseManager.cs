@@ -560,13 +560,12 @@ public class DatabaseManager : MonoBehaviour
     }
     public void FindInitialElement()
     {
-        Debug.Log("I am inside here 1");
         //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
         for (int i =0 ; i < BuildingPlanDataItem.steps.Count; i++)
         {
             //Set data items
             Step step = BuildingPlanDataItem.steps[i.ToString()];
-            Debug.Log("I am inside here 2");
+
             //Find the first unbuilt element
             if(step.data.is_built == false)
             {
@@ -583,7 +582,6 @@ public class DatabaseManager : MonoBehaviour
 
                 //Set Current Element
                 UIFunctionalities.SetCurrentStep(i.ToString());
-                Debug.Log("I am inside here 3");
 
                 break;
             }

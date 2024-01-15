@@ -431,12 +431,9 @@ public class UIFunctionalities : MonoBehaviour
     }
     public void SetCurrentStep(string key)
     {
-        Debug.Log("I am here 2-0");
         //If the current step is not null find the previous current step and color it bulit or unbuilt.
         if(CurrentStep != null)
         {
-            Debug.Log("I am here 2-1");
-            
             //Find Arrow and Destroy it
             instantiateObjects.RemoveObjects($"{CurrentStep} Arrow");
             
@@ -467,8 +464,6 @@ public class UIFunctionalities : MonoBehaviour
                 
         //Set current element name
         CurrentStep = key;
-        Debug.Log("I am here 2-2");
-
 
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
@@ -478,8 +473,6 @@ public class UIFunctionalities : MonoBehaviour
 
         if(element != null)
         {
-            Debug.Log("I am here 2-3");
-            
             //Color it Human or Robot Built
             instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject("Geometry"));
             Debug.Log($"Current Step is {CurrentStep}");
@@ -490,40 +483,29 @@ public class UIFunctionalities : MonoBehaviour
         
         //Instantiate an arrow at the current step
         instantiateObjects.ArrowInstantiator(element, CurrentStep);
-        Debug.Log("I am here 2-4");
-
 
         //Write Current Step to the database under my device name
         UserCurrentInfo userCurrentInfo = new UserCurrentInfo();
         userCurrentInfo.currentStep = CurrentStep;
         userCurrentInfo.timeStamp = (System.DateTime.UtcNow.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss"));
-        Debug.Log("I am here 2-4.5");
-
 
         //Add to the UserCurrentStepDict
         databaseManager.UserCurrentStepDict[SystemInfo.deviceUniqueIdentifier] = userCurrentInfo;
-        Debug.Log("I am here 2-5");
 
         //Push Current key to the firebase
         databaseManager.PushStringData(databaseManager.dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
-        Debug.Log("I am here 2-6");
 
         //Update Lengths if Object Lengths Toggle is on
         if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
         {
             CalculateandSetLengthPositions(CurrentStep);
-            Debug.Log("I am here 2-7");
-
         }
 
         //Update Preview Geometry the visulization is remapped correctly
         PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
-        Debug.Log("I am here 2-8");
         
         //Update Is Built Button
         IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
-        Debug.Log("I am here 2-9");
-
     }
     public void ToggleElementSearch(Toggle toggle)
     {
