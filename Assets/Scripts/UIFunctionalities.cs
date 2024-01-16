@@ -54,7 +54,7 @@ public class UIFunctionalities : MonoBehaviour
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
     private GameObject PreviewBuilderButtonObject;
-    private GameObject IDButtonObject;
+    public GameObject IDToggleObject;
     private GameObject RobotToggleObject;
     private GameObject RobotVisulizationControlObjects;
     private GameObject ObjectLengthsToggleObject;
@@ -106,7 +106,7 @@ public class UIFunctionalities : MonoBehaviour
     public string CurrentPriority = null;
     public string CurrentStep = null;
     public string SearchedElement = "None";
-    public string SearchedElementStep;
+    public string SearchedElementStepID;
     
     void Start()
     {
@@ -206,7 +206,6 @@ public class UIFunctionalities : MonoBehaviour
 
         GameObject CurrentPriorityTextObject = GameObject.Find("CurrentPriority_Text");
         CurrentPriorityText = CurrentPriorityTextObject.GetComponent<TMPro.TMP_Text>();
-        // CurrentPriority = "None";
 
         EditorSelectedTextObject = CanvasObject.FindObject("Editor_Selected_Text");
         EditorSelectedText = EditorSelectedTextObject.GetComponent<TMPro.TMP_Text>();
@@ -216,7 +215,6 @@ public class UIFunctionalities : MonoBehaviour
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
 
-
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
         PreviewBuilderButtonObject = VisibilityMenuObject.FindObject("Preview_Builder");
@@ -224,9 +222,8 @@ public class UIFunctionalities : MonoBehaviour
         PreviewBuilderButton.onClick.AddListener(ChangeVisualizationMode);;
 
         //Find Object, Button, and Add Listener for OnClick method
-        IDButtonObject = VisibilityMenuObject.FindObject("ID_Button");
-        Button IDButton = IDButtonObject.GetComponent<Button>();
-        IDButton.onClick.AddListener(IDTextButton);;
+        IDToggleObject = VisibilityMenuObject.FindObject("ID_Toggle");
+        Toggle IDButton = IDToggleObject.GetComponent<Toggle>();
 
         //Find Robot toggle and Objects
         RobotToggleObject = VisibilityMenuObject.FindObject("Robot_Button");
@@ -319,10 +316,15 @@ public class UIFunctionalities : MonoBehaviour
         TogglePriority(PriorityViewerToggle);
         });
 
+        //ID Toggles
+        IDButton.onValueChanged.AddListener(delegate {
+        ToggleID(IDButton);
+        });
+
     }
     public void ToggleVisibilityMenu(Toggle toggle)
     {
-        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDButtonObject != null && PriorityViewerToggleObject != null)
+        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDToggleObject != null && PriorityViewerToggleObject != null)
         {    
             if (toggle.isOn)
             {             
@@ -331,7 +333,7 @@ public class UIFunctionalities : MonoBehaviour
                 PreviewBuilderButtonObject.SetActive(true);
                 RobotToggleObject.SetActive(true);
                 ObjectLengthsToggleObject.SetActive(true);
-                IDButtonObject.SetActive(true);
+                IDToggleObject.SetActive(true);
                 PriorityViewerToggleObject.SetActive(true);
 
                 //Set color of toggle
@@ -345,7 +347,7 @@ public class UIFunctionalities : MonoBehaviour
                 PreviewBuilderButtonObject.SetActive(false);
                 RobotToggleObject.SetActive(false);
                 ObjectLengthsToggleObject.SetActive(false);
-                IDButtonObject.SetActive(false);
+                IDToggleObject.SetActive(false);
                 PriorityViewerToggleObject.SetActive(false);
 
                 //Set color of toggle
@@ -429,6 +431,7 @@ public class UIFunctionalities : MonoBehaviour
             }  
         }
     }
+    
     public void SetCurrentStep(string key)
     {
         //If the current step is not null find the previous current step and color it bulit or unbuilt.
@@ -443,12 +446,15 @@ public class UIFunctionalities : MonoBehaviour
             if(previousStepElement != null)
             {
                 //Color previous object based on Visulization Mode
-                instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[CurrentStep], previousStepElement.FindObject("Geometry"));
+                Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
+                string elementID = PreviousStep.data.element_ids[0];
+
+                instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, previousStepElement.FindObject(elementID + " Geometry"));
 
                 //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
                 if (PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
-                    instantiateObjects.ColorObjectByPriority(CurrentPriority, databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString(), CurrentStep, previousStepElement.FindObject("Geometry"));
+                    instantiateObjects.ColorObjectByPriority(CurrentPriority, PreviousStep.data.priority.ToString(), CurrentStep, previousStepElement.FindObject(elementID + " Geometry"));
                 }
             }
         }
@@ -474,7 +480,7 @@ public class UIFunctionalities : MonoBehaviour
         if(element != null)
         {
             //Color it Human or Robot Built
-            instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject("Geometry"));
+            instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, element.FindObject(step.data.element_ids[0] + " Geometry"));
             Debug.Log($"Current Step is {CurrentStep}");
         }
         
@@ -526,12 +532,14 @@ public class UIFunctionalities : MonoBehaviour
                 //If searched step is not null color it built or unbuilt
                 if(SearchedElement != null)
                 {
-                    GameObject searchedElement = Elements.FindObject(SearchedElement);
+                    GameObject searchedElement = Elements.FindObject(SearchedElement + " Geometry");
 
                     if(searchedElement != null)
                     {
+                        //TODO: ADD IF STATEMENT FOR IF IT IS CURRENT STEP or over arching color and colider controler.
+
                         //Color Previous one if it is not null
-                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElement].data.is_built, searchedElement.FindObject("Geometry"));
+                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID].data.is_built, searchedElement);
                     }
                 }
                 
@@ -552,6 +560,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
     }
+    
     public void SearchElementButton()
     {
         //Search for step button clicked
@@ -563,7 +572,7 @@ public class UIFunctionalities : MonoBehaviour
         //If current step is not null and greater then Zero add subtract 1
         if(ElementSearchInputField.text != null)
         {
-            UserSearchedElement = Elements.FindObject(ElementSearchInputField.text);
+            UserSearchedElement = Elements.FindObject(ElementSearchInputField.text + " Geometry");
         }
 
         //If the element was found color the previous object built or unbuilt and replace the variable
@@ -573,51 +582,31 @@ public class UIFunctionalities : MonoBehaviour
             if(SearchedElement != "None")
             {
                 //Find Gameobject Associated with that step
-                GameObject previousElement = Elements.FindObject(SearchedElementStep);
-                Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[SearchedElementStep];
+                GameObject previousElement = Elements.FindObject(SearchedElementStepID);
+                Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID];
 
                 if(previousElement != null)
                 {
                     //Color based on current mode
-                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, previousElement.FindObject("Geometry"));
+                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
 
                     //if it is equal to current step color it human or robot
-                    if(SearchedElementStep == CurrentStep)
+                    if(SearchedElementStepID == CurrentStep)
                     {
-                        instantiateObjects.ColorHumanOrRobot(PreviousStep.data.actor, PreviousStep.data.is_built, previousElement.FindObject("Geometry"));
+                        instantiateObjects.ColorHumanOrRobot(PreviousStep.data.actor, PreviousStep.data.is_built, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
                     }
                 }
             }
             
             //Set Searched Step
             SearchedElement = ElementSearchInputField.text;
-            
-            //iterate through building plan to find new searched element.
-            for (int i =0 ; i < databaseManager.BuildingPlanDataItem.steps.Count; i++)
-            {
-                //Set data items
-                Step step = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
 
-                //Check if step element id is equal to the previous searched one
-                if(step.data.element_ids[0] == SearchedElement)
-                {
-                    //Find Gameobject Associated with that step
-                    GameObject NewStepElement = Elements.FindObject(i.ToString());
-                    SearchedElementStep = i.ToString();
+            //Color it by the searched object color
+            UserSearchedElement.GetComponent<MeshRenderer>().material = instantiateObjects.SearchedObjectMaterial;
 
-                    if(NewStepElement != null)
-                    {
-                        //Color red for selection color
-                        Renderer searchedObjectRenderer = NewStepElement.FindObject("Geometry").GetComponent<Renderer>();
-                        searchedObjectRenderer.material = instantiateObjects.SearchedObjectMaterial;
-
-                        //TODO: ARROW TO STEP                    
-
-                        break;
-                    }
-                }
-            }
-
+            //Find the parent name so I can set that as my searched element stepID
+            SearchedElementStepID = UserSearchedElement.transform.parent.name;
+            Debug.Log("Searched Element Step ID: " + SearchedElementStepID);
 
         }
         else
@@ -777,8 +766,7 @@ public class UIFunctionalities : MonoBehaviour
                     }
 
                     //Update color and touch depending on what is on.
-                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, Elements.FindObject(key).FindObject("Geometry"));                        
-                    
+                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, Elements.FindObject(key).FindObject(stepToUnbuild.data.element_ids[0] + " Geometry"));
                 
                 }
             }
@@ -823,7 +811,7 @@ public class UIFunctionalities : MonoBehaviour
                     }
                 }
 
-                //TODO: IF I put current element on the database it the only thing is this has to return a false here and update CurrentPriority and UIGraphics Controler.
+                //TODO: THIS SHOULD RETURN A FALSE, AND JUST UPDATE PRIORITY, AND MAKE UI CONTROL UPDATE.
                 //If the list is empty return true because all elements of that priority are built
                 if(UnbuiltElements.Count == 0)
                 {
@@ -912,7 +900,7 @@ public class UIFunctionalities : MonoBehaviour
             }
 
             //Update color
-            instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(key).FindObject("Geometry"));
+            instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(key).FindObject(step.data.element_ids[0] + " Geometry"));
             
             //If it is current element update UI graphics
             if(key == CurrentStep)
@@ -1060,14 +1048,34 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Error: Visulization Mode does not exist.");
         }
     }
-    public void IDTextButton()
+    public void ToggleID(Toggle toggle)
+    {
+        Debug.Log("ID Toggle Pressed");
+
+        if (toggle != null && IDToggleObject != null)
+        {
+            if(toggle.isOn)
+            {
+                IDTextControler(true);
+                SetUIObjectColor(IDToggleObject, Yellow);
+            }
+            else
+            {
+                IDTextControler(false);
+                SetUIObjectColor(IDToggleObject, White);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find ID Toggle or ID Toggle Object.");
+        }
+    }
+    public void IDTextControler(bool Visibility)
     {
         Debug.Log("ID Text Button Pressed");
 
         if (instantiateObjects != null && instantiateObjects.Elements != null)
         {
-            // Update the visibility state
-            instantiateObjects.visulizationController.TagsMode = !instantiateObjects.visulizationController.TagsMode;
 
             foreach (Transform child in instantiateObjects.Elements.transform)
             {
@@ -1075,24 +1083,14 @@ public class UIFunctionalities : MonoBehaviour
                 Transform textChild = child.Find(child.name + " Text");
                 if (textChild != null)
                 {
-                    textChild.gameObject.SetActive(instantiateObjects.visulizationController.TagsMode);
+                    textChild.gameObject.SetActive(Visibility);
                 }
                 // Toggle Circle Image Object
                 Transform circleImageChild = child.Find(child.name + "IdxImage");
                 if (circleImageChild != null)
                 {
-                    circleImageChild.gameObject.SetActive(instantiateObjects.visulizationController.TagsMode);
+                    circleImageChild.gameObject.SetActive(Visibility);
                 }
-            }
-
-            // Color the button if it is on
-            if (instantiateObjects.visulizationController.TagsMode)
-            {
-                SetUIObjectColor(IDButtonObject, Yellow);
-            }
-            else
-            {
-                SetUIObjectColor(IDButtonObject, White);
             }
         }
         else
@@ -1151,7 +1149,7 @@ public class UIFunctionalities : MonoBehaviour
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
         //Find gameobject center
-        Vector3 center = element.FindObject("Geometry").GetComponent<Renderer>().bounds.center;
+        Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
 
         //Find length from assembly dictionary
         float length = databaseManager.DataItemDict[step.data.element_ids[0]].attributes.length;
@@ -1438,9 +1436,9 @@ public class UIFunctionalities : MonoBehaviour
             Step step = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
 
             //Find Gameobject Collider and Renderer
-            GameObject element = Elements.FindObject(i.ToString()).FindObject("Geometry");
-            Collider ElementCollider = element.FindObject("Geometry").GetComponent<Collider>();
-            Renderer ElementRenderer = element.FindObject("Geometry").GetComponent<Renderer>();
+            GameObject element = Elements.FindObject(i.ToString()).FindObject(step.data.element_ids[0] + " Geometry");
+            Collider ElementCollider = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Collider>();
+            Renderer ElementRenderer = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>();
 
             if(ElementCollider != null)
             {
@@ -1678,7 +1676,7 @@ public class UIFunctionalities : MonoBehaviour
 
                         Step step = databaseManager.BuildingPlanDataItem.steps[element.name];
                         
-                        instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.gameObject.FindObject("Geometry"));                          
+                        instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.gameObject.FindObject(step.data.element_ids[0] + " Geometry"));                          
                         
                     }
                 }
@@ -1709,7 +1707,7 @@ public class UIFunctionalities : MonoBehaviour
         }
 
         //Update color
-        instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(key).FindObject("Geometry"));
+        instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, Elements.FindObject(key).FindObject(step.data.element_ids[0] + " Geometry"));
         
 
         //Push Data to the database

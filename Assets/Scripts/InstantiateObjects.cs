@@ -108,8 +108,6 @@ namespace Instantiate
             //Set Initial Visulization Modes
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
             visulizationController.TouchMode = TouchMode.None;
-            visulizationController.TagsMode = false;
-
         }
         public void placeElements(List<Step> DataItems) 
         {
@@ -159,22 +157,29 @@ namespace Instantiate
             elementPrefab.name = Key;
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
-            GameObject geometryObject = elementPrefab.FindObject("Geometry");
+            GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
+            Debug.Log("I MADE IT PAST HERE. Geometry Object: " + geometryObject.name);
 
             // Create and attach text label to the GameObject
             CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
             CreateCircleImageForTag(elementPrefab);
 
+            Debug.Log("I made it past here 2");
+
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
             
+            Debug.Log("I made it past here 3");
+
             //Check if the visulization tags mode is on
-            if (visulizationController.TagsMode)
+            if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
             {
                 //Set tag and Image visibility if the mode is on
                 elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
+
+            Debug.Log("I made it past here 4");
 
             //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
@@ -182,12 +187,17 @@ namespace Instantiate
                 ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
             }
 
+            Debug.Log("I made it past here 5");
+
             //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
             if (Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                 ArrowInstantiator(elementPrefab, Key);
             }
+
+            Debug.Log("I made it past here 6");
+
 
         }
         public void placeElementAssembly(string Key, Node node)
@@ -257,7 +267,7 @@ namespace Instantiate
             }
         }   
         
-        //TODO: Add Empty Parent object to the GameObject and name the child Object Geometry to match the .obj file.
+        //TODO: Add Empty Parent object to the GameObject and name the child Object by assembly key to match the .obj file.
         //TODO: Add a Colider - Everything but Obj files.
         public GameObject gameobjectTypeSelector(Step step)
         {
@@ -309,11 +319,12 @@ namespace Instantiate
                             Debug.Log ("ObjPrefab is null");
                         }
 
-                        //Change Objects Name and Add collider
+                        //Change Objects Name to the name of the key from the assembly and Add collider
                         if (element!=null && element.transform.childCount > 0)
                         {
+                            //Set name of the child to the Element ID name.
                             GameObject child_object = element.transform.GetChild(0).gameObject;
-                            child_object.name = "Geometry";
+                            child_object.name = step.data.element_ids[0].ToString() + " Geometry";
 
                             //Add a collider to the object
                             BoxCollider collider = child_object.AddComponent<BoxCollider>();
@@ -323,9 +334,6 @@ namespace Instantiate
 
                             //Scale Original Size by just a bit to make sure the collider is not too small.
                             Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
-                            
-                            //TODO: TESTING COLLIDER SIZE
-                            // Vector3 colliderSize = new Vector3(1f, 1f, 1f);
 
                             //Set the collider size
                             collider.size = colliderSize;
@@ -417,34 +425,45 @@ namespace Instantiate
                 return element;
             
         }
-        private void CreateIndexTextForGameObject(GameObject gameObject, string text)
+        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID)
         {
+            Debug.Log("ID I made it past here 0");
             // Create a new GameObject for the text
             GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
             TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
-            IndexText.text = text;
+            IndexText.text = assemblyID;
             IndexText.fontSize = 1f;
             IndexText.alignment = TextAlignmentOptions.Center;
+            Debug.Log("ID I made it past here 1");
 
             // Calculate the center of the GameObject
-            GameObject childobject = gameObject.FindObject("Geometry");
+            GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
             Renderer renderer = childobject.GetComponent<Renderer>();
+            if (renderer == null)
+            {
+                Debug.Log("Renderer not found in the parent object.");
+            }
             Vector3 center = Vector3.zero;
             center = renderer.bounds.center;
+            Debug.Log("ID I made it past here 2");
 
             // Offset the position slightly above the GameObject
             float verticalOffset = 0.13f;
             Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
+            Debug.Log("ID I made it past here 3");
 
             IndexTextContainer.transform.position = textPosition;
             IndexTextContainer.transform.rotation = Quaternion.identity;
             IndexTextContainer.transform.SetParent(gameObject.transform);
+            Debug.Log("ID I made it past here 4");
 
             // Add billboard effect(object rotating with camera)
             Billboard billboard = IndexTextContainer.AddComponent<Billboard>();
-        
+            Debug.Log("ID I made it past here 5");
+
             // Initially set the text as inactive
-            IndexTextContainer.SetActive(false);   
+            IndexTextContainer.SetActive(false);
+            Debug.Log("ID I made it past here 6");   
 
         }
         private void CreateCircleImageForTag(GameObject parentObject)
@@ -455,8 +474,11 @@ namespace Instantiate
                 return;
             }
 
+            //Find the element ID from the step associated with this geometry
+            string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
+
             // Find the center of the parent object's renderer
-            Renderer renderer = parentObject.FindObject("Geometry").GetComponentInChildren<Renderer>();
+            Renderer renderer = parentObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
             if (renderer == null)
             {
                 Debug.LogError("Renderer not found in the parent object.");
@@ -492,7 +514,9 @@ namespace Instantiate
 
             //Find the center of the Item key object
             GameObject itemObject = Elements.FindObject(itemKey);
-            Renderer renderer = itemObject.FindObject("Geometry").GetComponentInChildren<Renderer>();
+            string elementID = databaseManager.BuildingPlanDataItem.steps[itemKey].data.element_ids[0];
+
+            Renderer renderer = itemObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
             if (renderer == null)
             {
                 Debug.LogError("Renderer not found in the parent object.");
@@ -760,8 +784,12 @@ namespace Instantiate
             }
             else
             {
+                //Find the item in the dictionary
+                Step step = databaseManager.BuildingPlanDataItem.steps[Key];
+                string elementID = step.data.element_ids[0];
+
                 //Color based on visulization mode
-                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[Key], gamobj.FindObject("Geometry"));
+                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, gamobj.FindObject(elementID + " Geometry"));
             }
         }
         
@@ -776,13 +804,13 @@ namespace Instantiate
 
                     if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject.FindObject("Geometry"));
+                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject.FindObject(entry.Value.data.element_ids[0]));
 
                         //Check if Priority Viewer is on and color based on priority also if it is.
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
-                            //TODO: IF Text... this would check the text
-                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject("Geometry"));
+                            //Color based on Priority
+                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -800,13 +828,13 @@ namespace Instantiate
                     
                     if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject.FindObject("Geometry"));
+                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject.FindObject(entry.Value.data.element_ids[0]));
 
                         //Check if Priority Viewer is on and color based on priority if it is.
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
-                            //TODO: IF Text... this would check the text
-                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject("Geometry"));
+                            //Color based on priority
+                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -826,7 +854,8 @@ namespace Instantiate
                     //If the objects are not null color by priority function.
                     if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
                     {
-                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject("Geometry"));
+                        //Color based on priority
+                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                     }
                     else
                     {

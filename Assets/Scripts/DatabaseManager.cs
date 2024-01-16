@@ -67,6 +67,9 @@ public class DatabaseManager : MonoBehaviour
     public DatabaseReference dbrefernece_usersCurrentSteps;
     public StorageReference storageReference;
 
+    //TODO: TESTING IDEA FOR CHILD CHANGED EVENTS.
+    public DatabaseReference dbreference_PROJECT;
+
 
     // Data structures to store nodes and steps
     public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
@@ -160,6 +163,9 @@ public class DatabaseManager : MonoBehaviour
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames");
         dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrenStep");
         
+        //TODO: TESTING IDEA FOR CHILD CHANGED EVENTS.
+        dbreference_PROJECT = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname);
+
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
         {
@@ -653,6 +659,8 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
+    
+    //todo: VARIABLE FOR BUILDING IF IT IS TIED TO BUILDING PLAN OR NOT AND THEN PUT ASSEMBLY STUFF IN ANOTHER NODE. BUILDINGPLAN DEFAULT == TRUE.
     public Node NodeDeserializer(string key, object jsondata)
     {
         //TODO: This will need to be adjusted so it works for the native assembly and the assembly from the database we write.
@@ -705,7 +713,7 @@ public class DatabaseManager : MonoBehaviour
         //Add Items to the attributes dictionary depending on the type of geometry
         GeometricDesctiptionSelector(node.type_data, dataDict, node);
 
-        //Set Attributes Class Values
+        //Set Attributes Class Values //todo: PUT THESE IN AN EXTRA METHOD.
         node.attributes.is_built = (bool)jsonDataDict["is_built"];
         node.attributes.is_planned =  (bool)jsonDataDict["is_planned"];
         node.attributes.placed_by = (string)jsonDataDict["placed_by"];
@@ -842,34 +850,66 @@ public class DatabaseManager : MonoBehaviour
 /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
 
     // Add listeners and remove them for firebase child events
+
+    //TODO: Make these changes. And the On child changed priority check
     public void AddListeners(object source, EventArgs args)
     {        
         Debug.Log("Adding Listners");
+
+        dbreference_buildingplan.ChildChanged += OnbuildingPlanChangedPrint;
+        dbreference_PROJECT.ChildChanged += OnProjectChangedPrint;
+        dbreference_buildingplan.ValueChanged += OnbuildingPlanValueChangedPrint;
         
         //Updated listners for building plan steps
-        dbreference_steps.ChildAdded += OnChildAdded;
-        dbreference_steps.ChildChanged += OnChildChanged;
-        dbreference_steps.ChildRemoved += OnChildRemoved;
+        dbreference_steps.ChildAdded += OnChildAdded; //TODO: I could try to combine this with the users something like this: dbreference_steps.ChildAdded += (sender, e) => OnChildAdded(sender, e, 'NAME FOR WHAT TO CHECK'); or try to write the function more generic.
+        dbreference_steps.ChildChanged += OnChildChanged; //TODO: I could try to combine this with the users something like this: dbreference_steps.ChildChanged += (sender, e) => OnChildChanged(sender, e, 'NAME FOR WHAT TO CHECK'); or try to write the function more generic.
+        dbreference_steps.ChildRemoved += OnChildRemoved; //TODO: I could try to combine this with the users something like this: dbreference_steps.ChildRemoved += (sender, e) => OnChildRemoved(sender, e, 'NAME FOR WHAT TO CHECK'); or try to write the function more generic.
         
         //Updated listeners for building plan last built index
-        dbreference_LastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
+        dbreference_LastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged; //TODO: I am not sure with this one, it is very straight forward, and I think depends on whether we put the CP in the DB or not.
 
-        //Add Listners for the Assembly //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
-        dbreference_assembly.ChildAdded += OnAssemblyChanged;
-        dbreference_assembly.ChildChanged += OnAssemblyChanged;
-        dbreference_assembly.ChildRemoved += OnAssemblyChanged;
+        //Add Listners for the Assembly
+        dbreference_assembly.ChildAdded += OnAssemblyChanged; //TODO: I think this can be reduced. Project listner (If snapshot key is assembly then do something, but if it is QR then do something else)
+        dbreference_assembly.ChildChanged += OnAssemblyChanged; //TODO: I think this can be reduced. Project listner (If snapshot key is assembly then do something, but if it is QR then do something else)
+        dbreference_assembly.ChildRemoved += OnAssemblyChanged; //TODO: I think this can be reduced. Project listner (If snapshot key is assembly then do something, but if it is QR then do something else)
 
-        //Add Listners for the QR codes //TODO: NEED TO FIND A WAY TO NOT PULL THE INFORMATION ON THE UNAVOIDABLE FIRST CALL
-        dbreference_qrcodes.ChildAdded += OnQRChanged;
-        dbreference_qrcodes.ChildChanged += OnQRChanged;
-        dbreference_qrcodes.ChildRemoved += OnQRChanged;
+        //Add Listners for the QR codes
+        dbreference_qrcodes.ChildAdded += OnQRChanged; //TODO: I think this can be reduced. Project listner (If snapshot key is assembly then do something, but if it is QR then do something else)
+        dbreference_qrcodes.ChildChanged += OnQRChanged; //TODO: I think this can be reduced. Project listner (If snapshot key is assembly then do something, but if it is QR then do something else)
+        dbreference_qrcodes.ChildRemoved += OnQRChanged; //TODO: I think this can be reduced. Project listner (If snapshot key is assembly then do something, but if it is QR then do something else)
 
         // Add Listners for current step
-        dbrefernece_usersCurrentSteps.ChildAdded += OnUserAdded;
-        dbrefernece_usersCurrentSteps.ChildChanged += OnUserChanged;
-        dbrefernece_usersCurrentSteps.ChildRemoved += OnUserRemoved;
+        dbrefernece_usersCurrentSteps.ChildAdded += OnUserAdded; //TODO: I could try to combine this with the buildingplan something like this: dbreference_usersCurrentSteps.ChildChanged += (sender, e) => OnChildChanged(sender, e, 'NAME FOR WHAT TO CHECK'); or try to write the function more generic.
+        dbrefernece_usersCurrentSteps.ChildChanged += OnUserChanged; //TODO: I could try to combine this with the buildingplan something like this: dbreference_usersCurrentSteps.ChildAdded += (sender, e) => OnChildAdded(sender, e, 'NAME FOR WHAT TO CHECK'); or try to write the function more generic.
+        dbrefernece_usersCurrentSteps.ChildRemoved += OnUserRemoved; //TODO: I could try to combine this with the buildingplan something like this: dbreference_usersCurrentSteps.ChildRemoved += (sender, e) => OnChildRemoved(sender, e, 'NAME FOR WHAT TO CHECK'); or try to write the function more generic.
 
     }
+
+    /*
+    EXAMPLE OF NEW LISTNER STRATEGY
+    public void AddListners(object source, EventArgs args)
+    {
+        // Updated listners for building plan steps
+        dbreference_steps.ChildAdded += (sender, e) => OnChildAdded(sender, e, 'NAME FOR WHAT TO CHECK'); ORRRR MORE GENERIC FUNCTION
+        dbreference_steps.ChildChanged += (sender, e) => OnChildChanged(sender, e, 'NAME FOR WHAT TO CHECK'); ORRRR MORE GENERIC FUNCTION
+        dbreference_steps.ChildRemoved += (sender, e) => OnChildAdded(sender, e, 'NAME FOR WHAT TO CHECK'); ORRRR MORE GENERIC FUNCTION
+
+        // Updated listners for building plan user curent step.
+        dbreference_steps.ChildAdded += (sender, e) => OnChildAdded(sender, e, 'NAME FOR WHAT TO CHECK'); ORRRR MORE GENERIC FUNCTION
+        dbreference_steps.ChildChanged += (sender, e) => OnChildChanged(sender, e, 'NAME FOR WHAT TO CHECK'); ORRRR MORE GENERIC FUNCTION
+        dbreference_steps.ChildRemoved += (sender, e) => OnChildAdded(sender, e, 'NAME FOR WHAT TO CHECK'); ORRRR MORE GENERIC FUNCTION
+
+        //Updated listeners for project
+        dbreference_PROJECT.ChildAdded += OnProjectChanged;
+        dbreference_PROJECT.ChildChanged += OnProjectChanged;
+        dbreference_PROJECT.ChildRemoved += OnProjectChanged;
+
+        // Updated listners for building plan last built index & Current Element
+        dbreference_LastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
+
+    }
+    */
+    
     public void RemoveListners()
     {        
         Debug.Log("Removing the listeners");
@@ -899,6 +939,70 @@ public class DatabaseManager : MonoBehaviour
 
     }
 
+    //TODO: RANDOM TESTERS. REMOVE LATER
+    public void OnbuildingPlanChangedPrint(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null)
+        {
+            Debug.LogError(args.DatabaseError.Message);
+            return;
+        }
+
+        var key = args.Snapshot.Key;
+        // var test = args.Snapshot.HasChild
+        var childSnapshot = args.Snapshot.GetValue(true);
+        Debug.Log($"ON CHILD ADDED {key}");
+
+        if (childSnapshot != null)
+        {
+            Debug.Log($"BuildingPlanListner: Child Snapshot: {JsonConvert.SerializeObject(childSnapshot)}");
+            // Debug.Log(childSnapshot.Description());
+            // Debug.Log($"BuildingPlanListner: SnapshotDiscription: {JsonConvert.SerializeObject(childSnapshot.Description())}");
+            Debug.Log($"BuildingPlanListner: Child Key: {key}");
+        }
+    }
+    public void OnbuildingPlanValueChangedPrint(object sender, Firebase.Database.ValueChangedEventArgs args)
+    {
+        if (args.DatabaseError != null)
+        {
+            Debug.LogError(args.DatabaseError.Message);
+            return;
+        }
+
+        var key = args.Snapshot.Key;
+        // var test = args.Snapshot.HasChild
+        var childSnapshot = args.Snapshot.GetValue(true);
+        Debug.Log($"ON CHILD ADDED {key}");
+
+        if (childSnapshot != null)
+        {
+            Debug.Log($"BuildingPlanListnerVALUECHANGED: Child Snapshot: {JsonConvert.SerializeObject(childSnapshot)}");
+            // Debug.Log(childSnapshot.Description());
+            // Debug.Log($"BuildingPlanListner: SnapshotDiscription: {JsonConvert.SerializeObject(childSnapshot.Description())}");
+            Debug.Log($"BuildingPlanListnerVALUECHANGED: Child Key: {key}");
+        }
+    }
+    public void OnProjectChangedPrint(object sender, Firebase.Database.ChildChangedEventArgs args)
+    {
+        if (args.DatabaseError != null)
+        {
+            Debug.LogError(args.DatabaseError.Message);
+            return;
+        }
+
+        var key = args.Snapshot.Key;
+        // var test = args.Snapshot.HasChild
+        var childSnapshot = args.Snapshot.GetValue(true);
+        Debug.Log($"ON CHILD ADDED {key}");
+
+        if (childSnapshot != null)
+        {
+            Debug.Log($"ProjectListner: Child Snapshot: {JsonConvert.SerializeObject(childSnapshot)}");
+            Debug.Log($"ProjectListner: Child Key: {key}");
+        }
+    }
+
+    
     // Event handler for BuildingPlan child changes
     // All of them are addapted to adjust the priority tree for now. Also Temporary.
     public void OnChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args) 
