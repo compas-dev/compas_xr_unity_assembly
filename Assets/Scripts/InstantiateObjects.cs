@@ -158,19 +158,14 @@ namespace Instantiate
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
-            Debug.Log("I MADE IT PAST HERE. Geometry Object: " + geometryObject.name);
 
             // Create and attach text label to the GameObject
             CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
             CreateCircleImageForTag(elementPrefab);
 
-            Debug.Log("I made it past here 2");
-
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
             
-            Debug.Log("I made it past here 3");
-
             //Check if the visulization tags mode is on
             if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
             {
@@ -179,15 +174,11 @@ namespace Instantiate
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
 
-            Debug.Log("I made it past here 4");
-
             //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
                 ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
             }
-
-            Debug.Log("I made it past here 5");
 
             //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
             if (Key == UIFunctionalities.CurrentStep)
@@ -195,10 +186,6 @@ namespace Instantiate
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                 ArrowInstantiator(elementPrefab, Key);
             }
-
-            Debug.Log("I made it past here 6");
-
-
         }
         public void placeElementAssembly(string Key, Node node)
         {
@@ -792,8 +779,6 @@ namespace Instantiate
                 ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, gamobj.FindObject(elementID + " Geometry"));
             }
         }
-        
-        // Apply color for objects based on Built or Unbuilt state
         public void ApplyColorBasedOnBuildState()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
@@ -816,8 +801,6 @@ namespace Instantiate
                 }
             }
         }
-
-        //Apply color for objects based on Actor View state
         public void ApplyColorBasedOnActor()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
@@ -840,8 +823,6 @@ namespace Instantiate
                 }
             }
         }
-
-        //Apply color for objects based on Priority
         public void ApplyColorBasedOnPriority(string SelectedPriority)
         {
             Debug.Log($"Applying color based on priority: {SelectedPriority}.");
@@ -863,23 +844,6 @@ namespace Instantiate
                     }
                 }
             }
-        }
-
-        //Color Managers
-        public Material CreateMaterial(float red, float green, float blue, float alpha) //TODO: Color is incorrect
-        {
-            Material mat = new Material(Shader.Find("Standard"));
-            mat.SetColor("_Color",  new Color(red, green, blue, alpha));
-            mat.SetFloat("_Mode", 3);
-            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.EnableKeyword("_ALPHABLEND_ON");
-            mat.SetInt("_ZWrite", 0);
-            mat.DisableKeyword("_ALPHATEST_ON");
-            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            mat.renderQueue = 3000;
-
-            return mat;
         }
         public Color AdjustColorByGreyscale(Color originalColor, float factor)
         {

@@ -663,8 +663,10 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
-    
-    //todo: VARIABLE FOR BUILDING IF IT IS TIED TO BUILDING PLAN OR NOT AND THEN PUT ASSEMBLY STUFF IN ANOTHER NODE. BUILDINGPLAN DEFAULT == TRUE.
+
+    //TODO: VARIABLE FOR BUILDING IF IT IS TIED TO BUILDING PLAN OR NOT AND THEN PUT ASSEMBLY STUFF IN ANOTHER NODE. BUILDINGPLAN DEFAULT == TRUE.
+    //TODO: QUESTION ABOUT TYPE DATA & TYPE ID.... IF WE DO NOT ADD ANYTHING TO THE ASSEMBLY, THEN LWH DESCRIPTION NEEDS TO BE ADDED TO THE NODE FROM THE STEP
+    //TODO: THIS WOULD MEAN WAITING FOR THE ASSEMBLY TO BE FETCHED BEFORE THE NODES LWH CAN BE ASSIGNED.... (Only used for P1 & P2 & THIS CAN BE CHANGED)
     public Node NodeDeserializer(string key, object jsondata)
     {
         //TODO: This will need to be adjusted so it works for the native assembly and the assembly from the database we write.
@@ -854,8 +856,6 @@ public class DatabaseManager : MonoBehaviour
 /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
 
     // Add listeners and remove them for firebase child events
-
-    //TODO: Make these changes. And the On child changed priority check
     public void AddListeners(object source, EventArgs args)
     {        
         Debug.Log("Adding Listners");
@@ -878,7 +878,6 @@ public class DatabaseManager : MonoBehaviour
         dbreference_project.ChildChanged += OnProjectInfoChangedUpdate;
         dbreference_project.ChildRemoved += OnProjectInfoChangedUpdate;
     }
-    
     public void RemoveListners()
     {        
         Debug.Log("Removing the listeners");
@@ -1158,6 +1157,47 @@ public class DatabaseManager : MonoBehaviour
             }
         }
     }  
+    public async void OnLastBuiltIndexChanged(object sender, Firebase.Database.ValueChangedEventArgs args)
+    {
+
+        if (args.DatabaseError != null) {
+        Debug.LogError($"Database error: {args.DatabaseError}");
+        return;
+        }
+
+        if (args.Snapshot == null) {
+            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+            return;
+        }
+        
+        Debug.Log("Last Built Index Changed");
+        
+        //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
+        TempDatabaseLastBuiltStep = null;
+        
+        await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeLastBuiltIndex(snapshot));
+    
+        if (TempDatabaseLastBuiltStep != null)
+        {
+            if(TempDatabaseLastBuiltStep != BuildingPlanDataItem.LastBuiltIndex)
+            {
+                // Update Last Built Index
+                BuildingPlanDataItem.LastBuiltIndex = TempDatabaseLastBuiltStep;
+                Debug.Log($"Last Built Index is now {BuildingPlanDataItem.LastBuiltIndex}");
+
+                // Update On Screen Text
+                UIFunctionalities.SetLastBuiltText(BuildingPlanDataItem.LastBuiltIndex);
+
+                // Update Current Priority
+                UIFunctionalities.SetCurrentPriority(BuildingPlanDataItem.LastBuiltIndex);
+            }
+            else
+            {
+                Debug.Log("Last Built Index is the same your current Last Built Index");
+            }
+
+        }
+    }    
     
     // Event handlers for User Current Step
     public void OnUserChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args)
@@ -1332,77 +1372,6 @@ public class DatabaseManager : MonoBehaviour
             {
                 Debug.LogWarning($"Project Changed: The key: {key} did not match the expected project keys");
             }
-        }
-    }
-    public void OnAssemblyChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
-    {
-        if (args.DatabaseError != null) {
-        Debug.LogError($"Database error: {args.DatabaseError}");
-        return;
-        }
-
-        if (args.Snapshot == null) {
-            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
-            return;
-        }
-        
-        Debug.Log("Assembly Changed");
-        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
-    }
-    public void OnQRChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
-    {
-        if (args.DatabaseError != null) {
-        Debug.LogError($"Database error: {args.DatabaseError}");
-        return;
-        }
-
-        if (args.Snapshot == null) {
-            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
-            return;
-        }
-        
-        Debug.Log("QRCodes Changed");
-        FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
-    }
-    public async void OnLastBuiltIndexChanged(object sender, Firebase.Database.ValueChangedEventArgs args)
-    {
-
-        if (args.DatabaseError != null) {
-        Debug.LogError($"Database error: {args.DatabaseError}");
-        return;
-        }
-
-        if (args.Snapshot == null) {
-            Debug.LogWarning("Snapshot is null. Ignoring the child change.");
-            return;
-        }
-        
-        Debug.Log("Last Built Index Changed");
-        
-        //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
-        TempDatabaseLastBuiltStep = null;
-        
-        await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeLastBuiltIndex(snapshot));
-    
-        if (TempDatabaseLastBuiltStep != null)
-        {
-            if(TempDatabaseLastBuiltStep != BuildingPlanDataItem.LastBuiltIndex)
-            {
-                // Update Last Built Index
-                BuildingPlanDataItem.LastBuiltIndex = TempDatabaseLastBuiltStep;
-                Debug.Log($"Last Built Index is now {BuildingPlanDataItem.LastBuiltIndex}");
-
-                // Update On Screen Text
-                UIFunctionalities.SetLastBuiltText(BuildingPlanDataItem.LastBuiltIndex);
-
-                // Update Current Priority
-                UIFunctionalities.SetCurrentPriority(BuildingPlanDataItem.LastBuiltIndex);
-            }
-            else
-            {
-                Debug.Log("Last Built Index is the same your current Last Built Index");
-            }
-
         }
     }
     

@@ -701,20 +701,7 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    
-    //Priority checker is set up for temporary priority tree.
-    /*
-    
-    TODO: I think I have to put CurrentPriority on the DB
-    Reason 1: If I only go off of last built element then it means that in order to move to the next PR I have to 
-    build the first one in order to update CurrentPriority. Which is actually incorrect because if I unbuild it my LastBuiltIndex
-    iterates through backwards to the first built element which would put me back on the previous priority.
-
-    Reason 2: If I make it so the last built index doesn't do that then my last built index on the DB will be incorrect because I
-    build would update LBI to build the one, and then not when I unbuild it.
-    
-    */
-    public bool PriorityChecker(Step step)
+    public bool PriorityChecker(Step step, string stepKey)
     {
         //Check if the current priority is null
         if(CurrentPriority == null)
@@ -811,7 +798,6 @@ public class UIFunctionalities : MonoBehaviour
                     }
                 }
 
-                //TODO: THIS SHOULD RETURN A FALSE, AND JUST UPDATE PRIORITY, AND MAKE UI CONTROL UPDATE.
                 //If the list is empty return true because all elements of that priority are built
                 if(UnbuiltElements.Count == 0)
                 {
@@ -820,8 +806,17 @@ public class UIFunctionalities : MonoBehaviour
                     //Print out the priority tree as a check
                     Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck2): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
                     
-                    //Return True to push all data to the database.
-                    return true;
+                    //Set Current Priority
+                    SetCurrentPriority(stepKey);
+
+                    //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
+                    if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == CurrentPriority)
+                    {    
+                        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
+                    }
+
+                    //Return False, this is for the first time that an element is changed.
+                    return false;
                 }
                 
                 //If the list is not empty return false because not all elements of that priority are built and signal on screen warning.
@@ -848,7 +843,7 @@ public class UIFunctionalities : MonoBehaviour
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
         //Check if priority is correct.
-        if (PriorityChecker(step))
+        if (PriorityChecker(step, key))
         {
             //Change Build Status //TODO: WHAT DO I DO IF I AM UNBUILDING 0... I think most logical would be to set current priority to 0 do nothing with LastBuiltIndex.
             if(step.data.is_built)
@@ -919,10 +914,10 @@ public class UIFunctionalities : MonoBehaviour
         //Set Last Built Text
         LastBuiltIndexText.text = $"Last Built Step : {key}";
     }
-    public void SetCurrentPriority(string Key)
+    public void SetCurrentPriority(string stepKey)
     {     
         //Find the step in the dictoinary
-        Step step = databaseManager.BuildingPlanDataItem.steps[Key];
+        Step step = databaseManager.BuildingPlanDataItem.steps[stepKey];
         string Priority = step.data.priority.ToString();
         
         //If Priority Viewer is on and new priority is not equal to current priority update the priority viewer (only place I can do this)
@@ -939,7 +934,7 @@ public class UIFunctionalities : MonoBehaviour
         CurrentPriorityText.text = $"Current Priority : {Priority}";
         
         //Print setting current priority
-        Debug.Log($"Setting Current Priority from Key : {Key} to Priority: {step.data.priority.ToString()} ");
+        Debug.Log($"Setting Current Priority from Key : {stepKey} to Priority: {step.data.priority.ToString()} ");
     }
     private void SignalOnScreenPriorityIncompleteWarning(List<string> UnbuiltElements, string currentPriority)
     {
