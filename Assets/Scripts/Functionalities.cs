@@ -135,6 +135,24 @@ namespace Extentions
             }            
 
         }
+
+        public static void FaceObjectToCamera(Transform transform)
+        {
+            if (Camera.main != null)
+            {
+                transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward, Camera.main.transform.rotation * Vector3.up);
+            }
+        }
+
+        // Billboard class encapsulated within the GameObjectExtensions namespace
+        public class Billboard : MonoBehaviour
+        {
+            void LateUpdate()
+            {
+                // Access the FaceObjectToCamera method from the same namespace
+                FaceObjectToCamera(transform);
+            }
+        }
     }   
 
 }

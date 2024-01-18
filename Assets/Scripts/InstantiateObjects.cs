@@ -19,6 +19,7 @@ using ApplicationModeControler;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
 using UnityEngine.InputSystem;
+using System.Xml.Linq;
 
 
 //scripts to initiate all geometries in the scene
@@ -61,6 +62,7 @@ namespace Instantiate
         private GameObject IdxImage;
         private GameObject SelectionArrow;
         private GameObject NewUserArrow;
+        private GameObject ObjectLengthsTags;
 
         public struct Rotation
         {
@@ -69,7 +71,7 @@ namespace Instantiate
             public Vector3 z;
         }
 
-        //PRIVATE IN SCRIPT USE OBJECTS
+        //Private in script use objects
         private ARRaycastManager rayManager;
 
         public void Awake()
@@ -104,6 +106,7 @@ namespace Instantiate
             IdxImage = GameObject.Find("IdxTagsTemplates").FindObject("Circle");
             SelectionArrow = GameObject.Find("SelectionArrows").FindObject("Arrow");
             NewUserArrow = GameObject.Find("SelectionArrows").FindObject("NewUserArrow");
+            ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
 
             //Set Initial Visulization Modes
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
@@ -253,9 +256,6 @@ namespace Instantiate
                 Debug.LogWarning("The dictionary is null");
             }
         }   
-        
-        //TODO: Add Empty Parent object to the GameObject and name the child Object by assembly key to match the .obj file.
-        //TODO: Add a Colider - Everything but Obj files.
         public GameObject gameobjectTypeSelector(Step step)
         {
 
@@ -271,23 +271,55 @@ namespace Instantiate
                 {
                     //TODO:REVIEW THE SIZE AND SCALE OF THESE
                     case "0.Cylinder":
+                        //Create Empty gameObject to store the cylinder (Named by Step Number)
+                        element = new GameObject();
+                        element.transform.position = Vector3.zero;
+                        element.transform.rotation = Quaternion.identity;
+                        
                         //Define the Size of the Cylinder from the data values
                         float cylinderRadius = DataItemDict[step.data.element_ids[0].ToString()].attributes.width;
                         float cylinderHeight = DataItemDict[step.data.element_ids[0].ToString()].attributes.height;
                         Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight, cylinderRadius*2);
                         
-                        //Create and Scale Element
-                        element = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                        element.transform.localScale = cylindersize;
+                        //Create, Scale, & name child object (Named by Assembly ID)
+                        GameObject cylinderObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        cylinderObject.transform.localScale = cylindersize;
+                        cylinderObject.name = step.data.element_ids[0].ToString() + " Geometry";
+
+                        //Add a collider to the gameobject
+                        BoxCollider cylinderCollider = cylinderObject.AddComponent<BoxCollider>();
+                        Vector3 cylinderSize = cylinderObject.GetComponent<MeshRenderer>().bounds.size;
+                        Vector3 cylinderColliderSize = new Vector3(cylinderSize.x*1.1f, cylinderSize.y*1.2f, cylinderSize.z*1.2f);
+                        cylinderCollider.size = cylinderColliderSize;
+
+                        //Set the cylinder as a child of the empty gameObject
+                        cylinderObject.transform.SetParent(element.transform);
+
                         break;
 
                     case "1.Box":                    
+                        //Create Empty gameObject to store the cylinder (Named by step number)
+                        element = new GameObject();
+                        element.transform.position = Vector3.zero;
+                        element.transform.rotation = Quaternion.identity;
+                        
                         //Define the Size of the Cube from the data values
                         Vector3 cubesize = new Vector3(DataItemDict[step.data.element_ids[0].ToString()].attributes.width, DataItemDict[step.data.element_ids[0].ToString()].attributes.height, DataItemDict[step.data.element_ids[0].ToString()].attributes.length);
                         
-                        //Create and Scale Element
-                        element = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        element.transform.localScale = cubesize;
+                        //Create, Scale, & name Box object (Named by Assembly ID)
+                        GameObject boxObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        boxObject.transform.localScale = cubesize;
+                        boxObject.name = step.data.element_ids[0].ToString() + " Geometry";
+
+                        //Add a collider to the gameobject
+                        BoxCollider boxCollider = boxObject.AddComponent<BoxCollider>();
+                        Vector3 boxSize = boxObject.GetComponent<MeshRenderer>().bounds.size;
+                        Vector3 boxColliderSize = new Vector3(boxSize.x*1.1f, boxSize.y*1.2f, boxSize.z*1.2f);
+                        boxCollider.size = boxColliderSize;
+
+                        //Set the cylinder as a child of the empty gameObject
+                        boxObject.transform.SetParent(element.transform);
+
                         break;
 
                     case "2.ObjFile":
@@ -315,14 +347,8 @@ namespace Instantiate
 
                             //Add a collider to the object
                             BoxCollider collider = child_object.AddComponent<BoxCollider>();
-
-                            //Mesh Object size to define the size of the collider
                             Vector3 MeshSize = child_object.GetComponent<MeshRenderer>().bounds.size;
-
-                            //Scale Original Size by just a bit to make sure the collider is not too small.
                             Vector3 colliderSize = new Vector3(MeshSize.x*1.1f, MeshSize.y*1.2f, MeshSize.z*1.2f);
-
-                            //Set the collider size
                             collider.size = colliderSize;
 
                             Debug.Log($"Atempting to add colider to object {element.name}");
@@ -414,14 +440,12 @@ namespace Instantiate
         }
         private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID)
         {
-            Debug.Log("ID I made it past here 0");
             // Create a new GameObject for the text
             GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
             TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
             IndexText.text = assemblyID;
             IndexText.fontSize = 1f;
             IndexText.alignment = TextAlignmentOptions.Center;
-            Debug.Log("ID I made it past here 1");
 
             // Calculate the center of the GameObject
             GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
@@ -432,25 +456,19 @@ namespace Instantiate
             }
             Vector3 center = Vector3.zero;
             center = renderer.bounds.center;
-            Debug.Log("ID I made it past here 2");
 
             // Offset the position slightly above the GameObject
             float verticalOffset = 0.13f;
             Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
-            Debug.Log("ID I made it past here 3");
-
             IndexTextContainer.transform.position = textPosition;
             IndexTextContainer.transform.rotation = Quaternion.identity;
             IndexTextContainer.transform.SetParent(gameObject.transform);
-            Debug.Log("ID I made it past here 4");
 
             // Add billboard effect(object rotating with camera)
-            Billboard billboard = IndexTextContainer.AddComponent<Billboard>();
-            Debug.Log("ID I made it past here 5");
+            GameObjectExtensions.Billboard billboard = IndexTextContainer.AddComponent<GameObjectExtensions.Billboard>();
 
             // Initially set the text as inactive
             IndexTextContainer.SetActive(false);
-            Debug.Log("ID I made it past here 6");   
 
         }
         private void CreateCircleImageForTag(GameObject parentObject)
@@ -486,7 +504,7 @@ namespace Instantiate
             circleImage.name = $"{parentObject.name}IdxImage";
 
             // Add billboard effect
-            Billboard billboard = circleImage.AddComponent<Billboard>();
+            GameObjectExtensions.Billboard billboard = circleImage.AddComponent<GameObjectExtensions.Billboard>();
 
             //Set Initial Visivility to false
             circleImage.SetActive(false);
@@ -554,9 +572,49 @@ namespace Instantiate
             //Instantiate Arrow
             ArrowInstantiator(userObject, itemKey, true);
         }
-    
+        public void CalculateandSetLengthPositions(string key)
+        {
+            //Find Gameobject Associated with that step
+            GameObject element = Elements.FindObject(key);
+            Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
+            //Find gameobject center
+            Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
+
+            //Find length from assembly dictionary
+            float length = databaseManager.DataItemDict[step.data.element_ids[0]].attributes.length;
+
+            //Calculate position of P1 and P2 
+            Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
+            Vector3 P2Position = center + element.transform.right * (length / 2);
+
+            //Set Positions of P1 and P2
+            ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
+            ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
+
+            //Check if the component has a billboard component and if it doesn't add it.
+            if (ObjectLengthsTags.FindObject("P1Tag").GetComponent<GameObjectExtensions.Billboard>() == null)
+            {
+                ObjectLengthsTags.FindObject("P1Tag").AddComponent<GameObjectExtensions.Billboard>();
+            }
+            if (ObjectLengthsTags.FindObject("P2Tag").GetComponent<GameObjectExtensions.Billboard>() == null)
+            {
+                ObjectLengthsTags.FindObject("P2Tag").AddComponent<GameObjectExtensions.Billboard>();
+            }
+
+            //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
+            Vector3 ElementsPosition = Elements.transform.position;
+            Vector3 P1Adjusted = new Vector3(ElementsPosition.x, P1Position.y, ElementsPosition.z);
+            Vector3 P2Adjusted = new Vector3(ElementsPosition.x, P2Position.y, ElementsPosition.z);
+
+            //Get distance between position of P1, P2 and position of elements
+            float P1distance = Vector3.Distance(P1Adjusted, ElementsPosition);
+            float P2distance = Vector3.Distance(P2Adjusted, ElementsPosition);
+
+            //Update Distance Text
+            UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
+        }
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
-        //Handle rotation of objects from Rhino to Unity. With option to add additional rotation around for .obj files.
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
             //Set Unity Rotation
@@ -629,7 +687,7 @@ namespace Instantiate
             return rotation;
         }
 
-        //Functions for obj imort correction.
+        //Methods for obj imort correction.
         public Rotation ZRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3

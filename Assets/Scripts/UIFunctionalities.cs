@@ -122,7 +122,7 @@ public class UIFunctionalities : MonoBehaviour
     /////////////////////////////////////////// UI Control ////////////////////////////////////////////////////
     private void OnAwakeInitilization()
     {
-        /////////////////////////////////////////// Initial Elements & Toggles ////////////////////////////////////////////
+        /////////////////////////////////////////// Initial Elements ////////////////////////////////////////////
         //Find Other Scripts
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
@@ -132,28 +132,7 @@ public class UIFunctionalities : MonoBehaviour
         Elements = GameObject.Find("Elements");
         QRMarkers = GameObject.Find("QRMarkers");
         CanvasObject = GameObject.Find("Canvas");
-        UserObjects = GameObject.Find("UserObjects");
-        
-        //Find toggles for visibility
-        VisibilityMenuObject = GameObject.Find("Visibility_Editor");
-        Toggle VisibilityMenuToggle = VisibilityMenuObject.GetComponent<Toggle>();
-        
-        //Find toggles for menu
-        MenuButtonObject = GameObject.Find("Menu_Toggle");
-        Toggle MenuToggle = MenuButtonObject.GetComponent<Toggle>();
-
-        //Find toggle for step search
-        ElementSearchToggleObject = GameObject.Find("ElementSearchToggle");
-        Toggle ElementSearchToggle = ElementSearchToggleObject.GetComponent<Toggle>();
-
-        //Find toggle for editor... Slightly different then the other two because it is off on start.
-        EditorToggleObject = MenuButtonObject.FindObject("Editor_Toggle");
-        Toggle EditorToggle = EditorToggleObject.GetComponent<Toggle>();
-
-        //Find Background Images for Toggles
-        VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
-        MenuBackground = MenuButtonObject.FindObject("Background_Menu");
-        EditorBackground = EditorToggleObject.FindObject("Background_Editor");
+        UserObjects = GameObject.Find("UserObjects");     
 
         //Find AR Camera gameObject
         arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();
@@ -189,13 +168,37 @@ public class UIFunctionalities : MonoBehaviour
         IsBuiltButton = IsBuiltButtonObject.GetComponent<Button>();
         IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));;
 
-        //Find Step Search Objects
+        //Find toggle for element search
+        ElementSearchToggleObject = GameObject.Find("ElementSearchToggle");
+        Toggle ElementSearchToggle = ElementSearchToggleObject.GetComponent<Toggle>();
+        //Add Listners for Step Search Toggle on and off.
+        ElementSearchToggle.onValueChanged.AddListener(delegate {
+        ToggleElementSearch(ElementSearchToggle);
+        });
+        
+        //Find Element Search Button Objects
         ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
         ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();;
         SearchElementButtonObject = ElementSearchObjects.FindObject("SearchForElementButton");
         Button ElementSearchButton = SearchElementButtonObject.GetComponent<Button>();
         ElementSearchButton.onClick.AddListener(SearchElementButton);;
         SearchedElement = "None";
+
+        //Find toggles for menu
+        MenuButtonObject = GameObject.Find("Menu_Toggle");
+        Toggle MenuToggle = MenuButtonObject.GetComponent<Toggle>();
+        //Add Listners for Menu Toggle on and off.
+        MenuToggle.onValueChanged.AddListener(delegate {
+        ToggleMenu(MenuToggle);
+        });
+
+        //Find toggles for visibility
+        VisibilityMenuObject = GameObject.Find("Visibility_Editor");
+        Toggle VisibilityMenuToggle = VisibilityMenuObject.GetComponent<Toggle>();
+        //Add Listners for Visibility Toggle on and off.
+        VisibilityMenuToggle.onValueChanged.AddListener(delegate {
+        ToggleVisibilityMenu(VisibilityMenuToggle);
+        });
 
         //Find Text Objects
         CurrentStepTextObject = GameObject.Find("Current_Index_Text");
@@ -209,6 +212,10 @@ public class UIFunctionalities : MonoBehaviour
 
         EditorSelectedTextObject = CanvasObject.FindObject("Editor_Selected_Text");
         EditorSelectedText = EditorSelectedTextObject.GetComponent<TMPro.TMP_Text>();
+        
+        //Find Background Images for Toggles
+        VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
+        MenuBackground = MenuButtonObject.FindObject("Background_Menu");
 
         //Find Warning messages
         GameObject MessagesParent = CanvasObject.FindObject("Messages");
@@ -224,15 +231,27 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         IDToggleObject = VisibilityMenuObject.FindObject("ID_Toggle");
         Toggle IDButton = IDToggleObject.GetComponent<Toggle>();
+        //ID Toggle on and off.
+        IDButton.onValueChanged.AddListener(delegate {
+        ToggleID(IDButton);
+        });
 
         //Find Robot toggle and Objects
         RobotToggleObject = VisibilityMenuObject.FindObject("Robot_Button");
         Toggle RobotToggle = RobotToggleObject.GetComponent<Toggle>();
         RobotVisulizationControlObjects = ConstantUIPanelObjects.FindObject("RobotVisulizationControlObjects");
+        //Add Listners for Object Lengths.
+        RobotToggle.onValueChanged.AddListener(delegate {
+        ToggleRobot(RobotToggle);
+        });
 
         //Find Robot toggle and Objects
         PriorityViewerToggleObject = VisibilityMenuObject.FindObject("PriorityViewer");
         Toggle PriorityViewerToggle = PriorityViewerToggleObject.GetComponent<Toggle>();
+        //Add Listners for Priority Viewer Toggle.
+        PriorityViewerToggle.onValueChanged.AddListener(delegate {
+        TogglePriority(PriorityViewerToggle);
+        });
 
         //Find Object Lengths Toggle and Objects
         ObjectLengthsToggleObject = VisibilityMenuObject.FindObject("ObjectLength_Button");
@@ -240,12 +259,20 @@ public class UIFunctionalities : MonoBehaviour
         ObjectLengthsUIPanelObjects = CanvasObject.FindObject("ObjectLengthsPanel");
         ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
+        //Add Listners for Object Lengths.
+        ObjectLengthsToggle.onValueChanged.AddListener(delegate {
+        ToggleObjectLengths(ObjectLengthsToggle);
+        });
        
         /////////////////////////////////////////// Menu Buttons ////////////////////////////////////////////
         
-        //Find Object, Button, and Add Listener for OnClick method
+        //Find Info Toggle, and Add Listener for OnValueChanged method
         InfoToggleObject = MenuButtonObject.FindObject("Info_Button");
         Toggle InfoToggle = InfoToggleObject.GetComponent<Toggle>();
+        //Add Listners for Info Toggle on and off.
+        InfoToggle.onValueChanged.AddListener(delegate {
+        ToggleInfo(InfoToggle);
+        });
 
         //Find Object, Button, and Add Listener for OnClick method
         ReloadButtonObject = MenuButtonObject.FindObject("Reload_Button");
@@ -255,7 +282,19 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         CommunicationToggleObject = MenuButtonObject.FindObject("Communication_Button");
         Toggle CommunicationToggle = CommunicationToggleObject.GetComponent<Toggle>();
+        //Add Listners for Info Toggle on and off.
+        CommunicationToggle.onValueChanged.AddListener(delegate {
+        ToggleCommunication(CommunicationToggle);
+        });
 
+        //Find toggle for editor.
+        EditorToggleObject = MenuButtonObject.FindObject("Editor_Toggle");
+        Toggle EditorToggle = EditorToggleObject.GetComponent<Toggle>();
+        //Add Listners for Editor Toggle on and off.
+        EditorToggle.onValueChanged.AddListener(delegate {
+        ToggleEditor(EditorToggle);
+        });
+        
         //Find Object, Button, and Add Listener for OnClick method
         BuilderEditorButtonObject = EditorToggleObject.FindObject("Builder_Editor_Button");
         Button BuilderEditorButton = BuilderEditorButtonObject.GetComponent<Button>();
@@ -270,56 +309,8 @@ public class UIFunctionalities : MonoBehaviour
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
         CommunicationPanelObject = CanvasObject.FindObject("CommunicationPanel");
 
-        /////////////////////////////////////////// Set Toggles ////////////////////////////////////////////
-        //Add Listners for Visibility Toggle on and off.
-        VisibilityMenuToggle.onValueChanged.AddListener(delegate {
-        ToggleVisibilityMenu(VisibilityMenuToggle);
-        });
-
-        //Add Listners for Menu Toggle on and off.
-        MenuToggle.onValueChanged.AddListener(delegate {
-        ToggleMenu(MenuToggle);
-        });
-
-        //Add Listners for Editor Toggle on and off.
-        EditorToggle.onValueChanged.AddListener(delegate {
-        ToggleEditor(EditorToggle);
-        });
-
-        //Add Listners for Step Search Toggle on and off.
-        ElementSearchToggle.onValueChanged.AddListener(delegate {
-        ToggleElementSearch(ElementSearchToggle);
-        });
-
-        //Add Listners for Info Toggle on and off.
-        InfoToggle.onValueChanged.AddListener(delegate {
-        ToggleInfo(InfoToggle);
-        });
-
-        //Add Listners for Info Toggle on and off.
-        CommunicationToggle.onValueChanged.AddListener(delegate {
-        ToggleCommunication(CommunicationToggle);
-        });
-
-        //Add Listners for Object Lengths.
-        ObjectLengthsToggle.onValueChanged.AddListener(delegate {
-        ToggleObjectLengths(ObjectLengthsToggle);
-        });
-
-        //Add Listners for Object Lengths.
-        RobotToggle.onValueChanged.AddListener(delegate {
-        ToggleRobot(RobotToggle);
-        });
-
-        //Add Listners for Priority Viewer Toggle.
-        PriorityViewerToggle.onValueChanged.AddListener(delegate {
-        TogglePriority(PriorityViewerToggle);
-        });
-
-        //ID Toggles
-        IDButton.onValueChanged.AddListener(delegate {
-        ToggleID(IDButton);
-        });
+        //Find Background Images for Toggles
+        EditorBackground = EditorToggleObject.FindObject("Background_Editor");
 
     }
     public void ToggleVisibilityMenu(Toggle toggle)
@@ -503,7 +494,7 @@ public class UIFunctionalities : MonoBehaviour
         //Update Lengths if Object Lengths Toggle is on
         if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
         {
-            CalculateandSetLengthPositions(CurrentStep);
+            instantiateObjects.CalculateandSetLengthPositions(CurrentStep);
         }
 
         //Update Preview Geometry the visulization is remapped correctly
@@ -699,32 +690,25 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    
-    //TODO: THIS CAN GO BACK TO T VS. F
-    public int LocalPriorityChecker(Step step, string stepKey)
+    public bool LocalPriorityChecker(Step step, string stepKey)
     {
         //Check if the current priority is null
         if(CurrentPriority == null)
         {
             //Print out the priority tree as a check
-            Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck0): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
-
             Debug.LogError("Current Priority is null.");
             
-            //Return 0 to not push data.
-            return 0;
+            //Return false to not push data.
+            return false;
         }
         
         //Check if they are the same. If they are return true //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
         else if (CurrentPriority == step.data.priority.ToString())
         {
             Debug.Log($"Priority Check: Current Priority is equal to step priority. Pushing data");
-            
-            //Print out the priority tree as a check
-            Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck1): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
 
-            //Return 1 to push all the data to the database
-            return 1;
+            //Return true to push all the data to the database
+            return true;
         }
 
         //Else if the current priority is higher then the step priority loop through all the elements in priority above and unbuild them. This allows you to go back in priority.
@@ -758,8 +742,8 @@ public class UIFunctionalities : MonoBehaviour
                 }
             }
 
-            //Return 1 to push data to the database
-            return 1;
+            //Return true to push data to the database
+            return true;
     
         }
         //The priority is higher. Check if all elements in Current Priority are built.
@@ -772,11 +756,11 @@ public class UIFunctionalities : MonoBehaviour
 
                 SignalOnScreenPriorityIncorrectWarning(step.data.priority.ToString(), CurrentPriority);
 
-                //Return 0 to not push data.
-                return 0;
+                //Return false to not push data.
+                return false;
             }
 
-            //This is the Priority that we want.
+            //This is the next Priority.
             else
             {   
                 //New empty list to store unbuilt elements
@@ -798,30 +782,32 @@ public class UIFunctionalities : MonoBehaviour
                     }
                 }
 
-                //If the list is empty return 2 because all elements of that priority are built, and we want to move on to the next priority.
+                //If the list is empty return false because all elements of that priority are built, and we want to move on to the next priority but not write info.
                 if(UnbuiltElements.Count == 0)
                 {
                     Debug.Log($"Priority Check: Current Priority is complete. Unlocking Next Priority.");
-                    
-                    //Print out the priority tree as a check
-                    Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck2): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
 
-                    //Return 2, this is for the first time that an element is changed and we only want to update a priority, but not write information.
-                    return 2;
+                    //Set Current Priority
+                    SetCurrentPriority(step.data.priority.ToString());
+
+                    //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
+                    if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == CurrentPriority)
+                    {    
+                        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
+                    }
+                    
+                    //Return false, this is for the first time that an element is changed and we only want to update a priority, but not write information.
+                    return false;
                 }
                 
-                //If the list is not empty return 0 because not all elements of that priority are built and signal on screen warning.
+                //If the list is not empty return false because not all elements of that priority are built and signal on screen warning.
                 else
                 {
-                    Debug.Log($"Priority Check: Current Priority is not complete. Incomplete Priority");
-                    
                     //Print out the priority tree as a check
-                    Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck3): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
-
                     SignalOnScreenPriorityIncompleteWarning(UnbuiltElements, CurrentPriority);
                     
-                    //Return 0 to not push data.
-                    return 0;
+                    //Return true to not push data.
+                    return false;
                 }
             }
         }
@@ -833,11 +819,8 @@ public class UIFunctionalities : MonoBehaviour
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
-        //Run Priority Checker
-        int priorityCheckInt = LocalPriorityChecker(step, key);
-
         //Check if priority is correct.
-        if (priorityCheckInt == 1)
+        if (LocalPriorityChecker(step, key))
         {
             //Change Build Status //TODO: WHAT DO I DO IF I AM UNBUILDING 0... I think most logical would be to set current priority to 0 do nothing with LastBuiltIndex.
             if(step.data.is_built)
@@ -904,20 +887,9 @@ public class UIFunctionalities : MonoBehaviour
             //Push Data to the database
             databaseManager.PushAllDataBuildingPlan(key);
         }
-        else if (priorityCheckInt == 2)
-        {
-            //Set Current Priority
-            SetCurrentPriority(step.data.priority.ToString());
-
-            //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
-            if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == CurrentPriority)
-            {    
-                IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
-            }
-        }
         else
         {
-            Debug.Log("Priority Check: Priority is not complete, Or Incorrect. Not pushing data.");
+            Debug.Log("Priority Check: Checked Priority and not pushing Data.");
         }
 
     }
@@ -1117,7 +1089,7 @@ public class UIFunctionalities : MonoBehaviour
                 //Function to calculate distances to the ground and show them
                 if (CurrentStep != null)
                 {    
-                    CalculateandSetLengthPositions(CurrentStep);
+                    instantiateObjects.CalculateandSetLengthPositions(CurrentStep);
                 }
                 else
                 {
@@ -1145,35 +1117,8 @@ public class UIFunctionalities : MonoBehaviour
         }
         
     }
-    public void CalculateandSetLengthPositions(string key)
+    public void SetObjectLengthsText(float P1distance, float P2distance)
     {
-        //Find Gameobject Associated with that step
-        GameObject element = Elements.FindObject(key);
-        Step step = databaseManager.BuildingPlanDataItem.steps[key];
-
-        //Find gameobject center
-        Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
-
-        //Find length from assembly dictionary
-        float length = databaseManager.DataItemDict[step.data.element_ids[0]].attributes.length;
-
-        //Calculate position of P1 and P2 // TODO: CHECK THIS... Other Geometries 
-        Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
-        Vector3 P2Position = center + element.transform.right * (length / 2);
-
-        //Set Positions of P1 and P2
-        ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
-        ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
-
-        //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
-        Vector3 ElementsPosition = Elements.transform.position;
-        Vector3 P1Adjusted = new Vector3(ElementsPosition.x, P1Position.y, ElementsPosition.z);
-        Vector3 P2Adjusted = new Vector3(ElementsPosition.x, P2Position.y, ElementsPosition.z);
-
-        //Get distance between position of P1, P2 and position of elements
-        float P1distance = Vector3.Distance(P1Adjusted, ElementsPosition);
-        float P2distance = Vector3.Distance(P2Adjusted, ElementsPosition);
-
         //Update Distance Text
         ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)} P2 | {(float)Math.Round(P2distance, 2)}";
     }
@@ -1364,7 +1309,7 @@ public class UIFunctionalities : MonoBehaviour
                 ColliderControler();
 
                 //Update mode so we know to search for touch input
-                TouchSearchModeController(1);
+                TouchSearchModeController(TouchMode.ElementEditSelection);
                 
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, Yellow);
@@ -1382,7 +1327,7 @@ public class UIFunctionalities : MonoBehaviour
                 CurrentStepTextObject.SetActive(true);
 
                 //Update mode so we are no longer searching for touch
-                TouchSearchModeController(0);
+                TouchSearchModeController(TouchMode.None);
 
                 //Color Elements by build status
                 instantiateObjects.ApplyColorBasedOnBuildState();
@@ -1398,28 +1343,33 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
-    
-    //TODO: This needs an input of the mode type that you want to set.
-    public void TouchSearchModeController(int modetype)
+    public void TouchSearchModeController(TouchMode modetype)
     {
-        if (modetype == 1)
-        {        
-            //Set Visulization Mode
-            instantiateObjects.visulizationController.TouchMode = TouchMode.ElementEditSelection;
+        //Set Touch Mode
+        instantiateObjects.visulizationController.TouchMode = modetype;
 
+        // If input mode type is ElementEditSelection then we know to search for touch input on objects
+        if (modetype == TouchMode.ElementEditSelection)
+        {
             Debug.Log ("***TouchMode: ELEMENT EDIT MODE***");
         }
 
-        else
+        // If input mode type is None then fix all elements for touch selection.
+        else if(modetype == TouchMode.None)
         {
-            //Set Visulization Mode
-            instantiateObjects.visulizationController.TouchMode = TouchMode.None; // setting back to original mode
+            Debug.Log ("***TouchMode: NONE***");
 
             //Destroy active bounding box
             DestroyBoundingBoxFixElementColor();
             activeGameObject = null;
             Debug.Log ("***TouchMode: NONE***");
         }
+
+        else
+        {
+            Debug.LogWarning("Could not find Touch Mode.");
+        }
+
     }
     private void TouchSearchControler()
     {

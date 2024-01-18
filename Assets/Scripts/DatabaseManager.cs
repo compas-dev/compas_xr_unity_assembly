@@ -67,8 +67,6 @@ public class DatabaseManager : MonoBehaviour
     public DatabaseReference dbreference_qrcodes;
     public DatabaseReference dbrefernece_usersCurrentSteps;
     public StorageReference storageReference;
-
-    //TODO: TESTING IDEA FOR CHILD CHANGED EVENTS.
     public DatabaseReference dbreference_project;
 
 
@@ -116,7 +114,7 @@ public class DatabaseManager : MonoBehaviour
     //Other Scripts
     public UIFunctionalities UIFunctionalities;
 
-    //Define bool to set object orientation
+    //In script use objects.
     public bool objectOrientation;
     public string TempDatabaseLastBuiltStep;
 
@@ -590,7 +588,6 @@ public class DatabaseManager : MonoBehaviour
             }
         }
     }
-
     public int OtherUserPriorityChecker(Step step, string stepKey)
     {        
         //If the priority of the current priority then check if it is complete.
@@ -620,9 +617,6 @@ public class DatabaseManager : MonoBehaviour
             {
                 Debug.Log($"OtherUser Priority Check: Current Priority is complete. Unlocking Next Priority.");
                 
-                //Print out the priority tree as a check
-                Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck2): " + JsonConvert.SerializeObject(PriorityTreeDict));
-
                 //Return 2, to move on to the next priority.
                 return 2;
             }
@@ -646,12 +640,12 @@ public class DatabaseManager : MonoBehaviour
         }
 
     }
+
 /////////////////////////////// Input Data Handlers //////////////////////////////////  
-    //This also creates the priority tree dictionary, but this is temporary to deal with list problem.
+    //This also creates the priority tree dictionary, but this is temporary to limit searching.
     private BuildingPlanData BuildingPlanDeserializer(object jsondata)
     {
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-        Debug.Log($"BUILDING PLAN TEST : {JsonConvert.SerializeObject(jsonDataDict)}");
         
         //Create new building plan instance
         BuildingPlanData buidingPlanData = new BuildingPlanData();
@@ -660,7 +654,7 @@ public class DatabaseManager : MonoBehaviour
         //Attempt to get last built index and if it doesn't exist set it to null
         if (jsonDataDict.TryGetValue("LastBuiltIndex", out object last_built_index))
         {
-            Debug.Log($"I GOT LAST BUILT INDEX {last_built_index.ToString()}");
+            Debug.Log($"Last Built Index Fetched From database: {last_built_index.ToString()}");
             buidingPlanData.LastBuiltIndex = last_built_index.ToString();
         }
         else
@@ -950,7 +944,6 @@ public class DatabaseManager : MonoBehaviour
     }
 
     // Event handler for BuildingPlan child changes
-    // All of them are addapted to adjust the priority tree for now. Also Temporary.
     public void OnStepsChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args) 
     {
         if (args.DatabaseError != null)
@@ -1422,9 +1415,6 @@ public class DatabaseManager : MonoBehaviour
                 
                 //If the assembly changed then fetch new assembly data
                 await FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot));
-
-                //TODO: REMOVE THIS PRINT AND THE AWAIT ABOVE.
-                Debug.Log($"Project Changed: New Assembly Data Temp == {JsonConvert.SerializeObject(DataItemDict)}");
             }
             else if(key == "QRFrames")
             {
@@ -1432,9 +1422,6 @@ public class DatabaseManager : MonoBehaviour
 
                 //If the qrcodes changed then fetch new qrcode data
                 await FetchRTDData(dbreference_qrcodes, snapshot => DesearializeQRSnapshot(snapshot), "TrackingDict");
-            
-                //TODO: REMOVE THIS PRINT.
-                Debug.Log($"Project Changed: New QR Data Temp == {JsonConvert.SerializeObject(QRCodeDataDict)}");
             }
             else if(key == "beams")
             {
@@ -1447,6 +1434,10 @@ public class DatabaseManager : MonoBehaviour
             else if(key == "building_plan")
             {
                 Debug.Log("Project Changed: BuildingPlan and should be handled by other listners");
+            }
+            else if(key == "UserCurrentStep")
+            {
+                Debug.Log("Project Changed: User Current Step Changed this should be handled by other listners");
             }
             else
             {
