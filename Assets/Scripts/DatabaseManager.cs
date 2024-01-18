@@ -21,6 +21,7 @@ using Unity.VisualScripting;
 using Instantiate;
 using Google.MiniJSON;
 using Extentions;
+using UnityEngine.InputSystem;
 
 
 public class DataItemDictEventArgs : EventArgs
@@ -580,15 +581,7 @@ public class DatabaseManager : MonoBehaviour
             if(step.data.is_built == false)
             {
                 //Set Current Priority as the priority of the first this current step. This needs to be done before setting the current step.
-                if (i != 0)
-                {
-                    Debug.Log("I ENTERED 0 IF STATEMENT AND CURRENT PRIORITY IS for key: " + i.ToString() + "priority is : " + step.data.priority.ToString());
-                    UIFunctionalities.SetCurrentPriority(i.ToString());
-                }
-                else
-                {
-                    UIFunctionalities.SetCurrentPriority("0");
-                }
+                UIFunctionalities.SetCurrentPriority(step.data.priority.ToString());
 
                 //Set Current Element
                 UIFunctionalities.SetCurrentStep(i.ToString());
@@ -598,6 +591,61 @@ public class DatabaseManager : MonoBehaviour
         }
     }
 
+    public int OtherUserPriorityChecker(Step step, string stepKey)
+    {        
+        //If the priority of the current priority then check if it is complete.
+        if (UIFunctionalities.CurrentPriority == step.data.priority.ToString())
+        {
+            //New empty list to store unbuilt elements
+            List<string> UnbuiltElements = new List<string>();
+            
+            //Find the current priority in the dictionary for iteration
+            List<string> PriorityDataItem = PriorityTreeDict[UIFunctionalities.CurrentPriority];
+
+            //Iterate through the Priority tree dictionary to check the elements and if the priority is complete
+            foreach(string element in PriorityDataItem)
+            {
+                //Find the step in the dictoinary
+                Step stepToCheck = BuildingPlanDataItem.steps[element];
+
+                //Check if the element is built
+                if(!stepToCheck.data.is_built)
+                {
+                    UnbuiltElements.Add(element);
+                }
+            }
+
+            //If the list is empty return 2 because all elements of that priority are built, and we want to move on to the next priority.
+            if(UnbuiltElements.Count == 0)
+            {
+                Debug.Log($"OtherUser Priority Check: Current Priority is complete. Unlocking Next Priority.");
+                
+                //Print out the priority tree as a check
+                Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck2): " + JsonConvert.SerializeObject(PriorityTreeDict));
+
+                //Return 2, to move on to the next priority.
+                return 2;
+            }
+            
+            //If the list is not empty return 0 so do nothing.
+            else
+            {
+                Debug.Log($"OtherUser Priority Check: Current Priority is not complete. Incomplete Priority");
+                
+                //Return 0 to not push data.
+                return 0;
+            }
+        }
+        else
+        {
+            //If the priority is not the same as the current priority (meaning it is a lower priority) then we should set it.
+            Debug.Log($"OtherUser Priority Check: Current Priority is not the same as the priority of the step. Set this priority.");
+            
+            //Return set this item to the current priority.
+            return 1;
+        }
+
+    }
 /////////////////////////////// Input Data Handlers //////////////////////////////////  
     //This also creates the priority tree dictionary, but this is temporary to deal with list problem.
     private BuildingPlanData BuildingPlanDeserializer(object jsondata)
@@ -1187,9 +1235,41 @@ public class DatabaseManager : MonoBehaviour
 
                 // Update On Screen Text
                 UIFunctionalities.SetLastBuiltText(BuildingPlanDataItem.LastBuiltIndex);
+            
+                // Check Priority to see if its complete.
+                Step step = BuildingPlanDataItem.steps[BuildingPlanDataItem.LastBuiltIndex];
+                int priorityCheck = OtherUserPriorityChecker(step, BuildingPlanDataItem.LastBuiltIndex);
 
-                // Update Current Priority
-                UIFunctionalities.SetCurrentPriority(BuildingPlanDataItem.LastBuiltIndex);
+                // If the priority checker == 1 then set priority from this step. If it == 2 then set priority from the next step. (THIS COULD BE PRIORITY + 1, but safest to use the next step because it avoids errors from if a priority is missing)
+                if (priorityCheck == 1)
+                {
+                    UIFunctionalities.SetCurrentPriority(step.data.priority.ToString());
+                }
+                else if (priorityCheck == 2 && Convert.ToInt32(BuildingPlanDataItem.LastBuiltIndex) < BuildingPlanDataItem.steps.Count - 1)
+                {
+                    //Get my current priority
+                    string localCurrentPriority = UIFunctionalities.CurrentPriority;
+
+                    //convert to int and add 1
+                    int nextPriority = Convert.ToInt32(localCurrentPriority) + 1;
+
+                    //Set this as my new current priority
+                    UIFunctionalities.SetCurrentPriority(nextPriority.ToString());
+
+                    //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
+                    Step localCurrentStep = BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep];
+
+                    //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
+                    if(localCurrentStep.data.priority.ToString() == UIFunctionalities.CurrentPriority)
+                    {    
+                        UIFunctionalities.IsBuiltButtonGraphicsControler(localCurrentStep.data.is_built, localCurrentStep.data.priority);
+                    }
+
+                }
+                else
+                {
+                    Debug.Log($"OtherUser Priority Check: returned {priorityCheck} and is not 1 or 2 and shouldn't do anything");
+                }
             }
             else
             {

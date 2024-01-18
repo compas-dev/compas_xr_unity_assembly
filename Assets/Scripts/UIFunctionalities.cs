@@ -431,7 +431,6 @@ public class UIFunctionalities : MonoBehaviour
             }  
         }
     }
-    
     public void SetCurrentStep(string key)
     {
         //If the current step is not null find the previous current step and color it bulit or unbuilt.
@@ -559,8 +558,7 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
-    }
-    
+    }  
     public void SearchElementButton()
     {
         //Search for step button clicked
@@ -701,7 +699,9 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    public bool PriorityChecker(Step step, string stepKey)
+    
+    //TODO: THIS CAN GO BACK TO T VS. F
+    public int LocalPriorityChecker(Step step, string stepKey)
     {
         //Check if the current priority is null
         if(CurrentPriority == null)
@@ -711,8 +711,8 @@ public class UIFunctionalities : MonoBehaviour
 
             Debug.LogError("Current Priority is null.");
             
-            //Return False to not push data.
-            return false;
+            //Return 0 to not push data.
+            return 0;
         }
         
         //Check if they are the same. If they are return true //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
@@ -723,8 +723,8 @@ public class UIFunctionalities : MonoBehaviour
             //Print out the priority tree as a check
             Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck1): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
 
-            //Return True to push all the data to the database
-            return true;
+            //Return 1 to push all the data to the database
+            return 1;
         }
 
         //Else if the current priority is higher then the step priority loop through all the elements in priority above and unbuild them. This allows you to go back in priority.
@@ -758,8 +758,8 @@ public class UIFunctionalities : MonoBehaviour
                 }
             }
 
-            //Return True to push all the data to the database
-            return true;
+            //Return 1 to push data to the database
+            return 1;
     
         }
         //The priority is higher. Check if all elements in Current Priority are built.
@@ -772,8 +772,8 @@ public class UIFunctionalities : MonoBehaviour
 
                 SignalOnScreenPriorityIncorrectWarning(step.data.priority.ToString(), CurrentPriority);
 
-                //Return False to not push data.
-                return false;
+                //Return 0 to not push data.
+                return 0;
             }
 
             //This is the Priority that we want.
@@ -798,28 +798,19 @@ public class UIFunctionalities : MonoBehaviour
                     }
                 }
 
-                //If the list is empty return true because all elements of that priority are built
+                //If the list is empty return 2 because all elements of that priority are built, and we want to move on to the next priority.
                 if(UnbuiltElements.Count == 0)
                 {
-                    Debug.Log($"Priority Check: Current Priority is complete. Pushing data");
+                    Debug.Log($"Priority Check: Current Priority is complete. Unlocking Next Priority.");
                     
                     //Print out the priority tree as a check
                     Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY (PCheck2): " + JsonConvert.SerializeObject(databaseManager.PriorityTreeDict));
-                    
-                    //Set Current Priority
-                    SetCurrentPriority(stepKey);
 
-                    //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
-                    if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == CurrentPriority)
-                    {    
-                        IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
-                    }
-
-                    //Return False, this is for the first time that an element is changed.
-                    return false;
+                    //Return 2, this is for the first time that an element is changed and we only want to update a priority, but not write information.
+                    return 2;
                 }
                 
-                //If the list is not empty return false because not all elements of that priority are built and signal on screen warning.
+                //If the list is not empty return 0 because not all elements of that priority are built and signal on screen warning.
                 else
                 {
                     Debug.Log($"Priority Check: Current Priority is not complete. Incomplete Priority");
@@ -829,8 +820,8 @@ public class UIFunctionalities : MonoBehaviour
 
                     SignalOnScreenPriorityIncompleteWarning(UnbuiltElements, CurrentPriority);
                     
-                    //Return False to not push data.
-                    return false;
+                    //Return 0 to not push data.
+                    return 0;
                 }
             }
         }
@@ -842,8 +833,11 @@ public class UIFunctionalities : MonoBehaviour
         //Find the step in the dictoinary
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
+        //Run Priority Checker
+        int priorityCheckInt = LocalPriorityChecker(step, key);
+
         //Check if priority is correct.
-        if (PriorityChecker(step, key))
+        if (priorityCheckInt == 1)
         {
             //Change Build Status //TODO: WHAT DO I DO IF I AM UNBUILDING 0... I think most logical would be to set current priority to 0 do nothing with LastBuiltIndex.
             if(step.data.is_built)
@@ -857,24 +851,27 @@ public class UIFunctionalities : MonoBehaviour
                 //Iterate through steps backwards to find the last built step that is closest to my current step
                 for(int i = StepInt; i >= 0; i--)
                 {
+                    //Find Step in the dictionary
+                    Step stepToCheck = databaseManager.BuildingPlanDataItem.steps[i.ToString()];
+                    
                     //Check if step int is 0 and then set current priority to 0 and last built index do nothing
                     if(StepInt == 0)
                     {
                         //Set Current Priority but leave last built index alone.
-                        SetCurrentPriority("0");
+                        SetCurrentPriority(stepToCheck.data.priority.ToString());
 
                         //exit if condition above this one
                         break;   
                     }
 
-                    if(databaseManager.BuildingPlanDataItem.steps[i.ToString()].data.is_built)
+                    if(stepToCheck.data.is_built)
                     {
                         //Change LastBuiltIndex
                         databaseManager.BuildingPlanDataItem.LastBuiltIndex = i.ToString();
                         SetLastBuiltText(i.ToString());
 
                         //Set Current Priority
-                        SetCurrentPriority(i.ToString());
+                        SetCurrentPriority(stepToCheck.data.priority.ToString());
 
                         break;
                     }
@@ -891,7 +888,7 @@ public class UIFunctionalities : MonoBehaviour
                 SetLastBuiltText(key);
 
                 //Set Current Priority
-                SetCurrentPriority(key);
+                SetCurrentPriority(step.data.priority.ToString());
             }
 
             //Update color
@@ -907,6 +904,21 @@ public class UIFunctionalities : MonoBehaviour
             //Push Data to the database
             databaseManager.PushAllDataBuildingPlan(key);
         }
+        else if (priorityCheckInt == 2)
+        {
+            //Set Current Priority
+            SetCurrentPriority(step.data.priority.ToString());
+
+            //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
+            if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == CurrentPriority)
+            {    
+                IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
+            }
+        }
+        else
+        {
+            Debug.Log("Priority Check: Priority is not complete, Or Incorrect. Not pushing data.");
+        }
 
     }
     public void SetLastBuiltText(string key)
@@ -914,12 +926,8 @@ public class UIFunctionalities : MonoBehaviour
         //Set Last Built Text
         LastBuiltIndexText.text = $"Last Built Step : {key}";
     }
-    public void SetCurrentPriority(string stepKey)
-    {     
-        //Find the step in the dictoinary
-        Step step = databaseManager.BuildingPlanDataItem.steps[stepKey];
-        string Priority = step.data.priority.ToString();
-        
+    public void SetCurrentPriority(string Priority)
+    {        
         //If Priority Viewer is on and new priority is not equal to current priority update the priority viewer (only place I can do this)
         if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && CurrentPriority != Priority)
         {
@@ -934,7 +942,7 @@ public class UIFunctionalities : MonoBehaviour
         CurrentPriorityText.text = $"Current Priority : {Priority}";
         
         //Print setting current priority
-        Debug.Log($"Setting Current Priority from Key : {stepKey} to Priority: {step.data.priority.ToString()} ");
+        Debug.Log($"Setting Current Priority to {Priority} ");
     }
     private void SignalOnScreenPriorityIncompleteWarning(List<string> UnbuiltElements, string currentPriority)
     {
