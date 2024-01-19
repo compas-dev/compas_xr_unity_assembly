@@ -101,7 +101,6 @@ public class QRTrackingScript : MonoBehaviour
         Vector3 pos = gobject.transform.position + (gobject.transform.rotation * Quaternion.Inverse(Individualrotation) * -position);
         return pos;
     }
-    
     public void OnTrackingInformationReceived(object source, TrackingDataDictEventArgs e)
     {
         Debug.Log("Database is loaded." + " " + "Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
