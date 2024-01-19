@@ -277,8 +277,8 @@ namespace Instantiate
                         element.transform.rotation = Quaternion.identity;
                         
                         //Define the Size of the Cylinder from the data values
-                        float cylinderRadius = DataItemDict[step.data.element_ids[0].ToString()].attributes.width;
-                        float cylinderHeight = DataItemDict[step.data.element_ids[0].ToString()].attributes.height;
+                        float cylinderRadius = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width;
+                        float cylinderHeight = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height;
                         Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight, cylinderRadius*2);
                         
                         //Create, Scale, & name child object (Named by Assembly ID)
@@ -304,7 +304,7 @@ namespace Instantiate
                         element.transform.rotation = Quaternion.identity;
                         
                         //Define the Size of the Cube from the data values
-                        Vector3 cubesize = new Vector3(DataItemDict[step.data.element_ids[0].ToString()].attributes.width, DataItemDict[step.data.element_ids[0].ToString()].attributes.height, DataItemDict[step.data.element_ids[0].ToString()].attributes.length);
+                        Vector3 cubesize = new Vector3(databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.length);
                         
                         //Create, Scale, & name Box object (Named by Assembly ID)
                         GameObject boxObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -582,7 +582,7 @@ namespace Instantiate
             Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
 
             //Find length from assembly dictionary
-            float length = databaseManager.DataItemDict[step.data.element_ids[0]].attributes.length;
+            float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
 
             //Calculate position of P1 and P2 
             Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
@@ -940,7 +940,7 @@ namespace Instantiate
         }
     
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
-        public void OnDatabaseInitializedDict(object source, DataItemDictEventArgs e)
+        public void OnDatabaseInitializedDict(object source, BuildingPlanDataDictEventArgs e)
         {
             Debug.Log("Database is loaded." + " " + "Number of nodes stored as a dict= " + e.BuildingPlanDataItem.steps.Count);
             placeElementsDict(e.BuildingPlanDataItem.steps);

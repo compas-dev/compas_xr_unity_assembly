@@ -1280,7 +1280,7 @@ public class UIFunctionalities : MonoBehaviour
 
         //Clear all dictionaries
         databaseManager.BuildingPlanDataItem.steps.Clear();
-        databaseManager.DataItemDict.Clear();
+        databaseManager.AssemblyDataDict.Clear();
         databaseManager.QRCodeDataDict.Clear();
         databaseManager.UserCurrentStepDict.Clear();
         databaseManager.PriorityTreeDict.Clear();

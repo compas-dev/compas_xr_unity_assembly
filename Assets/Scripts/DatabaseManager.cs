@@ -24,7 +24,7 @@ using Extentions;
 using UnityEngine.InputSystem;
 
 
-public class DataItemDictEventArgs : EventArgs
+public class BuildingPlanDataDictEventArgs : EventArgs
 {
     public BuildingPlanData BuildingPlanDataItem { get; set; }
 }
@@ -71,7 +71,7 @@ public class DatabaseManager : MonoBehaviour
 
 
     // Data structures to store nodes and steps
-    public Dictionary<string, Node> DataItemDict { get; private set; } = new Dictionary<string, Node>();
+    public Dictionary<string, Node> AssemblyDataDict { get; private set; } = new Dictionary<string, Node>();
     public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
     public Dictionary<string, Node> QRCodeDataDict { get; private set; } = new Dictionary<string, Node>();
     public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
@@ -82,7 +82,7 @@ public class DatabaseManager : MonoBehaviour
 
 
     // Define event delegates and events
-    public delegate void StoreDataDictEventHandler(object source, DataItemDictEventArgs e); 
+    public delegate void StoreDataDictEventHandler(object source, BuildingPlanDataDictEventArgs e); 
     public event StoreDataDictEventHandler DatabaseInitializedDict;
 
     public delegate void TrackingDataDictEventHandler(object source, TrackingDataDictEventArgs e); 
@@ -172,10 +172,10 @@ public class DatabaseManager : MonoBehaviour
             FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
-            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, DataItemDict));
+            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
 
             //Fetch Building plan data with event trigger
-            FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "DataitemDict");
+            FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
 
         }
         
@@ -207,10 +207,10 @@ public class DatabaseManager : MonoBehaviour
         FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
         
         //Fetch Assembly Data no event trigger
-        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, DataItemDict));
+        FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
         
         //Fetch Building plan data with event trigger
-        FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "DataitemDict");
+        FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
     }
     async Task<List<FileMetadata>> GetFilesInFolder(string path)
     {
@@ -300,7 +300,7 @@ public class DatabaseManager : MonoBehaviour
             }
         });
 
-        if (eventname != null && eventname == "DataitemDict")
+        if (eventname != null && eventname == "BuildingPlanDataDict")
         {
             OnDatabaseInitializedDict(BuildingPlanDataItem); 
         }
@@ -326,11 +326,11 @@ public class DatabaseManager : MonoBehaviour
     {
         //TODO: Add custom device_id to the assembly data structure.
         //Find step that I changed in the building plan and add my custom device id.
-        // Node specificnode = DataItemDict[key];
+        // Node specificnode = AssemblyDataDict[key];
         // specificnode.attributes.device_id = SystemInfo.deviceUniqueIdentifier;
 
         //Searilize the data for push to firebase
-        string data = JsonConvert.SerializeObject(DataItemDict);
+        string data = JsonConvert.SerializeObject(AssemblyDataDict);
         
         //Push the data to firebase
         dbreference_buildingplan.SetRawJsonValueAsync(data);
@@ -381,7 +381,7 @@ public class DatabaseManager : MonoBehaviour
             }
         }
         
-        Debug.Log("Number of nodes stored as a dictionary = " + DataItemDict.Count);
+        Debug.Log("Number of nodes stored as a dictionary = " + dataDict.Count);
 
     }
     private void DesearializeLastBuiltIndex(DataSnapshot snapshot)
@@ -816,7 +816,7 @@ public class DatabaseManager : MonoBehaviour
                 break;
 
             case "4.Frame":
-                Debug.Log("THIS IS A FRAME");
+                Debug.Log("This is a frame assembly");
                 break;
 
             default:
@@ -1421,7 +1421,7 @@ public class DatabaseManager : MonoBehaviour
                 Debug.Log("Project Changed: Assembly Changed");
                 
                 //If the assembly changed then fetch new assembly data
-                await FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, DataItemDict));
+                await FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
             }
             else if(key == "QRFrames")
             {
@@ -1458,7 +1458,7 @@ public class DatabaseManager : MonoBehaviour
     {
         UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "Database dict is null!");
         Debug.Log("Building Plan Data Received");
-        DatabaseInitializedDict(this, new DataItemDictEventArgs() {BuildingPlanDataItem = BuildingPlanDataItem});
+        DatabaseInitializedDict(this, new BuildingPlanDataDictEventArgs() {BuildingPlanDataItem = BuildingPlanDataItem});
     }
     protected virtual void OnTrackingDataReceived(Dictionary<string, Node> QRCodeDataDict)
     {
