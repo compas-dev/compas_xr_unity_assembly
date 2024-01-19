@@ -13,7 +13,7 @@ using UnityEngine.Events;
 using System.Linq;
 using UnityEngine.InputSystem;
 
-//find a child by a specific name
+
 namespace Extentions
 {
     public static class GameObjectExtensions

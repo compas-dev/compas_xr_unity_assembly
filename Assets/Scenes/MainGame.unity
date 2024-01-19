@@ -5023,7 +5023,7 @@ GameObject:
   - component: {fileID: 872681851}
   - component: {fileID: 872681852}
   m_Layer: 0
-  m_Name: QRTracking
+  m_Name: QRLocalization
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5053,12 +5053,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 872681850}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e06614f444d169f49b2c3200205cc9dd, type: 3}
+  m_Script: {fileID: 11500000, guid: 69ca7a8cbecd5d04f89d12cea8d8d276, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameobjectName: 
   instantiateObjects: {fileID: 0}
-  positions: []
   pos: {x: 0, y: 0, z: 0}
 --- !u!1 &878381887
 GameObject:
@@ -9761,7 +9759,6 @@ MonoBehaviour:
   LastBuiltIndexText: {fileID: 0}
   CurrentPriorityText: {fileID: 0}
   EditorSelectedText: {fileID: 0}
-  CurrentPriority: 
   CurrentStep: 
   SearchedElement: 
   SearchedElementStepID: 
@@ -12862,7 +12859,7 @@ MonoBehaviour:
   Databasemanager: {fileID: 323120358030472276}
   Instantiateobjects: {fileID: 8241677100294568829}
   Checkfirebase: {fileID: 8012363784789958610}
-  QRTracking: {fileID: 872681850}
+  QRLocalization: {fileID: 872681850}
 --- !u!4 &2213872108834975589
 Transform:
   m_ObjectHideFlags: 0

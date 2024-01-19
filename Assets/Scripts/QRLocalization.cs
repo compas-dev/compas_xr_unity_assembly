@@ -6,19 +6,21 @@ using UnityEngine;
 using Vuforia;
 using Instantiate;
 
-public class QRTrackingScript : MonoBehaviour
+public class QRLocalization : MonoBehaviour
 {
-    public string GameobjectName;
+    
+    //Public GameObjects
     private GameObject Elements;
     private GameObject UserObjects;
     private GameObject ObjectLengthsTags;
 
+    //Public Scripts
     public InstantiateObjects instantiateObjects;
 
+    //Public Dictionaries
     public Dictionary<string, Node> QRCodeDataDict = new Dictionary<string, Node>();
 
-    public List<Vector3> positions;
-
+    //In script use variables
     public Vector3 pos;
 
     private string lastQrName = "random";
