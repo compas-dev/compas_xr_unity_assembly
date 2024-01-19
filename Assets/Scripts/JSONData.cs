@@ -75,26 +75,6 @@ namespace JSON
         public int[] elements_held { get; set; }
         public int priority { get; set; }
     }
-    
-
-    ///////////////Classes for QR Desearialization/////////////////////
-    
-    [System.Serializable]
-    public class JSONQRData
-    {
-        public Dictionary<string, QRcode> frame { get; set; } 
-    }
-    
-    [System.Serializable]
-    public class QRcode
-    {
-        public string Key { get; set; }
-        public float[] point;
-        public float[] quaternion;
-        public float[] xaxis;
-        public float[] yaxis;
-
-    }
 
     ////////////////Classes for User Current Informatoin/////////////////////
     

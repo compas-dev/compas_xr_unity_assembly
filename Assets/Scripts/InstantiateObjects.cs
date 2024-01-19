@@ -180,7 +180,7 @@ namespace Instantiate
             //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
-                ColorObjectByPriority(UIFunctionalities.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
+                ColorObjectByPriority(databaseManager.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
             }
 
             //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
@@ -614,6 +614,7 @@ namespace Instantiate
             //Update Distance Text
             UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
         }
+    
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
@@ -853,7 +854,7 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on Priority
-                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(databaseManager.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -875,7 +876,7 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on priority
-                            ColorObjectByPriority(UIFunctionalities.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(databaseManager.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -937,6 +938,7 @@ namespace Instantiate
                 return newColor;
             }
         }
+    
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, DataItemDictEventArgs e)
         {

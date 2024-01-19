@@ -15,7 +15,7 @@ public class QRTrackingScript : MonoBehaviour
 
     public InstantiateObjects instantiateObjects;
 
-    public Dictionary<string, QRcode> QRCodeDataDict = new Dictionary<string, QRcode>();
+    public Dictionary<string, Node> QRCodeDataDict = new Dictionary<string, Node>();
 
     public List<Vector3> positions;
 
@@ -63,10 +63,10 @@ public class QRTrackingScript : MonoBehaviour
                     }
                     
                     //Fetch position data from the dictionary
-                    Vector3 position_data = instantiateObjects.getPosition(QRCodeDataDict[key].point);
+                    Vector3 position_data = instantiateObjects.getPosition(QRCodeDataDict[key].part.frame.point);
 
                     //Fetch rotation data from the dictionary
-                    InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(QRCodeDataDict[key].xaxis, QRCodeDataDict[key].yaxis);
+                    InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                     
                     //Convert Firebase rotation data to Quaternion rotation. Additionally
                     Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);

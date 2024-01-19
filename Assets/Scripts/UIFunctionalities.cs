@@ -103,7 +103,6 @@ public class UIFunctionalities : MonoBehaviour
     private ARRaycastManager rayManager;
 
     //In script use variables
-    public string CurrentPriority = null;
     public string CurrentStep = null;
     public string SearchedElement = "None";
     public string SearchedElementStepID;
@@ -444,7 +443,7 @@ public class UIFunctionalities : MonoBehaviour
                 //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
                 if (PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
-                    instantiateObjects.ColorObjectByPriority(CurrentPriority, PreviousStep.data.priority.ToString(), CurrentStep, previousStepElement.FindObject(elementID + " Geometry"));
+                    instantiateObjects.ColorObjectByPriority(databaseManager.CurrentPriority, PreviousStep.data.priority.ToString(), CurrentStep, previousStepElement.FindObject(elementID + " Geometry"));
                 }
             }
         }
@@ -662,10 +661,10 @@ public class UIFunctionalities : MonoBehaviour
         if (IsBuiltPanelObjects.activeSelf)
         {
             //Check if current priority is null
-            if(CurrentPriority != null)
+            if(databaseManager.CurrentPriority != null)
             {    
                 //Set priority locked image based on priority comparison
-                if(stepPriority > Convert.ToInt16(CurrentPriority))
+                if(stepPriority > Convert.ToInt16(databaseManager.CurrentPriority))
                 {
                     IsbuiltPriorityLockedImage.SetActive(true);
                     IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
@@ -690,10 +689,10 @@ public class UIFunctionalities : MonoBehaviour
             }
         }
     }
-    public bool LocalPriorityChecker(Step step, string stepKey)
+    public bool LocalPriorityChecker(Step step)
     {
         //Check if the current priority is null
-        if(CurrentPriority == null)
+        if(databaseManager.CurrentPriority == null)
         {
             //Print out the priority tree as a check
             Debug.LogError("Current Priority is null.");
@@ -703,7 +702,7 @@ public class UIFunctionalities : MonoBehaviour
         }
         
         //Check if they are the same. If they are return true //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
-        else if (CurrentPriority == step.data.priority.ToString())
+        else if (databaseManager.CurrentPriority == step.data.priority.ToString())
         {
             Debug.Log($"Priority Check: Current Priority is equal to step priority. Pushing data");
 
@@ -712,7 +711,7 @@ public class UIFunctionalities : MonoBehaviour
         }
 
         //Else if the current priority is higher then the step priority loop through all the elements in priority above and unbuild them. This allows you to go back in priority.
-        else if (Convert.ToInt16(CurrentPriority) > step.data.priority)
+        else if (Convert.ToInt16(databaseManager.CurrentPriority) > step.data.priority)
         {
             Debug.Log($"Priority Check: Current Priority is higher then the step priority. Unbuilding elements.");
         
@@ -750,11 +749,11 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             //if the elements priority is more then 1 greater then current priority return false and signal on screen warning.
-            if(step.data.priority != Convert.ToInt16(CurrentPriority) + 1)
+            if(step.data.priority != Convert.ToInt16(databaseManager.CurrentPriority) + 1)
             {
                 Debug.Log($"Priority Check: Current Priority is more then 1 greater then the step priority. Incorrect Priority");
 
-                SignalOnScreenPriorityIncorrectWarning(step.data.priority.ToString(), CurrentPriority);
+                SignalOnScreenPriorityIncorrectWarning(step.data.priority.ToString(), databaseManager.CurrentPriority);
 
                 //Return false to not push data.
                 return false;
@@ -767,7 +766,7 @@ public class UIFunctionalities : MonoBehaviour
                 List<string> UnbuiltElements = new List<string>();
                 
                 //Find the current priority in the dictionary for iteration
-                List<string> PriorityDataItem = databaseManager.PriorityTreeDict[CurrentPriority];
+                List<string> PriorityDataItem = databaseManager.PriorityTreeDict[databaseManager.CurrentPriority];
 
                 //Iterate through the Priority tree dictionary to check the elements and if the priority is complete
                 foreach(string element in PriorityDataItem)
@@ -791,7 +790,7 @@ public class UIFunctionalities : MonoBehaviour
                     SetCurrentPriority(step.data.priority.ToString());
 
                     //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
-                    if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == CurrentPriority)
+                    if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.priority.ToString() == databaseManager.CurrentPriority)
                     {    
                         IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
                     }
@@ -804,7 +803,7 @@ public class UIFunctionalities : MonoBehaviour
                 else
                 {
                     //Print out the priority tree as a check
-                    SignalOnScreenPriorityIncompleteWarning(UnbuiltElements, CurrentPriority);
+                    SignalOnScreenPriorityIncompleteWarning(UnbuiltElements, databaseManager.CurrentPriority);
                     
                     //Return true to not push data.
                     return false;
@@ -820,7 +819,7 @@ public class UIFunctionalities : MonoBehaviour
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
         //Check if priority is correct.
-        if (LocalPriorityChecker(step, key))
+        if (LocalPriorityChecker(step))
         {
             //Change Build Status //TODO: WHAT DO I DO IF I AM UNBUILDING 0... I think most logical would be to set current priority to 0 do nothing with LastBuiltIndex.
             if(step.data.is_built)
@@ -901,14 +900,14 @@ public class UIFunctionalities : MonoBehaviour
     public void SetCurrentPriority(string Priority)
     {        
         //If Priority Viewer is on and new priority is not equal to current priority update the priority viewer (only place I can do this)
-        if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && CurrentPriority != Priority)
+        if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && databaseManager.CurrentPriority != Priority)
         {
             //Update Priority Viewer
             instantiateObjects.ApplyColorBasedOnPriority(Priority);
         }
         
         //Current Priority Text current Priority Items
-        CurrentPriority = Priority;
+        databaseManager.CurrentPriority = Priority;
 
         //Set On Screen Text
         CurrentPriorityText.text = $"Current Priority : {Priority}";
@@ -1144,7 +1143,7 @@ public class UIFunctionalities : MonoBehaviour
         if(toggle.isOn && PriorityViewerToggleObject != null)
         {
             //Color Elements Based on Priority
-            instantiateObjects.ApplyColorBasedOnPriority(CurrentPriority);
+            instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
 
             //Set UI Color
             SetUIObjectColor(PriorityViewerToggleObject, Yellow);
@@ -1545,7 +1544,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log($"Active Game Object Priority: {databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority}");
 
             //If active game objects step priority is higher then current step priority then set builder button to inactive else its active
-            if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(CurrentPriority))
+            if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
             {
                 Debug.Log("Priority is higher then current priority. Setting button to inactive.");
                 BuildStatusButton.interactable = false;
