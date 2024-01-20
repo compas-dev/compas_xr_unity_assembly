@@ -21,6 +21,8 @@ namespace JSON
     public class Part
     {
         public Frame frame { get; set; }
+        public string dtype { get; set; }
+
     }
 
     [System.Serializable]

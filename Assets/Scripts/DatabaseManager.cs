@@ -457,7 +457,12 @@ public class DatabaseManager : MonoBehaviour
             node.part != null &&
             node.part.frame != null)
         {
-            if (node.type_data != "4.Frame")
+            if (node.type_data == "4.Joint")
+            {
+                Debug.Log("This is a timbers Joint and should be ignored");
+                return false;
+            }
+            else if (node.type_data != "3.Frame")
             {
                 // Check if the required properties are present or have valid values
                 if (node.attributes != null &&
@@ -700,10 +705,6 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
-
-    //TODO: VARIABLE FOR BUILDING IF IT IS TIED TO BUILDING PLAN OR NOT AND THEN PUT ASSEMBLY STUFF IN ANOTHER NODE. BUILDINGPLAN DEFAULT == TRUE.
-    //TODO: QUESTION ABOUT TYPE DATA & TYPE ID.... IF WE DO NOT ADD ANYTHING TO THE ASSEMBLY, THEN LWH DESCRIPTION NEEDS TO BE ADDED TO THE NODE FROM THE STEP
-    //TODO: THIS WOULD MEAN WAITING FOR THE ASSEMBLY TO BE FETCHED BEFORE THE NODES LWH CAN BE ASSIGNED.... (Only used for P1 & P2 & THIS CAN BE CHANGED)
     public Node NodeDeserializer(string key, object jsondata, bool additionalAttributes = false)
     {
         //Generic Dictionary for deserialization     
@@ -720,21 +721,21 @@ public class DatabaseManager : MonoBehaviour
         node.attributes = new Attributes();
         node.part.frame = new Frame();
 
-        //Try get value type to ignore joints
-        if (jsonDataDict.TryGetValue("type", out object type))
-        {
-            if((string)jsonDataDict["type"] == "joint")
-            {
-                node.type_id = key; 
-                Debug.Log("This is a joint");
-                return node;
-            }
-            Debug.Log($"type is: {type}");
-        }
+        //Set node type_id
+        node.type_id = key;
 
-        //Set values for base node class //TODO: THESE ARE THE PROBLEM.
-        node.type_id = jsonDataDict["type_id"].ToString();
-        node.type_data = jsonDataDict["type_data"].ToString();
+        //Get dtype from partDict
+        string dtype = (string)partDict["dtype"];
+        
+        //Check dtype, and determine how they should be deserilized.
+        if (dtype != "compas.datastructures/Part")
+        {
+            DtypeGeometryDesctiptionSelector(node, dtype, dataDict);
+        }
+        else
+        {
+            PartDesctiptionSelector(node, dataDict);
+        }
 
         //Convert System.double items to float for use in instantiation
         List<object> pointslist = frameDataDict["point"] as List<object>;
@@ -751,9 +752,6 @@ public class DatabaseManager : MonoBehaviour
         {
             Debug.Log("One of the Frame lists is null");
         }
-                
-        //Add Items to the attributes dictionary depending on the type of geometry
-        GeometricDesctiptionSelector(node.type_data, dataDict, node);
 
         //If additional Attributes bool then get additional attributes
         if (additionalAttributes)
@@ -771,11 +769,18 @@ public class DatabaseManager : MonoBehaviour
         node.attributes.placed_by = (string)jsonDataDict["placed_by"];
        
     }
-    private void GeometricDesctiptionSelector(string type_data, Dictionary<string, object> jsonDataDict, Node node)
+    private void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict)
     {
-        switch (type_data)
+        //Set node part dtype
+        node.part.dtype = dtype;
+
+        switch (dtype)
         {
-            case "0.Cylinder":
+            case "compas.geometry/Cylinder":
+                
+                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                node.type_data = "0.Cylinder";
+                
                 // Accessing different parts of json data to make common attributes dictionary
                 float height = Convert.ToSingle(jsonDataDict["height"]);
                 float radius = Convert.ToSingle(jsonDataDict["radius"]);
@@ -786,7 +791,11 @@ public class DatabaseManager : MonoBehaviour
                 node.attributes.height = height;
                 break;
 
-            case "1.Box":
+            case "compas.geometry/Box":
+                
+                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                node.type_data = "1.Box";
+
                 // Accessing different parts of json data to make common attributes dictionary
                 float xsize = Convert.ToSingle(jsonDataDict["xsize"]);
                 float ysize = Convert.ToSingle(jsonDataDict["ysize"]);
@@ -797,9 +806,38 @@ public class DatabaseManager : MonoBehaviour
                 node.attributes.width = ysize;
                 node.attributes.height = zsize;
                 break;
+            
+            case "compas.datastructures/Mesh":
 
-            case "2.ObjFile":
-                //TODO: THIS ONLY WORKS BECAUSE IT IS SPECIFICALLY SET FOR TIMBERS. NEED TO MAKE THIS MORE GENERIC
+                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                node.type_data = "2.ObjFile";
+
+                /* TODO: OBJ FILE OPTIONS
+                 I think we need a clearer plan for handling OBJ files.
+                 I think I should make a generic component for them on the python side that takes a list of frames & a list of (breps or meshs)
+                 This componenet should either converts it to a mesh assembly or a frame assembly and Export the proper obj files.
+                */
+                Debug.Log("This is a Mesh assembly");
+                break;
+
+            case "compas.geometry/Frame":
+                
+                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                node.type_data = "3.Frame";
+
+                /* TODO: OBJ FILE OPTIONS
+                 I think we need a clearer plan for handling OBJ files.
+                 I think I should make a generic component for them on the python side that takes a list of frames & a list of (breps or meshs)
+                 This componenet should either converts it to a mesh assembly or a frame assembly and Export the proper obj files.
+                */
+                Debug.Log("This is a frame assembly");
+                break;
+
+            case "compas_timber.parts/Beam":
+
+                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                node.type_data = "2.ObjFile";
+
                 // Accessing different parts of json data to make common attributes dictionary
                 float objLength = Convert.ToSingle(jsonDataDict["length"]);
                 float objWidth = Convert.ToSingle(jsonDataDict["width"]);
@@ -809,20 +847,41 @@ public class DatabaseManager : MonoBehaviour
                 node.attributes.length = objLength;
                 node.attributes.width = objWidth;
                 node.attributes.height = objHeight;
-                break;
-                
-            case "3.Mesh":
-                Debug.Log("Mesh");
+
                 break;
 
-            case "4.Frame":
-                Debug.Log("This is a frame assembly");
+            case string connectionType when connectionType.StartsWith("compas_timber.connections"):
+        
+                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                node.type_data = "4.Joint";
+
+                // This actually serves as a great oppertunity to split off for joints and use the information.
+                //......
+
+                Debug.Log("This is a timbers connection");
                 break;
+
 
             default:
                 Debug.Log("Default");
                 break;
         }
+    }
+    private void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
+    {
+        Debug.Log("Assembly is constructed of Parts");
+
+        //Access nested Part information.
+        Dictionary<string, object> attributesDict = jsonDataDict["attributes"] as Dictionary<string, object>;
+        Dictionary<string, object> nameDict = attributesDict["name"] as Dictionary<string, object>;
+        Dictionary<string, object> partdataDict = nameDict["data"] as Dictionary<string, object>;
+
+        //Get dtype from name dictionary
+        string dtype = (string)nameDict["dtype"];
+
+        //Call dtype description selector.
+        DtypeGeometryDesctiptionSelector(node, dtype, partdataDict);
+
     }
     public Step StepDeserializer(object jsondata)
     {
