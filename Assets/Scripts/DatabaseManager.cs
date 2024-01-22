@@ -163,7 +163,7 @@ public class DatabaseManager : MonoBehaviour
         dbreference_steps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
         dbreference_LastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames").Child("graph").Child("node");
-        dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrenStep");
+        dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrentStep");
 
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
