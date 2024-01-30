@@ -45,6 +45,7 @@ public class Eventmanager : MonoBehaviour
 
         //Fetch data from realtime database
         databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
+        //TODO: Subscriber for ApplicationSettingsUpdate that sets the publisher and subscriber topics based on project name.
 
         //Initialize the database.. once the database is initialized the objects are instantiated
         databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;

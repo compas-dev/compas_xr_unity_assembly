@@ -1243,6 +1243,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Communication Panel.");
         }
     }
+    
+    //TODO: Add method for controlling MQTT communication... should be very simmilar to the CAA Implementation see (CommunicationManager.cs).
+    //TODO: Add ununscribe from mqtt topics... that way I can resubscribe when I reload the application.
     private void ReloadApplication()
     {
         Debug.Log("Reload Button Pressed");

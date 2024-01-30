@@ -61,18 +61,18 @@ public class SaveAppSettings : MonoBehaviour
     }
 
     private void LoadInputs()
-{
-    foreach (TMP_InputField inputField in inputFields)
     {
-        string key = inputField.name;
-        if (PlayerPrefs.HasKey(key))
+        foreach (TMP_InputField inputField in inputFields)
         {
-            string savedInput = PlayerPrefs.GetString(key);
-            inputField.text = savedInput;
-            Debug.Log("Input Loaded: " + savedInput);
+            string key = inputField.name;
+            if (PlayerPrefs.HasKey(key))
+            {
+                string savedInput = PlayerPrefs.GetString(key);
+                inputField.text = savedInput;
+                Debug.Log("Input Loaded: " + savedInput);
+            }
         }
     }
-}
 
     private void UpdateFirebaseManagerInputs()
     {

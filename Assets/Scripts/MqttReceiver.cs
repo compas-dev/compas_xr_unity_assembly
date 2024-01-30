@@ -75,52 +75,52 @@ public class MqttReceiver : M2MqttUnityClient
     public void OnConnectButtonClicked()
     {
         if (client != null && client.IsConnected)
-    {
-        string topicToSubscribe = saveAppSettingsScript.topicSubscribeInput.text;
-
-        // Check if the topic to subscribe is different from the current topic
-        if (!string.IsNullOrEmpty(topicToSubscribe) && topicToSubscribe != currentTopic)
         {
-            // Unsubscribe from the current topic
-            UnsubscribeCurrentTopic();
+            string topicToSubscribe = saveAppSettingsScript.topicSubscribeInput.text;
 
-            // Update the current topic
-            currentTopic = topicToSubscribe;
+            // Check if the topic to subscribe is different from the current topic
+            if (!string.IsNullOrEmpty(topicToSubscribe) && topicToSubscribe != currentTopic)
+            {
+                // Unsubscribe from the current topic
+                UnsubscribeCurrentTopic();
 
-            // Subscribe to the new topic
-            SubscribeToTopic();
+                // Update the current topic
+                currentTopic = topicToSubscribe;
 
-            FlashGreenScreen();
+                // Subscribe to the new topic
+                SubscribeToTopic();
+
+                FlashGreenScreen();
+            }
         }
-    }
     else
-    {
-        Debug.LogError("MQTT client is not connected.");
-    }
+        {
+            Debug.LogError("MQTT client is not connected.");
+        }
     }
     
     private void SubscribeToTopic()
-{
-    string topicToSubscribe = saveAppSettingsScript.topicSubscribeInput.text;
-    if (!string.IsNullOrEmpty(topicToSubscribe))
     {
-        client.Subscribe(new string[] { topicToSubscribe }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-        Debug.Log("Subscribed to topic: " + topicToSubscribe);
+        string topicToSubscribe = saveAppSettingsScript.topicSubscribeInput.text;
+        if (!string.IsNullOrEmpty(topicToSubscribe))
+        {
+            client.Subscribe(new string[] { topicToSubscribe }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            Debug.Log("Subscribed to topic: " + topicToSubscribe);
+        }
+        else
+        {
+            Debug.LogError("Topic to subscribe is empty.");
+        }
     }
-    else
-    {
-        Debug.LogError("Topic to subscribe is empty.");
-    }
-}
 
     private void UnsubscribeCurrentTopic()
     {
-         string topicToUnsubscribe = saveAppSettingsScript.topicSubscribeInput.text;
+        string topicToUnsubscribe = saveAppSettingsScript.topicSubscribeInput.text;
         if (!string.IsNullOrEmpty(topicToUnsubscribe))
-         {
+        {
          client.Unsubscribe(new string[] { topicToUnsubscribe });
          Debug.Log("Unsubscribed from topic: " + topicToUnsubscribe);
-          }
+        }
         
     }
 
@@ -155,7 +155,7 @@ public class MqttReceiver : M2MqttUnityClient
 
     }
 
-public void OnDestroy()
+    public void OnDestroy()
     {
         Disconnect();
     }
