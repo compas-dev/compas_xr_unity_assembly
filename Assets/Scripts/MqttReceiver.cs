@@ -20,6 +20,8 @@ public class MqttReceiver : M2MqttUnityClient
 
     // Properties and events
     private string m_msg;
+    
+    
     public string msg
     {
         get { return m_msg; }
