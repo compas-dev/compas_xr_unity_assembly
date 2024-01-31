@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using TMPro;
 using UnityEngine.Events;
 
-
+//TODO: I DONT THINK I NEED THIS SCRIPT AT ALL. THE OTHER ONE SHOULD BE GOOD AND SHOULD BE RENAMED.
 public class MqttTrajectoryController : MonoBehaviour
 {
     public string nameController = "MQTT Trajectory Controller";
@@ -24,7 +24,7 @@ public class MqttTrajectoryController : MonoBehaviour
 
   public void OnMessageArrivedHandler(string newMsg)
   {
-    Debug.Log("Event Fired. The message, from Object " + nameController +" is = " + newMsg);
+    Debug.Log("MQTT: Event Fired. The message, from Object " + nameController +" is = " + newMsg);
 
     // Dictionary<string, string> resultDataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(newMsg);
 

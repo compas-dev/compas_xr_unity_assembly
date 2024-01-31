@@ -15,11 +15,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     [Tooltip("Set the topic to publish")]
 
     // Properties and events
-    private string m_msg;
-    
-    //Compas XR Topics
-    public CompasXRTopics compasXRTopics;
-    
+    private string m_msg;    
     public string msg
     {
         get { return m_msg; }
@@ -33,37 +29,33 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     public event OnMessageArrivedDelegate OnMessageArrived;
     public delegate void OnMessageArrivedDelegate(string newMsg);
 
-    private bool m_isConnected;
-    public bool isConnected
-    {
-        get { return m_isConnected; }
-        set
-        {
-            if (m_isConnected == value) return;
-            m_isConnected = value;
-            OnConnectionSucceeded?.Invoke(isConnected);
-        }
-    }
-    public event OnConnectionSucceededDelegate OnConnectionSucceeded;
-    public delegate void OnConnectionSucceededDelegate(bool isConnected);
+    //TODO: I DO NOT THINK I NEED THIS. BUT I WILL LEAVE IT HERE FOR NOW.
+    // private bool m_isConnected;
+    // public bool isConnected
+    // {
+    //     get { return m_isConnected; }
+    //     set
+    //     {
+    //         if (m_isConnected == value) return;
+    //         m_isConnected = value;
+    //         OnConnectionSucceeded?.Invoke(isConnected);
+    //     }
+    // }
+    // public event OnConnectionSucceededDelegate OnConnectionSucceeded; //TODO: MIGHT NEED PROTECTED VITRUAL VOID AND SUBSCRIPTION TO HAPPEN HERE.
+    // public delegate void OnConnectionSucceededDelegate(bool isConnected);
 
     private List<string> eventMessages = new List<string>();
 
+    //Compas XR Topics
+    public CompasXRTopics compasXRTopics;
 
     protected override void Start()
     {
+        //Calling Base Start is a property of Inheritance from M2MqttUnityClient. Ensures that the base class is called First.
         base.Start();
-                
-        //Connect to MQTT Broker on start with default settings.
-        Connect();
 
-        // client.IsConnected += SubscribeToCompasXRTopics;
-        OnConnected();
-        ConnectionSucceeded += SubscribeToCompasXRTopics;
-        // ConnectionFailed += MQTTConnectionFailed;
-
-        //TODO: CURRENTLY NO EVENT IN THE LIBRARY, BUT COULD BE ADDED?
-        // OnDisconnected();
+        //On Start Initialization
+        OnStartInitilization();
 
     }
     protected override void Update()
@@ -77,7 +69,20 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     }
     
     //////////////////////////////////////////// General Methods ////////////////////////////////////////////
-    
+    public void OnStartInitilization()
+    {
+        //Connect to MQTT Broker on start with default settings.
+        Connect();
+
+        //Add event listners
+        AddConnectionEventListners();
+    }
+
+    //TODO: ADD ON SCREEN MESSAGE.
+    private void SignalOnScreenConnectionFailed()
+    {
+        Debug.LogError("MQTT: Connection Failed");
+    }
     //////////////////////////////////////////// Topic Managers /////////////////////////////////////////////
     public void SetCompasXRTopics(object source, ApplicationSettingsEventArgs e)
     {
@@ -88,7 +93,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     {
         if (!string.IsNullOrEmpty(topicToSubscribe) || client == null)
         {
-            Debug.Log("Subscribing to topic: " + topicToSubscribe);
+            Debug.Log("MQTT: Subscribing to topic: " + topicToSubscribe);
             client.Subscribe(new string[] { topicToSubscribe }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
         }
         else
@@ -97,7 +102,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         }
     }
 
-    private void UnsubscribeToTopic(string topicToUnsubscribe)
+    private void UnsubscribeFromTopic(string topicToUnsubscribe)
     {
         if (!string.IsNullOrEmpty(topicToUnsubscribe))
         {
@@ -109,6 +114,19 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
             Debug.LogWarning("MQTT: Topic to unsubscribe is empty.");
         }
     }
+
+    //TODO: MAKE THIS WORK.
+    // public void PublishToTopic(string topicPublish,  List<string> info)
+    // {   
+    //     string messagePublish = JsonConvert.SerializeObject(message);
+    //     client.Publish(topicPublish, System.Text.Encoding.UTF8.GetBytes(messagePublish), MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE, false);
+
+    //     Messages.text = info[0];
+    //     Messages.enabled= true;
+
+    //     //tartCoroutine(WaitingMessage(1.5f, info[1]));
+    // }
+
     public void SubscribeToCompasXRTopics()
     {
         //Subscribe to Compas XR Get Trajectory Topics
@@ -118,23 +136,24 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         SubscribeToTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
     }
 
-    public void UnsubscribeToCompasXRTopics()
+    public void UnsubscribeFromCompasXRTopics()
     {
         //Unsubscribe to Compas XR Get Trajectory Topics
-        UnsubscribeToTopic(compasXRTopics.subscribers.getTrajectoryResultTopic);
+        UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryResultTopic);
 
         //Unsubscribe to Compas XR Approve Trajectory Topics
-        UnsubscribeToTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
+        UnsubscribeFromTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
     }  
 
     //////////////////////////////////////////// Message Managers ////////////////////////////////////////////
     protected override void DecodeMessage(string topic, byte[] message)
     {
+        //TODO: CAN I DO SOMETHING OTHER THEN A STRING?
         msg = System.Text.Encoding.UTF8.GetString(message);
-        Debug.Log("Received: " + msg + " from topic: " + topic);
+        Debug.Log("MQTT: Received: " + msg + " from topic: " + topic);
 
         //TODO: ADD MESSAGE HANDLER HERE BASED ON TOPIC NAME
-        
+
         StoreMessage(msg);
     }
 
@@ -144,6 +163,23 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         eventMessages.Add(eventMsg);
     }
 
+    //////////////////////////////////////////// Event Handlers ////////////////////////////////////////////
+    public void AddConnectionEventListners()
+    {
+        // On connection succeeded event method from M2MqttUnityClient class
+        ConnectionSucceeded += SubscribeToCompasXRTopics;
+        
+        //On connection failed event method from M2MqttUnityClient class
+        ConnectionFailed += SignalOnScreenConnectionFailed;
+    }
+    public void RemoveConnectionEventListners()
+    {
+        // On connection succeeded event method from M2MqttUnityClient class
+        ConnectionSucceeded -= SubscribeToCompasXRTopics;
+        
+        //On connection failed event method from M2MqttUnityClient class
+        ConnectionFailed -= SignalOnScreenConnectionFailed;
+    }
 
 }
 
