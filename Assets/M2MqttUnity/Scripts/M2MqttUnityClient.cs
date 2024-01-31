@@ -119,7 +119,7 @@ namespace M2MqttUnity
         {
             Debug.LogFormat("Connected to {0}:{1}...\n", brokerAddress, brokerPort.ToString());
 
-            SubscribeTopics();
+            // SubscribeTopics();
 
             if (ConnectionSucceeded != null)
             {

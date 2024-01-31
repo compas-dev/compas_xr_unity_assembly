@@ -6,12 +6,10 @@ using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using TMPro;
 
-public class MqttReceiver : M2MqttUnityClient
+public class MqttTrajectoryPublisher : M2MqttUnityClient
 {
     [Header("MQTT Settings")]
     [Tooltip("Set the topic to publish")]
-    public string topicPublish = ""; // topic to publish
-    public string messagePublish = ""; // message to publish
 
     private SaveAppSettings saveAppSettingsScript;
 
@@ -118,7 +116,6 @@ public class MqttReceiver : M2MqttUnityClient
     private void UnsubscribeCurrentTopic()
     {
         string topicToUnsubscribe = saveAppSettingsScript.topicSubscribeInput.text;
-        Debug.Log($"Client: {client}");
         if (!string.IsNullOrEmpty(topicToUnsubscribe))
         {
          client.Unsubscribe(new string[] { topicToUnsubscribe });

@@ -16,7 +16,7 @@ public class Eventmanager : MonoBehaviour
     public GameObject Instantiateobjects;
     public GameObject Checkfirebase;
     public GameObject QRLocalization;
-    public DatabaseReference dbreference_design;
+    public GameObject MqttTrajectoryReceiver;
     public DatabaseReference settings_reference;
     DatabaseManager databaseManager;
 
@@ -36,6 +36,7 @@ public class Eventmanager : MonoBehaviour
         InstantiateObjects instantiateObjects = Instantiateobjects.AddComponent<InstantiateObjects>();
         CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
         QRLocalization qrLocalization = QRLocalization.GetComponent<QRLocalization>();
+        MqttTrajectoryReceiver mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryReceiver>();
 
         //Initialize Firebase 
         checkFirebase.FirebaseInitialized += Initialized;
@@ -45,7 +46,9 @@ public class Eventmanager : MonoBehaviour
 
         //Fetch data from realtime database
         databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
-        //TODO: Subscriber for ApplicationSettingsUpdate that sets the publisher and subscriber topics based on project name.
+
+        //Set publisher and subscriber topic based on project name from application settings.
+        databaseManager.ApplicationSettingUpdate += mqttTrajectoryReceiver.SetCompasXRTopics;
 
         //Initialize the database.. once the database is initialized the objects are instantiated
         databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;
