@@ -226,6 +226,7 @@ namespace M2MqttUnity
 
             if (mqttClientConnectionClosed)
             {
+                Debug.Log("MQTT: mqttClientConnectionClosed");
                 mqttClientConnectionClosed = false;
                 OnConnectionLost();
             }

@@ -15,6 +15,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.XR.ARSubsystems;
 using System.Globalization;
 using ApplicationModeControler;
+using MQTTDataCompasXR;
 using Unity.IO.LowLevel.Unsafe;
 
 
@@ -24,6 +25,7 @@ public class UIFunctionalities : MonoBehaviour
     public DatabaseManager databaseManager;
     public InstantiateObjects instantiateObjects;
     public Eventmanager eventManager;
+    public MqttTrajectoryReceiver mqttManager;
     
     //Toggle GameObjects
     private GameObject VisibilityMenuObject;
@@ -50,6 +52,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject SearchElementButtonObject;
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
+    public GameObject MQTTFailedToConnectMessageObject;
 
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
@@ -126,6 +129,7 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
+        mqttManager = GameObject.Find("MQTTManager").GetComponent<MqttTrajectoryReceiver>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -220,6 +224,7 @@ public class UIFunctionalities : MonoBehaviour
         GameObject MessagesParent = CanvasObject.FindObject("Messages");
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
+        MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -262,8 +267,15 @@ public class UIFunctionalities : MonoBehaviour
         ObjectLengthsToggle.onValueChanged.AddListener(delegate {
         ToggleObjectLengths(ObjectLengthsToggle);
         });
-       
-        /////////////////////////////////////////// Menu Buttons ////////////////////////////////////////////
+
+        /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
+
+        //Find Object, Button, and Add Listener for OnClick method
+        GameObject TestPublishObject = GameObject.Find("TESTPUBLISH");
+        Button TestPublishButton = TestPublishObject.GetComponent<Button>();
+        TestPublishButton.onClick.AddListener(TestPublish);;
+
+        /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
         
         //Find Info Toggle, and Add Listener for OnValueChanged method
         InfoToggleObject = MenuButtonObject.FindObject("Info_Button");
@@ -959,12 +971,30 @@ public class UIFunctionalities : MonoBehaviour
         }
 
     }
-    public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent, string message)
+
+    public void SignalMQTTConnectionFailed()
     {
-        if (messageGameObject != null && messageComponent != null)
+        Debug.LogWarning("MQTT: MQTT Connection Failed.");
+        
+        if(MQTTFailedToConnectMessageObject != null)
         {
-            //Set Text
-            messageComponent.text = message;
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(MQTTFailedToConnectMessageObject);
+        }
+        else
+        {
+            Debug.LogWarning("MQTT Message: Could not find message object or message component.");
+        }
+    }
+    public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
+    {
+        if (messageGameObject != null)
+        {
+            if(message != "None" && messageComponent != null)
+            {
+                //Set Text
+                messageComponent.text = message;
+            }
 
             //Set Object Active
             messageGameObject.SetActive(true);
@@ -988,6 +1018,19 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning($"Message: Could not find message object or message component inside of GameObject {messageGameObject.name}.");
         }  
+    }
+
+    /////////////////////////////////////// Communication Buttons //////////////////////////////////////////////
+
+    public void TestPublish()
+    {
+        Debug.Log("Test Publish Button Pressed");
+
+        Dictionary<string, object> testMessage = new GetTrajectoryRequest(CurrentStep).GetData();
+        Debug.Log($"Test Message: {JsonConvert.SerializeObject(testMessage)}");
+
+        //Publish to the topic
+        mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, testMessage);
     }
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
