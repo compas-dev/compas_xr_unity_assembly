@@ -264,6 +264,7 @@ public class DatabaseManager : MonoBehaviour
                 {
                     foreach (var exception in task.Exception.InnerExceptions)
                     {
+                        //TODO: SIGNAL ONSCREEN ERROR MESSAGE.
                         Debug.LogError("Error fetching data from Firebase: " + exception.Message);
                     }
                     return;

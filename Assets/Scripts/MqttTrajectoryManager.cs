@@ -9,6 +9,7 @@ using TMPro;
 using MQTTDataCompasXR;
 using Newtonsoft.Json;
 using System.Security.Claims;
+using UnityEngine.UI;
 
 public class MqttTrajectoryReceiver : M2MqttUnityClient
 {
@@ -84,6 +85,12 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     {
         base.OnConnected();
         Debug.Log("MQTT: ON CONNECTED INTERNAL METHOD");
+
+        //Set UI Object Color to green if the communication toggle is on.
+        if (UIFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
+        {
+            UIFunctionalities.SetUIObjectColor(UIFunctionalities.MqttConnectButtonObject, Color.green);
+        }
     }
     protected override void OnDisconnected()
     {
@@ -91,14 +98,17 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         Debug.Log("MQTT: ON DISCONNECTED INTERNAL METHOD.");
         //I dont think we need the is connected bool.
         // isConnected=false;
+
     }
     protected override void OnConnectionLost() //I am not sure if this is working?
     {
+        //Call the base class method
         base.OnConnectionLost();
 
+        //Signal On screen message that connection has been lost
+        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.MQTTConnectionLostMessageObject);
+
         Debug.Log("MQTT: CONNECTION LOST INTERNAL METHOD!");
-        //TODO: ADD ON SCREEN MESSAGE... I dont think we need the is connected bool.
-        // isConnected=false;
     }
     public async void DisconnectandReconnectAsyncRoutine()
     {
@@ -108,14 +118,13 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         //Wait until MQTT is disconnected
         StartCoroutine(ReconnectAfterDisconect());
     }
-
     private IEnumerator ReconnectAfterDisconect()
     {
         // Wait for MQTT to be disconnected
-        yield return new WaitUntil(() => ! mqttClientConnected);
+        yield return new WaitUntil(() => !mqttClientConnected);
 
         // Wait for a moment to ensure MQTT has fully disconnected (you can adjust the duration)
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0.5f);
 
         //Reconnect to MQTT
         OnStartorRestartInitilization(true);

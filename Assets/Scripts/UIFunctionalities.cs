@@ -33,7 +33,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject EditorToggleObject;
     private GameObject ElementSearchToggleObject;
     private GameObject InfoToggleObject;
-    private GameObject CommunicationToggleObject;
+    public GameObject CommunicationToggleObject;
     
     //Primary UI Objects
     public GameObject CanvasObject;
@@ -53,6 +53,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
     public GameObject MQTTFailedToConnectMessageObject;
+    public GameObject MQTTConnectionLostMessageObject;
 
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
@@ -82,6 +83,7 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_InputField MqttBrokerInputField;
     private TMP_InputField MqttPortInputField;
     private GameObject MqttUpdateConnectionMessage;
+    public GameObject MqttConnectButtonObject;
     private TMP_InputField RosHostInputField;
     private TMP_InputField RosPortInputField;
     private GameObject RosUpdateConnectionMessage;
@@ -229,10 +231,11 @@ public class UIFunctionalities : MonoBehaviour
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
 
         //Find Warning messages
-        GameObject MessagesParent = CanvasObject.FindObject("Messages");
+        GameObject MessagesParent = CanvasObject.FindObject("OnScreenMessages");
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
         MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
+        MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -335,9 +338,8 @@ public class UIFunctionalities : MonoBehaviour
         MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();;
         MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();;
         MqttUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
-        Button MqttConnectButton = CommunicationPanelObject.FindObject("MqttConnectButton").GetComponent<Button>();
-        // MqttConnectButton.onClick.AddListener(() => print_string_on_click("MQTT CONNECT BUTTONPRESSED"));;
-        MqttConnectButton.onClick.AddListener(UpdateMqttConnectionFromInputs);;
+        MqttConnectButtonObject = CommunicationPanelObject.FindObject("MqttConnectButton");
+        MqttConnectButtonObject.GetComponent<Button>().onClick.AddListener(UpdateMqttConnectionFromUserInputs);;
 
         RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();;
         RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();;
@@ -429,7 +431,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
     }
-    private void SetUIObjectColor(GameObject Button, Color color)
+    public void SetUIObjectColor(GameObject Button, Color color)
     {
         Button.GetComponent<Image>().color = color;
     }
@@ -994,13 +996,18 @@ public class UIFunctionalities : MonoBehaviour
         }
 
     }
-
     public void SignalMQTTConnectionFailed()
     {
         Debug.LogWarning("MQTT: MQTT Connection Failed.");
         
         if(MQTTFailedToConnectMessageObject != null)
         {
+            //Check if the Connectoin Toggle is on and if it is turn it off.
+            if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
+            {
+                CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+            }
+            
             //Signal On Screen Message with Acknowledge Button
             SignalOnScreenMessageWithButton(MQTTFailedToConnectMessageObject);
         }
@@ -1054,8 +1061,11 @@ public class UIFunctionalities : MonoBehaviour
         //Publish to the topic
         mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, testMessage);
     }
-    public async void UpdateMqttConnectionFromInputs()
+    public async void UpdateMqttConnectionFromUserInputs()
     {
+        //Set UI Color
+        SetUIObjectColor(MqttConnectButtonObject, White);
+        
         //Check inputs and if they are not null update the connection if they are null leave the default.
         string newMqttBroker = MqttBrokerInputField.text;
         if (string.IsNullOrWhiteSpace(newMqttBroker))
@@ -1083,6 +1093,7 @@ public class UIFunctionalities : MonoBehaviour
             mqttManager.brokerPort = Convert.ToInt32(newMqttPort);
 
             //Disconnect from current broker
+            // mqttManager.Disconnect();
             mqttManager.DisconnectandReconnectAsyncRoutine();
         }
         else
@@ -1094,6 +1105,7 @@ public class UIFunctionalities : MonoBehaviour
 
         }
     }
+
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
     {
@@ -1398,8 +1410,17 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager.UserCurrentStepDict.Clear();
         databaseManager.PriorityTreeDict.Clear();
 
+        //Unsubscribe from topics
+        mqttManager.UnsubscribeFromCompasXRTopics();
+
+        //Unsubscibe from connection events
+        mqttManager.RemoveConnectionEventListners();
+
         //Fetch settings data again
         databaseManager.FetchSettingsData(eventManager.settings_reference);
+
+        //Disconnect from MQTT and reconnect after new application settings are received.
+        mqttManager.DisconnectandReconnectAsyncRoutine();
 
     }
     public void ToggleEditor(Toggle toggle)
