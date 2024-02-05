@@ -80,7 +80,6 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     }
 
     //////////////////////////////////////////// Connection Managers /////////////////////////////////////////////
-    //Methods Overriden from M2MqttUnityClient Class //TODO: Not sure if I need these. Might be useful. OnConnectionLost is helpful if it works though.
     protected override void OnConnected()
     {
         base.OnConnected();
@@ -100,7 +99,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         // isConnected=false;
 
     }
-    protected override void OnConnectionLost() //I am not sure if this is working?
+    protected override void OnConnectionLost()
     {
         //Call the base class method
         base.OnConnectionLost();

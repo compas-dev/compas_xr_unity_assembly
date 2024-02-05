@@ -264,7 +264,12 @@ public class DatabaseManager : MonoBehaviour
                 {
                     foreach (var exception in task.Exception.InnerExceptions)
                     {
-                        //TODO: SIGNAL ONSCREEN ERROR MESSAGE.
+                        //If there is an error when downloading an object signal and on screen message.
+                        if(!UIFunctionalities.ErrorDownloadingObjectMessageObject.activeSelf)
+                        {
+                            UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorDownloadingObjectMessageObject);
+                        }
+
                         Debug.LogError("Error fetching data from Firebase: " + exception.Message);
                     }
                     return;

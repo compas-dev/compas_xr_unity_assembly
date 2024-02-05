@@ -54,6 +54,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PriorityIncorrectWarningMessageObject;
     public GameObject MQTTFailedToConnectMessageObject;
     public GameObject MQTTConnectionLostMessageObject;
+    public GameObject ErrorDownloadingObjectMessageObject;
 
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
@@ -230,12 +231,13 @@ public class UIFunctionalities : MonoBehaviour
         VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
 
-        //Find Warning messages
+        //Find OnScreeen Warning messages
         GameObject MessagesParent = CanvasObject.FindObject("OnScreenMessages");
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
         MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
         MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
+        ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -347,6 +349,7 @@ public class UIFunctionalities : MonoBehaviour
         Button RosConnectButton = CommunicationPanelObject.FindObject("ROSConnectButton").GetComponent<Button>();
         RosConnectButton.onClick.AddListener(() => print_string_on_click("ROS CONNECT BUTTONPRESSED"));;
 
+        //TODO: Insert Button Logic for sending messages.
 
     }
     public void ToggleVisibilityMenu(Toggle toggle)
@@ -1061,7 +1064,7 @@ public class UIFunctionalities : MonoBehaviour
         //Publish to the topic
         mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, testMessage);
     }
-    public async void UpdateMqttConnectionFromUserInputs()
+    public void UpdateMqttConnectionFromUserInputs()
     {
         //Set UI Color
         SetUIObjectColor(MqttConnectButtonObject, White);
@@ -1093,7 +1096,6 @@ public class UIFunctionalities : MonoBehaviour
             mqttManager.brokerPort = Convert.ToInt32(newMqttPort);
 
             //Disconnect from current broker
-            // mqttManager.Disconnect();
             mqttManager.DisconnectandReconnectAsyncRoutine();
         }
         else
