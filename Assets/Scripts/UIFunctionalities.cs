@@ -77,6 +77,14 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject BuilderEditorButtonObject;
     private GameObject BuildStatusButtonObject;
     private Button BuildStatusButton;
+
+    //Communication Specific Objects
+    private TMP_InputField MqttBrokerInputField;
+    private TMP_InputField MqttPortInputField;
+    private GameObject MqttUpdateConnectionMessage;
+    private TMP_InputField RosHostInputField;
+    private TMP_InputField RosPortInputField;
+    private GameObject RosUpdateConnectionMessage;
     
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
@@ -268,13 +276,6 @@ public class UIFunctionalities : MonoBehaviour
         ToggleObjectLengths(ObjectLengthsToggle);
         });
 
-        /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
-
-        //Find Object, Button, and Add Listener for OnClick method
-        GameObject TestPublishObject = GameObject.Find("TESTPUBLISH");
-        Button TestPublishButton = TestPublishObject.GetComponent<Button>();
-        TestPublishButton.onClick.AddListener(TestPublish);;
-
         /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
         
         //Find Info Toggle, and Add Listener for OnValueChanged method
@@ -290,7 +291,7 @@ public class UIFunctionalities : MonoBehaviour
         Button ReloadButton = ReloadButtonObject.GetComponent<Button>();
         ReloadButton.onClick.AddListener(ReloadApplication);;
 
-        //Find Object, Button, and Add Listener for OnClick method
+        //Find communication toggle objects
         CommunicationToggleObject = MenuButtonObject.FindObject("Communication_Button");
         Toggle CommunicationToggle = CommunicationToggleObject.GetComponent<Toggle>();
         //Add Listners for Info Toggle on and off.
@@ -322,6 +323,28 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Background Images for Toggles
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
+
+        /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
+
+        //Find Object, Button, and Add Listener for OnClick method
+        GameObject TestPublishObject = GameObject.Find("TESTPUBLISH");
+        Button TestPublishButton = TestPublishObject.GetComponent<Button>();
+        TestPublishButton.onClick.AddListener(TestPublish);;
+
+        //Find Pannel Objects used for connecting to a different broker and ROS Connection Set up
+        MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();;
+        MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();;
+        MqttUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
+        Button MqttConnectButton = CommunicationPanelObject.FindObject("MqttConnectButton").GetComponent<Button>();
+        // MqttConnectButton.onClick.AddListener(() => print_string_on_click("MQTT CONNECT BUTTONPRESSED"));;
+        MqttConnectButton.onClick.AddListener(UpdateMqttConnectionFromInputs);;
+
+        RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();;
+        RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();;
+        RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
+        Button RosConnectButton = CommunicationPanelObject.FindObject("ROSConnectButton").GetComponent<Button>();
+        RosConnectButton.onClick.AddListener(() => print_string_on_click("ROS CONNECT BUTTONPRESSED"));;
+
 
     }
     public void ToggleVisibilityMenu(Toggle toggle)
@@ -1021,7 +1044,6 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Communication Buttons //////////////////////////////////////////////
-
     public void TestPublish()
     {
         Debug.Log("Test Publish Button Pressed");
@@ -1032,7 +1054,46 @@ public class UIFunctionalities : MonoBehaviour
         //Publish to the topic
         mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, testMessage);
     }
+    public async void UpdateMqttConnectionFromInputs()
+    {
+        //Check inputs and if they are not null update the connection if they are null leave the default.
+        string newMqttBroker = MqttBrokerInputField.text;
+        if (string.IsNullOrWhiteSpace(newMqttBroker))
+        {
+            newMqttBroker = "broker.hivemq.com";
+        }
 
+        string newMqttPort = MqttPortInputField.text;
+        if (string.IsNullOrWhiteSpace(newMqttPort))
+        {
+            newMqttPort = "1883";
+        }
+
+        //Check if the manual the port or broker is different then the current one.
+        if (newMqttBroker != mqttManager.brokerAddress || Convert.ToInt32(newMqttPort) != mqttManager.brokerPort)
+        {
+            //Unsubscibe from events
+            mqttManager.RemoveConnectionEventListners();
+
+            //Unsubscribe from topics
+            mqttManager.UnsubscribeFromCompasXRTopics();
+
+            //Update Broker and Port to the user inputs
+            mqttManager.brokerAddress = newMqttBroker;
+            mqttManager.brokerPort = Convert.ToInt32(newMqttPort);
+
+            //Disconnect from current broker
+            mqttManager.DisconnectandReconnectAsyncRoutine();
+        }
+        else
+        {
+            Debug.Log("MQTT: Broker and Port are the same as the current one. Not updating connection.");
+            
+            //Signal Manual Input text
+            MqttUpdateConnectionMessage.SetActive(true);
+
+        }
+    }
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
     {
@@ -1274,6 +1335,12 @@ public class UIFunctionalities : MonoBehaviour
             }
             else
             {
+                //if the update connection message is on turn it off
+                if(MqttUpdateConnectionMessage.activeSelf)
+                {
+                    MqttUpdateConnectionMessage.SetActive(false);
+                }
+                
                 //Set Visibility of Information panel
                 CommunicationPanelObject.SetActive(false);
 

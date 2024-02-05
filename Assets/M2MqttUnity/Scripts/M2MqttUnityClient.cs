@@ -71,7 +71,7 @@ namespace M2MqttUnity
         private List<MqttMsgPublishEventArgs> frontMessageQueue = null;
         private List<MqttMsgPublishEventArgs> backMessageQueue = null;
         private bool mqttClientConnectionClosed = false;
-        private bool mqttClientConnected = false;
+        public bool mqttClientConnected = false;
 
         /// <summary>
         /// Event fired when a connection is successfully established

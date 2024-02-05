@@ -15,6 +15,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     [Header("MQTT Settings")]
     [Tooltip("Set the topic to publish")]
 
+    //Controller Name
+    public string controllerName = "MQTT Trajectory Controller";
+
     // Properties and events
     private string m_msg;    
     public string msg
@@ -44,7 +47,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         base.Start();
 
         //On Start Initialization
-        OnStartInitilization();
+        OnStartorRestartInitilization();
 
     }
     protected override void Update()
@@ -59,11 +62,15 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     }
     
     //////////////////////////////////////////// General Methods ////////////////////////////////////////////
-    public void OnStartInitilization()
+    public void OnStartorRestartInitilization(bool Restart = false)
     {
-        //Find UI Functionalities
-        UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
-        
+        //Recnnect bool, allowing this method to be additionally called inside of the update method.
+        if (!Restart)
+        {
+            //Find UI Functionalities
+            UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+        }
+
         //Connect to MQTT Broker on start with default settings.
         Connect();
 
@@ -80,15 +87,38 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     }
     protected override void OnDisconnected()
     {
+        base.OnDisconnected();
         Debug.Log("MQTT: ON DISCONNECTED INTERNAL METHOD.");
         //I dont think we need the is connected bool.
         // isConnected=false;
     }
     protected override void OnConnectionLost() //I am not sure if this is working?
     {
-        Debug.Log("MQTT: CONNECTION LOST!");
+        base.OnConnectionLost();
+
+        Debug.Log("MQTT: CONNECTION LOST INTERNAL METHOD!");
         //TODO: ADD ON SCREEN MESSAGE... I dont think we need the is connected bool.
         // isConnected=false;
+    }
+    public async void DisconnectandReconnectAsyncRoutine()
+    {
+        //Disconnect from MQTT
+        Disconnect();
+
+        //Wait until MQTT is disconnected
+        StartCoroutine(ReconnectAfterDisconect());
+    }
+
+    private IEnumerator ReconnectAfterDisconect()
+    {
+        // Wait for MQTT to be disconnected
+        yield return new WaitUntil(() => ! mqttClientConnected);
+
+        // Wait for a moment to ensure MQTT has fully disconnected (you can adjust the duration)
+        yield return new WaitForSeconds(2f);
+
+        //Reconnect to MQTT
+        OnStartorRestartInitilization(true);
     }
 
     //////////////////////////////////////////// Topic Managers /////////////////////////////////////////////
@@ -156,7 +186,6 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
 
         StoreMessage(msg);
     }
-
     private void StoreMessage(string eventMsg)
     {
         if (eventMessages.Count > 50) eventMessages.Clear();
