@@ -88,6 +88,15 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_InputField RosHostInputField;
     private TMP_InputField RosPortInputField;
     private GameObject RosUpdateConnectionMessage;
+
+    //Trajectory Review UI Controls
+    public GameObject RequestTrajectoryButtonObject;
+    public GameObject ApproveTrajectoryButtonObject;
+    public GameObject RejectTrajectoryButtonObject;
+    public GameObject TrajectoryReviewSliderObject;
+    public Slider TrajectoryReviewSlider;
+    public GameObject ExecuteTrajectoryButtonObject;
+
     
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
@@ -349,7 +358,34 @@ public class UIFunctionalities : MonoBehaviour
         Button RosConnectButton = CommunicationPanelObject.FindObject("ROSConnectButton").GetComponent<Button>();
         RosConnectButton.onClick.AddListener(() => print_string_on_click("ROS CONNECT BUTTONPRESSED"));;
 
-        //TODO: Insert Button Logic for sending messages.
+        //Find Control Objects and set up events
+        GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
+        GameObject ReviewTrajectoryObjects = TrajectoryControlObjects.FindObject("ReviewTrajectoryControls");
+
+        //Find Object, request button and add event listner for on click method
+        RequestTrajectoryButtonObject = TrajectoryControlObjects.FindObject("RequestTrajectoryButton");
+        Button RequestTrajectoryButton = RequestTrajectoryButtonObject.GetComponent<Button>();
+        RequestTrajectoryButton.onClick.AddListener(() => mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData()));;
+    
+        //Find object, approve button and add event listner for on click method
+        ApproveTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ApproveTrajectoryButton");
+        Button ApproveTrajectoryButton = ApproveTrajectoryButtonObject.GetComponent<Button>();
+        ApproveTrajectoryButton.onClick.AddListener(() => print_string_on_click("ApproveTrajectoryButton Pressed"));;
+
+        //Find object, reject button and add event listner for on click method
+        RejectTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("RejectTrajectoryButton");
+        Button RejectTrajectoryButton = RejectTrajectoryButtonObject.GetComponent<Button>();
+        RejectTrajectoryButton.onClick.AddListener(() => print_string_on_click("RejectTrajectoryButton Pressed"));;
+
+        //Find slider for trajectory review and add event listner for on value changed method
+        TrajectoryReviewSliderObject = ReviewTrajectoryObjects.FindObject("TrajectoryReviewSlider");
+        TrajectoryReviewSlider = TrajectoryReviewSliderObject.GetComponent<Slider>();
+        TrajectoryReviewSlider.onValueChanged.AddListener(TrajectoryReviewTestMethod);;
+
+        //Find Object, Execute button and add event listner for on click method
+        ExecuteTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ExecuteTrajectoryButton");
+        Button ExecuteTrajectoryButton = ExecuteTrajectoryButtonObject.GetComponent<Button>();
+        ExecuteTrajectoryButton.onClick.AddListener(() => print_string_on_click("ExecuteTrajectoryButton Pressed"));;
 
     }
     public void ToggleVisibilityMenu(Toggle toggle)
@@ -1107,7 +1143,10 @@ public class UIFunctionalities : MonoBehaviour
 
         }
     }
-
+    public void TrajectoryReviewTestMethod(float value)
+    {
+        Debug.Log($"Trajectory Review Slider Value Changed is value {value}");
+    }
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
     {
@@ -1367,9 +1406,6 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Communication Panel.");
         }
     }
-    
-    //TODO: Add method for controlling MQTT communication... should be very simmilar to the CAA Implementation see (CommunicationManager.cs).
-    //TODO: Add ununscribe from mqtt topics... that way I can resubscribe when I reload the application.
     private void ReloadApplication()
     {
         Debug.Log("Reload Button Pressed");
