@@ -1195,6 +1195,8 @@ public class UIFunctionalities : MonoBehaviour
         //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true
         mqttTrajectoryManager.serviceManager.PrimaryUser = true;
 
+        //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.
+
         //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
         //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
         TrajectoryServicesUIControler(true, false, false, false, false, false);
