@@ -875,8 +875,6 @@ public class DatabaseManager : MonoBehaviour
     }
     private void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
     {
-        Debug.Log("Assembly is constructed of Parts");
-
         //Access nested Part information.
         Dictionary<string, object> attributesDict = jsonDataDict["attributes"] as Dictionary<string, object>;
         Dictionary<string, object> nameDict = attributesDict["name"] as Dictionary<string, object>;

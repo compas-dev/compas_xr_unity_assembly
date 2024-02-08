@@ -39,6 +39,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     //Compas XR Topics Class
     public CompasXRTopics compasXRTopics;
 
+    //Compas XR Service Manager
+    public ServiceManager serviceManager = new ServiceManager();
+
     //Other Scripts
     public UIFunctionalities UIFunctionalities;
 
@@ -205,17 +208,62 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     private void CompasXRIncomingMessageHandler(string topic, string message)
     {
         //TODO: TURN INTO A SWITCH STATEMENT?
-        //Get Trajectory Result
+        //Get Trajectory Result Message.
         if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
         {
-            //Deserialize the message //TODO: INCLUDE THIS IN THE MESSAGE CLASS
-            // GetTrajectoryResult getTrajectoryResult = JsonConvert.DeserializeObject<GetTrajectoryResult>(message);
+            //Deserialize the message
+            GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
+            
+            //If I am not the primary user checks
+            if (!serviceManager.PrimaryUser)
+            {
+                //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
+                if (getTrajectoryResultmessage.Trajectory.Count > 0)
+                {
+                    //Signal the UI
+                    // UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.RequestReviewTrajectoryMessageObject);
+
+                    //TODO: Signal On Screen Message with Button
+
+                    //TODO: Set current element to the element from the message.
+
+                    Debug.Log("GetTrajectoryResult (!PrimaryUser): YOU SHOULD SIGNAL AN ONSCREEN MESSAGE TO REQUEST REVIEW OF TRAJECTORY");
+                }
+            }
+            //I am the primary user
+            else
+            {
+                //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
+                if (getTrajectoryResultmessage.Trajectory.Count > 0)
+                {
+                    //Subscribe to Approval Counter Result topic
+                    SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                    //Set visibility and interactibility of trajectory review elements
+                    UIFunctionalities.TrajectoryServicesUIControler(false, false, true, true, false, false);
+
+                    //Set the current trajectory of the Service Manager
+                    serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
+
+                    //Publish request for approval counter and do not input header.
+                    PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
+                }
+                //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
+                else
+                {
+                    //Set Primary user back to false
+                    serviceManager.PrimaryUser = false;
+
+                    //Set visibility and interactibility of request trajectory button
+                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+                }
+            }
 
             //Signal the UI
             // UIFunctionalities.SignalGetTrajectoryResult(getTrajectoryResult);
         }
 
-        //Approve Trajectory
+        //Approve Trajectory Message
         else if (topic == compasXRTopics.subscribers.approveTrajectoryTopic)
         {
             //Deserialize the message
@@ -225,7 +273,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
             // UIFunctionalities.SignalApproveTrajectory(approveTrajectory);
         }
 
-        //Approval Counter Request
+        //Approval Counter Request Message
         else if (topic == compasXRTopics.subscribers.approvalCounterRequestTopic)
         {
             //Deserialize the message
@@ -235,7 +283,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
             // UIFunctionalities.SignalApprovalCounterRequest(approvalCounterRequest);
         }
 
-        //Approval Counter Result
+        //Approval Counter Result Message
         else if (topic == compasXRTopics.subscribers.approvalCounterResultTopic)
         {
             //Deserialize the message

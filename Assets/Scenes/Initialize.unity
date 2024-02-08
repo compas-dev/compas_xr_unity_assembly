@@ -3766,6 +3766,7 @@ MonoBehaviour:
   autoConnect: 0
   mqttUserName: 
   mqttPassword: 
+  mqttClientConnected: 0
   topicPublish: 
   messagePublish: 
   greenScreenPanel: {fileID: 910881914}

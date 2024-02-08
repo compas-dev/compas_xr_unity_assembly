@@ -1158,7 +1158,7 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Trajectory Review Slider Value Changed is value {value}");
     }
-    public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryApprovalVisability, bool trajectoryApprovalInteractable, bool rejectTrajectoryVisability, bool rejectTrajectoryInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
+    public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryApprovalVisability, bool trajectoryApprovalInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
         RequestTrajectoryButtonObject.SetActive(requestTrajectoryVisability);
@@ -1166,8 +1166,8 @@ public class UIFunctionalities : MonoBehaviour
 
         //Set Visability of Trajectory Review objects and Interactable of Approval and Reject Buttons
         ReviewTrajectoryObjects.SetActive(trajectoryApprovalVisability);
-        ApproveTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryApprovalVisability;
-        RejectTrajectoryButtonObject.GetComponent<Button>().interactable = rejectTrajectoryInteractable;
+        ApproveTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryApprovalInteractable;
+        RejectTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryApprovalInteractable;
 
         //Set Visability and Interactable of Execute Trajectory Button.
         ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
@@ -1347,7 +1347,7 @@ public class UIFunctionalities : MonoBehaviour
             if (RequestTrajectoryButtonObject.activeSelf)
             {
                 //Set Visibility of Request Trajectory Button
-                TrajectoryServicesUIControler(false, false, false, false, false, false, false, false);
+                TrajectoryServicesUIControler(false, false, false, false, false, false);
             }
 
             //Set the color of the Robot toggle button to white.
@@ -1367,19 +1367,19 @@ public class UIFunctionalities : MonoBehaviour
             if (!step.data.is_built && step.data.priority.ToString() == databaseManager.CurrentPriority)
             {    
                 //Set Visibility of Request Trajectory Button, and interactability to true.
-                TrajectoryServicesUIControler(true, true, false, false, false, false, false, false);
+                TrajectoryServicesUIControler(true, true, false, false, false, false);
             }
             else
             {
                 //Set visivility to true, but interactability to false.
-                TrajectoryServicesUIControler(true, false, false, false, false, false, false, false);
+                TrajectoryServicesUIControler(true, false, false, false, false, false);
             }
         
         }
         else
         {
             //Set Visibility of Request Trajectory Button
-            TrajectoryServicesUIControler(false, false, false, false, false, false, false, false);
+            TrajectoryServicesUIControler(false, false, false, false, false, false);
         }
     }
     public void TogglePriority(Toggle toggle)

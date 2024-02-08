@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using RosSharp.RosBridgeClient.MessageTypes.Rosapi;
 using Unity.VisualScripting.AssemblyQualifiedNameParser;
 using Newtonsoft.Json;
+using MQTTDataCompasXR;
 
 namespace MQTTDataCompasXR
 {
@@ -106,7 +107,7 @@ namespace MQTTDataCompasXR
         public bool PrimaryUser { get; set; }
 
         //List to store current trajectory under review.
-        public List<List<System.Double>> CurrentTrajectory { get; set; }
+        public List<List<float>> CurrentTrajectory { get; set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
         
         //Constructer for ServiceManager
         public ServiceManager()
@@ -161,6 +162,9 @@ namespace MQTTDataCompasXR
     }
     /////////////////////////////////////////// Classes for Compas XR Custom Messages //////////////////////////////////////////////////
     
+    //TODO: MAJOR TODO: CHECK IF THE HEADER PARSING PRODUCES INCORRECT HEADER INFORMATION ON SENDING OF NEW MESSAGES.
+    //TODO: CHECK OVERALL STRUCTURE OF PASSING INFORMATION BACK AND FORTH BETWEEN GH AND UNITY. 
+    //TODO: THERE IS A LOT OF CONDITIONAL INPUTS THAT ARE NOT IN THE PYTHON FILE, AND I AM NOT SURE IF THIS IS BECAUSE THE SPECIFICITY OF C# AND PARSING OR IF IT IS BECAUSE IMPORT WAS INCORRECT IN PYTHON FILE. 
     
     [System.Serializable]
     public class SequenceCounter
@@ -234,7 +238,6 @@ namespace MQTTDataCompasXR
 
 
     // Header Compas XR Message specific class : Expected message header for all messages
-
     [System.Serializable]
     public class Header
     {
@@ -249,14 +252,24 @@ namespace MQTTDataCompasXR
         public string DeviceID { get; private set; }
         public string TimeStamp { get; private set; }
 
-        //Constructor for creating a new Header Message instance
-        public Header()
-        {
-            SequenceID = EnsureSequenceID();
-            ResponseID = EnsureResponseID();
-            DeviceID = GetDeviceID();
-            TimeStamp = GetTimeStamp();
-        }
+        //Constructer for header with optional inputs that are used for parsing information from a received message so it does not mess up internal logic of counters.
+        public Header(int? sequenceID=null, int? responseID=null, string deviceID=null, string timeStamp=null)
+        {   
+            if(sequenceID.HasValue && responseID.HasValue && deviceID != null && timeStamp != null)
+            {    
+                SequenceID = sequenceID.Value;
+                ResponseID = responseID.Value;
+                DeviceID = deviceID;
+                TimeStamp = timeStamp;
+            }
+            else
+            {
+                SequenceID = EnsureSequenceID();
+                ResponseID = EnsureResponseID();
+                DeviceID = GetDeviceID();
+                TimeStamp = GetTimeStamp();
+            }
+        } 
 
         // Method to retrieve header data as a dictionary
         public Dictionary<string, object> GetData()
@@ -323,7 +336,17 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static Header Parse(string jsonString)
         {
-            return JsonConvert.DeserializeObject<Header>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+
+            // Extract header data from the JSON object and cast to new required types.
+            var sequenceID = Convert.ToInt32(jsonObject["sequence_id"]);
+            var responseID = Convert.ToInt32(jsonObject["response_id"]);
+            var deviceID = jsonObject["device_id"].ToString();
+            var timeStamp = jsonObject["time_stamp"].ToString();
+
+            // Create and return a new Header instance with inputs so the values are the same and do not mess up internal logic of counters.
+            return new Header(sequenceID, responseID, deviceID, timeStamp);
         }
     }
 
@@ -336,10 +359,10 @@ namespace MQTTDataCompasXR
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
 
-        // Constructor for creating a new GetTrajectoryRequest Message instance
-        public GetTrajectoryRequest(string elementID)
+        // Constructor for creating a new GetTrajectoryRequest Message instance //TODO: Adding Header as input is different then python class.
+        public GetTrajectoryRequest(string elementID, Header header=null)
         {
-            Header = new Header();
+            Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
@@ -358,7 +381,18 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static GetTrajectoryRequest Parse(string jsonString)
         {
-            return JsonConvert.DeserializeObject<GetTrajectoryRequest>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+            
+            // Extract header data from the JSON object and parse into a new Header instance
+            var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
+            Header header = Header.Parse(headerInfo);
+
+            // Extract additional data from the JSON object and cast to new required types.
+            var elementID = jsonObject["element_id"].ToString();
+            
+            // Create and return a new GetTrajectoryResult instance
+            return new GetTrajectoryRequest(elementID, header);
         }
     }
 
@@ -370,12 +404,12 @@ namespace MQTTDataCompasXR
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
-        public List<List<System.Double>> Trajectory { get; private set; }
+        public List<List<float>> Trajectory { get; private set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
 
         // Constructor for creating a new GetTrajectoryResult Message instance
-        public GetTrajectoryResult(string elementID, List<List<System.Double>> trajectory)
+        public GetTrajectoryResult(string elementID, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
         {
-            Header = new Header();
+            Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
@@ -396,10 +430,21 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static GetTrajectoryResult Parse(string jsonString)
         {
-            return JsonConvert.DeserializeObject<GetTrajectoryResult>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+            
+            // Extract header data from the JSON object and parse into a new Header instance
+            var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
+            Header header = Header.Parse(headerInfo);
+
+            // Extract additional data from the JSON object and cast to new required types.
+            var elementID = jsonObject["element_id"].ToString();
+            var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
+            
+            // Create and return a new GetTrajectoryResult instance
+            return new GetTrajectoryResult(elementID, trajectory, header);
         }
     }
-
 
     // Approve Trajectory Compas XR Message specific class: Expected message from devices for trajectory approval
     [System.Serializable]
@@ -409,20 +454,20 @@ namespace MQTTDataCompasXR
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
-        public object Trajectory { get; private set; }
-        public object ApprovalStatus { get; private set; }
+        public List<List<float>> Trajectory { get; private set; }
+        public int ApprovalStatus { get; private set; }
 
         // Constructor for creating a new ApproveTrajectory Message instance
-        public ApproveTrajectory(string elementID, object trajectory, object approvalStatus)
+        public ApproveTrajectory(string elementID, List<List<float>> trajectory, int approvalStatus, Header header=null)
         {
-            Header = new Header();
+            Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
             ApprovalStatus = approvalStatus;
         }
 
-       // Method to retrieve approval data as a dictionary
+        // Method to retrieve approval data as a dictionary
         public Dictionary<string, object> GetData()
         {
             return new Dictionary<string, object>
@@ -438,9 +483,23 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static ApproveTrajectory Parse(string jsonString)
         {
-            return JsonUtility.FromJson<ApproveTrajectory>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+            
+            // Extract header data from the JSON object and parse into a new Header instance
+            var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
+            Header header = Header.Parse(headerInfo);
+
+            // Extract additional data from the JSON object and cast to new required types.
+            var elementID = jsonObject["element_id"].ToString();
+            var approvalStatus = Convert.ToInt16(jsonObject["approval_status"]);
+            var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
+            
+            // Create and return a new GetTrajectoryResult instance
+            return new ApproveTrajectory(elementID, trajectory, approvalStatus, header);
         }
     }
+
     // Approval Counter Request Compas XR Message specific class: Expected message from devices to request a reply from all active devices to control the amount of approvals needed to proceed
     [System.Serializable]
     public class ApprovalCounterRequest
@@ -451,14 +510,14 @@ namespace MQTTDataCompasXR
         public string TrajectoryID { get; private set; }
 
         // Constructor for creating a new ApproveTrajectory Message instance
-        public ApprovalCounterRequest(string elementID)
+        public ApprovalCounterRequest(string elementID, Header header=null)
         {
-            Header = new Header();
+            Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
 
-       // Method to retrieve approval data as a dictionary
+        // Method to retrieve approval data as a dictionary
         public Dictionary<string, object> GetData()
         {
             return new Dictionary<string, object>
@@ -468,7 +527,7 @@ namespace MQTTDataCompasXR
                 { "trajectory_id", TrajectoryID }
             };
         }
-        
+            
         // Method to parse an instance of the class from a json string
         public static ApprovalCounterRequest Parse(string jsonString)
         {
@@ -486,14 +545,14 @@ namespace MQTTDataCompasXR
         public string TrajectoryID { get; private set; }
 
         // Constructor for creating a new ApprovalCounterResult Message instance
-        public ApprovalCounterResult(string elementID)
+        public ApprovalCounterResult(string elementID, Header header=null)
         {
-            Header = new Header();
+            Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
 
-       // Method to retrieve counter response data as a dictionary
+        // Method to retrieve counter response data as a dictionary
         public Dictionary<string, object> GetData()
         {
             return new Dictionary<string, object>
@@ -507,7 +566,18 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static ApprovalCounterResult Parse(string jsonString)
         {
-            return JsonConvert.DeserializeObject<ApprovalCounterResult>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+            
+            // Extract header data from the JSON object and parse into a new Header instance
+            var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
+            Header header = Header.Parse(headerInfo);
+
+            // Extract additional data from the JSON object and cast to new required types.
+            var elementID = jsonObject["element_id"].ToString();
+            
+            // Create and return a new GetTrajectoryResult instance
+            return new ApprovalCounterResult(elementID, header);
         }
     }
     [System.Serializable]
@@ -517,18 +587,18 @@ namespace MQTTDataCompasXR
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
-        public List<List<System.Double>> Trajectory { get; private set; }
+        public List<List<float>> Trajectory { get; private set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
 
         // Constructor for creating a new SendTrajectory Message instance
-        public SendTrajectory(string elementID, List<List<System.Double>> trajectory)
+        public SendTrajectory(string elementID, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
         {
-            Header = new Header();
+            Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
         }
 
-       // Method to retrieve approval data as a dictionary
+        // Method to retrieve approval data as a dictionary
         public Dictionary<string, object> GetData()
         {
             return new Dictionary<string, object>
@@ -543,8 +613,22 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static SendTrajectory Parse(string jsonString)
         {
-            return JsonConvert.DeserializeObject<SendTrajectory>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+            
+            // Extract header data from the JSON object and parse into a new Header instance
+            var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
+            Header header = Header.Parse(headerInfo);
+
+            // Extract additional data from the JSON object and cast to new required types.
+            var elementID = jsonObject["element_id"].ToString();
+            var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
+
+            // Create and return a new GetTrajectoryResult instance
+            return new SendTrajectory(elementID, trajectory, header);
         }
 
     }
 }
+
+
