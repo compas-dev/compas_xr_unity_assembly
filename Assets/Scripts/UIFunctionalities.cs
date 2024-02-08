@@ -17,6 +17,7 @@ using System.Globalization;
 using ApplicationModeControler;
 using MQTTDataCompasXR;
 using Unity.IO.LowLevel.Unsafe;
+using Unity.VisualScripting;
 
 
 public class UIFunctionalities : MonoBehaviour
@@ -90,6 +91,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject RosUpdateConnectionMessage;
 
     //Trajectory Review UI Controls
+    public GameObject ReviewTrajectoryObjects;
     public GameObject RequestTrajectoryButtonObject;
     public GameObject ApproveTrajectoryButtonObject;
     public GameObject RejectTrajectoryButtonObject;
@@ -265,7 +267,6 @@ public class UIFunctionalities : MonoBehaviour
         //Find Robot toggle and Objects
         RobotToggleObject = VisibilityMenuObject.FindObject("Robot_Button");
         Toggle RobotToggle = RobotToggleObject.GetComponent<Toggle>();
-        RobotVisulizationControlObjects = ConstantUIPanelObjects.FindObject("RobotVisulizationControlObjects");
         //Add Listners for Object Lengths.
         RobotToggle.onValueChanged.AddListener(delegate {
         ToggleRobot(RobotToggle);
@@ -340,11 +341,6 @@ public class UIFunctionalities : MonoBehaviour
 
         /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
 
-        //Find Object, Button, and Add Listener for OnClick method
-        GameObject TestPublishObject = GameObject.Find("TESTPUBLISH");
-        Button TestPublishButton = TestPublishObject.GetComponent<Button>();
-        TestPublishButton.onClick.AddListener(TestPublish);;
-
         //Find Pannel Objects used for connecting to a different broker and ROS Connection Set up
         MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();;
         MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();;
@@ -360,12 +356,13 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Control Objects and set up events
         GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
-        GameObject ReviewTrajectoryObjects = TrajectoryControlObjects.FindObject("ReviewTrajectoryControls");
+        ReviewTrajectoryObjects = TrajectoryControlObjects.FindObject("ReviewTrajectoryControls");
 
         //Find Object, request button and add event listner for on click method
         RequestTrajectoryButtonObject = TrajectoryControlObjects.FindObject("RequestTrajectoryButton");
         Button RequestTrajectoryButton = RequestTrajectoryButtonObject.GetComponent<Button>();
-        RequestTrajectoryButton.onClick.AddListener(() => mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData()));;
+        RequestTrajectoryButton.onClick.AddListener(() => print_string_on_click("RequestTrajectoryButton Pressed"));;
+        // RequestTrajectoryButton.onClick.AddListener(() => mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData()));;
     
         //Find object, approve button and add event listner for on click method
         ApproveTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ApproveTrajectoryButton");
@@ -383,7 +380,7 @@ public class UIFunctionalities : MonoBehaviour
         TrajectoryReviewSlider.onValueChanged.AddListener(TrajectoryReviewTestMethod);;
 
         //Find Object, Execute button and add event listner for on click method
-        ExecuteTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ExecuteTrajectoryButton");
+        ExecuteTrajectoryButtonObject = TrajectoryControlObjects.FindObject("ExecuteTrajectoryButton");
         Button ExecuteTrajectoryButton = ExecuteTrajectoryButtonObject.GetComponent<Button>();
         ExecuteTrajectoryButton.onClick.AddListener(() => print_string_on_click("ExecuteTrajectoryButton Pressed"));;
 
@@ -570,6 +567,13 @@ public class UIFunctionalities : MonoBehaviour
         if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
         {
             instantiateObjects.CalculateandSetLengthPositions(CurrentStep);
+        }
+
+        //Update Trajectory Request interactibility based on new current step
+        if(RobotToggleObject.GetComponent<Toggle>().isOn)
+        {
+            //Set interaction based on current step.
+            SetTrajectoryRequestUIFromKey(CurrentStep);
         }
 
         //Update Preview Geometry the visulization is remapped correctly
@@ -985,6 +989,13 @@ public class UIFunctionalities : MonoBehaviour
         //Current Priority Text current Priority Items
         databaseManager.CurrentPriority = Priority;
 
+        //Update Trajectory Request interactibility based on my current step after priority check if Robot Toggle is on //TODO: THIS ONLY WORKS BECAUSE I UPDATE CURRENT PRIORITY EVERY TIME I WRITE.
+        if(RobotToggleObject.GetComponent<Toggle>().isOn)
+        {
+            //Set interaction based on current step.
+            SetTrajectoryRequestUIFromKey(CurrentStep);
+        }
+        
         //Set On Screen Text
         CurrentPriorityText.text = $"Current Priority : {Priority}";
         
@@ -1147,6 +1158,34 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Trajectory Review Slider Value Changed is value {value}");
     }
+    public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryApprovalVisability, bool trajectoryApprovalInteractable, bool rejectTrajectoryVisability, bool rejectTrajectoryInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
+    {
+        //Set Visability and Interactable of Trajectory Request Button.
+        RequestTrajectoryButtonObject.SetActive(requestTrajectoryVisability);
+        RequestTrajectoryButtonObject.GetComponent<Button>().interactable = requestTrajectoryInteractable;
+
+        //Set Visability of Trajectory Review objects and Interactable of Approval and Reject Buttons
+        ReviewTrajectoryObjects.SetActive(trajectoryApprovalVisability);
+        ApproveTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryApprovalVisability;
+        RejectTrajectoryButtonObject.GetComponent<Button>().interactable = rejectTrajectoryInteractable;
+
+        //Set Visability and Interactable of Execute Trajectory Button.
+        ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
+        ExecuteTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
+
+        //Adjust interactibility of Robot toggle based on visibility of other services controls
+        if ( trajectoryApprovalVisability || executeTrajectoryVisability)
+        {
+            //if trajectory approval or exacute trajectory is visible then robot toggle is not interactable
+            RobotToggleObject.GetComponent<Toggle>().interactable = false;
+        }
+        else if (requestTrajectoryVisability)
+        {
+            //If request trajectory is visaible then robot toggle is interactable
+            RobotToggleObject.GetComponent<Toggle>().interactable = true;
+        }
+    }
+
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
     {
@@ -1282,15 +1321,65 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log("Robot Toggle Pressed");
 
-        if(toggle.isOn && RobotVisulizationControlObjects != null)
+        if(toggle.isOn && RequestTrajectoryButtonObject != null)
         {
-            RobotVisulizationControlObjects.SetActive(true);
+            //TODO: Set robot URDF OBJECT TO ACTIVE AT ZERO CONFIGURATION.
+
+            //Check current step data to set visibility and interactibility of request trajectory button.
+            if(CurrentStep != null)
+            {
+                //Set interaction based on current step.
+                SetTrajectoryRequestUIFromKey(CurrentStep);
+            }
+            else
+            {
+                Debug.LogWarning("Current Step is null.");
+            }
+            
+            //Set the color of the robot toggle to yellow.
             SetUIObjectColor(RobotToggleObject, Yellow);
         }
         else
         {
-            RobotVisulizationControlObjects.SetActive(false);
+            //TODO: Set robot URDF OBJECT TO INACTIVE//DESTROY STATIC ROBOT IMAGES IF THEY EXIST.
+            
+            //If the request trajectory button is visable then set everything to not visable.
+            if (RequestTrajectoryButtonObject.activeSelf)
+            {
+                //Set Visibility of Request Trajectory Button
+                TrajectoryServicesUIControler(false, false, false, false, false, false, false, false);
+            }
+
+            //Set the color of the Robot toggle button to white.
             SetUIObjectColor(RobotToggleObject, White);
+        }
+    }
+    public void SetTrajectoryRequestUIFromKey(string key)
+    {
+        Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
+        Debug.Log($"THIS IS YOUR CURRENT STEP PRIORITY, {step.data.priority} and THIS IS YOUR CURRENT PRIORITY {databaseManager.CurrentPriority}");
+
+        //If step is a robot step then make the request button visible.
+        if(step.data.actor == "ROBOT")
+        {
+            //If the step is not built and priority is current priority then make request button visible and interactable
+            if (!step.data.is_built && step.data.priority.ToString() == databaseManager.CurrentPriority)
+            {    
+                //Set Visibility of Request Trajectory Button, and interactability to true.
+                TrajectoryServicesUIControler(true, true, false, false, false, false, false, false);
+            }
+            else
+            {
+                //Set visivility to true, but interactability to false.
+                TrajectoryServicesUIControler(true, false, false, false, false, false, false, false);
+            }
+        
+        }
+        else
+        {
+            //Set Visibility of Request Trajectory Button
+            TrajectoryServicesUIControler(false, false, false, false, false, false, false, false);
         }
     }
     public void TogglePriority(Toggle toggle)

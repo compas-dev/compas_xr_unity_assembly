@@ -173,6 +173,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
 
         //Subscribe to Compas XR Approve Trajectory Topics
         SubscribeToTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
+
+        //Subscribe to compas XR Approval Counter Request Topic
+        SubscribeToTopic(compasXRTopics.subscribers.approvalCounterRequestTopic);
     }
     public void UnsubscribeFromCompasXRTopics()
     {
@@ -181,6 +184,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
 
         //Unsubscribe to Compas XR Approve Trajectory Topics
         UnsubscribeFromTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
+
+        //Unsubscribe to compas XR Approval Counter Request Topic
+        UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterRequestTopic);
     }  
 
     //////////////////////////////////////////// Message Managers ////////////////////////////////////////////
@@ -191,8 +197,54 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         Debug.Log("MQTT: Received: " + msg + " from topic: " + topic);
 
         //TODO: ADD MESSAGE HANDLER HERE BASED ON TOPIC NAME: Input topic name and message.
+        CompasXRIncomingMessageHandler(topic, msg);
 
+        //Store the message
         StoreMessage(msg);
+    }
+    private void CompasXRIncomingMessageHandler(string topic, string message)
+    {
+        //TODO: TURN INTO A SWITCH STATEMENT?
+        //Get Trajectory Result
+        if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
+        {
+            //Deserialize the message //TODO: INCLUDE THIS IN THE MESSAGE CLASS
+            // GetTrajectoryResult getTrajectoryResult = JsonConvert.DeserializeObject<GetTrajectoryResult>(message);
+
+            //Signal the UI
+            // UIFunctionalities.SignalGetTrajectoryResult(getTrajectoryResult);
+        }
+
+        //Approve Trajectory
+        else if (topic == compasXRTopics.subscribers.approveTrajectoryTopic)
+        {
+            //Deserialize the message
+            // ApproveTrajectory approveTrajectory = JsonConvert.DeserializeObject<ApproveTrajectory>(message);
+
+            //Signal the UI
+            // UIFunctionalities.SignalApproveTrajectory(approveTrajectory);
+        }
+
+        //Approval Counter Request
+        else if (topic == compasXRTopics.subscribers.approvalCounterRequestTopic)
+        {
+            //Deserialize the message
+            // ApprovalCounterRequest approvalCounterRequest = JsonConvert.DeserializeObject<ApprovalCounterRequest>(message);
+
+            //Signal the UI
+            // UIFunctionalities.SignalApprovalCounterRequest(approvalCounterRequest);
+        }
+
+        //Approval Counter Result
+        else if (topic == compasXRTopics.subscribers.approvalCounterResultTopic)
+        {
+            //Deserialize the message
+            // ApprovalCounterResponse approvalCounterResponse = JsonConvert.DeserializeObject<ApprovalCounterResponse>(message);
+
+            //Signal the UI
+            // UIFunctionalities.SignalApprovalCounterResponse(approvalCounterResponse);
+        }
+
     }
     private void StoreMessage(string eventMsg)
     {

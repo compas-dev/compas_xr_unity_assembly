@@ -1507,7 +1507,7 @@ public class DatabaseManager : MonoBehaviour
             {
                 Debug.Log("Project Changed: BuildingPlan and should be handled by other listners");
             }
-            else if(key == "UserCurrentStep")
+            else if(key == "UsersCurrentStep")
             {
                 Debug.Log("Project Changed: User Current Step Changed this should be handled by other listners");
             }
