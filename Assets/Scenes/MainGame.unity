@@ -281,7 +281,7 @@ GameObject:
   - component: {fileID: 21587388}
   - component: {fileID: 21587391}
   - component: {fileID: 21587390}
-  - component: {fileID: 21587389}
+  - component: {fileID: 21587392}
   m_Layer: 0
   m_Name: Marker_28
   m_TagString: Untagged
@@ -305,25 +305,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &21587389
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 21587387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 21587391}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR28
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 21587391}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &21587390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -394,7 +375,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 21587389}
+  mPreview: {fileID: 21587392}
+--- !u!114 &21587392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 21587387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 21587391}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR28
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 21587391}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!21 &25334263
 Material:
   serializedVersion: 8
@@ -1188,7 +1188,7 @@ GameObject:
   - component: {fileID: 86680384}
   - component: {fileID: 86680387}
   - component: {fileID: 86680386}
-  - component: {fileID: 86680385}
+  - component: {fileID: 86680388}
   m_Layer: 0
   m_Name: Marker_10
   m_TagString: Untagged
@@ -1212,25 +1212,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &86680385
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 86680383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 86680387}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR10
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 86680387}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &86680386
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1301,7 +1282,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 86680385}
+  mPreview: {fileID: 86680388}
+--- !u!114 &86680388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 86680383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 86680387}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR10
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 86680387}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &94461557
 GameObject:
   m_ObjectHideFlags: 0
@@ -1617,7 +1617,7 @@ GameObject:
   - component: {fileID: 109176936}
   - component: {fileID: 109176939}
   - component: {fileID: 109176938}
-  - component: {fileID: 109176937}
+  - component: {fileID: 109176940}
   m_Layer: 0
   m_Name: Marker_24
   m_TagString: Untagged
@@ -1641,25 +1641,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &109176937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 109176935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 109176939}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR24
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 109176939}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &109176938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1730,7 +1711,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 109176937}
+  mPreview: {fileID: 109176940}
+--- !u!114 &109176940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109176935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 109176939}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR24
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 109176939}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &133828638
 GameObject:
   m_ObjectHideFlags: 0
@@ -1825,7 +1825,7 @@ GameObject:
   - component: {fileID: 140003058}
   - component: {fileID: 140003061}
   - component: {fileID: 140003060}
-  - component: {fileID: 140003059}
+  - component: {fileID: 140003062}
   m_Layer: 0
   m_Name: Marker_0
   m_TagString: Untagged
@@ -1849,25 +1849,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &140003059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140003057}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 140003061}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR0
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 140003061}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &140003060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1938,7 +1919,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 140003059}
+  mPreview: {fileID: 140003062}
+--- !u!114 &140003062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140003057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 140003061}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR0
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 140003061}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &159525001
 GameObject:
   m_ObjectHideFlags: 0
@@ -2349,7 +2349,7 @@ GameObject:
   - component: {fileID: 193506206}
   - component: {fileID: 193506209}
   - component: {fileID: 193506208}
-  - component: {fileID: 193506207}
+  - component: {fileID: 193506210}
   m_Layer: 0
   m_Name: Marker_18
   m_TagString: Untagged
@@ -2373,25 +2373,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &193506207
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 193506205}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 193506209}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR18
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 193506209}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &193506208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2462,7 +2443,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 193506207}
+  mPreview: {fileID: 193506210}
+--- !u!114 &193506210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 193506205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 193506209}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR18
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 193506209}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!21 &200447598
 Material:
   serializedVersion: 8
@@ -2508,7 +2508,7 @@ GameObject:
   - component: {fileID: 245040248}
   - component: {fileID: 245040251}
   - component: {fileID: 245040250}
-  - component: {fileID: 245040249}
+  - component: {fileID: 245040252}
   m_Layer: 0
   m_Name: Marker_22
   m_TagString: Untagged
@@ -2532,25 +2532,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &245040249
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 245040247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 245040251}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR22
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 245040251}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &245040250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2621,7 +2602,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 245040249}
+  mPreview: {fileID: 245040252}
+--- !u!114 &245040252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245040247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 245040251}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR22
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 245040251}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &248305887
 GameObject:
   m_ObjectHideFlags: 0
@@ -2633,7 +2633,7 @@ GameObject:
   - component: {fileID: 248305888}
   - component: {fileID: 248305891}
   - component: {fileID: 248305890}
-  - component: {fileID: 248305889}
+  - component: {fileID: 248305892}
   m_Layer: 0
   m_Name: Marker_9
   m_TagString: Untagged
@@ -2657,25 +2657,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &248305889
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248305887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 248305891}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR9
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 248305891}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &248305890
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2746,7 +2727,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 248305889}
+  mPreview: {fileID: 248305892}
+--- !u!114 &248305892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248305887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 248305891}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR9
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 248305891}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &257672725
 GameObject:
   m_ObjectHideFlags: 0
@@ -3373,7 +3373,7 @@ GameObject:
   - component: {fileID: 363746573}
   - component: {fileID: 363746576}
   - component: {fileID: 363746575}
-  - component: {fileID: 363746574}
+  - component: {fileID: 363746577}
   m_Layer: 0
   m_Name: Marker_17
   m_TagString: Untagged
@@ -3397,25 +3397,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &363746574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 363746572}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 363746576}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR17
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 363746576}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &363746575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3486,7 +3467,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 363746574}
+  mPreview: {fileID: 363746577}
+--- !u!114 &363746577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363746572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 363746576}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR17
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 363746576}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &371357632
 GameObject:
   m_ObjectHideFlags: 0
@@ -3633,7 +3633,7 @@ GameObject:
   - component: {fileID: 377017142}
   - component: {fileID: 377017145}
   - component: {fileID: 377017144}
-  - component: {fileID: 377017143}
+  - component: {fileID: 377017146}
   m_Layer: 0
   m_Name: Marker_4
   m_TagString: Untagged
@@ -3657,25 +3657,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &377017143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 377017141}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 377017145}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR4
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 377017145}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &377017144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3746,7 +3727,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 377017143}
+  mPreview: {fileID: 377017146}
+--- !u!114 &377017146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377017141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 377017145}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR4
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 377017145}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &386030929
 GameObject:
   m_ObjectHideFlags: 0
@@ -3758,7 +3758,7 @@ GameObject:
   - component: {fileID: 386030930}
   - component: {fileID: 386030933}
   - component: {fileID: 386030932}
-  - component: {fileID: 386030931}
+  - component: {fileID: 386030934}
   m_Layer: 0
   m_Name: Marker_20
   m_TagString: Untagged
@@ -3782,25 +3782,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &386030931
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 386030929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 386030933}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR20
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 386030933}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &386030932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3871,7 +3852,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 386030931}
+  mPreview: {fileID: 386030934}
+--- !u!114 &386030934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386030929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 386030933}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR20
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 386030933}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!43 &408632037
 Mesh:
   m_ObjectHideFlags: 0
@@ -4706,7 +4706,7 @@ GameObject:
   - component: {fileID: 462242545}
   - component: {fileID: 462242548}
   - component: {fileID: 462242547}
-  - component: {fileID: 462242546}
+  - component: {fileID: 462242549}
   m_Layer: 0
   m_Name: Marker_15
   m_TagString: Untagged
@@ -4730,25 +4730,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &462242546
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 462242544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 462242548}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR15
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 462242548}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &462242547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4819,7 +4800,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 462242546}
+  mPreview: {fileID: 462242549}
+--- !u!114 &462242549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 462242544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 462242548}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR15
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 462242548}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!43 &464393487
 Mesh:
   m_ObjectHideFlags: 0
@@ -5653,7 +5653,7 @@ GameObject:
   - component: {fileID: 521163842}
   - component: {fileID: 521163845}
   - component: {fileID: 521163844}
-  - component: {fileID: 521163843}
+  - component: {fileID: 521163846}
   m_Layer: 0
   m_Name: Marker_25
   m_TagString: Untagged
@@ -5677,25 +5677,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &521163843
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 521163841}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 521163845}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR25
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 521163845}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &521163844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5766,7 +5747,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 521163843}
+  mPreview: {fileID: 521163846}
+--- !u!114 &521163846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521163841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 521163845}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR25
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 521163845}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &542055789
 GameObject:
   m_ObjectHideFlags: 0
@@ -6643,7 +6643,7 @@ GameObject:
   - component: {fileID: 654964370}
   - component: {fileID: 654964373}
   - component: {fileID: 654964372}
-  - component: {fileID: 654964371}
+  - component: {fileID: 654964374}
   m_Layer: 0
   m_Name: Marker_12
   m_TagString: Untagged
@@ -6667,25 +6667,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &654964371
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 654964369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 654964373}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR12
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 654964373}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &654964372
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6756,7 +6737,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 654964371}
+  mPreview: {fileID: 654964374}
+--- !u!114 &654964374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 654964369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 654964373}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR12
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 654964373}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!43 &678675060
 Mesh:
   m_ObjectHideFlags: 0
@@ -6933,7 +6933,7 @@ GameObject:
   - component: {fileID: 710830215}
   - component: {fileID: 710830218}
   - component: {fileID: 710830217}
-  - component: {fileID: 710830216}
+  - component: {fileID: 710830219}
   m_Layer: 0
   m_Name: Marker_13
   m_TagString: Untagged
@@ -6957,25 +6957,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &710830216
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 710830214}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 710830218}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR13
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 710830218}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &710830217
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7046,7 +7027,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 710830216}
+  mPreview: {fileID: 710830219}
+--- !u!114 &710830219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710830214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 710830218}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR13
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 710830218}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &735072471
 GameObject:
   m_ObjectHideFlags: 0
@@ -7306,7 +7306,7 @@ GameObject:
   - component: {fileID: 741183202}
   - component: {fileID: 741183205}
   - component: {fileID: 741183204}
-  - component: {fileID: 741183203}
+  - component: {fileID: 741183206}
   m_Layer: 0
   m_Name: Marker_14
   m_TagString: Untagged
@@ -7330,25 +7330,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &741183203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741183201}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 741183205}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR14
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 741183205}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &741183204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7419,7 +7400,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 741183203}
+  mPreview: {fileID: 741183206}
+--- !u!114 &741183206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 741183201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 741183205}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR14
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 741183205}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &744689391
 GameObject:
   m_ObjectHideFlags: 0
@@ -7777,7 +7777,7 @@ GameObject:
   - component: {fileID: 772760843}
   - component: {fileID: 772760846}
   - component: {fileID: 772760845}
-  - component: {fileID: 772760844}
+  - component: {fileID: 772760847}
   m_Layer: 0
   m_Name: Marker_8
   m_TagString: Untagged
@@ -7801,25 +7801,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &772760844
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 772760842}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 772760846}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR8
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 772760846}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &772760845
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7890,7 +7871,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 772760844}
+  mPreview: {fileID: 772760847}
+--- !u!114 &772760847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772760842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 772760846}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR8
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 772760846}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &784047783
 GameObject:
   m_ObjectHideFlags: 0
@@ -8037,7 +8037,7 @@ GameObject:
   - component: {fileID: 786886400}
   - component: {fileID: 786886403}
   - component: {fileID: 786886402}
-  - component: {fileID: 786886401}
+  - component: {fileID: 786886404}
   m_Layer: 0
   m_Name: Marker_3
   m_TagString: Untagged
@@ -8061,25 +8061,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &786886401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 786886399}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 786886403}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR3
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 786886403}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &786886402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8150,7 +8131,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 786886401}
+  mPreview: {fileID: 786886404}
+--- !u!114 &786886404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786886399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 786886403}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR3
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 786886403}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &796712553
 GameObject:
   m_ObjectHideFlags: 0
@@ -8251,7 +8251,7 @@ GameObject:
   - component: {fileID: 808413184}
   - component: {fileID: 808413187}
   - component: {fileID: 808413186}
-  - component: {fileID: 808413185}
+  - component: {fileID: 808413188}
   m_Layer: 0
   m_Name: Marker_11
   m_TagString: Untagged
@@ -8275,25 +8275,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &808413185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 808413183}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 808413187}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR11
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 808413187}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &808413186
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8364,7 +8345,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 808413185}
+  mPreview: {fileID: 808413188}
+--- !u!114 &808413188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 808413183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 808413187}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR11
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 808413187}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!21 &822920687
 Material:
   serializedVersion: 8
@@ -9260,7 +9260,7 @@ GameObject:
   - component: {fileID: 943600607}
   - component: {fileID: 943600610}
   - component: {fileID: 943600609}
-  - component: {fileID: 943600608}
+  - component: {fileID: 943600611}
   m_Layer: 0
   m_Name: Marker_29
   m_TagString: Untagged
@@ -9284,25 +9284,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &943600608
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 943600606}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 943600610}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR29
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 943600610}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &943600609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9373,7 +9354,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 943600608}
+  mPreview: {fileID: 943600611}
+--- !u!114 &943600611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943600606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 943600610}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR29
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 943600610}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &957781120
 GameObject:
   m_ObjectHideFlags: 0
@@ -10463,7 +10463,7 @@ GameObject:
   - component: {fileID: 1123585264}
   - component: {fileID: 1123585267}
   - component: {fileID: 1123585266}
-  - component: {fileID: 1123585265}
+  - component: {fileID: 1123585268}
   m_Layer: 0
   m_Name: Marker_26
   m_TagString: Untagged
@@ -10487,25 +10487,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1123585265
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1123585263}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1123585267}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR26
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1123585267}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1123585266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10576,7 +10557,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1123585265}
+  mPreview: {fileID: 1123585268}
+--- !u!114 &1123585268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123585263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1123585267}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR26
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1123585267}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!21 &1140779062
 Material:
   serializedVersion: 8
@@ -10705,7 +10705,7 @@ GameObject:
   - component: {fileID: 1169390805}
   - component: {fileID: 1169390803}
   m_Layer: 0
-  m_Name: MQTTManager
+  m_Name: MQTTTrajectoryManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10761,7 +10761,7 @@ GameObject:
   - component: {fileID: 1172218603}
   - component: {fileID: 1172218606}
   - component: {fileID: 1172218605}
-  - component: {fileID: 1172218604}
+  - component: {fileID: 1172218607}
   m_Layer: 0
   m_Name: Marker_16
   m_TagString: Untagged
@@ -10785,25 +10785,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1172218604
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1172218602}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1172218606}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR16
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1172218606}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1172218605
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10874,7 +10855,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1172218604}
+  mPreview: {fileID: 1172218607}
+--- !u!114 &1172218607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1172218602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1172218606}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR16
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1172218606}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1174871420
 GameObject:
   m_ObjectHideFlags: 0
@@ -11742,7 +11742,7 @@ GameObject:
   - component: {fileID: 1229664774}
   - component: {fileID: 1229664777}
   - component: {fileID: 1229664776}
-  - component: {fileID: 1229664775}
+  - component: {fileID: 1229664778}
   m_Layer: 0
   m_Name: Marker_2
   m_TagString: Untagged
@@ -11766,25 +11766,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1229664775
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1229664773}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1229664777}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR2
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1229664777}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1229664776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11855,7 +11836,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1229664775}
+  mPreview: {fileID: 1229664778}
+--- !u!114 &1229664778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229664773}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1229664777}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR2
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1229664777}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1233088695
 GameObject:
   m_ObjectHideFlags: 0
@@ -12745,7 +12745,7 @@ GameObject:
   - component: {fileID: 1289317361}
   - component: {fileID: 1289317364}
   - component: {fileID: 1289317363}
-  - component: {fileID: 1289317362}
+  - component: {fileID: 1289317365}
   m_Layer: 0
   m_Name: Marker_7
   m_TagString: Untagged
@@ -12769,25 +12769,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1289317362
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1289317360}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1289317364}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR7
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1289317364}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1289317363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12858,7 +12839,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1289317362}
+  mPreview: {fileID: 1289317365}
+--- !u!114 &1289317365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289317360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1289317364}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR7
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1289317364}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1290820375
 GameObject:
   m_ObjectHideFlags: 0
@@ -12961,7 +12961,7 @@ GameObject:
   - component: {fileID: 1320496422}
   - component: {fileID: 1320496425}
   - component: {fileID: 1320496424}
-  - component: {fileID: 1320496423}
+  - component: {fileID: 1320496426}
   m_Layer: 0
   m_Name: Marker_21
   m_TagString: Untagged
@@ -12985,25 +12985,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1320496423
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1320496421}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1320496425}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR21
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1320496425}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1320496424
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13074,7 +13055,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1320496423}
+  mPreview: {fileID: 1320496426}
+--- !u!114 &1320496426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320496421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1320496425}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR21
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1320496425}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!43 &1324430721
 Mesh:
   m_ObjectHideFlags: 0
@@ -14040,7 +14040,7 @@ GameObject:
   - component: {fileID: 1415325678}
   - component: {fileID: 1415325681}
   - component: {fileID: 1415325680}
-  - component: {fileID: 1415325679}
+  - component: {fileID: 1415325682}
   m_Layer: 0
   m_Name: Marker_23
   m_TagString: Untagged
@@ -14064,25 +14064,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1415325679
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1415325677}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1415325681}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR23
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1415325681}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1415325680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14153,7 +14134,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1415325679}
+  mPreview: {fileID: 1415325682}
+--- !u!114 &1415325682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1415325677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1415325681}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR23
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1415325681}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1427755644
 GameObject:
   m_ObjectHideFlags: 0
@@ -14853,7 +14853,7 @@ GameObject:
   - component: {fileID: 1486815874}
   - component: {fileID: 1486815877}
   - component: {fileID: 1486815876}
-  - component: {fileID: 1486815875}
+  - component: {fileID: 1486815878}
   m_Layer: 0
   m_Name: Marker_1
   m_TagString: Untagged
@@ -14877,25 +14877,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1486815875
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1486815873}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1486815877}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR1
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1486815877}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1486815876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14966,7 +14947,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1486815875}
+  mPreview: {fileID: 1486815878}
+--- !u!114 &1486815878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486815873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1486815877}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR1
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1486815877}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!43 &1492827919
 Mesh:
   m_ObjectHideFlags: 0
@@ -17591,7 +17591,7 @@ GameObject:
   - component: {fileID: 1775932728}
   - component: {fileID: 1775932731}
   - component: {fileID: 1775932730}
-  - component: {fileID: 1775932729}
+  - component: {fileID: 1775932732}
   m_Layer: 0
   m_Name: Marker_27
   m_TagString: Untagged
@@ -17615,25 +17615,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1775932729
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1775932727}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1775932731}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR27
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1775932731}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1775932730
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17704,7 +17685,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1775932729}
+  mPreview: {fileID: 1775932732}
+--- !u!114 &1775932732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775932727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1775932731}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR27
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1775932731}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1781094953
 GameObject:
   m_ObjectHideFlags: 0
@@ -19475,7 +19475,7 @@ GameObject:
   - component: {fileID: 1964430825}
   - component: {fileID: 1964430828}
   - component: {fileID: 1964430827}
-  - component: {fileID: 1964430826}
+  - component: {fileID: 1964430829}
   m_Layer: 0
   m_Name: Marker_5
   m_TagString: Untagged
@@ -19499,25 +19499,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1964430826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1964430824}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1964430828}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR5
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1964430828}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1964430827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19588,7 +19569,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1964430826}
+  mPreview: {fileID: 1964430829}
+--- !u!114 &1964430829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964430824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1964430828}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR5
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1964430828}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1972547943
 GameObject:
   m_ObjectHideFlags: 0
@@ -19666,7 +19666,7 @@ GameObject:
   - component: {fileID: 1984897872}
   - component: {fileID: 1984897875}
   - component: {fileID: 1984897874}
-  - component: {fileID: 1984897873}
+  - component: {fileID: 1984897876}
   m_Layer: 0
   m_Name: Marker_6
   m_TagString: Untagged
@@ -19690,25 +19690,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1984897873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1984897871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1984897875}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR6
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1984897875}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1984897874
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19779,7 +19760,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1984897873}
+  mPreview: {fileID: 1984897876}
+--- !u!114 &1984897876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984897871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1984897875}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR6
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1984897875}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1995505182
 GameObject:
   m_ObjectHideFlags: 0
@@ -19874,7 +19874,7 @@ GameObject:
   - component: {fileID: 1995650462}
   - component: {fileID: 1995650465}
   - component: {fileID: 1995650464}
-  - component: {fileID: 1995650463}
+  - component: {fileID: 1995650466}
   m_Layer: 0
   m_Name: Marker_19
   m_TagString: Untagged
@@ -19898,25 +19898,6 @@ Transform:
   m_Father: {fileID: 1475298438}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1995650463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1995650461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mObserverBehaviour: {fileID: 1995650465}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: QR19
-  mDatasetName: Vuforia/CompasXR.xml
-  mCastedBehaviour: {fileID: 1995650465}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1995650464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19987,7 +19968,26 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1995650463}
+  mPreview: {fileID: 1995650466}
+--- !u!114 &1995650466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1995650461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mObserverBehaviour: {fileID: 1995650465}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: QR19
+  mDatasetName: Vuforia/CompasXR.xml
+  mCastedBehaviour: {fileID: 1995650465}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &2002905807
 GameObject:
   m_ObjectHideFlags: 0
@@ -20857,7 +20857,7 @@ MonoBehaviour:
   databaseManager: {fileID: 0}
   instantiateObjects: {fileID: 0}
   eventManager: {fileID: 0}
-  mqttManager: {fileID: 0}
+  mqttTrajectoryManager: {fileID: 0}
   CommunicationToggleObject: {fileID: 0}
   CanvasObject: {fileID: 0}
   ConstantUIPanelObjects: {fileID: 0}
@@ -20875,6 +20875,7 @@ MonoBehaviour:
   IDToggleObject: {fileID: 0}
   PriorityViewerToggleObject: {fileID: 0}
   MqttConnectButtonObject: {fileID: 0}
+  ReviewTrajectoryObjects: {fileID: 0}
   RequestTrajectoryButtonObject: {fileID: 0}
   ApproveTrajectoryButtonObject: {fileID: 0}
   RejectTrajectoryButtonObject: {fileID: 0}

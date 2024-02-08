@@ -115,7 +115,7 @@ namespace MQTTDataCompasXR
             UserCount = new SimpleCounter();
             ApprovalCount = new SimpleCounter();
             PrimaryUser = false;
-            CurrentTrajectory = null;
+            CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
         }
     }
 
@@ -165,7 +165,7 @@ namespace MQTTDataCompasXR
     //TODO: MAJOR TODO: CHECK IF THE HEADER PARSING PRODUCES INCORRECT HEADER INFORMATION ON SENDING OF NEW MESSAGES.
     //TODO: CHECK OVERALL STRUCTURE OF PASSING INFORMATION BACK AND FORTH BETWEEN GH AND UNITY. 
     //TODO: THERE IS A LOT OF CONDITIONAL INPUTS THAT ARE NOT IN THE PYTHON FILE, AND I AM NOT SURE IF THIS IS BECAUSE THE SPECIFICITY OF C# AND PARSING OR IF IT IS BECAUSE IMPORT WAS INCORRECT IN PYTHON FILE. 
-    
+    //TODO: ELEMENT ID SHOULD ACTUALLY BE STEP ID EVERYWHERE.
     [System.Serializable]
     public class SequenceCounter
     {
@@ -406,6 +406,8 @@ namespace MQTTDataCompasXR
         public string TrajectoryID { get; private set; }
         public List<List<float>> Trajectory { get; private set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
 
+        //TODO: ADD ROBOT LOCATION (BASEFRAME) TO THIS MESSAGE.
+
         // Constructor for creating a new GetTrajectoryResult Message instance
         public GetTrajectoryResult(string elementID, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
         {
@@ -531,7 +533,18 @@ namespace MQTTDataCompasXR
         // Method to parse an instance of the class from a json string
         public static ApprovalCounterRequest Parse(string jsonString)
         {
-            return JsonConvert.DeserializeObject<ApprovalCounterRequest>(jsonString);
+            //Deserilize string into a dictionary string object
+            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
+            
+            // Extract header data from the JSON object and parse into a new Header instance
+            var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
+            Header header = Header.Parse(headerInfo);
+
+            // Extract additional data from the JSON object and cast to new required types.
+            var elementID = jsonObject["element_id"].ToString();
+            
+            // Create and return a new GetTrajectoryResult instance
+            return new ApprovalCounterRequest(elementID, header);
         }
     }
 

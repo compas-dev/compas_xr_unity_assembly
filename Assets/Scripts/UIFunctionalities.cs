@@ -26,7 +26,7 @@ public class UIFunctionalities : MonoBehaviour
     public DatabaseManager databaseManager;
     public InstantiateObjects instantiateObjects;
     public Eventmanager eventManager;
-    public MqttTrajectoryReceiver mqttManager;
+    public MqttTrajectoryReceiver mqttTrajectoryManager;
     
     //Toggle GameObjects
     private GameObject VisibilityMenuObject;
@@ -151,7 +151,7 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
-        mqttManager = GameObject.Find("MQTTManager").GetComponent<MqttTrajectoryReceiver>();
+        mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryReceiver>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -361,28 +361,28 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, request button and add event listner for on click method
         RequestTrajectoryButtonObject = TrajectoryControlObjects.FindObject("RequestTrajectoryButton");
         Button RequestTrajectoryButton = RequestTrajectoryButtonObject.GetComponent<Button>();
-        RequestTrajectoryButton.onClick.AddListener(() => print_string_on_click("RequestTrajectoryButton Pressed"));;
-        // RequestTrajectoryButton.onClick.AddListener(() => mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData()));;
+        RequestTrajectoryButton.onClick.AddListener(RequestTrajectoryButtonMethod);;
+        // RequestTrajectoryButton.onClick.AddListener(() => mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData()));;
     
         //Find object, approve button and add event listner for on click method
         ApproveTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ApproveTrajectoryButton");
         Button ApproveTrajectoryButton = ApproveTrajectoryButtonObject.GetComponent<Button>();
-        ApproveTrajectoryButton.onClick.AddListener(() => print_string_on_click("ApproveTrajectoryButton Pressed"));;
+        ApproveTrajectoryButton.onClick.AddListener(ApproveTrajectoryButtonMethod);;
 
         //Find object, reject button and add event listner for on click method
         RejectTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("RejectTrajectoryButton");
         Button RejectTrajectoryButton = RejectTrajectoryButtonObject.GetComponent<Button>();
-        RejectTrajectoryButton.onClick.AddListener(() => print_string_on_click("RejectTrajectoryButton Pressed"));;
+        RejectTrajectoryButton.onClick.AddListener(RejectTrajectoryButtonMethod);;
 
         //Find slider for trajectory review and add event listner for on value changed method
         TrajectoryReviewSliderObject = ReviewTrajectoryObjects.FindObject("TrajectoryReviewSlider");
         TrajectoryReviewSlider = TrajectoryReviewSliderObject.GetComponent<Slider>();
-        TrajectoryReviewSlider.onValueChanged.AddListener(TrajectoryReviewTestMethod);;
+        TrajectoryReviewSlider.onValueChanged.AddListener(TrajectorySliderReviewMethod);;
 
         //Find Object, Execute button and add event listner for on click method
         ExecuteTrajectoryButtonObject = TrajectoryControlObjects.FindObject("ExecuteTrajectoryButton");
         Button ExecuteTrajectoryButton = ExecuteTrajectoryButtonObject.GetComponent<Button>();
-        ExecuteTrajectoryButton.onClick.AddListener(() => print_string_on_click("ExecuteTrajectoryButton Pressed"));;
+        ExecuteTrajectoryButton.onClick.AddListener(ExecuteTrajectoryButtonMethod);;
 
     }
     public void ToggleVisibilityMenu(Toggle toggle)
@@ -1109,7 +1109,7 @@ public class UIFunctionalities : MonoBehaviour
         Debug.Log($"Test Message: {JsonConvert.SerializeObject(testMessage)}");
 
         //Publish to the topic
-        mqttManager.PublishToTopic(mqttManager.compasXRTopics.publishers.getTrajectoryRequestTopic, testMessage);
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, testMessage);
     }
     public void UpdateMqttConnectionFromUserInputs()
     {
@@ -1130,20 +1130,20 @@ public class UIFunctionalities : MonoBehaviour
         }
 
         //Check if the manual the port or broker is different then the current one.
-        if (newMqttBroker != mqttManager.brokerAddress || Convert.ToInt32(newMqttPort) != mqttManager.brokerPort)
+        if (newMqttBroker != mqttTrajectoryManager.brokerAddress || Convert.ToInt32(newMqttPort) != mqttTrajectoryManager.brokerPort)
         {
             //Unsubscibe from events
-            mqttManager.RemoveConnectionEventListners();
+            mqttTrajectoryManager.RemoveConnectionEventListners();
 
             //Unsubscribe from topics
-            mqttManager.UnsubscribeFromCompasXRTopics();
+            mqttTrajectoryManager.UnsubscribeFromCompasXRTopics();
 
             //Update Broker and Port to the user inputs
-            mqttManager.brokerAddress = newMqttBroker;
-            mqttManager.brokerPort = Convert.ToInt32(newMqttPort);
+            mqttTrajectoryManager.brokerAddress = newMqttBroker;
+            mqttTrajectoryManager.brokerPort = Convert.ToInt32(newMqttPort);
 
             //Disconnect from current broker
-            mqttManager.DisconnectandReconnectAsyncRoutine();
+            mqttTrajectoryManager.DisconnectandReconnectAsyncRoutine();
         }
         else
         {
@@ -1158,23 +1158,23 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Trajectory Review Slider Value Changed is value {value}");
     }
-    public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryApprovalVisability, bool trajectoryApprovalInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
+    public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
         RequestTrajectoryButtonObject.SetActive(requestTrajectoryVisability);
         RequestTrajectoryButtonObject.GetComponent<Button>().interactable = requestTrajectoryInteractable;
 
         //Set Visability of Trajectory Review objects and Interactable of Approval and Reject Buttons
-        ReviewTrajectoryObjects.SetActive(trajectoryApprovalVisability);
-        ApproveTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryApprovalInteractable;
-        RejectTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryApprovalInteractable;
+        ReviewTrajectoryObjects.SetActive(trajectoryReviewVisibility);
+        ApproveTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryReviewInteractable;
+        RejectTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryReviewInteractable;
 
         //Set Visability and Interactable of Execute Trajectory Button.
         ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
         ExecuteTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
 
-        //Adjust interactibility of Robot toggle based on visibility of other services controls
-        if ( trajectoryApprovalVisability || executeTrajectoryVisability)
+        //Adjust interactibility of Robot toggle based on visibility of other services controls //TODO: SHOULD THIS PREVENT ME FROM PUSHING NEXT OR PREVIOUS ALSO? I THINK SO.
+        if ( trajectoryReviewVisibility || executeTrajectoryVisability)
         {
             //if trajectory approval or exacute trajectory is visible then robot toggle is not interactable
             RobotToggleObject.GetComponent<Toggle>().interactable = false;
@@ -1185,6 +1185,90 @@ public class UIFunctionalities : MonoBehaviour
             RobotToggleObject.GetComponent<Toggle>().interactable = true;
         }
     }
+    public void RequestTrajectoryButtonMethod()
+    {
+        Debug.Log($"Request Trajectory Button Pressed: Requesting Trajectory for Step {CurrentStep}");
+
+        //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData());
+
+        //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true
+        mqttTrajectoryManager.serviceManager.PrimaryUser = true;
+
+        //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+        //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
+        TrajectoryServicesUIControler(true, false, false, false, false, false);
+    }
+    public void ApproveTrajectoryButtonMethod()
+    {
+        Debug.Log($"Approve Trajectory Button Pressed: Approving Trajectory for Step {CurrentStep}");
+        
+        //TODO: Put this here to prevent accidentally setting it if the message is too fast.
+        //Make the approval and disapproval button not interactable to prevent sending multiple approvals and disapprovals.
+        TrajectoryServicesUIControler(false, false, true, false, false, false);
+        
+        //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
+
+        //TODO: If I am the primary User then Include TimeOut for waiting on everyone else to approve or disapprove...
+        //TODO: Possibly Publish with another approval status of 3 == Cancelation.
+    }
+    public void RejectTrajectoryButtonMethod()
+    {
+        Debug.Log($"Reject Trajectory Button Pressed: Rejecting Trajectory for Step {CurrentStep}");
+
+        //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
+
+        //Make the approval and disapproval button not interactable to prevent sending multiple approvals and disapprovals....
+        //Just a precaustion should be handles by message handler anyway. //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+        TrajectoryServicesUIControler(false, false, true, false, false, false);
+    }
+    public void TrajectorySliderReviewMethod(float value)
+    {
+        //Check if MQTT Service Manager is not null or count is greater then 0
+        if (mqttTrajectoryManager.serviceManager.CurrentTrajectory != null)
+        {
+            //double check that count is not 0
+            if (mqttTrajectoryManager.serviceManager.CurrentTrajectory.Count > 0)
+            {
+                //Remap input value to the count of the trajectory
+                float SliderValue = value;
+                int TrajectoryConfigurationsCount = mqttTrajectoryManager.serviceManager.CurrentTrajectory.Count; 
+                float SliderMax = 1; //Input Slider Max Value == 1
+                float SliderMin = 0; // Input Slider Min Value == 0
+                
+                float SliderValueRemaped = GameObjectExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
+
+                //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
+                Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped]}"); //TODO:CHECK SLIDER REMAP
+
+                //TODO: Color Static Robot Image based on SliderRemapedValue
+            }
+            else
+            {
+                Debug.Log("Trajectory Review: Current Trajectory Count is 0.");
+            }
+        }
+        else
+        {
+            Debug.Log("Trajectory Review: Current Trajectory is null.");
+        }
+    }
+    public void ExecuteTrajectoryButtonMethod()
+    {
+        Debug.Log($"Execute Trajectory Button Pressed: Executing Trajectory for Step {CurrentStep}");
+
+        //Publish new SendTrajectoryMessage to the trajectory execution topic for current step
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData());
+
+        //Make the execute button not interactable to prevent sending multiple just a precaustion, should be handled by message handler anyway.
+        TrajectoryServicesUIControler(false, false, false, false, true, false); //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+
+        //Publish new ApproveTrajectoryMessage for CONSENSUS APPROVAL
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
+    }
+
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
@@ -1538,16 +1622,16 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager.PriorityTreeDict.Clear();
 
         //Unsubscribe from topics
-        mqttManager.UnsubscribeFromCompasXRTopics();
+        mqttTrajectoryManager.UnsubscribeFromCompasXRTopics();
 
         //Unsubscibe from connection events
-        mqttManager.RemoveConnectionEventListners();
+        mqttTrajectoryManager.RemoveConnectionEventListners();
 
         //Fetch settings data again
         databaseManager.FetchSettingsData(eventManager.settings_reference);
 
         //Disconnect from MQTT and reconnect after new application settings are received.
-        mqttManager.DisconnectandReconnectAsyncRoutine();
+        mqttTrajectoryManager.DisconnectandReconnectAsyncRoutine();
 
     }
     public void ToggleEditor(Toggle toggle)

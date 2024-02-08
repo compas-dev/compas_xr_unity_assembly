@@ -211,7 +211,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         //Get Trajectory Result Message.
         if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
         {
-            //Deserialize the message
+            Debug.Log("MQTT: GetTrajectoryResult Message Handeling");
+
+            //Deserialize the message usign parse method
             GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
             
             //If I am not the primary user checks
@@ -251,6 +253,8 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                 //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
                 else
                 {
+                    Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Trajectory count is zero. Resetting Service Manager and returning to Request Trajectory Service.");
+
                     //Set Primary user back to false
                     serviceManager.PrimaryUser = false;
 
@@ -258,39 +262,139 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                     UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
                 }
             }
-
-            //Signal the UI
-            // UIFunctionalities.SignalGetTrajectoryResult(getTrajectoryResult);
         }
 
         //Approve Trajectory Message
         else if (topic == compasXRTopics.subscribers.approveTrajectoryTopic)
         {
-            //Deserialize the message
-            // ApproveTrajectory approveTrajectory = JsonConvert.DeserializeObject<ApproveTrajectory>(message);
+            Debug.Log("MQTT: ApproveTrajectory Message Handeling");
 
-            //Signal the UI
-            // UIFunctionalities.SignalApproveTrajectory(approveTrajectory);
+            //Deserialize the message usign parse method
+            ApproveTrajectory trajectoryApprovalMessage = ApproveTrajectory.Parse(message);
+
+            //Approve trajectory approvalStatus rejction message received 
+            /*//TODO: I think the is the most error prone area of the code...
+            Returns all users back to the Request Trajectory topic, but it can cause a condition where we all request a trajectory at the same time, so each phone thinks it is the primary user.
+            This will be complex to fix, and Gonzalo said we should just be honest about this and inform people.....
+            I think I could come up with a solution (Transactional when someone else requests a trajectory... it somehow informs the other phones and prevents them from requesting one until that person is back on service request.)
+            This may include another topic or something like that, but I am not sure and would take some more additional thought.
+            */
+            if (trajectoryApprovalMessage.ApprovalStatus == 0)
+            {
+                //If I am primary user reset service manager items and unsubscribe from Approval Counter Result topic
+                if (serviceManager.PrimaryUser)
+                {
+                    //Unsubsribe from Approval Counter Result topic
+                    UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                    //Set Primary user back to false
+                    serviceManager.PrimaryUser = false;
+                }
+
+                //Reset ApprovalCount and UserCount This could be done inside of the PrimaryUser, but Also safe way of error catching
+                serviceManager.ApprovalCount.Reset();
+                serviceManager.UserCount.Reset();
+
+                //Set Current Trajectory to null
+                serviceManager.CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
+
+                //No matter if I am Primary user or not: Set visibility and interactibility of Request Trajectory Button
+                UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+            }
+            //ApproveTrajectoryMessage ApprovalStatus Trajectory approved message received
+            else if (trajectoryApprovalMessage.ApprovalStatus == 1)
+            {
+                Debug.Log($"MQTT: ApproveTrajectory User {trajectoryApprovalMessage.Header.DeviceID} approved trajectory {trajectoryApprovalMessage.TrajectoryID}");
+
+                //If I am the primary user...
+                if (serviceManager.PrimaryUser)
+                {
+                    //Increment the approval count
+                    serviceManager.ApprovalCount.Increment();
+
+                    Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
+
+                    //If the approval count is equal to the user count then move me on to service 3 as the primary User.
+                    if (serviceManager.ApprovalCount.Value == serviceManager.UserCount.Value) //TODO: THIS CAN ALSO BE THE RESET POINT, BUT I THINK IT IS SAFER TO HANDLE ON CONSENSUS.
+                    {
+                        Debug.Log("MQTT: ApprovalCount == UserCount. Moving to Service 3 as Primary User.");
+                        
+                        //Unsubsribe from Approval Counter Result topic
+                        UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                        //Set visibility and interactibility of Execute Trajectory Button
+                        UIFunctionalities.TrajectoryServicesUIControler(false, false, true, false, true, true);
+                    }
+                    else
+                    {
+                        Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
+                    }
+                }
+            }
+            //ApproveTrajectoryMessage ApprovalStatus Consensus message received
+            else if (trajectoryApprovalMessage.ApprovalStatus == 2)
+            {
+                Debug.Log($"MQTT: ApproveTrajectory Consensus message received for trajectory {trajectoryApprovalMessage.TrajectoryID}");
+
+                //If I am the primary user...
+                if (serviceManager.PrimaryUser)
+                {
+                    //Unsubsribe from Approval Counter Result topic
+                    UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                    //Set Primary user back to false
+                    serviceManager.PrimaryUser = false;
+                }
+
+                //Just as a safety precaution reset approval counter, user count, and current trajectory for everyone
+                serviceManager.ApprovalCount.Reset();
+                serviceManager.UserCount.Reset();
+                serviceManager.CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
+
+                //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
+                UIFunctionalities.TrajectoryServicesUIControler(true, false, false, false, false, false);
+            }
+            //TODO: Add another case with ApprovalStatus 3, which is a cancelation?
+            //ApprovalStatus not recognized.
+            else
+            {
+                Debug.LogWarning("MQTT: Approval Status is not recognized. Approval Status: " + trajectoryApprovalMessage.ApprovalStatus);
+            }
         }
 
         //Approval Counter Request Message
         else if (topic == compasXRTopics.subscribers.approvalCounterRequestTopic)
         {
             //Deserialize the message
-            // ApprovalCounterRequest approvalCounterRequest = JsonConvert.DeserializeObject<ApprovalCounterRequest>(message);
+            ApprovalCounterRequest approvalCounterRequestMessage = ApprovalCounterRequest.Parse(message);
 
-            //Signal the UI
-            // UIFunctionalities.SignalApprovalCounterRequest(approvalCounterRequest);
+            Debug.Log($"MQTT: ApprovalCounterRequset Message Received from User {approvalCounterRequestMessage.Header.DeviceID}");
+
+            //No matter what publish with a reply on the approval counter result topic
+            //TODO: I am replying with the same element ID, not sure If I should reply with my current element... could be a good chance for a priority check of other people.
+            PublishToTopic(compasXRTopics.publishers.approvalCounterResultTopic, new ApprovalCounterResult(approvalCounterRequestMessage.ElementID).GetData());
         }
 
         //Approval Counter Result Message
         else if (topic == compasXRTopics.subscribers.approvalCounterResultTopic)
         {
             //Deserialize the message
-            // ApprovalCounterResponse approvalCounterResponse = JsonConvert.DeserializeObject<ApprovalCounterResponse>(message);
+            ApprovalCounterResult approvalCounterResultMessage = ApprovalCounterResult.Parse(message);
 
-            //Signal the UI
-            // UIFunctionalities.SignalApprovalCounterResponse(approvalCounterResponse);
+            Debug.Log($"MQTT: ApprovalCounterResult Message Received from User{approvalCounterResultMessage.Header.DeviceID} for step {approvalCounterResultMessage.ElementID}");
+
+            //If I am the primary user...
+            if (serviceManager.PrimaryUser)
+            {
+                //Increment the user count
+                serviceManager.UserCount.Increment();
+            }
+        }
+
+        //Default
+        else
+        {
+            Debug.LogWarning("MQTT: No message handler for topic: " + topic);
         }
 
     }
