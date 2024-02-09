@@ -1152,7 +1152,7 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Communication Buttons //////////////////////////////////////////////
-    public void TestPublish()
+    public void TestPublish() //TODO: REMOVE THIS
     {
         Debug.Log("Test Publish Button Pressed");
 
@@ -1205,7 +1205,7 @@ public class UIFunctionalities : MonoBehaviour
 
         }
     }
-    public void TrajectoryReviewTestMethod(float value)
+    public void TrajectoryReviewTestMethod(float value) //TODO: REMOVE THIS
     {
         Debug.Log($"Trajectory Review Slider Value Changed is value {value}");
     }

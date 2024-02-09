@@ -179,6 +179,7 @@ namespace MQTTDataCompasXR
     //TODO: CHECK OVERALL STRUCTURE OF PASSING INFORMATION BACK AND FORTH BETWEEN GH AND UNITY. 
     //TODO: THERE IS A LOT OF CONDITIONAL INPUTS THAT ARE NOT IN THE PYTHON FILE, AND I AM NOT SURE IF THIS IS BECAUSE THE SPECIFICITY OF C# AND PARSING OR IF IT IS BECAUSE IMPORT WAS INCORRECT IN PYTHON FILE. 
     //TODO: ELEMENT ID SHOULD ACTUALLY BE STEP ID EVERYWHERE.
+    //TODO: IMPLEMENT EXCEPTIONS FOR FETCHING DATA.
     [System.Serializable]
     public class SequenceCounter
     {
@@ -454,6 +455,13 @@ namespace MQTTDataCompasXR
 
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
+            
+            //throw exception if trajectory is null
+            if (jsonObject["trajectory"] == null)
+            {
+                throw new Exception("Trajectory is null");
+            }
+
             var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
             
             // Create and return a new GetTrajectoryResult instance

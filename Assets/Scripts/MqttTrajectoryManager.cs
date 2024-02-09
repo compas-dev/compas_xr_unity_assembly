@@ -229,6 +229,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                     //Signal On Screen Message for 
                     UIFunctionalities.SignalTrajectoryReviewRequest(getTrajectoryResultmessage.ElementID);
 
+                    //Set curent trajectory of the Service Manager
+                    serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
+
                     //Set current Service to Approve Trajectory
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
                 }
@@ -258,8 +261,8 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                     //Publish request for approval counter and do not input header.
                     PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
 
-                    // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING.
-                    _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 120);
+                    // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
+                    _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 10);
 
                 }
                 //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
