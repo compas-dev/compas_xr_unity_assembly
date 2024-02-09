@@ -56,6 +56,8 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject MQTTFailedToConnectMessageObject;
     public GameObject MQTTConnectionLostMessageObject;
     public GameObject ErrorDownloadingObjectMessageObject;
+    public GameObject TrajectoryReviewRequestMessageObject;
+    public GameObject TrajectoryApprovalTimedOutMessageObject;
 
     //Visualizer Menu Toggle Objects
     private GameObject VisualzierBackground;
@@ -242,13 +244,15 @@ public class UIFunctionalities : MonoBehaviour
         VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
 
-        //Find OnScreeen Warning messages
+        //Find OnScreeen Messages
         GameObject MessagesParent = CanvasObject.FindObject("OnScreenMessages");
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
         MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
         MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
         ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
+        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
+        TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
         //Find Object, Button, and Add Listener for OnClick method
@@ -362,7 +366,6 @@ public class UIFunctionalities : MonoBehaviour
         RequestTrajectoryButtonObject = TrajectoryControlObjects.FindObject("RequestTrajectoryButton");
         Button RequestTrajectoryButton = RequestTrajectoryButtonObject.GetComponent<Button>();
         RequestTrajectoryButton.onClick.AddListener(RequestTrajectoryButtonMethod);;
-        // RequestTrajectoryButton.onClick.AddListener(() => mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData()));;
     
         //Find object, approve button and add event listner for on click method
         ApproveTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ApproveTrajectoryButton");
@@ -513,7 +516,7 @@ public class UIFunctionalities : MonoBehaviour
 
                 instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, previousStepElement.FindObject(elementID + " Geometry"));
 
-                //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
+                //If Priority Viewer toggle is on then color the add additional color based on priority
                 if (PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
                     instantiateObjects.ColorObjectByPriority(databaseManager.CurrentPriority, PreviousStep.data.priority.ToString(), CurrentStep, previousStepElement.FindObject(elementID + " Geometry"));
@@ -1046,6 +1049,54 @@ public class UIFunctionalities : MonoBehaviour
         }
 
     }
+    public void SignalTrajectoryReviewRequest(string key)
+    {
+        Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key}.");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("TrajectoryReviewRequestText").GetComponent<TMP_Text>();
+
+        //Define message for the onscreen text
+        string message = $"REQUEST : Trajectory Review requested by other user for step : {key}";
+        
+        if(messageComponent != null && message != null && TrajectoryReviewRequestMessageObject != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(TrajectoryReviewRequestMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("Trajectory Review Request Message: Could not find message object or message component.");
+        }
+
+        //Add additional for acknolwedge button to acknowledge button if they are not already there.
+        GameObject AcknowledgeButton = TrajectoryReviewRequestMessageObject.FindObject("AcknowledgeButton");
+
+        //Check if this item already has a listner or not.
+        if (AcknowledgeButton!= null && AcknowledgeButton.GetComponent<Button>().onClick.GetPersistentEventCount() <= 1)
+        {
+            //Add Listner for Acknowledge Button of this message to Set Current Step
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => SetCurrentStep(key));
+
+            //Add Listner for Acknowledge Button of this message to turn on robot toggle
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => 
+            {
+                //if robot toggle is off turn it on
+                if(!RobotToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    RobotToggleObject.GetComponent<Toggle>().isOn = true;
+                }
+            });
+
+            //Add Listner for Acknowledge Button of this to set interactibility of review trajectory buttons
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => TrajectoryServicesUIControler(false, false, true, true, false, false));
+        }
+        else
+        {
+            Debug.LogWarning("Trajectory Review Request Message: Something Is messed up with on click event listner.");
+        }
+
+    }
     public void SignalMQTTConnectionFailed()
     {
         Debug.LogWarning("MQTT: MQTT Connection Failed.");
@@ -1192,10 +1243,11 @@ public class UIFunctionalities : MonoBehaviour
         //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
         mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData());
 
-        //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true
+        //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
         mqttTrajectoryManager.serviceManager.PrimaryUser = true;
+        mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
 
-        //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.
+        //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.... THIS IS A BIT DIFFICULT BECAUSE I CANNOT PROVIDE CANCELATION LIKE OTHER MESSAGE.
 
         //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
         //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
@@ -1211,9 +1263,6 @@ public class UIFunctionalities : MonoBehaviour
         
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
         mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
-
-        //TODO: If I am the primary User then Include TimeOut for waiting on everyone else to approve or disapprove...
-        //TODO: Possibly Publish with another approval status of 3 == Cancelation.
     }
     public void RejectTrajectoryButtonMethod()
     {
@@ -1223,8 +1272,7 @@ public class UIFunctionalities : MonoBehaviour
         mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
 
         //Make the approval and disapproval button not interactable to prevent sending multiple approvals and disapprovals....
-        //Just a precaustion should be handles by message handler anyway. //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
-        TrajectoryServicesUIControler(false, false, true, false, false, false);
+        TrajectoryServicesUIControler(false, false, true, false, false, false); //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
     }
     public void TrajectorySliderReviewMethod(float value)
     {
@@ -1243,7 +1291,7 @@ public class UIFunctionalities : MonoBehaviour
                 float SliderValueRemaped = GameObjectExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
 
                 //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
-                Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped]}"); //TODO:CHECK SLIDER REMAP
+                Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
 
                 //TODO: Color Static Robot Image based on SliderRemapedValue
             }
@@ -1270,7 +1318,6 @@ public class UIFunctionalities : MonoBehaviour
         //Publish new ApproveTrajectoryMessage for CONSENSUS APPROVAL
         mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
     }
-
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
     public void ChangeVisualizationMode()
@@ -1443,8 +1490,6 @@ public class UIFunctionalities : MonoBehaviour
     public void SetTrajectoryRequestUIFromKey(string key)
     {
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
-
-        Debug.Log($"THIS IS YOUR CURRENT STEP PRIORITY, {step.data.priority} and THIS IS YOUR CURRENT PRIORITY {databaseManager.CurrentPriority}");
 
         //If step is a robot step then make the request button visible.
         if(step.data.actor == "ROBOT")

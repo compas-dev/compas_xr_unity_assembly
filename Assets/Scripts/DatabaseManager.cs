@@ -472,9 +472,9 @@ public class DatabaseManager : MonoBehaviour
             {
                 // Check if the required properties are present or have valid values
                 if (node.attributes != null &&
-                    node.attributes.length != null &&
-                    node.attributes.width != null &&
-                    node.attributes.height != null)
+                    node.attributes?.length != null &&
+                    node.attributes?.width != null &&
+                    node.attributes?.height != null)
                 {
                     // Set default values for properties that may be null
                     return true;

@@ -108,6 +108,9 @@ namespace MQTTDataCompasXR
 
         //List to store current trajectory under review.
         public List<List<float>> CurrentTrajectory { get; set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+
+        //Current Service ennum
+        public CurrentService currentService { get; set; }
         
         //Constructer for ServiceManager
         public ServiceManager()
@@ -116,6 +119,16 @@ namespace MQTTDataCompasXR
             ApprovalCount = new SimpleCounter();
             PrimaryUser = false;
             CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
+            currentService = CurrentService.None;
+        }
+
+        //Enum for current service
+        public enum CurrentService
+        {
+            None = 0,
+            GetTrajectory = 1,
+            ApproveTrajectory = 2,
+            ExacuteTrajectory = 3,
         }
     }
 
