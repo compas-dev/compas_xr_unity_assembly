@@ -45,6 +45,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
 
     //Other Scripts
     public UIFunctionalities UIFunctionalities;
+    public DatabaseManager databaseManager;
 
     protected override void Start()
     {
@@ -74,6 +75,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         {
             //Find UI Functionalities
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+            databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         }
 
         //Connect to MQTT Broker on start with default settings.
@@ -173,6 +175,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         Debug.Log("MQTT: Subscribing to Compas XR Topics");
 
         //Subscribe to Compas XR Get Trajectory Topics
+        SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryRequestTopic);
+
+        //Subscribe to Compas XR Get Trajectory Topics
         SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryResultTopic);
 
         //Subscribe to Compas XR Approve Trajectory Topics
@@ -183,7 +188,10 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     }
     public void UnsubscribeFromCompasXRTopics()
     {
-        //Unsubscribe to Compas XR Get Trajectory Topics
+        //Unsubscribe to Compas XR Get Trajectory Request Topic
+        UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryRequestTopic);
+
+        //Unsubscribe to Compas XR Get Trajectory Result Topic
         UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryResultTopic);
 
         //Unsubscribe to Compas XR Approve Trajectory Topics
@@ -209,12 +217,41 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     private void CompasXRIncomingMessageHandler(string topic, string message)
     {
         //TODO: IF WE DECIDE FOR REQUEST TRANSACTION LOCKS, WE SUBSCRIBER TO REQUEST TOPIC AND ADD LOCK FOR DEVICES
+        //Get Trajectory Request Message
+        if (topic == compasXRTopics.subscribers.getTrajectoryRequestTopic)
+        {
+            Debug.Log("MQTT: GetTrajectoryRequest Message Handeling");
+
+            //Deserialize the message usign parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
+            GetTrajectoryRequest getTrajectoryResultmessage = GetTrajectoryRequest.Parse(message);
+
+            //Check the device ID to see if it is mine, and if it is not apply Get Trajectory Request Transaction lock.
+            if (getTrajectoryResultmessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
+            {
+                Debug.Log($"MQTT: GetTrajectoryRequest from user {getTrajectoryResultmessage.Header.DeviceID}");
+
+                //Set Service Manager Transaction lock
+                serviceManager.TrajectoryRequestTransactionLock = true; //TODO: MAKE ME FALSE WHERE I NEED TO BE FALSE.... ALSO NEED TO UPDATE UI.
+
+                //If the request button is active make it not interactable.
+                if (UIFunctionalities.RequestTrajectoryButtonObject.activeSelf)
+                {
+                    //Set interactibility to false
+                    UIFunctionalities.TrajectoryServicesUIControler(true, false, false, false, false, false);
+                }
+            }
+            else
+            {
+                Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
+            }
+        }
+
         //Get Trajectory Result Message.
         if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
         {
             Debug.Log("MQTT: GetTrajectoryResult Message Handeling");
 
-            //Deserialize the message usign parse method
+            //Deserialize the message using parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
             
             //TODO: NEED SOME SORT OF SAFETY CHECK OF HEADER RESPONSEID OR SOMETHING TO DEAL WITH MESSAGES THAT ARE SENT FROM CONTROLER, BUT ARE INCORRECT.
@@ -226,6 +263,9 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                 //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
                 if (getTrajectoryResultmessage.Trajectory.Count > 0)
                 {
+                    //Release Trajectory Request Transaction lock
+                    serviceManager.TrajectoryRequestTransactionLock = false;
+
                     //Signal On Screen Message for 
                     UIFunctionalities.SignalTrajectoryReviewRequest(getTrajectoryResultmessage.ElementID);
 
@@ -237,9 +277,17 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                 }
                 else
                 {
-                    //TODO: IF WE DECIDE TO DO REQUEST TRANSACTION LOCKS, THIS IS WHERE WE WOULD RELEASE THE LOCK.
+                    //Set Service Manager Request Transaction lock
+                    serviceManager.TrajectoryRequestTransactionLock = false;
 
-                    Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. No trajectory to review.");
+                    //If the robot toggle is on set the TrajectoryRequest UI From my current step.
+                    if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        //Set interactibility based on my current element.
+                        UIFunctionalities.SetTrajectoryRequestUIFromKey(UIFunctionalities.CurrentStep);
+                    }
+
+                    Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
                 }
             }
             //I am the primary user
@@ -262,7 +310,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
                     PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
 
                     // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
-                    _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 10);
+                    _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 120);
 
                 }
                 //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
@@ -287,7 +335,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         {
             Debug.Log("MQTT: ApproveTrajectory Message Handeling");
 
-            //Deserialize the message usign parse method
+            //Deserialize the message usign parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             ApproveTrajectory trajectoryApprovalMessage = ApproveTrajectory.Parse(message);
 
             //Approve trajectory approvalStatus rejction message received 
@@ -415,7 +463,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         //Approval Counter Request Message
         else if (topic == compasXRTopics.subscribers.approvalCounterRequestTopic)
         {
-            //Deserialize the message
+            //Deserialize the message //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             ApprovalCounterRequest approvalCounterRequestMessage = ApprovalCounterRequest.Parse(message);
 
             Debug.Log($"MQTT: ApprovalCounterRequset Message Received from User {approvalCounterRequestMessage.Header.DeviceID}");
@@ -428,7 +476,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         //Approval Counter Result Message
         else if (topic == compasXRTopics.subscribers.approvalCounterResultTopic)
         {
-            //Deserialize the message
+            //Deserialize the message //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             ApprovalCounterResult approvalCounterResultMessage = ApprovalCounterResult.Parse(message);
 
             Debug.Log($"MQTT: ApprovalCounterResult Message Received from User{approvalCounterResultMessage.Header.DeviceID} for step {approvalCounterResultMessage.ElementID}");

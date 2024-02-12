@@ -76,6 +76,7 @@ namespace MQTTDataCompasXR
     public class Subscribers
     {
         //Properties for subscriber topics
+        public string getTrajectoryRequestTopic { get; set; } 
         public string getTrajectoryResultTopic { get; set; }
         public string approveTrajectoryTopic { get; set; }
         public string approvalCounterRequestTopic { get; set; }
@@ -84,10 +85,11 @@ namespace MQTTDataCompasXR
         //Constructer for subscribers that takes an input project name
         public Subscribers(string projectName)
         {
+            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}"; //LISTENS TO GET APPLY REQUEST TRANSACTION LOCK WHEN THE REQUEST DOES NOT COME FROM ME.
             getTrajectoryResultTopic = $"compas_xr/get_trajectory_result/{projectName}";
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
-            approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}"; //THIS ONE EVERONE SUBSCRIBES ALL THE TIME
-            approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}"; //THIS ONE IS ONLY SUBSCRIBED TO WHEN YOU REQUEST AND IS UNSUBSCRIBED AT SOMEPOINT.
+            approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";
+            approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}";
         }
     }
 
@@ -111,6 +113,12 @@ namespace MQTTDataCompasXR
 
         //Current Service ennum
         public CurrentService currentService { get; set; }
+
+        //Get Trajectory Request Transaction Lock
+        public bool TrajectoryRequestTransactionLock { get; set; }
+
+        //TODO: FIGURE OUT A WAY TO IGNORE UNEXPECTED REQUEST FROM PLANNER... THROW OUT MESSAGES THAT I AM NOT EXPECTING.
+        //TODO: THIS SHOULD BE DONE THROUGH AN ISDIRTY BOOL... BASICALLY THE TIMEOUT INCLUDES FLIPPING THE IS DIRTY BOOL TO TRUE, AND THEN I IGNORE ANY RESPONSES WITH THAT SAME RESPONSEID.
         
         //Constructer for ServiceManager
         public ServiceManager()
@@ -204,6 +212,19 @@ namespace MQTTDataCompasXR
                 return _value;
             }
         }
+
+        public int UpdateFromMsg(int responseValue)
+        {
+            lock (_lock)
+            {
+                //If my response value is greater then my current value update my value
+                if(responseValue > _value)
+                {
+                    _value = responseValue;
+                }
+                return _value;
+            }
+        }
     }
 
     //Class for setting specific response ID's for each message
@@ -219,7 +240,17 @@ namespace MQTTDataCompasXR
         {
             _value = start;
         }
-
+        
+        public int Value
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _value;
+                }
+            }
+        }
         public int Increment(int num = 1)
         {
             lock (_lock)
@@ -233,17 +264,14 @@ namespace MQTTDataCompasXR
             }
         }
 
-        public int Update(int value)
+        public int UpdateFromMsg(int responseValue)
         {
             lock (_lock)
             {
-                if (value == _value)
+                //If my response value is greater then my current value update my value
+                if(responseValue > _value)
                 {
-                    Increment();
-                }
-                else
-                {
-                    _value = value;
+                    _value = responseValue;
                 }
                 return _value;
             }
@@ -258,7 +286,6 @@ namespace MQTTDataCompasXR
         // Private Properties for each header to build upon itself
         private static SequenceCounter _sharedSequenceCounter;
         private static ResponseID _sharedResponseIDCounter;
-        private static int _lastResponseID;
         
         // Accessible properties
         public int SequenceID { get; private set; }
@@ -267,7 +294,7 @@ namespace MQTTDataCompasXR
         public string TimeStamp { get; private set; }
 
         //Constructer for header with optional inputs that are used for parsing information from a received message so it does not mess up internal logic of counters.
-        public Header(int? sequenceID=null, int? responseID=null, string deviceID=null, string timeStamp=null)
+        public Header(bool incrementResponseID = false, int? sequenceID=null, int? responseID=null, string deviceID=null, string timeStamp=null)
         {   
             if(sequenceID.HasValue && responseID.HasValue && deviceID != null && timeStamp != null)
             {    
@@ -279,7 +306,7 @@ namespace MQTTDataCompasXR
             else
             {
                 SequenceID = EnsureSequenceID();
-                ResponseID = EnsureResponseID();
+                ResponseID = EnsureResponseID(incrementResponseID);
                 DeviceID = GetDeviceID();
                 TimeStamp = GetTimeStamp();
             }
@@ -312,26 +339,53 @@ namespace MQTTDataCompasXR
         }
 
         // Method to increment responseID when required for each message
-        private static int EnsureResponseID()
+        private static int EnsureResponseID(bool incrementResponseID = false)
         {
             if (_sharedResponseIDCounter == null)
             {
                 _sharedResponseIDCounter = new ResponseID();
-                _lastResponseID = _sharedResponseIDCounter.Increment();
-                return _lastResponseID;
+                int responseIDValue = _sharedResponseIDCounter.Value;
+                return responseIDValue;
             }
             else
             {
-                if (_lastResponseID != _sharedResponseIDCounter.Increment())
+                //Only increment if input says to... more specifically only when I am sending a GetTrajectoryRequest.
+                if (incrementResponseID)
                 {
                     _sharedResponseIDCounter.Increment();
-                    _lastResponseID = _sharedResponseIDCounter.Increment();
                 }
-                else
-                {
-                    _lastResponseID = _sharedResponseIDCounter.Increment();
-                }
-                return _lastResponseID;
+                
+                int responseIDValue = _sharedResponseIDCounter.Value;
+                
+                return responseIDValue;
+            }
+        }
+
+        //Method to update my SequenceCounterValue based on parsed information from a received message
+        private static void _updateSharedSequenceIDCounter(int sequenceID)
+        {
+            //TODO: IF SEQUENCEID IS NULL THROW EXCEPTION.
+            if (_sharedSequenceCounter != null)
+            {
+                _sharedSequenceCounter.UpdateFromMsg(sequenceID);
+            }
+            else
+            {
+                _sharedSequenceCounter = new SequenceCounter(sequenceID);
+            }
+        }
+
+        //Method to update my ResponseIDValue based on parsed information from a received message
+        private static void _updateSharedResponseIDCounter(int responseID)
+        {
+            //TODO: IF RESPONSEID IS NULL THROW EXCEPTION.
+            if (_sharedResponseIDCounter != null)
+            {
+                _sharedResponseIDCounter.UpdateFromMsg(responseID);
+            }
+            else
+            {
+                _sharedResponseIDCounter = new ResponseID(responseID);
             }
         }
 
@@ -347,6 +401,8 @@ namespace MQTTDataCompasXR
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }
 
+
+
         // Method to parse an instance of the class from a json string
         public static Header Parse(string jsonString)
         {
@@ -359,8 +415,14 @@ namespace MQTTDataCompasXR
             var deviceID = jsonObject["device_id"].ToString();
             var timeStamp = jsonObject["time_stamp"].ToString();
 
+            //Update Header SequenceCounter based on received information. //TODO: CHECK IMPLEMENTATION
+            _updateSharedSequenceIDCounter(sequenceID);
+
+            //Update Header ResponseID Based on received information //TODO: CHECK IMPLEMENTATION
+            _updateSharedResponseIDCounter(responseID);
+
             // Create and return a new Header instance with inputs so the values are the same and do not mess up internal logic of counters.
-            return new Header(sequenceID, responseID, deviceID, timeStamp);
+            return new Header(false, sequenceID, responseID, deviceID, timeStamp);
         }
     }
 
@@ -376,7 +438,8 @@ namespace MQTTDataCompasXR
         // Constructor for creating a new GetTrajectoryRequest Message instance //TODO: Adding Header as input is different then python class.
         public GetTrajectoryRequest(string elementID, Header header=null)
         {
-            Header = header ?? new Header();
+            //Only moment to increment the responseID is when I send a new trajectory request.
+            Header = header ?? new Header(true);
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
@@ -456,7 +519,7 @@ namespace MQTTDataCompasXR
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             
-            //throw exception if trajectory is null
+            //throw exception if trajectory is null //TODO: THIS IS WHERE YOU INCLUDED THE EXCEPTION. HOWEVER MAYBE IT SHOULD BE IN THE TRAJECTORY MANAGER CLASS METHOD?
             if (jsonObject["trajectory"] == null)
             {
                 throw new Exception("Trajectory is null");

@@ -63,7 +63,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject VisualzierBackground;
     private GameObject PreviewBuilderButtonObject;
     public GameObject IDToggleObject;
-    private GameObject RobotToggleObject;
+    public GameObject RobotToggleObject;
     private GameObject RobotVisulizationControlObjects;
     private GameObject ObjectLengthsToggleObject;
     private GameObject ObjectLengthsUIPanelObjects;
@@ -1224,17 +1224,36 @@ public class UIFunctionalities : MonoBehaviour
         ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
         ExecuteTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
 
-        //Adjust interactibility of Robot toggle based on visibility of other services controls //TODO: SHOULD THIS PREVENT ME FROM PUSHING NEXT OR PREVIOUS ALSO? I THINK SO.
+        //Adjust interactibility of Robot toggle based on visibility of other services controls
         if ( trajectoryReviewVisibility || executeTrajectoryVisability)
         {
             //if trajectory approval or exacute trajectory is visible then robot toggle is not interactable
             RobotToggleObject.GetComponent<Toggle>().interactable = false;
+
+            //Next and previous button not interactable based on service
+            NextGeometryButtonObject.GetComponent<Button>().interactable = false;
+            PreviousGeometryButtonObject.GetComponent<Button>().interactable = false;
+            
         }
         else if (requestTrajectoryVisability)
         {
             //If request trajectory is visaible then robot toggle is interactable
             RobotToggleObject.GetComponent<Toggle>().interactable = true;
+
+            //Next and previous button not interactable based on service
+            NextGeometryButtonObject.GetComponent<Button>().interactable = false;
+            PreviousGeometryButtonObject.GetComponent<Button>().interactable = false;
         }
+
+        //Check transaction lock to see if someone else made a request and set my interactibility based on that.
+        if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
+        {
+            Debug.Log("Trajectory UI Controller: You cannot request because transaction lock is active");
+
+            //Set request interactibility of trajectory request button to false
+            RequestTrajectoryButtonObject.GetComponent<Button>().interactable = false;
+        }
+
     }
     public void RequestTrajectoryButtonMethod()
     {
