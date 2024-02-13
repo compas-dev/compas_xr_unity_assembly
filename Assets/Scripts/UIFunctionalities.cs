@@ -175,17 +175,17 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         NextGeometryButtonObject = GameObject.Find("Next_Geometry");
         Button NextGeometryButton = NextGeometryButtonObject.GetComponent<Button>();
-        NextGeometryButton.onClick.AddListener(NextStepButton);;
+        NextGeometryButton.onClick.AddListener(NextStepButton);
 
         //Find Object, Button, and Add Listener for OnClick method
         PreviousGeometryButtonObject = GameObject.Find("Previous_Geometry");
         Button PreviousGeometryButton = PreviousGeometryButtonObject.GetComponent<Button>();
-        PreviousGeometryButton.onClick.AddListener(PreviousStepButton);;
+        PreviousGeometryButton.onClick.AddListener(PreviousStepButton);
 
         //Find Object, Slider, and Add Listener for OnClick method
         PreviewGeometrySliderObject = GameObject.Find("GeometrySlider");
         PreviewGeometrySlider = PreviewGeometrySliderObject.GetComponent<Slider>();
-        PreviewGeometrySlider.onValueChanged.AddListener(PreviewGeometrySliderSetVisibilty);;
+        PreviewGeometrySlider.onValueChanged.AddListener(PreviewGeometrySliderSetVisibilty);
 
         //Find Object, Button, and Add Listener for OnClick method
         IsBuiltPanelObjects = ConstantUIPanelObjects.FindObject("IsBuiltPanel"); 
@@ -193,7 +193,7 @@ public class UIFunctionalities : MonoBehaviour
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
         IsbuiltPriorityLockedImage = IsBuiltButtonObject.FindObject("PriorityLockedImage");
         IsBuiltButton = IsBuiltButtonObject.GetComponent<Button>();
-        IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));;
+        IsBuiltButton.onClick.AddListener(() => ModifyStepBuildStatus(CurrentStep));
 
         //Find toggle for element search
         ElementSearchToggleObject = GameObject.Find("ElementSearchToggle");
@@ -205,10 +205,10 @@ public class UIFunctionalities : MonoBehaviour
         
         //Find Element Search Button Objects
         ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
-        ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();;
+        ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();
         SearchElementButtonObject = ElementSearchObjects.FindObject("SearchForElementButton");
         Button ElementSearchButton = SearchElementButtonObject.GetComponent<Button>();
-        ElementSearchButton.onClick.AddListener(SearchElementButton);;
+        ElementSearchButton.onClick.AddListener(SearchElementButton);
         SearchedElement = "None";
 
         //Find toggles for menu
@@ -258,7 +258,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         PreviewBuilderButtonObject = VisibilityMenuObject.FindObject("Preview_Builder");
         Button PreviewBuilderButton = PreviewBuilderButtonObject.GetComponent<Button>();
-        PreviewBuilderButton.onClick.AddListener(ChangeVisualizationMode);;
+        PreviewBuilderButton.onClick.AddListener(ChangeVisualizationMode);
 
         //Find Object, Button, and Add Listener for OnClick method
         IDToggleObject = VisibilityMenuObject.FindObject("ID_Toggle");
@@ -308,7 +308,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         ReloadButtonObject = MenuButtonObject.FindObject("Reload_Button");
         Button ReloadButton = ReloadButtonObject.GetComponent<Button>();
-        ReloadButton.onClick.AddListener(ReloadApplication);;
+        ReloadButton.onClick.AddListener(ReloadApplication);
 
         //Find communication toggle objects
         CommunicationToggleObject = MenuButtonObject.FindObject("Communication_Button");
@@ -329,12 +329,12 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         BuilderEditorButtonObject = EditorToggleObject.FindObject("Builder_Editor_Button");
         Button BuilderEditorButton = BuilderEditorButtonObject.GetComponent<Button>();
-        BuilderEditorButton.onClick.AddListener(TouchModifyActor);;
+        BuilderEditorButton.onClick.AddListener(TouchModifyActor);
 
         //Find Object, Button, and Add Listener for OnClick method
         BuildStatusButtonObject = EditorToggleObject.FindObject("Build_Status_Editor");
         BuildStatusButton = BuildStatusButtonObject.GetComponent<Button>();
-        BuildStatusButton.onClick.AddListener(TouchModifyBuildStatus);;
+        BuildStatusButton.onClick.AddListener(TouchModifyBuildStatus);
 
         //Find Panel Objects used for Info and communication
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
@@ -346,17 +346,17 @@ public class UIFunctionalities : MonoBehaviour
         /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
 
         //Find Pannel Objects used for connecting to a different broker and ROS Connection Set up
-        MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();;
-        MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();;
+        MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();
+        MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();
         MqttUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
         MqttConnectButtonObject = CommunicationPanelObject.FindObject("MqttConnectButton");
-        MqttConnectButtonObject.GetComponent<Button>().onClick.AddListener(UpdateMqttConnectionFromUserInputs);;
+        MqttConnectButtonObject.GetComponent<Button>().onClick.AddListener(UpdateMqttConnectionFromUserInputs);
 
-        RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();;
-        RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();;
+        RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
+        RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
         RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
         Button RosConnectButton = CommunicationPanelObject.FindObject("ROSConnectButton").GetComponent<Button>();
-        RosConnectButton.onClick.AddListener(() => print_string_on_click("ROS CONNECT BUTTONPRESSED"));;
+        RosConnectButton.onClick.AddListener(() => print_string_on_click("ROS CONNECT BUTTONPRESSED"));
 
         //Find Control Objects and set up events
         GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
@@ -365,27 +365,27 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, request button and add event listner for on click method
         RequestTrajectoryButtonObject = TrajectoryControlObjects.FindObject("RequestTrajectoryButton");
         Button RequestTrajectoryButton = RequestTrajectoryButtonObject.GetComponent<Button>();
-        RequestTrajectoryButton.onClick.AddListener(RequestTrajectoryButtonMethod);;
+        RequestTrajectoryButton.onClick.AddListener(RequestTrajectoryButtonMethod);
     
         //Find object, approve button and add event listner for on click method
         ApproveTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("ApproveTrajectoryButton");
         Button ApproveTrajectoryButton = ApproveTrajectoryButtonObject.GetComponent<Button>();
-        ApproveTrajectoryButton.onClick.AddListener(ApproveTrajectoryButtonMethod);;
+        ApproveTrajectoryButton.onClick.AddListener(ApproveTrajectoryButtonMethod);
 
         //Find object, reject button and add event listner for on click method
         RejectTrajectoryButtonObject = ReviewTrajectoryObjects.FindObject("RejectTrajectoryButton");
         Button RejectTrajectoryButton = RejectTrajectoryButtonObject.GetComponent<Button>();
-        RejectTrajectoryButton.onClick.AddListener(RejectTrajectoryButtonMethod);;
+        RejectTrajectoryButton.onClick.AddListener(RejectTrajectoryButtonMethod);
 
         //Find slider for trajectory review and add event listner for on value changed method
         TrajectoryReviewSliderObject = ReviewTrajectoryObjects.FindObject("TrajectoryReviewSlider");
         TrajectoryReviewSlider = TrajectoryReviewSliderObject.GetComponent<Slider>();
-        TrajectoryReviewSlider.onValueChanged.AddListener(TrajectorySliderReviewMethod);;
+        TrajectoryReviewSlider.onValueChanged.AddListener(TrajectorySliderReviewMethod);
 
         //Find Object, Execute button and add event listner for on click method
         ExecuteTrajectoryButtonObject = TrajectoryControlObjects.FindObject("ExecuteTrajectoryButton");
         Button ExecuteTrajectoryButton = ExecuteTrajectoryButtonObject.GetComponent<Button>();
-        ExecuteTrajectoryButton.onClick.AddListener(ExecuteTrajectoryButtonMethod);;
+        ExecuteTrajectoryButton.onClick.AddListener(ExecuteTrajectoryButtonMethod);
 
     }
     public void ToggleVisibilityMenu(Toggle toggle)

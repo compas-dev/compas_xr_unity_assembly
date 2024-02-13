@@ -382,8 +382,8 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
 
                     Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
 
-                    //If the approval count is equal to the user count then move me on to service 3 as the primary User.
-                    if (serviceManager.ApprovalCount.Value == serviceManager.UserCount.Value) //TODO: THIS CAN ALSO BE THE RESET POINT, BUT I THINK IT IS SAFER TO HANDLE ON CONSENSUS.
+                    //If the approval count is equal to the user count then move me on to service 3 as the primary User. //TODO: THINK ABOUT HOW THIS CAN BE SET DYNAMICALLY IN THE APPLICATION SETTINGS.
+                    if (serviceManager.ApprovalCount.Value == serviceManager.UserCount.Value)
                     {
                         Debug.Log("MQTT: ApprovalCount == UserCount. Moving to Service 3 as Primary User.");
                         
@@ -533,6 +533,8 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
 
                 //Set visibility and interactibility of Request Trajectory Button
                 UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+
+                //TODO: ADD IS DIRTY BOOL AND SET TO FALSE HERE
             }
             else
             {

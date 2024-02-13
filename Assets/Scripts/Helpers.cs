@@ -14,9 +14,9 @@ using System.Linq;
 using UnityEngine.InputSystem;
 
 
-namespace Extentions
+namespace Extentions //TODO: RENAME NAMESPACE.
 {
-    public static class GameObjectExtensions
+    public static class GameObjectExtensions //TODO: RENAME NAMESPACE.
     { 
         public static GameObject FindObject(this GameObject parent, string name)
         {
