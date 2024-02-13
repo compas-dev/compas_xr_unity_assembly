@@ -438,7 +438,7 @@ namespace Instantiate
                 return element;
             
         }
-        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID)
+        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID) //TODO: COMBINE THIS WITH THE CIRCLE IMAGE FUNCTION AND MAKE TEXT SAY SOMETHING LIKE "ASSEMBLY: 1234 STEP: 5678"
         {
             // Create a new GameObject for the text
             GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");

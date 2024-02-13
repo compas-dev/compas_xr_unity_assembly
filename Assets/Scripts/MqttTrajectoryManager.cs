@@ -216,7 +216,6 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
     }
     private void CompasXRIncomingMessageHandler(string topic, string message)
     {
-        //TODO: IF WE DECIDE FOR REQUEST TRANSACTION LOCKS, WE SUBSCRIBER TO REQUEST TOPIC AND ADD LOCK FOR DEVICES
         //Get Trajectory Request Message
         if (topic == compasXRTopics.subscribers.getTrajectoryRequestTopic)
         {
@@ -247,7 +246,7 @@ public class MqttTrajectoryReceiver : M2MqttUnityClient
         }
 
         //Get Trajectory Result Message.
-        if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
+        else if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
         {
             Debug.Log("MQTT: GetTrajectoryResult Message Handeling");
 
