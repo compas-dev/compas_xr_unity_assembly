@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Extentions;
+using Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 using Instantiate;
@@ -183,45 +183,26 @@ public class UIFunctionalities : MonoBehaviour
         //Find PreviewGeometry Object, Slider, and Add Listener for OnClick method
         FindSliderandSetOnValueChangeAction(CanvasObject, ref PreviewGeometrySliderObject, ref PreviewGeometrySlider, "GeometrySlider", PreviewGeometrySliderSetVisibilty);
 
-
         //Find IsBuilt Object, Button, and Add Listener for OnClick method
         IsBuiltPanelObjects = ConstantUIPanelObjects.FindObject("IsBuiltPanel"); 
         FindButtonandSetOnClickAction(IsBuiltPanelObjects, ref IsBuiltButtonObject, "IsBuiltButton", () => ModifyStepBuildStatus(CurrentStep));
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
         IsbuiltPriorityLockedImage = IsBuiltButtonObject.FindObject("PriorityLockedImage");
 
-
         //Find toggle for element search
-        ElementSearchToggleObject = GameObject.Find("ElementSearchToggle");
-        Toggle ElementSearchToggle = ElementSearchToggleObject.GetComponent<Toggle>();
-        //Add Listners for Step Search Toggle on and off.
-        ElementSearchToggle.onValueChanged.AddListener(delegate {
-        ToggleElementSearch(ElementSearchToggle);
-        });
+        FindToggleandSetOnValueChangedAction(ConstantUIPanelObjects, ref ElementSearchToggleObject, "ElementSearchToggle", ToggleElementSearch);
         
-        //Find Element Search Button Objects
+        //Find Element Search Button & Objects
         ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
         ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();
-        SearchElementButtonObject = ElementSearchObjects.FindObject("SearchForElementButton");
-        Button ElementSearchButton = SearchElementButtonObject.GetComponent<Button>();
-        ElementSearchButton.onClick.AddListener(SearchElementButton);
+        FindButtonandSetOnClickAction(ElementSearchObjects, ref SearchElementButtonObject, "SearchForElementButton", SearchElementButton);
         SearchedElement = "None";
 
-        //Find toggles for menu
-        MenuButtonObject = GameObject.Find("Menu_Toggle");
-        Toggle MenuToggle = MenuButtonObject.GetComponent<Toggle>();
-        //Add Listners for Menu Toggle on and off.
-        MenuToggle.onValueChanged.AddListener(delegate {
-        ToggleMenu(MenuToggle);
-        });
+        //Find toggles for menu & Add on value changed event
+        FindToggleandSetOnValueChangedAction(CanvasObject, ref MenuButtonObject, "Menu_Toggle", ToggleMenu);
 
-        //Find toggles for visibility
-        VisibilityMenuObject = GameObject.Find("Visibility_Editor");
-        Toggle VisibilityMenuToggle = VisibilityMenuObject.GetComponent<Toggle>();
-        //Add Listners for Visibility Toggle on and off.
-        VisibilityMenuToggle.onValueChanged.AddListener(delegate {
-        ToggleVisibilityMenu(VisibilityMenuToggle);
-        });
+        //Find toggles for visibility menu and add on value changed event
+        FindToggleandSetOnValueChangedAction(CanvasObject, ref VisibilityMenuObject, "Visibility_Editor", ToggleVisibilityMenu);
 
         //Find Text Objects
         CurrentStepTextObject = GameObject.Find("Current_Index_Text");
@@ -251,73 +232,38 @@ public class UIFunctionalities : MonoBehaviour
         TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
-        //Find Object, Button, and Add Listener for OnClick method
+
+        //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(VisibilityMenuObject, ref PreviewBuilderButtonObject, "Preview_Builder", ChangeVisualizationMode);
 
-        //Find Object, Button, and Add Listener for OnClick method
-        // IDToggleObject = VisibilityMenuObject.FindObject("ID_Toggle");
-        // Toggle IDButton = IDToggleObject.GetComponent<Toggle>();
-        // //ID Toggle on and off.
-        // IDButton.onValueChanged.AddListener(delegate {
-        // ToggleID(IDButton);
-        // });
+        //Find IDToggle Object, Button, and Add Listener for OnClick method
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID); //TODO: TOGGLES LIKE THIS.
 
         //Find Robot toggle and Objects
-        RobotToggleObject = VisibilityMenuObject.FindObject("Robot_Button");
-        Toggle RobotToggle = RobotToggleObject.GetComponent<Toggle>();
-        //Add Listners for Object Lengths.
-        RobotToggle.onValueChanged.AddListener(delegate {
-        ToggleRobot(RobotToggle);
-        });
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "Robot_Button", ToggleRobot);
 
         //Find Robot toggle and Objects
-        PriorityViewerToggleObject = VisibilityMenuObject.FindObject("PriorityViewer");
-        Toggle PriorityViewerToggle = PriorityViewerToggleObject.GetComponent<Toggle>();
-        //Add Listners for Priority Viewer Toggle.
-        PriorityViewerToggle.onValueChanged.AddListener(delegate {
-        TogglePriority(PriorityViewerToggle);
-        });
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
 
         //Find Object Lengths Toggle and Objects
-        ObjectLengthsToggleObject = VisibilityMenuObject.FindObject("ObjectLength_Button");
-        Toggle ObjectLengthsToggle = ObjectLengthsToggleObject.GetComponent<Toggle>();
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
         ObjectLengthsUIPanelObjects = CanvasObject.FindObject("ObjectLengthsPanel");
         ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
-        //Add Listners for Object Lengths.
-        ObjectLengthsToggle.onValueChanged.AddListener(delegate {
-        ToggleObjectLengths(ObjectLengthsToggle);
-        });
 
         /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
         
         //Find Info Toggle, and Add Listener for OnValueChanged method
-        InfoToggleObject = MenuButtonObject.FindObject("Info_Button");
-        Toggle InfoToggle = InfoToggleObject.GetComponent<Toggle>();
-        //Add Listners for Info Toggle on and off.
-        InfoToggle.onValueChanged.AddListener(delegate {
-        ToggleInfo(InfoToggle);
-        });
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref InfoToggleObject, "Info_Button", ToggleInfo);
 
         //Find Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(MenuButtonObject, ref ReloadButtonObject, "Reload_Button", ReloadApplication);
 
         //Find communication toggle objects
-        CommunicationToggleObject = MenuButtonObject.FindObject("Communication_Button");
-        Toggle CommunicationToggle = CommunicationToggleObject.GetComponent<Toggle>();
-        //Add Listners for Info Toggle on and off.
-        CommunicationToggle.onValueChanged.AddListener(delegate {
-        ToggleCommunication(CommunicationToggle);
-        });
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
         //Find toggle for editor.
-        EditorToggleObject = MenuButtonObject.FindObject("Editor_Toggle");
-        Toggle EditorToggle = EditorToggleObject.GetComponent<Toggle>();
-        //Add Listners for Editor Toggle on and off.
-        EditorToggle.onValueChanged.AddListener(delegate {
-        ToggleEditor(EditorToggle);
-        });
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref EditorToggleObject, "Editor_Toggle", ToggleEditor);
         
         //Find Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(EditorToggleObject, ref BuilderEditorButtonObject, "Builder_Editor_Button", TouchModifyActor);
@@ -365,6 +311,58 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Execute button and add event listner for on click method
         FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
+    }
+    public void SetUIObjectColor(GameObject Button, Color color)
+    {
+        Button.GetComponent<Image>().color = color;
+    }
+    public void FindButtonandSetOnClickAction(GameObject searchObject, ref GameObject buttonParentObjectReference, string unityObjectName, UnityAction customAction)
+    {
+        //Check if the search object is null
+        if (searchObject != null)
+        {    
+            //Find Object, Button and add event listner for on click method
+            buttonParentObjectReference = searchObject.FindObject(unityObjectName);
+            Button buttonComponent = buttonParentObjectReference.GetComponent<Button>();
+            buttonComponent.onClick.AddListener(customAction);
+        }
+        else
+        {
+            Debug.LogError($"Button Constructer: Could not Set OnClick Action because search object is null for {unityObjectName}");
+        }
+    }
+    public void FindToggleandSetOnValueChangedAction(GameObject searchObject, ref GameObject toggleParentObjectReference, string unityObjectName, UnityAction<Toggle> customAction)
+    {
+        //Check if the search object is null
+        if (searchObject != null)
+        {    
+            //Find Object, Toggle and add event listner for on value changed method
+            toggleParentObjectReference = searchObject.FindObject(unityObjectName);
+            Toggle toggleComponent = toggleParentObjectReference.GetComponent<Toggle>();
+            toggleComponent.onValueChanged.AddListener(value => customAction(toggleComponent));
+        }
+        else
+        {
+            Debug.LogError($"Toggle Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
+        }
+    }
+    public void FindSliderandSetOnValueChangeAction(GameObject searchObject, ref GameObject sliderParentObjectReference, ref Slider sliderObjectReference, string unityObjectName, UnityAction<float> customAction)
+    {
+        if(searchObject != null)
+        {
+            //Find Object, Slider and add event listner for on value changed method
+            sliderParentObjectReference = searchObject.FindObject(unityObjectName);
+            sliderObjectReference = sliderParentObjectReference.GetComponent<Slider>();
+            sliderObjectReference.onValueChanged.AddListener(customAction);
+        }
+        else
+        {
+            Debug.LogError($"Slider Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
+        }
+    }
+    public void print_string_on_click(string Text)
+    {
+        Debug.Log(Text);
     }
     public void ToggleVisibilityMenu(Toggle toggle)
     {
@@ -447,39 +445,6 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
-    }
-    public void SetUIObjectColor(GameObject Button, Color color)
-    {
-        Button.GetComponent<Image>().color = color;
-    }
-    public void FindButtonandSetOnClickAction(GameObject searchObject, ref GameObject buttonParentObjectReference, string unityObjectName, UnityAction customAction)
-    {
-        //TODO: ADD ERROR HANDLEING FOR THINGS THAT SHOULD NOT BE NULL BEFORE ENTERING THE FUNCTION
-        //Find Object, Button and add event listner for on click method
-        buttonParentObjectReference = searchObject.FindObject(unityObjectName);
-        Button buttonComponent = buttonParentObjectReference.GetComponent<Button>();
-        buttonComponent.onClick.AddListener(customAction);
-    }
-
-    public void FindToggleandSetOnValueChangedAction(GameObject searchObject, ref GameObject toggleParentObjectReference, string unityObjectName, UnityAction<Toggle> customAction)
-    {
-        //TODO: ADD ERROR HANDLEING FOR THINGS THAT SHOULD NOT BE NULL BEFORE ENTERING THE FUNCTION
-        //Find Object, Toggle and add event listner for on value changed method
-        toggleParentObjectReference = searchObject.FindObject(unityObjectName);
-        Toggle toggleComponent = toggleParentObjectReference.GetComponent<Toggle>();
-        toggleComponent.onValueChanged.AddListener(value => customAction(toggleComponent));
-    }
-    public void FindSliderandSetOnValueChangeAction(GameObject searchObject, ref GameObject sliderParentObjectReference, ref Slider sliderObjectReference, string unityObjectName, UnityAction<float> customAction)
-    {
-        //TODO: ADD ERROR HANDLEING FOR THINGS THAT SHOULD NOT BE NULL BEFORE ENTERING THE FUNCTION
-        //Find Object, Slider and add event listner for on value changed method
-        sliderParentObjectReference = searchObject.FindObject(unityObjectName);
-        sliderObjectReference = sliderParentObjectReference.GetComponent<Slider>();
-        sliderObjectReference.onValueChanged.AddListener(customAction);
-    }
-    public void print_string_on_click(string Text)
-    {
-        Debug.Log(Text);
     }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
@@ -719,7 +684,7 @@ public class UIFunctionalities : MonoBehaviour
             float SliderMax = 1; //Input Slider Max Value == 1
             float SliderMin = 0; // Input Slider Min Value == 0
                 
-            float SliderRemaped = GameObjectExtensions.Remap(SliderValue, SliderMin, SliderMax, min, ElementsTotal); 
+            float SliderRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, min, ElementsTotal); 
 
             foreach(int index in Enumerable.Range(min, ElementsTotal))
             {
@@ -1296,7 +1261,7 @@ public class UIFunctionalities : MonoBehaviour
                 float SliderMax = 1; //Input Slider Max Value == 1
                 float SliderMin = 0; // Input Slider Min Value == 0
                 
-                float SliderValueRemaped = GameObjectExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
+                float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
 
                 //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
                 Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
@@ -1914,7 +1879,7 @@ public class UIFunctionalities : MonoBehaviour
     private bool PhysicRayCastBlockedByUi(Vector2 touchPosition)
     {
         //creating a Boolean value if we are touching a button
-        if (GameObjectExtensions.IsPointerOverUIObject(touchPosition))
+        if (HelpersExtensions.IsPointerOverUIObject(touchPosition))
         {
             Debug.Log("YOU CANT FIND YOUR OBJECT INSIDE PHYSICRAYCAST...");
             return false;

@@ -12,7 +12,7 @@ using UnityEngine.XR.ARSubsystems;
 using UnityEngine.EventSystems;
 using ApplicationInfo;
 using JSON;
-using Extentions;
+using Helpers;
 using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
@@ -465,7 +465,7 @@ namespace Instantiate
             IndexTextContainer.transform.SetParent(gameObject.transform);
 
             // Add billboard effect(object rotating with camera)
-            GameObjectExtensions.Billboard billboard = IndexTextContainer.AddComponent<GameObjectExtensions.Billboard>();
+            HelpersExtensions.Billboard billboard = IndexTextContainer.AddComponent<HelpersExtensions.Billboard>();
 
             // Initially set the text as inactive
             IndexTextContainer.SetActive(false);
@@ -504,7 +504,7 @@ namespace Instantiate
             circleImage.name = $"{parentObject.name}IdxImage";
 
             // Add billboard effect
-            GameObjectExtensions.Billboard billboard = circleImage.AddComponent<GameObjectExtensions.Billboard>();
+            HelpersExtensions.Billboard billboard = circleImage.AddComponent<HelpersExtensions.Billboard>();
 
             //Set Initial Visivility to false
             circleImage.SetActive(false);
@@ -593,13 +593,13 @@ namespace Instantiate
             ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
 
             //Check if the component has a billboard component and if it doesn't add it.
-            if (ObjectLengthsTags.FindObject("P1Tag").GetComponent<GameObjectExtensions.Billboard>() == null)
+            if (ObjectLengthsTags.FindObject("P1Tag").GetComponent<HelpersExtensions.Billboard>() == null)
             {
-                ObjectLengthsTags.FindObject("P1Tag").AddComponent<GameObjectExtensions.Billboard>();
+                ObjectLengthsTags.FindObject("P1Tag").AddComponent<HelpersExtensions.Billboard>();
             }
-            if (ObjectLengthsTags.FindObject("P2Tag").GetComponent<GameObjectExtensions.Billboard>() == null)
+            if (ObjectLengthsTags.FindObject("P2Tag").GetComponent<HelpersExtensions.Billboard>() == null)
             {
-                ObjectLengthsTags.FindObject("P2Tag").AddComponent<GameObjectExtensions.Billboard>();
+                ObjectLengthsTags.FindObject("P2Tag").AddComponent<HelpersExtensions.Billboard>();
             }
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
