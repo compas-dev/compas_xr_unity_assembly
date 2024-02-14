@@ -1421,7 +1421,7 @@ public class UIFunctionalities : MonoBehaviour
     public void SetObjectLengthsText(float P1distance, float P2distance)
     {
         //Update Distance Text
-        ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)} P2 | {(float)Math.Round(P2distance, 2)}";
+        ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)}      P2 | {(float)Math.Round(P2distance, 2)}";
     }
     public void ToggleRobot(Toggle toggle)
     {

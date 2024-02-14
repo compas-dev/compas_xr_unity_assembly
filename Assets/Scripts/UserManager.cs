@@ -9,7 +9,6 @@ using Helpers; // Added namespace for scene management
 
 public class UserManager : MonoBehaviour
 {
-
     private string userID;
     private DatabaseReference dbReference_root;
     public TMPro.TMP_InputField Username;

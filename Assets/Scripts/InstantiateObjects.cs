@@ -438,12 +438,12 @@ namespace Instantiate
                 return element;
             
         }
-        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID) //TODO: COMBINE THIS WITH THE CIRCLE IMAGE FUNCTION AND MAKE TEXT SAY SOMETHING LIKE "ASSEMBLY: 1234 STEP: 5678"
+        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID) //TODO: MAKE THIS FUNCTION BETTER (FLOAT DISTANCE FOR OFFSET, TEXT INPUT, GameOBJECT, ETC.) //TODO: COMBINE THIS WITH THE CIRCLE IMAGE FUNCTION AND MAKE TEXT SAY SOMETHING LIKE "ASSEMBLY: 1234 STEP: 5678"
         {
             // Create a new GameObject for the text
             GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
             TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
-            IndexText.text = assemblyID;
+            IndexText.text = $"Step: {gameObject.name} Assembly: {assemblyID}";
             IndexText.fontSize = 1f;
             IndexText.alignment = TextAlignmentOptions.Center;
 
@@ -471,7 +471,7 @@ namespace Instantiate
             IndexTextContainer.SetActive(false);
 
         }
-        private void CreateCircleImageForTag(GameObject parentObject)
+        private void CreateCircleImageForTag(GameObject parentObject) //TODO: MAKE THIS BETTER AND GET RID OF IT? OR MAKE IT A DEFINED BY USING THE CIRCLE OR SQUARE?
         {            
             if (IdxImage == null)
             {
@@ -509,7 +509,7 @@ namespace Instantiate
             //Set Initial Visivility to false
             circleImage.SetActive(false);
         }
-        public void ArrowInstantiator(GameObject parentObject, string itemKey, bool newUserArrow = false)
+        public void ArrowInstantiator(GameObject parentObject, string itemKey, bool newUserArrow = false) //TODO: MAKE THIS FUNCTION MAKE IT PLACE GAMEOBJECT ABOVE EXISTING GAMEOBJECT... ALSO INPUT SHOULD BE A NEW PERSON OBJECT
         {            
             if (SelectionArrow == null)
             {
@@ -558,7 +558,7 @@ namespace Instantiate
             //Set Active
             newArrow.SetActive(true);
         }
-        public void CreateNewUserObject(string UserInfoname, string itemKey)
+        public void CreateNewUserObject(string UserInfoname, string itemKey) //TODO: REVIEW THIS METHOD BASED ON CHANGES ABOVE... IT SHOULD ALSO PUT THE TEXT NAME ABOVE
         {
             GameObject userObject = new GameObject(UserInfoname);
 
@@ -572,7 +572,7 @@ namespace Instantiate
             //Instantiate Arrow
             ArrowInstantiator(userObject, itemKey, true);
         }
-        public void CalculateandSetLengthPositions(string key)
+        public void CalculateandSetLengthPositions(string key) //TODO: MAKE THIS FUNCTION DRAW LINES BETWEEN THE TWO POINTS.
         {
             //Find Gameobject Associated with that step
             GameObject element = Elements.FindObject(key);
@@ -604,12 +604,22 @@ namespace Instantiate
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
             Vector3 ElementsPosition = Elements.transform.position;
-            Vector3 P1Adjusted = new Vector3(ElementsPosition.x, P1Position.y, ElementsPosition.z);
-            Vector3 P2Adjusted = new Vector3(ElementsPosition.x, P2Position.y, ElementsPosition.z);
+            Vector3 P1Adjusted = new Vector3(P1Position.x, ElementsPosition.y, P1Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
+            Vector3 P2Adjusted = new Vector3(P2Position.x, ElementsPosition.y, P2Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
 
             //Get distance between position of P1, P2 and position of elements
-            float P1distance = Vector3.Distance(P1Adjusted, ElementsPosition);
-            float P2distance = Vector3.Distance(P2Adjusted, ElementsPosition);
+            float P1distance = Vector3.Distance(P1Position, P1Adjusted); //TODO: CHECK DISTANCE CALCULATION.
+            float P2distance = Vector3.Distance(P1Position, P2Adjusted); //TODO: CHECK DISTANCE CALCULATION.
+
+            //Draw lines between the two points for P1 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
+            LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
+            P1Line.SetPosition(0, P1Position);
+            P1Line.SetPosition(1, P1Adjusted);
+
+            //Draw lines between the two points for P2 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
+            LineRenderer P2Line = ObjectLengthsTags.FindObject("P2Tag").GetComponent<LineRenderer>();
+            P2Line.SetPosition(0, P2Position);
+            P2Line.SetPosition(1, P2Adjusted);
 
             //Update Distance Text
             UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
