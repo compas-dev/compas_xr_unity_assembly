@@ -27,15 +27,12 @@ namespace Instantiate
 {
     public class InstantiateObjects : MonoBehaviour
     {
-
-        //DATA STRUCTURE ITEMS
-        public Dictionary<string, Node> DataItemDict;
         
-        //OTHER Sript Objects
+        //Other Sript Objects
         public DatabaseManager databaseManager;
         public UIFunctionalities UIFunctionalities;
 
-        //INPUT MATERIALS AND OBJECTS
+        //Object Materials
         public Material BuiltMaterial;
         public Material UnbuiltMaterial;
         public Material HumanBuiltMaterial;
@@ -57,22 +54,19 @@ namespace Instantiate
         //Make Initial Visulization controler
         public ModeControler visulizationController = new ModeControler();
 
-        //Private IN SCRIPT USE OBJECTS
-        private GameObject geometry_object;
+        //Private in script use objects
         private GameObject IdxImage;
         private GameObject SelectionArrow;
         private GameObject NewUserArrow;
         private GameObject ObjectLengthsTags;
 
+        //Struct for storing Rotation Values
         public struct Rotation
         {
             public Vector3 x;
             public Vector3 y;
             public Vector3 z;
         }
-
-        //Private in script use objects
-        private ARRaycastManager rayManager;
 
         public void Awake()
         {

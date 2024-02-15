@@ -27,17 +27,13 @@ public class UIFunctionalities : MonoBehaviour
     public DatabaseManager databaseManager;
     public InstantiateObjects instantiateObjects;
     public Eventmanager eventManager;
-    public MqttTrajectoryReceiver mqttTrajectoryManager;
+    public MqttTrajectoryManager mqttTrajectoryManager;
     
-    //Toggle GameObjects
+    //Primary UI Objects
     private GameObject VisibilityMenuObject;
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
     private GameObject ElementSearchToggleObject;
-    private GameObject InfoToggleObject;
-    public GameObject CommunicationToggleObject;
-    
-    //Primary UI Objects
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
     public GameObject NextGeometryButtonObject;
@@ -46,7 +42,6 @@ public class UIFunctionalities : MonoBehaviour
     public Slider PreviewGeometrySlider;
     public GameObject IsBuiltPanelObjects;
     public GameObject IsBuiltButtonObject;
-    private Button IsBuiltButton;
     public GameObject IsbuiltButtonImage;
     public GameObject IsbuiltPriorityLockedImage;
     private TMP_InputField ElementSearchInputField;
@@ -65,7 +60,6 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PreviewBuilderButtonObject;
     public GameObject IDToggleObject;
     public GameObject RobotToggleObject;
-    private GameObject RobotVisulizationControlObjects;
     private GameObject ObjectLengthsToggleObject;
     private GameObject ObjectLengthsUIPanelObjects;
     private TMP_Text ObjectLengthsText;
@@ -75,14 +69,16 @@ public class UIFunctionalities : MonoBehaviour
     //Menu Toggle Button Objects
     private GameObject MenuBackground;
     private GameObject ReloadButtonObject;
+    private GameObject InfoToggleObject;
     private GameObject InfoPanelObject;
+    public GameObject CommunicationToggleObject;
     private GameObject CommunicationPanelObject;
 
     //Editor Toggle Objects
     private GameObject EditorBackground;
     private GameObject BuilderEditorButtonObject;
     private GameObject BuildStatusButtonObject;
-    private Button BuildStatusButton;
+    // private Button BuildStatusButton;
 
     //Communication Specific Objects
     private TMP_InputField MqttBrokerInputField;
@@ -103,7 +99,6 @@ public class UIFunctionalities : MonoBehaviour
     public Slider TrajectoryReviewSlider;
     public GameObject ExecuteTrajectoryButtonObject;
 
-    
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
     private Color White = new Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -118,7 +113,8 @@ public class UIFunctionalities : MonoBehaviour
     //AR Camera and Touch GameObjects
     public Camera arCamera;
     private GameObject activeGameObject;
-    private GameObject temporaryObject;    
+    private GameObject temporaryObject; 
+    private ARRaycastManager rayManager;
 
     //On Screen Text
     public GameObject CurrentStepTextObject;
@@ -127,9 +123,6 @@ public class UIFunctionalities : MonoBehaviour
     public TMP_Text LastBuiltIndexText;
     public TMP_Text CurrentPriorityText;
     public TMP_Text EditorSelectedText;
-
-    //Touch Input Variables
-    private ARRaycastManager rayManager;
 
     //In script use variables
     public string CurrentStep = null;
@@ -155,7 +148,7 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
-        mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryReceiver>();
+        mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");

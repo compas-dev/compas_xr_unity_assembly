@@ -2734,20 +2734,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6669345482417596760}
   m_CullTransparentMesh: 1
---- !u!114 &2876281756916617818
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3512883338669540777}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 499024dba974c486fbec53c67a90b2b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  nameController: Controller 1
-  saveAppSettings: {fileID: 1722036521}
 --- !u!224 &2891569163807670480
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3269,7 +3255,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4454127788437938361}
   - component: {fileID: 4335924230847880276}
-  - component: {fileID: 2876281756916617818}
   m_Layer: 0
   m_Name: PublisherSubscriberManager
   m_TagString: Untagged
@@ -3767,6 +3752,7 @@ MonoBehaviour:
   mqttUserName: 
   mqttPassword: 
   mqttClientConnected: 0
+  nameController: Controller 1
   topicPublish: 
   messagePublish: 
   greenScreenPanel: {fileID: 910881914}

@@ -9,8 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class SaveAppSettings : MonoBehaviour
-
- {
+{
     private TMP_InputField applicationIdInput;
     private TMP_InputField apiKeyInput;
     private TMP_InputField databaseUrlInput;

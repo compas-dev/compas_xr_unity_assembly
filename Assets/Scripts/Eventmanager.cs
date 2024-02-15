@@ -36,13 +36,10 @@ public class Eventmanager : MonoBehaviour
         InstantiateObjects instantiateObjects = Instantiateobjects.AddComponent<InstantiateObjects>();
         CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
         QRLocalization qrLocalization = QRLocalization.GetComponent<QRLocalization>();
-        MqttTrajectoryReceiver mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryReceiver>();
+        MqttTrajectoryManager mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryManager>();
 
-        //Initialize Firebase 
-        checkFirebase.FirebaseInitialized += Initialized;
-        
-        //Fetch Settings Design Reference and Storage Reference from ApplicationSettings Reference.
-        databaseManager.FetchSettingsData(settings_reference);
+        //Initilize Connection to Firebase and Fetch Settings Data
+        checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
 
         //Fetch data from realtime database
         databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
@@ -65,10 +62,10 @@ public class Eventmanager : MonoBehaviour
 
     }
 
-
-    public void Initialized(object sender, EventArgs e)
+    public void DBInitializedFetchSettings(object sender, EventArgs e)
     {
-        Debug.Log("I am evoked through database initializiation");	
+        Debug.Log("Database Initilized: Safe to Fetch Settings Data.");
+        databaseManager.FetchSettingsData(settings_reference);
     }  
     
 }

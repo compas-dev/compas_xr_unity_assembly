@@ -4,12 +4,15 @@ using UnityEngine;
 using M2MqttUnity;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using Newtonsoft.Json;
 using TMPro;
 
-public class MqttReceiver : M2MqttUnityClient
+public class MqttConfigManager : M2MqttUnityClient
 {
     [Header("MQTT Settings")]
     [Tooltip("Set the topic to publish")]
+
+    public string nameController = "Controller 1";
     public string topicPublish = ""; // topic to publish
     public string messagePublish = ""; // message to publish
 
@@ -138,12 +141,29 @@ public class MqttReceiver : M2MqttUnityClient
         greenScreenPanel.SetActive(false); // Hide the green screen
     }
     
-
     protected override void DecodeMessage(string topic, byte[] message)
     {
         msg = System.Text.Encoding.UTF8.GetString(message);
         Debug.Log("Received: " + msg + " from topic: " + topic);
+
+        OnMessageArrivedHandler(msg);
         StoreMessage(msg);
+    }
+
+    public void OnMessageArrivedHandler(string newMsg)
+    {
+        Debug.Log("Event Fired. The message, from Object " + nameController +" is = " + newMsg);
+
+        Dictionary<string, string> resultDataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(newMsg);
+
+        FirebaseManager.Instance.appId = resultDataDict["appId"];
+        FirebaseManager.Instance.apiKey = resultDataDict["apiKey"];
+        FirebaseManager.Instance.databaseUrl = resultDataDict["databaseUrl"];
+        FirebaseManager.Instance.storageBucket = resultDataDict["storageBucket"];
+        FirebaseManager.Instance.projectId = resultDataDict["projectId"];
+
+        saveAppSettingsScript.UpdateInputFields();
+
     }
 
     private void StoreMessage(string eventMsg)

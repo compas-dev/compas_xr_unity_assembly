@@ -22038,7 +22038,6 @@ MonoBehaviour:
   instantiateObjects: {fileID: 0}
   eventManager: {fileID: 0}
   mqttTrajectoryManager: {fileID: 0}
-  CommunicationToggleObject: {fileID: 0}
   CanvasObject: {fileID: 0}
   ConstantUIPanelObjects: {fileID: 0}
   NextGeometryButtonObject: {fileID: 0}
@@ -22057,6 +22056,7 @@ MonoBehaviour:
   IDToggleObject: {fileID: 0}
   RobotToggleObject: {fileID: 0}
   PriorityViewerToggleObject: {fileID: 0}
+  CommunicationToggleObject: {fileID: 0}
   MqttConnectButtonObject: {fileID: 0}
   RosConnectButtonObject: {fileID: 0}
   ReviewTrajectoryObjects: {fileID: 0}

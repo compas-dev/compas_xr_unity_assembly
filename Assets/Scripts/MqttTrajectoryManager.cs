@@ -12,7 +12,7 @@ using System.Security.Claims;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 
-public class MqttTrajectoryReceiver : M2MqttUnityClient
+public class MqttTrajectoryManager : M2MqttUnityClient //TODO: RENAME TO MqttTrajectoryManager
 {
     [Header("MQTT Settings")]
     [Tooltip("Set the topic to publish")]

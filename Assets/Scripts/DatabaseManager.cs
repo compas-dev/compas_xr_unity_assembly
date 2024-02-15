@@ -50,11 +50,6 @@ public class ApplicationSettingsEventArgs : EventArgs
     public ApplicationSettings Settings { get; set; }
 }
 
-public class UpdateDatabaseReferenceEventArgs: EventArgs
-{
-    public DatabaseReference Reference { get; set; }
-}
-    
 public class DatabaseManager : MonoBehaviour
 {
     // Firebase database references
@@ -203,13 +198,13 @@ public class DatabaseManager : MonoBehaviour
         //Fetch Storage Data
         await FetchStorageData(files);
 
-        //Fetch QR Data no event trigger
+        //Fetch QR Data with "TrackingDict" event trigger
         FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
         
         //Fetch Assembly Data no event trigger
         FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
         
-        //Fetch Building plan data with event trigger
+        //Fetch Building plan data with "BuildingPlandataDict" event trigger
         FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
     }
     async Task<List<FileMetadata>> GetFilesInFolder(string path)
@@ -390,19 +385,19 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("Number of nodes stored as a dictionary = " + dataDict.Count);
 
     }
-    private void DesearializeLastBuiltIndex(DataSnapshot snapshot)
+    private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
     {  
         string jsondatastring = snapshot.GetRawJsonValue();
-        Debug.Log("Last Bulit Index Data:" + jsondatastring);
+        Debug.Log("String Item Data:" + jsondatastring);
         
         if (!string.IsNullOrEmpty(jsondatastring))
         {
-            TempDatabaseLastBuiltStep = JsonConvert.DeserializeObject<string>(jsondatastring);
+            tempStringStorage = JsonConvert.DeserializeObject<string>(jsondatastring);
         }
         else
         {
-            Debug.LogWarning("Last Built Index Did not produce a value");
-            TempDatabaseLastBuiltStep = null;
+            Debug.LogWarning("String Item Did not produce a value");
+            tempStringStorage = null;
         }
     }
     private void DesearializeBuildingPlan(DataSnapshot snapshot)
@@ -1286,7 +1281,7 @@ public class DatabaseManager : MonoBehaviour
         //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
         TempDatabaseLastBuiltStep = null;
         
-        await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeLastBuiltIndex(snapshot));
+        await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
     
         if (TempDatabaseLastBuiltStep != null)
         {

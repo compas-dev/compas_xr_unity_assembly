@@ -12,14 +12,14 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 
 public class FirebaseInitializer : MonoBehaviour
 {
-    public MqttReceiver mqttReceiver;
+    public MqttConfigManager mqttConfigManager;
 
     public void Start()
     {
-         mqttReceiver = FindObjectOfType<MqttReceiver>();
-        if (mqttReceiver == null)
+         mqttConfigManager = FindObjectOfType<MqttConfigManager>();
+        if (mqttConfigManager == null)
         {
-            Debug.LogError("MqttReceiver not found in the scene.");
+            Debug.LogError("MqttConfigManager not found in the scene.");
         }
     }
 
@@ -50,7 +50,7 @@ public class FirebaseInitializer : MonoBehaviour
                     Debug.Log($"App Name: {app.Name}");
 
                     //Disconnect from MQTT
-                    mqttReceiver.Disconnect();
+                    mqttConfigManager.Disconnect();
                     Debug.Log("Disconnected from MQTT");
 
                     // Load the new scene
