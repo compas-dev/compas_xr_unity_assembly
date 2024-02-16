@@ -5,9 +5,17 @@ Firebase Installations Quickstart
 
 ### Requirements
 1. Download and install Unity Hub and [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)   
-2. Android SDK and Java JDK (when developing for Android) - have to be ticked in the installation modules when installing Unity.
+2. Android SDK and Java JDK (when developing for Android) and iOS (if developing for iOS) - have to be ticked in the installation modules when installing Unity. 
    
    <img width="718" alt="Screenshot 2023-10-30 at 10 55 29" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e6c67897-379b-4180-9481-79d43805842c">
+
+Alternatively, they can also be added post-installation from "Add Modules".
+
+   <img width="1022" alt="Screenshot 2024-02-16 at 13 33 41" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/d882c2ec-0d25-4ad9-a207-b442b1b3414b">
+
+   <img width="713" alt="Screenshot 2024-02-16 at 13 33 57" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/4c45aef8-2baa-4a77-9401-084207556221">
+
+
 
 
 ### Unity
@@ -60,8 +68,9 @@ Register your Android app with [Firebase](https://firebase.google.com/docs/unity
 3. Accessing Firebase config information
     - In your Firebase console, navigate to Project Overview and click the gear icon.
     - In the drop-down window select Project Settings
-    - In the project settings window under Your apps select CDF Web App
-    - The Required Config Information is listed under the section SDK setup and configuration and an example is shown below
+    - In the project settings window under Your apps / Androis Apps select Compas_XR
+    - The Required Config Information is listed under the section SDK setup and configuration / ```google-services.json```
+and an example is shown below:
 
 ```
 // Your web app's Firebase configuration
@@ -102,7 +111,7 @@ App id, api key, database url, storage bucket, and project id
 6. Optional: Update the Project Bundle Identifier.
     - If you did not use ```com.ETHZ.cdf``` as the project package name you will need to update the sample's Bundle Identifier.
     - Select the File > Build Settings menu option.
-    - Select Android in the Platform list.
+    - Select Android in the Platform list
     - Click Player Settings.
     - In the Player Settings panel scroll down to Bundle Identifier and update the value to the package name you provided when you registered your app with Firebase.
       
@@ -112,3 +121,75 @@ App id, api key, database url, storage bucket, and project id
     - Click Switch Platform to select Android as the target platform.
     - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
     - Click Build and Run.
+  
+### iOS - can only be installed on ios from a MacBook running Xcode
+1. Create a Unity project in the Firebase console.
+
+2. Associate your project to an app by clicking the Add app button, and selecting the iOS icon.
+    - You should use ```com.ETHZ.compas.xr.ios``` as the package name while you're testing.
+    - If you do not use the prescribed package name you will need to update the bundle identifier as described in the
+      - *Optional: Update the Project Bundle Identifier below.*
+    - change the rules in ```Realtime Database``` to :
+
+```
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+3. Accessing Firebase config information
+    - In your Firebase console, navigate to Project Overview and click the gear icon.
+    - In the drop-down window select Project Settings
+    - In the project settings window under Your apps / Apple Apps select Compas_XR
+    - The Required Config Information is listed under the section SDK setup and configuration / ```GoogleService-Info.plist```, which is the equivalent of the ```google-services.json``` for ios
+
+4. Download the ```GoogleService-Info.plist``` file associated with your Firebase project from the console. This file contains the information mentioned above that, you need to connect your iOS app to the Firebase backend, and will need to be included either in the FirebaseInitialize script in the Unity project or at the start of the app, before initializing Firebase. You will need to look for the following parameters:
+App id, api key, database url, storage bucket, and project id.
+
+5. Optional: Update the Project Bundle Identifier in Unity.
+    - If you did not use ```com.ETHZ.compas.xr.ios``` as the project package name you will need to update the sample's Bundle Identifier.
+    - Select Android in the Platform list
+    - Click Player Settings.
+    - In the Player Settings, under the iOS panel:
+         - scroll down to Bundle Identifier and update the value to the package name you provided when you registered your app with Firebase.
+         - scroll down to Camera Usage Description and write a message describing the need to use the camera, such as "please allow camera use for AR"
+         - scroll down to iOS version and pick the adequate version (min. 14 to support current project packages)
+
+      ![Screenshot 2024-02-16 at 11 56 27](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/625d7f8f-12d1-424f-9e54-c420b6986748)
+
+6. Build for iOS.
+    - Select the File > Build Settings menu option.
+    - Select iOS in the Platform list.
+    - Click Switch Platform to select iOS as the target platform.
+    - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
+    - Click Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
+  
+      <img width="604" alt="Screenshot 2024-02-16 at 14 28 06" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/16aec886-085d-4db1-b9e2-88f0d5613b1b">
+
+8. Optional: Unless you have Xcode installed,
+   - Go to your MacBook's AppStore and install Xcode
+   - Install necessary iOS modules
+
+
+8. Install on iOS Device with Xcode
+   - Open the file with the last build on your computer
+   - Select the "Name".xcworkspace file and open it with Xcode
+   - In Xcode click the file's name on the left column to open the Settings
+   - Under Signing and Capabilities \ All, tick ```Autimatically manage signing``` and confirm ```Enable Automatic```
+   - Under Team, open the drop-down down and select the development team/individual
+   - Optional: this is the last chance to adjust the Bundle Identifier and App Name before installing
+   - Connect iOS device by cable
+   - Unless the device is already enabled as Developer, the possibility to enable the mode opens after connecting to Xcode
+   - At the top, make sure the device is connected and click the play triangle to start building and installing on device
+  
+     ![Screenshot 2024-02-16 at 14 48 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/c74fa3ac-bf67-45bb-ac26-9328f617de50)
+
+     
+
+
+
+
+
