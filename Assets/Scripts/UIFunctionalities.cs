@@ -514,7 +514,8 @@ public class UIFunctionalities : MonoBehaviour
         CurrentStepText.text = CurrentStep;
         
         //Instantiate an arrow at the current step
-        instantiateObjects.ArrowInstantiator(element, CurrentStep);
+        // instantiateObjects.ArrowInstantiator(element, CurrentStep);
+        instantiateObjects.UserIndicatorInstantiator(ref instantiateObjects.MyUserIndacator, element, CurrentStep, CurrentStep);
 
         //Write Current Step to the database under my device name
         UserCurrentInfo userCurrentInfo = new UserCurrentInfo();

@@ -417,10 +417,10 @@ namespace MQTTDataCompasXR
             var deviceID = jsonObject["device_id"].ToString();
             var timeStamp = jsonObject["time_stamp"].ToString();
 
-            //Update Header SequenceCounter based on received information. //TODO: CHECK IMPLEMENTATION
+            //Update Header SequenceCounter based on received information
             _updateSharedSequenceIDCounter(sequenceID);
 
-            //Update Header ResponseID Based on received information //TODO: CHECK IMPLEMENTATION
+            //Update Header ResponseID Based on received information
             _updateSharedResponseIDCounter(responseID);
 
             // Create and return a new Header instance with inputs so the values are the same and do not mess up internal logic of counters.
@@ -437,7 +437,7 @@ namespace MQTTDataCompasXR
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
 
-        // Constructor for creating a new GetTrajectoryRequest Message instance //TODO: Adding Header as input is different then python class.
+        // Constructor for creating a new GetTrajectoryRequest Message instance
         public GetTrajectoryRequest(string elementID, Header header=null)
         {
             //Only moment to increment the responseID is when I send a new trajectory request.

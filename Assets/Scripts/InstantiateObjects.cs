@@ -56,8 +56,8 @@ namespace Instantiate
 
         //Private in script use objects
         private GameObject IdxImage;
-        private GameObject MyUserIndacator;
-        private GameObject NewUserIndacator;
+        public GameObject MyUserIndacator;
+        private GameObject OtherUserIndacator;
         private GameObject ObjectLengthsTags;
 
         //Struct for storing Rotation Values
@@ -99,7 +99,7 @@ namespace Instantiate
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("IdxTagsTemplates").FindObject("Circle");
             MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
-            NewUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
+            OtherUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
 
             //Set Initial Visulization Modes
@@ -157,7 +157,7 @@ namespace Instantiate
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
 
             // Create and attach text label to the GameObject
-            CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
+            CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0], Key);
             CreateCircleImageForTag(elementPrefab);
 
             //Case Switches to evaluate color and touch modes.
@@ -171,7 +171,7 @@ namespace Instantiate
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
 
-            //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
+            //If Priority Viewer toggle is on then color the add additional color based on priority:
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
                 ColorObjectByPriority(databaseManager.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
@@ -181,7 +181,7 @@ namespace Instantiate
             if (Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-                ArrowInstantiator(elementPrefab, Key);
+                UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key);
             }
         }
         public void placeElementAssembly(string Key, Node node)
@@ -431,38 +431,72 @@ namespace Instantiate
                 Debug.Log($"Element: {node.type_id} type: {node.type_data}");
                 return element;
             
-        }
-        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID) //TODO: MAKE THIS FUNCTION BETTER (FLOAT DISTANCE FOR OFFSET, TEXT INPUT, GameOBJECT, ETC.) //TODO: COMBINE THIS WITH THE CIRCLE IMAGE FUNCTION AND MAKE TEXT SAY SOMETHING LIKE "ASSEMBLY: 1234 STEP: 5678"
+        }      
+        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null)
         {
             // Create a new GameObject for the text
-            GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
-            TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
-            IndexText.text = $"Step: {gameObject.name} Assembly: {assemblyID}";
-            IndexText.fontSize = 1f;
-            IndexText.alignment = TextAlignmentOptions.Center;
+            GameObject textContainer = new GameObject(gameObjectName);
 
-            // Calculate the center of the GameObject
-            GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
-            Renderer renderer = childobject.GetComponent<Renderer>();
-            if (renderer == null)
-            {
-                Debug.Log("Renderer not found in the parent object.");
-            }
-            Vector3 center = Vector3.zero;
-            center = renderer.bounds.center;
+            // Set the position and rotation of the text
+            textContainer.transform.position = position;
+            textContainer.transform.rotation = rotation;
 
-            // Offset the position slightly above the GameObject
-            float verticalOffset = 0.13f;
-            Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
-            IndexTextContainer.transform.position = textPosition;
-            IndexTextContainer.transform.rotation = Quaternion.identity;
-            IndexTextContainer.transform.SetParent(gameObject.transform);
+            // Add TextMeshPro component to the GameObject
+            TextMeshPro textMesh = textContainer.AddComponent<TextMeshPro>();
+            textMesh.text = text;
+            textMesh.fontSize = fontSize;
+            textMesh.alignment = textAlignment;
+            textMesh.color = textColor;
 
             // Add billboard effect(object rotating with camera)
-            HelpersExtensions.Billboard billboard = IndexTextContainer.AddComponent<HelpersExtensions.Billboard>();
+            if (isBillboard)
+            {
+                textContainer.AddComponent<HelpersExtensions.Billboard>();
+            }
 
-            // Initially set the text as inactive
-            IndexTextContainer.SetActive(false);
+            //Set parent if there is a parent object
+            if (parentObject != null)
+            {
+                textContainer.transform.SetParent(parentObject.transform);
+            }
+
+            // Set the visiblity based on the input
+            textContainer.SetActive(isVisible);
+
+            return textContainer;
+        }
+        public GameObject InstantiateObjectFromPrefabRefrence(ref GameObject prefabReference, string gameObjectName, Vector3 position, Quaternion rotation, GameObject parentObject=null)
+        {
+            //Instantiate the prefab at the position and rotation
+            GameObject instantiatedObject = Instantiate(prefabReference, position, rotation);
+
+            //Set the name of the instantiated object
+            instantiatedObject.name = gameObjectName;
+
+            //Set the parent of the instantiated object
+            if (parentObject != null)
+            {
+                instantiatedObject.transform.SetParent(parentObject.transform);
+            }
+
+            return instantiatedObject;
+        }
+        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID, string stepID)
+        {              
+            // Calculate the center of the GameObject
+            GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
+
+            //Get the center of the child object
+            Vector3 center = FindGameObjectCenter(childobject);
+
+            // Offset the position of center by a distance
+            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.13f, "y");
+
+            //Create 3D Text
+            GameObject IndexTextContainer = Create3DTextAsGameObject(
+                $"Assembly: {assemblyID} Step: {stepID}", $"{gameObject.name} Text", 0.5f,
+                TextAlignmentOptions.Center, Color.white, offsetPosition,
+                Quaternion.identity, true, false, gameObject);
 
         }
         private void CreateCircleImageForTag(GameObject parentObject) //TODO: MAKE THIS BETTER AND GET RID OF IT? OR MAKE IT A DEFINED BY USING THE CIRCLE OR SQUARE?
@@ -503,56 +537,49 @@ namespace Instantiate
             //Set Initial Visivility to false
             circleImage.SetActive(false);
         }
-        public void ArrowInstantiator(GameObject parentObject, string itemKey, bool newUserArrow = false) //TODO: MAKE THIS FUNCTION MAKE IT PLACE GAMEOBJECT ABOVE EXISTING GAMEOBJECT... ALSO INPUT SHOULD BE A NEW PERSON OBJECT
+        public void UserIndicatorInstantiator(ref GameObject UserIndicator, GameObject parentObject, string stepKey, string userInfoName)
         {            
-            if (MyUserIndacator == null)
+            if (UserIndicator == null)
             {
-                Debug.LogError("Could Not find MyUserIndacator.");
+                Debug.LogError("Could Not find UserIndicator.");
                 return;
             }
 
             //Find the center of the Item key object
-            GameObject itemObject = Elements.FindObject(itemKey);
-            string elementID = databaseManager.BuildingPlanDataItem.steps[itemKey].data.element_ids[0];
-
-            Renderer renderer = itemObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
-            if (renderer == null)
+            Step step = databaseManager.BuildingPlanDataItem.steps[stepKey];
+            GameObject element = Elements.FindObject(stepKey);
+            GameObject geometryObject = element.FindObject(step.data.element_ids[0] + " Geometry");
+            if (geometryObject == null)
             {
-                Debug.LogError("Renderer not found in the parent object.");
+                Debug.LogError("Geometry Object not found.");
                 return;
             }
-
-            Vector3 centerPosition = renderer.bounds.center;
-
-            // Define the vertical offset 
-            float verticalOffset = 0.13f;
-            Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+            
+            Vector3 objectCenter = FindGameObjectCenter(geometryObject);
+            Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, 0.13f, "y");
 
             //Define rotation for the gameObject.
-            Rotation arrowRotation = getRotation(databaseManager.BuildingPlanDataItem.steps[itemKey].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[itemKey].data.location.yaxis); 
-            Rotation rotationlh = rhToLh(arrowRotation.x , arrowRotation.y);
-            Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
+            Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
 
             //Set new arrow item
             GameObject newArrow = null;
 
             // Instantiate arrow at the offset position
-            if (newUserArrow)
-            {
-                newArrow = Instantiate(NewUserIndacator, offsetPosition, rotationQuaternion, parentObject.transform);
-            }
-            else
-            {
-                newArrow = Instantiate(MyUserIndacator, offsetPosition, rotationQuaternion, parentObject.transform);
-            }
-            //Set name and parent
-            newArrow.transform.SetParent(parentObject.transform);
-            newArrow.name = $"{parentObject.name} Arrow";
+            newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, userInfoName+" Arrow", arrowOffset, rotationQuaternion, parentObject);
+
+            //Create 3D Text
+            GameObject IndexTextContainer = Create3DTextAsGameObject(
+                userInfoName, $"{userInfoName} UserText", 0.15f,
+                TextAlignmentOptions.Center, Color.white, newArrow.transform.position,
+                newArrow.transform.rotation, true, true, newArrow);
+
+            //Offset the position of the text based on the user indicator object
+            OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y");
 
             //Set Active
             newArrow.SetActive(true);
         }
-        public void CreateNewUserObject(string UserInfoname, string itemKey) //TODO: REVIEW THIS METHOD BASED ON CHANGES ABOVE... IT SHOULD ALSO PUT THE TEXT NAME ABOVE
+        public void CreateNewUserObject(string UserInfoname, string itemKey)
         {
             GameObject userObject = new GameObject(UserInfoname);
 
@@ -564,9 +591,9 @@ namespace Instantiate
             userObject.transform.rotation = Quaternion.identity;
 
             //Instantiate Arrow
-            ArrowInstantiator(userObject, itemKey, true);
+            UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname);
         }
-        public void CalculateandSetLengthPositions(string key) //TODO: MAKE THIS FUNCTION DRAW LINES BETWEEN THE TWO POINTS.
+        public void CalculateandSetLengthPositions(string key)
         {
             //Find Gameobject Associated with that step
             GameObject element = Elements.FindObject(key);
@@ -734,6 +761,83 @@ namespace Instantiate
             ZXrotation.z = z_vec;
 
             return ZXrotation;
+        }
+
+        //Methods for position and rotation of unity game objects
+        public Vector3 FindGameObjectCenter(GameObject gameObject)
+        {
+            Renderer renderer = gameObject.GetComponentInChildren<Renderer>();
+            if (renderer == null)
+            {
+                Debug.LogError("Renderer not found in the parent object.");
+                return Vector3.zero;
+            }
+            Vector3 center = renderer.bounds.center;
+            return center;
+        }
+        public Vector3 OffsetPositionVectorByDistance(Vector3 position, float offsetDistance, string axis)
+        {
+            // Offset the position based on input values.
+            switch (axis)
+            {
+                case "x":
+                {
+                    Vector3 offsetPosition = new Vector3(position.x + offsetDistance, position.y, position.z);
+                    return offsetPosition;
+                }
+                case "y":
+                {
+                    Vector3 offsetPosition = new Vector3(position.x, position.y + offsetDistance, position.z);
+                    return offsetPosition;
+                }
+                case "z":
+                {
+                    Vector3 offsetPosition = new Vector3(position.x, position.y, position.z + offsetDistance);
+                    return offsetPosition;
+                }
+            }
+            return Vector3.zero;
+        }
+        public void OffsetGameObjectPositionByExistingObjectPosition(GameObject gameObject, GameObject existingObject, float offsetDistance, string axis)
+        {
+            // Calculate the center of the existing GameObject
+            Vector3 center = FindGameObjectCenter(existingObject);
+
+            // Offset the position based on input values.
+            switch (axis)
+            {
+                case "x":
+                {
+                    Vector3 offsetPosition = new Vector3(center.x + offsetDistance, center.y, center.z);
+                    gameObject.transform.position = offsetPosition;
+                    break;
+                }
+                case "y":
+                {
+                    Vector3 offsetPosition = new Vector3(center.x, center.y + offsetDistance, center.z);
+                    gameObject.transform.position = offsetPosition;
+                    break;
+                }
+                case "z":
+                {
+                    Vector3 offsetPosition = new Vector3(center.x, center.y, center.z + offsetDistance);
+                    gameObject.transform.position = offsetPosition;
+                    break;
+                }
+            }
+        }
+        public Quaternion GetQuaternionFromStepKey(string key)
+        {
+            //Calculate Right Hand Rotation
+            Rotation rotationrh = getRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
+            
+            //Convert to Left Hand Rotation
+            Rotation rotationlh = rhToLh(rotationrh.x , rotationrh.y);
+            
+            //GetQuaterion from Left Hand Rotation
+            Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
+
+            return rotationQuaternion;
         }
 
     /////////////////////////////// Material and colors ////////////////////////////////////////
@@ -980,7 +1084,8 @@ namespace Instantiate
                     RemoveObjects(eventArgs.Key + " Arrow");
 
                     //Instantiate new Arrow
-                    ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
+                    // ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
+                    UserIndicatorInstantiator(ref OtherUserIndacator, GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, eventArgs.Key);
                 }
                 else
                 {
