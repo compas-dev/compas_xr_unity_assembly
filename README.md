@@ -178,7 +178,10 @@ App id, api key, database url, storage bucket, and project id.
    - Open the file with the last build on your computer
    - Select the "Name".xcworkspace file and open it with Xcode
    - In Xcode click the file's name on the left column to open the Settings
-   - Under Signing and Capabilities \ All, tick ```Autimatically manage signing``` and confirm ```Enable Automatic```
+   - Under Signing and Capabilities \ All, tick ```Automatically manage signing``` and confirm ```Enable Automatic```
+   - 
+     ![Screenshot 2024-02-16 at 14 51 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2d47b798-3f99-4662-b858-2a358d44b79a)
+
    - Under Team, open the drop-down down and select the development team/individual
    - Optional: this is the last chance to adjust the Bundle Identifier and App Name before installing
    - Connect iOS device by cable
