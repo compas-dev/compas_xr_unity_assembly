@@ -45,7 +45,7 @@ namespace Instantiate
         //Parent Objects
         public GameObject QRMarkers; 
         public GameObject Elements;
-        public GameObject UserObjects;
+        public GameObject ActiveUserObjects;
 
         //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
@@ -56,8 +56,8 @@ namespace Instantiate
 
         //Private in script use objects
         private GameObject IdxImage;
-        private GameObject SelectionArrow;
-        private GameObject NewUserArrow;
+        private GameObject MyUserIndacator;
+        private GameObject NewUserIndacator;
         private GameObject ObjectLengthsTags;
 
         //Struct for storing Rotation Values
@@ -84,7 +84,7 @@ namespace Instantiate
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
             QRMarkers = GameObject.Find("QRMarkers");
-            UserObjects = GameObject.Find("UserObjects");
+            ActiveUserObjects = GameObject.Find("ActiveUserObjects");
 
             //Find Initial Materials
             BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
@@ -98,8 +98,8 @@ namespace Instantiate
             
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("IdxTagsTemplates").FindObject("Circle");
-            SelectionArrow = GameObject.Find("SelectionArrows").FindObject("Arrow");
-            NewUserArrow = GameObject.Find("SelectionArrows").FindObject("NewUserArrow");
+            MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
+            NewUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
 
             //Set Initial Visulization Modes
@@ -505,9 +505,9 @@ namespace Instantiate
         }
         public void ArrowInstantiator(GameObject parentObject, string itemKey, bool newUserArrow = false) //TODO: MAKE THIS FUNCTION MAKE IT PLACE GAMEOBJECT ABOVE EXISTING GAMEOBJECT... ALSO INPUT SHOULD BE A NEW PERSON OBJECT
         {            
-            if (SelectionArrow == null)
+            if (MyUserIndacator == null)
             {
-                Debug.LogError("Could Not find SelectionArrow.");
+                Debug.LogError("Could Not find MyUserIndacator.");
                 return;
             }
 
@@ -539,11 +539,11 @@ namespace Instantiate
             // Instantiate arrow at the offset position
             if (newUserArrow)
             {
-                newArrow = Instantiate(NewUserArrow, offsetPosition, rotationQuaternion, parentObject.transform);
+                newArrow = Instantiate(NewUserIndacator, offsetPosition, rotationQuaternion, parentObject.transform);
             }
             else
             {
-                newArrow = Instantiate(SelectionArrow, offsetPosition, rotationQuaternion, parentObject.transform);
+                newArrow = Instantiate(MyUserIndacator, offsetPosition, rotationQuaternion, parentObject.transform);
             }
             //Set name and parent
             newArrow.transform.SetParent(parentObject.transform);
@@ -557,7 +557,7 @@ namespace Instantiate
             GameObject userObject = new GameObject(UserInfoname);
 
             //Set parent
-            userObject.transform.SetParent(UserObjects.transform);
+            userObject.transform.SetParent(ActiveUserObjects.transform);
 
             //Set position and rotation
             userObject.transform.position = Vector3.zero;

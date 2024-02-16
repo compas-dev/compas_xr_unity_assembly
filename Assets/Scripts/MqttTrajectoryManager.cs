@@ -143,7 +143,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient //TODO: RENAME TO MqttTra
     }
     private void SubscribeToTopic(string topicToSubscribe)
     {
-        if (!string.IsNullOrEmpty(topicToSubscribe) || client == null)
+        if (!string.IsNullOrEmpty(topicToSubscribe) && client != null)
         {
             Debug.Log("MQTT: Subscribing to topic: " + topicToSubscribe);
             client.Subscribe(new string[] { topicToSubscribe }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
@@ -155,20 +155,27 @@ public class MqttTrajectoryManager : M2MqttUnityClient //TODO: RENAME TO MqttTra
     }
     private void UnsubscribeFromTopic(string topicToUnsubscribe)
     {
-        if (!string.IsNullOrEmpty(topicToUnsubscribe))
+        if (!string.IsNullOrEmpty(topicToUnsubscribe) && client != null)
         {
             client.Unsubscribe(new string[] { topicToUnsubscribe });
             Debug.Log("Unsubscribed from topic: " + topicToUnsubscribe);
         }
         else
         {
-            Debug.LogWarning("MQTT: Topic to unsubscribe is empty.");
+            Debug.LogWarning("MQTT: Topic to unsubscribe is empty or client is null.");
         }
     }
     public void PublishToTopic(string publishingTopic,  Dictionary<string, object> message)
     {   
-        string messagePublish = JsonConvert.SerializeObject(message);
-        client.Publish(publishingTopic, System.Text.Encoding.UTF8.GetBytes(messagePublish), MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE, false);
+        if (client != null && client.IsConnected)
+        {
+            string messagePublish = JsonConvert.SerializeObject(message);
+            client.Publish(publishingTopic, System.Text.Encoding.UTF8.GetBytes(messagePublish), MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE, false);
+        }
+        else
+        {
+            Debug.LogWarning("MQTT: Client is null or not connected. Cannot publish message.");
+        }
     }
     public void SubscribeToCompasXRTopics()
     {
