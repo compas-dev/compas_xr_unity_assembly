@@ -145,7 +145,6 @@ public class MqttConfigManager : M2MqttUnityClient
     {
         msg = System.Text.Encoding.UTF8.GetString(message);
         Debug.Log("Received: " + msg + " from topic: " + topic);
-
         OnMessageArrivedHandler(msg);
         StoreMessage(msg);
     }
