@@ -100,7 +100,7 @@ public class DatabaseManager : MonoBehaviour
         public List<FileMetadata> items { get; set; }
     }
 
-    class FileMetadata
+    public class FileMetadata
     {
         public string name { get; set; }
         public string bucket { get; set; }
@@ -196,7 +196,7 @@ public class DatabaseManager : MonoBehaviour
     private async void FetchAllData(List<FileMetadata> files)
     {
         //Fetch Storage Data
-        await FetchStorageData(files);
+        await FetchAndDownloadFilesFromStorage(files);
 
         //Fetch QR Data with "TrackingDict" event trigger
         FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
@@ -234,53 +234,101 @@ public class DatabaseManager : MonoBehaviour
             return responseData.items;
         }
     }
-    async Task FetchStorageData(List<FileMetadata> files) 
+    // async Task FetchStorageData(List<FileMetadata> files) 
+    // {
+    //     List<Task> downloadTasks = new List<Task>();
+        
+    //     foreach (FileMetadata file in files)
+    //     {    
+    //         string baseurl = file.name;
+
+    //         //Construct FirebaseStorage Reference from 
+    //         StorageReference FileReference = FirebaseStorage.DefaultInstance.GetReference(baseurl);
+    //         string basepath = Application.persistentDataPath;
+    //         string filename = Path.GetFileName(baseurl);
+    //         string folderpath = Path.Combine(basepath, "Object_Storage");
+    //         string savefilepath = Path.Combine(folderpath, filename);
+                                
+    //         // Replace backslashes with forward slashes
+    //         savefilepath = savefilepath.Replace('\\', '/');
+
+    //         //Run all async tasks and add them to a task list we can wait for all of them to complete.            
+    //         downloadTasks.Add(FileReference.GetFileAsync(savefilepath).ContinueWithOnMainThread(task =>
+    //         {
+    //             if (task.IsFaulted)
+    //             {
+    //                 foreach (var exception in task.Exception.InnerExceptions)
+    //                 {
+    //                     //If there is an error when downloading an object signal and on screen message.
+    //                     if(!UIFunctionalities.ErrorDownloadingObjectMessageObject.activeSelf)
+    //                     {
+    //                         UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorDownloadingObjectMessageObject);
+    //                     }
+
+    //                     Debug.LogError("Error fetching data from Firebase: " + exception.Message);
+    //                 }
+    //                 return;
+    //             }
+
+    //             if (task.IsCompleted)
+    //             {
+    //                 Debug.Log($"Downloaded file to path '{savefilepath}'");
+    //                 CheckPathExistance(savefilepath);
+    //             }
+    //         }));
+    //     }
+        
+    //     //Await all download tasks are done before refreshing.
+    //     await Task.WhenAll(downloadTasks);
+    // }        
+
+    public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetadata)
     {
         List<Task> downloadTasks = new List<Task>();
         
-        foreach (FileMetadata file in files)
-        {    
-            string baseurl = file.name;
+        foreach (var fileMetadata in filesMetadata)
+        {
+            // Retrieve the download URL
+            var fileRef = FirebaseStorage.DefaultInstance.GetReference(fileMetadata.name);
+            Uri downloadUrlUri = await fileRef.GetDownloadUrlAsync(); // This returns a Uri object
+            string downloadUrl = downloadUrlUri.ToString(); // Convert Uri to string
 
-            //Construct FirebaseStorage Reference from 
-            StorageReference FileReference = FirebaseStorage.DefaultInstance.GetReference(baseurl);
-            string basepath = Application.persistentDataPath;
-            string filename = Path.GetFileName(baseurl);
-            string folderpath = Path.Combine(basepath, "Object_Storage");
-            string savefilepath = Path.Combine(folderpath, filename);
-                                
-            // Replace backslashes with forward slashes
-            savefilepath = savefilepath.Replace('\\', '/');
-
-            //Run all async tasks and add them to a task list we can wait for all of them to complete.            
-            downloadTasks.Add(FileReference.GetFileAsync(savefilepath).ContinueWithOnMainThread(task =>
+            // Construct the local file path
+            string localFilePath = System.IO.Path.Combine(Application.persistentDataPath, "Object_Storage", System.IO.Path.GetFileName(fileMetadata.name));
+            
+            // Ensure the directory exists
+            string directoryPath = System.IO.Path.GetDirectoryName(localFilePath);
+            if (!System.IO.Directory.Exists(directoryPath))
             {
-                if (task.IsFaulted)
-                {
-                    foreach (var exception in task.Exception.InnerExceptions)
-                    {
-                        //If there is an error when downloading an object signal and on screen message.
-                        if(!UIFunctionalities.ErrorDownloadingObjectMessageObject.activeSelf)
-                        {
-                            UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorDownloadingObjectMessageObject);
-                        }
+                System.IO.Directory.CreateDirectory(directoryPath);
+            }
 
-                        Debug.LogError("Error fetching data from Firebase: " + exception.Message);
-                    }
-                    return;
-                }
-
-                if (task.IsCompleted)
-                {
-                    Debug.Log($"Downloaded file to path '{savefilepath}'");
-                    CheckPathExistance(savefilepath);
-                }
-            }));
+            // Download the file
+            //await DownloadFile(downloadUrl, localFilePath);
+            downloadTasks.Add(DownloadFile(downloadUrl, localFilePath));
         }
-        
         //Await all download tasks are done before refreshing.
         await Task.WhenAll(downloadTasks);
-    }        
+    }
+
+    private async Task DownloadFile(string downloadUrl, string filePath)
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
+        {
+            webRequest.downloadHandler = new DownloadHandlerFile(filePath);
+            await webRequest.SendWebRequest();
+
+            if (webRequest.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("File download error: " + webRequest.error);
+            }
+            else
+            {
+                Debug.Log("File successfully downloaded and saved to " + filePath);
+            }
+        }
+    }
+
     public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
