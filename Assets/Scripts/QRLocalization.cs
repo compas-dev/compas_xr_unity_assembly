@@ -33,7 +33,7 @@ public class QRLocalization : MonoBehaviour
         
         //Find GameObjects that need to be transformed
         Elements = GameObject.Find("Elements");
-        UserObjects = GameObject.Find("UserObjects");
+        UserObjects = GameObject.Find("ActiveUserObjects");
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
 
     }

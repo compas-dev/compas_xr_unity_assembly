@@ -15,12 +15,26 @@ public sealed class FirebaseManager
     public string storageBucket;
     public string projectId;
 
-    FirebaseManager() {
-      appId = "1:116159730378:android:32163738e6393f7a0b5a33";
+    FirebaseManager() 
+    {
       apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
       databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
       storageBucket = "test-project-94f41.appspot.com";
       projectId = "test-project-94f41";
+
+      OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
+      switch (currentOS)
+      {
+        case OperatingSystem.iOS:
+        appId = "1:116159730378:ios:a99ce204d214df3c0b5a33";
+        break;
+        case OperatingSystem.Android: 
+        appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+        break;
+        default:
+        appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+        break;
+        }
     }
 
     public static FirebaseManager Instance
