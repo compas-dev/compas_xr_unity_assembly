@@ -4,10 +4,10 @@ COMPAS XR: Visualizer app for collaborative robotic assembly
 Firebase Installations Quickstart
 
 ### Requirements
-1. Download and install Unity Hub and [Unity 2022.3.3f1] (unityhub://2022.3.3f1/7cdc2969a641)   
+1. Download and install Unity Hub and [Unity 2022.3.3f1](unityhub://2022.3.3f1/7cdc2969a641)   
 2. Android SDK and Java JDK (when developing for Android) and iOS (if developing for iOS) - have to be ticked in the installation modules when installing Unity. 
    
-   <img width="718" alt="Screenshot 2023-10-30 at 10 55 29" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e6c67897-379b-4180-9481-79d43805842c">
+   ![add_modules](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/8f14d61a-eb75-4082-9077-473d24f9ba4f)
 
 Alternatively, they can also be added post-installation from "Add Modules".
 
