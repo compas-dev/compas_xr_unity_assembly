@@ -7,13 +7,14 @@ Firebase Installations Quickstart
 1. Download and install Unity Hub and [Unity 2023.3.10f1](https://unity.com/download)   
 2. Android Build Support (OpenJDK & Android SDK & NDK Tools)(when developing for Android) and iOS Build Support (if developing for iOS) - have to be ticked in the installation modules when installing Unity. 
    
-   ![add_modules](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/8f14d61a-eb75-4082-9077-473d24f9ba4f)
+![add_modules](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/8f14d61a-eb75-4082-9077-473d24f9ba4f)
 
 Alternatively, they can also be added post-installation from "Add Modules".
 
-   <img width="1022" alt="Screenshot 2024-02-16 at 13 33 41" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/d882c2ec-0d25-4ad9-a207-b442b1b3414b">
+![image](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/262ec2be-64ed-423d-b12a-a55ea8129d16)
 
-   <img width="713" alt="Screenshot 2024-02-16 at 13 33 57" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/4c45aef8-2baa-4a77-9401-084207556221">
+![image](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/347d98fb-2103-49ab-baa0-659cd0316295)
+
 
 
 
