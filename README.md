@@ -122,15 +122,16 @@ App id, api key, database url, storage bucket, and project id
     - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
     - Click Build and Run.
     - If an error occurs check player settings against default player settings depicted below:
-      ![1](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9f6b28c8-be15-472c-bd90-d800e595abba)
-      ![2](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/b607ceba-24c9-4ea8-ad95-0c4107da7db8)
-      ![3](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/bba71c84-8296-41ff-8739-b9034298ec35)
-      ![4](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/08849be6-852b-4831-95a0-cc55e39520d4)
-      ![5](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/6876b6f9-3412-4c52-824a-111b0ed6abb3)
-      ![6](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/2387f5f6-864c-4278-8f97-bf61440ebda2)
-      ![7](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9b6efd26-9adf-4a89-ad15-285423f39dcb)
-      ![8](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/fbe00a7a-2182-4031-ae9b-d5c689baf924)
-      ![9](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/466a5be1-bfde-4336-b6d9-b83d8ec21fbe)
+
+   ![1](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9f6b28c8-be15-472c-bd90-d800e595abba)
+   ![2](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/b607ceba-24c9-4ea8-ad95-0c4107da7db8)
+   ![3](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/bba71c84-8296-41ff-8739-b9034298ec35)
+   ![4](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/08849be6-852b-4831-95a0-cc55e39520d4)
+   ![5](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/6876b6f9-3412-4c52-824a-111b0ed6abb3)
+   ![6](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/2387f5f6-864c-4278-8f97-bf61440ebda2)
+   ![7](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9b6efd26-9adf-4a89-ad15-285423f39dcb)
+   ![8](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/fbe00a7a-2182-4031-ae9b-d5c689baf924)
+   ![9](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/466a5be1-bfde-4336-b6d9-b83d8ec21fbe)
 
   
 ### iOS - can only be installed on ios from a MacBook running Xcode
