@@ -1326,12 +1326,12 @@ public class UIFunctionalities : MonoBehaviour
         {
             if(toggle.isOn)
             {
-                IDTextControler(true);
+                ARSpaceTextControler(true, "IdxText", "IdxImage");
                 SetUIObjectColor(IDToggleObject, Yellow);
             }
             else
             {
-                IDTextControler(false);
+                ARSpaceTextControler(false, "IdxText", "IdxImage");
                 SetUIObjectColor(IDToggleObject, White);
             }
         }
@@ -1340,7 +1340,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find ID Toggle or ID Toggle Object.");
         }
     }
-    public void IDTextControler(bool Visibility)
+    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, string imageObjectBaseName = null)
     {
         Debug.Log("ID Text Button Pressed");
 
@@ -1350,16 +1350,20 @@ public class UIFunctionalities : MonoBehaviour
             foreach (Transform child in instantiateObjects.Elements.transform)
             {
                 // Toggle Text Object
-                Transform textChild = child.Find(child.name + " Text");
+                Transform textChild = child.Find(child.name + textObjectBaseName);
                 if (textChild != null)
                 {
                     textChild.gameObject.SetActive(Visibility);
                 }
-                // Toggle Circle Image Object
-                Transform circleImageChild = child.Find(child.name + "IdxImage");
-                if (circleImageChild != null)
+
+                if(imageObjectBaseName != null)
                 {
-                    circleImageChild.gameObject.SetActive(Visibility);
+                    // Toggle background Image Object
+                    Transform circleImageChild = child.Find(child.name + imageObjectBaseName);
+                    if (circleImageChild != null)
+                    {
+                        circleImageChild.gameObject.SetActive(Visibility);
+                    }
                 }
             }
         }
@@ -1486,6 +1490,9 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn && PriorityViewerToggleObject != null)
         {
+            //Turn on Priority Tags
+            ARSpaceTextControler(true, "PriorityText", "PriorityImage");
+            
             //Color Elements Based on Priority
             instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
 
@@ -1514,6 +1521,9 @@ public class UIFunctionalities : MonoBehaviour
             {
                 Debug.LogWarning("Could not find Visulization Mode.");
             }
+
+            //Turn off Priority Tags
+            ARSpaceTextControler(false, "PriorityText", "PriorityImage");
 
             //Set UI Color
             SetUIObjectColor(PriorityViewerToggleObject, White);

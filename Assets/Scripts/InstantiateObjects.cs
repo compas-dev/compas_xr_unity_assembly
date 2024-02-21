@@ -56,6 +56,7 @@ namespace Instantiate
 
         //Private in script use objects
         private GameObject IdxImage;
+        private GameObject PriorityImage;
         public GameObject MyUserIndacator;
         private GameObject OtherUserIndacator;
         private GameObject ObjectLengthsTags;
@@ -97,7 +98,8 @@ namespace Instantiate
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
-            IdxImage = GameObject.Find("IdxTagsTemplates").FindObject("Circle");
+            IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
+            PriorityImage = GameObject.Find("ImageTagTemplates").FindObject("Triangle");
             MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
             OtherUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
@@ -157,8 +159,16 @@ namespace Instantiate
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
 
             // Create and attach text label to the GameObject
-            CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0], Key);
-            CreateCircleImageForTag(elementPrefab);
+            // Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.155f, "y");
+            //     $"{stepID} | {assemblyID}", $"{gameObject.name} Text", 0.5f,
+            
+            //Create 3D Index Text
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key} | {step.data.element_ids[0]}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
+
+            //Create Priority Text
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.15f, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
+            CreateBackgroundImageForText(ref PriorityImage, elementPrefab, 0.15f, $"{elementPrefab.name}PriorityImage", false);
 
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
@@ -167,7 +177,7 @@ namespace Instantiate
             if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
             {
                 //Set tag and Image visibility if the mode is on
-                elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
+                elementPrefab.FindObject(elementPrefab.name + "IdxText").gameObject.SetActive(true);
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
 
@@ -175,6 +185,10 @@ namespace Instantiate
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
                 ColorObjectByPriority(databaseManager.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
+
+                //Set tag and Image visibility if the mode is on
+                elementPrefab.FindObject(elementPrefab.name + "PriorityText").gameObject.SetActive(true);
+                elementPrefab.FindObject(elementPrefab.name + "PriorityImage").gameObject.SetActive(true);
             }
 
             //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
@@ -481,7 +495,7 @@ namespace Instantiate
 
             return instantiatedObject;
         }
-        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID, string stepID)
+        private void CreateTextForGameObjectOnInstantiation(GameObject gameObject, string assemblyID, float offsetDistance, string text, string textObjectName, float fontSize)
         {              
             // Calculate the center of the GameObject
             GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
@@ -490,52 +504,57 @@ namespace Instantiate
             Vector3 center = FindGameObjectCenter(childobject);
 
             // Offset the position of center by a distance
-            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.155f, "y");
+            // Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.155f, "y");
+            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, offsetDistance, "y");
 
-            //Create 3D Text
-            GameObject IndexTextContainer = Create3DTextAsGameObject(
-                $"{stepID} | {assemblyID}", $"{gameObject.name} Text", 0.5f,
+            // //Create 3D Text
+            // GameObject IndexTextContainer = Create3DTextAsGameObject(
+            //     $"{stepID} | {assemblyID}", $"{gameObject.name} Text", 0.5f,
+            //     TextAlignmentOptions.Center, Color.white, offsetPosition,
+            //     Quaternion.identity, true, false, gameObject);
+            GameObject TextContainer = Create3DTextAsGameObject(
+                text, textObjectName, fontSize,
                 TextAlignmentOptions.Center, Color.white, offsetPosition,
                 Quaternion.identity, true, false, gameObject);
-
         }
-        private void CreateCircleImageForTag(GameObject parentObject) //TODO: MAKE THIS BETTER AND GET RID OF IT? OR MAKE IT A DEFINED BY USING THE CIRCLE OR SQUARE?
+        private void CreateBackgroundImageForText(ref GameObject inputImg, GameObject parentObject, float verticalOffset,string imgObjectName, bool isVisible=true, bool isBillboard=true)
         {            
-            if (IdxImage == null)
-            {
-                Debug.LogError("CircleImage template is not found or not assigned."); //TODO: FIX THIS METHOD & MAKE THE SAME FOR PV.
-                return;
-            }
-
             //Find the element ID from the step associated with this geometry
             string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
 
-            // Find the center of the parent object's renderer
-            Renderer renderer = parentObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
-            if (renderer == null)
-            {
-                Debug.LogError("Renderer not found in the parent object.");
-                return;
-            }
-
-            Vector3 centerPosition = renderer.bounds.center;
+            // Find the gameObjects center
+            // Renderer renderer = parentObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
+            // if (renderer == null)
+            // {
+            //     Debug.LogError("Renderer not found in the parent object.");
+            //     return;
+            // }
+            Vector3 centerPosition = FindGameObjectCenter(parentObject.FindObject(elementID + " Geometry"));
 
             // Define the vertical offset 
-            float verticalOffset = 0.15f;
-            Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+            // float verticalOffset = 0.15f;
+            // Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+            Vector3 offsetPosition = OffsetPositionVectorByDistance(centerPosition, verticalOffset, "y");
 
             // Instantiate the image object at the offset position
-            GameObject circleImage = Instantiate(IdxImage, offsetPosition, Quaternion.identity, parentObject.transform);
+            // GameObject circleImage = Instantiate(IdxImage, offsetPosition, Quaternion.identity, parentObject.transform);
+            GameObject imgObject = InstantiateObjectFromPrefabRefrence(ref inputImg, imgObjectName, offsetPosition, Quaternion.identity, parentObject);
 
             //Set name and parent
-            circleImage.transform.SetParent(parentObject.transform);
-            circleImage.name = $"{parentObject.name}IdxImage";
+            // circleImage.transform.SetParent(parentObject.transform);
+            // circleImage.name = $"{parentObject.name}IdxImage";
 
             // Add billboard effect
-            HelpersExtensions.Billboard billboard = circleImage.AddComponent<HelpersExtensions.Billboard>();
+            if (isBillboard)
+            {
+                HelpersExtensions.Billboard billboard = imgObject.AddComponent<HelpersExtensions.Billboard>();
+            }
 
-            //Set Initial Visivility to false
-            circleImage.SetActive(false);
+            //if not visiblity
+            imgObject.SetActive(isVisible);
+
+            // //Set Initial Visivility to false
+            // imgObject.SetActive(false);
         }
         public void UserIndicatorInstantiator(ref GameObject UserIndicator, GameObject parentObject, string stepKey, string namingBase, string inGameText, float fontSize)
         {            
