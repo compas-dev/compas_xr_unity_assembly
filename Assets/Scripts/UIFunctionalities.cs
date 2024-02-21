@@ -154,7 +154,7 @@ public class UIFunctionalities : MonoBehaviour
         Elements = GameObject.Find("Elements");
         QRMarkers = GameObject.Find("QRMarkers");
         CanvasObject = GameObject.Find("Canvas");
-        UserObjects = GameObject.Find("UserObjects");     
+        UserObjects = GameObject.Find("ActiveUserObjects");     
 
         //Find AR Camera gameObject
         arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();

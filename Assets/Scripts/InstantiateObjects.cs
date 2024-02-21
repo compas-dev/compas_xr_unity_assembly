@@ -494,7 +494,7 @@ namespace Instantiate
 
             //Create 3D Text
             GameObject IndexTextContainer = Create3DTextAsGameObject(
-                $"Assembly: {assemblyID} Step: {stepID}", $"{gameObject.name} Text", 0.5f,
+                $"{stepID} | {assemblyID}", $"{gameObject.name} Text", 0.5f,
                 TextAlignmentOptions.Center, Color.white, offsetPosition,
                 Quaternion.identity, true, false, gameObject);
 
