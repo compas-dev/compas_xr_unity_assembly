@@ -157,10 +157,6 @@ namespace Instantiate
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
-
-            // Create and attach text label to the GameObject
-            // Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.155f, "y");
-            //     $"{stepID} | {assemblyID}", $"{gameObject.name} Text", 0.5f,
             
             //Create 3D Index Text
             CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key} | {step.data.element_ids[0]}", $"{elementPrefab.name}IdxText", 0.5f);
@@ -504,14 +500,9 @@ namespace Instantiate
             Vector3 center = FindGameObjectCenter(childobject);
 
             // Offset the position of center by a distance
-            // Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.155f, "y");
             Vector3 offsetPosition = OffsetPositionVectorByDistance(center, offsetDistance, "y");
 
-            // //Create 3D Text
-            // GameObject IndexTextContainer = Create3DTextAsGameObject(
-            //     $"{stepID} | {assemblyID}", $"{gameObject.name} Text", 0.5f,
-            //     TextAlignmentOptions.Center, Color.white, offsetPosition,
-            //     Quaternion.identity, true, false, gameObject);
+            //Create 3D Text
             GameObject TextContainer = Create3DTextAsGameObject(
                 text, textObjectName, fontSize,
                 TextAlignmentOptions.Center, Color.white, offsetPosition,
@@ -523,26 +514,13 @@ namespace Instantiate
             string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
 
             // Find the gameObjects center
-            // Renderer renderer = parentObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
-            // if (renderer == null)
-            // {
-            //     Debug.LogError("Renderer not found in the parent object.");
-            //     return;
-            // }
             Vector3 centerPosition = FindGameObjectCenter(parentObject.FindObject(elementID + " Geometry"));
 
             // Define the vertical offset 
-            // float verticalOffset = 0.15f;
-            // Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
             Vector3 offsetPosition = OffsetPositionVectorByDistance(centerPosition, verticalOffset, "y");
 
             // Instantiate the image object at the offset position
-            // GameObject circleImage = Instantiate(IdxImage, offsetPosition, Quaternion.identity, parentObject.transform);
             GameObject imgObject = InstantiateObjectFromPrefabRefrence(ref inputImg, imgObjectName, offsetPosition, Quaternion.identity, parentObject);
-
-            //Set name and parent
-            // circleImage.transform.SetParent(parentObject.transform);
-            // circleImage.name = $"{parentObject.name}IdxImage";
 
             // Add billboard effect
             if (isBillboard)
@@ -550,11 +528,8 @@ namespace Instantiate
                 HelpersExtensions.Billboard billboard = imgObject.AddComponent<HelpersExtensions.Billboard>();
             }
 
-            //if not visiblity
+            //set visibility on instantiation
             imgObject.SetActive(isVisible);
-
-            // //Set Initial Visivility to false
-            // imgObject.SetActive(false);
         }
         public void UserIndicatorInstantiator(ref GameObject UserIndicator, GameObject parentObject, string stepKey, string namingBase, string inGameText, float fontSize)
         {            

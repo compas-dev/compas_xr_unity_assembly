@@ -49,6 +49,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject SearchElementButtonObject;
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
+    private GameObject PriorityCompleteMessageObject;
     public GameObject MQTTFailedToConnectMessageObject;
     public GameObject MQTTConnectionLostMessageObject;
     public GameObject ErrorDownloadingObjectMessageObject;
@@ -218,6 +219,7 @@ public class UIFunctionalities : MonoBehaviour
         GameObject MessagesParent = CanvasObject.FindObject("OnScreenMessages");
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
+        PriorityCompleteMessageObject = MessagesParent.FindObject("PriorityCompleteMessage");
         MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
         MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
         ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
@@ -705,21 +707,21 @@ public class UIFunctionalities : MonoBehaviour
     {
         if (IsBuiltPanelObjects.activeSelf)
         {
-            //Check if current priority is null
-            if(databaseManager.CurrentPriority != null)
-            {    
-                //Set priority locked image based on priority comparison
-                if(stepPriority > Convert.ToInt16(databaseManager.CurrentPriority))
-                {
-                    IsbuiltPriorityLockedImage.SetActive(true);
-                    IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
-                }
-                else
-                {
-                    IsbuiltPriorityLockedImage.SetActive(false);
-                    IsBuiltButtonObject.GetComponent<Image>().color = TranspGrey;
-                }
-            }
+            // //Check if current priority is null
+            // if(databaseManager.CurrentPriority != null)
+            // {    
+            //     //Set priority locked image based on priority comparison
+            //     if(stepPriority > Convert.ToInt16(databaseManager.CurrentPriority))
+            //     {
+            //         IsbuiltPriorityLockedImage.SetActive(true);
+            //         IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
+            //     }
+            //     else
+            //     {
+            //         IsbuiltPriorityLockedImage.SetActive(false);
+            //         IsBuiltButtonObject.GetComponent<Image>().color = TranspGrey;
+            //     }
+            // }
 
             //Set is built button graphis based on build status
             if (builtStatus)
@@ -746,7 +748,7 @@ public class UIFunctionalities : MonoBehaviour
             return false;
         }
         
-        //Check if they are the same. If they are return true //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
+        //Check if they are the same. If they are return true
         else if (databaseManager.CurrentPriority == step.data.priority.ToString())
         {
             Debug.Log($"Priority Check: Current Priority is equal to step priority. Pushing data");
@@ -756,6 +758,7 @@ public class UIFunctionalities : MonoBehaviour
         }
 
         //Else if the current priority is higher then the step priority loop through all the elements in priority above and unbuild them. This allows you to go back in priority.
+        //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
         else if (Convert.ToInt16(databaseManager.CurrentPriority) > step.data.priority)
         {
             Debug.Log($"Priority Check: Current Priority is higher then the step priority. Unbuilding elements.");
@@ -830,6 +833,9 @@ public class UIFunctionalities : MonoBehaviour
                 if(UnbuiltElements.Count == 0)
                 {
                     Debug.Log($"Priority Check: Current Priority is complete. Unlocking Next Priority.");
+
+                    //Signal on screen message for priority complete
+                    SignalOnScreenPriorityCompleteMessage(databaseManager.CurrentPriority, step.data.priority.ToString());
 
                     //Set Current Priority
                     SetCurrentPriority(step.data.priority.ToString());
@@ -990,8 +996,7 @@ public class UIFunctionalities : MonoBehaviour
 
     }
     private void SignalOnScreenPriorityIncorrectWarning(string elementsPriority, string currentPriority)
-    {
-        
+    {  
         Debug.Log($"Priority Warning: Signal On Screen Message for Incorrect Priority.");
 
         //Find text component for on screen message
@@ -1009,7 +1014,6 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Priority Message: Could not find message object or message component.");
         }
-
     }
     public void SignalTrajectoryReviewRequest(string key)
     {
@@ -1077,6 +1081,26 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Debug.LogWarning("MQTT Message: Could not find message object or message component.");
+        }
+    }
+    public void SignalOnScreenPriorityCompleteMessage(string currentPriority, string newPriority)
+    {
+        Debug.Log($"Priority Complete: Signal On Screen Message for priority complete.");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = PriorityCompleteMessageObject.FindObject("PriorityCompleteText").GetComponent<TMP_Text>();
+
+        //Define message for the onscreen text
+        string message = $"The previous priority {currentPriority} is complete you are now moving on to priority {newPriority}.";
+        
+        if(messageComponent != null && message != null && PriorityCompleteMessageObject != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(PriorityCompleteMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("Priority Complete Message: Could not find message object or message component.");
         }
     }
     public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
@@ -1342,7 +1366,7 @@ public class UIFunctionalities : MonoBehaviour
     }
     public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, string imageObjectBaseName = null)
     {
-        Debug.Log("ID Text Button Pressed");
+        Debug.Log("AR Space Text Controler Pressed");
 
         if (instantiateObjects != null && instantiateObjects.Elements != null)
         {
