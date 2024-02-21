@@ -160,7 +160,7 @@ public class UIFunctionalities : MonoBehaviour
         arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();
 
         //Find the Raycast manager in the script in order to use it to acquire data
-        rayManager = FindObjectOfType<ARRaycastManager>();
+        rayManager = FindObjectOfType<ARRaycastManager>(); //TODO: CHECK THIS WITH THE PHONE.
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
@@ -515,7 +515,7 @@ public class UIFunctionalities : MonoBehaviour
         
         //Instantiate an arrow at the current step
         // instantiateObjects.ArrowInstantiator(element, CurrentStep);
-        instantiateObjects.UserIndicatorInstantiator(ref instantiateObjects.MyUserIndacator, element, CurrentStep, CurrentStep);
+        instantiateObjects.UserIndicatorInstantiator(ref instantiateObjects.MyUserIndacator, element, CurrentStep, CurrentStep, "ME", 0.25f);
 
         //Write Current Step to the database under my device name
         UserCurrentInfo userCurrentInfo = new UserCurrentInfo();

@@ -181,7 +181,7 @@ namespace Instantiate
             if (Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-                UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key);
+                UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
             }
         }
         public void placeElementAssembly(string Key, Node node)
@@ -490,7 +490,7 @@ namespace Instantiate
             Vector3 center = FindGameObjectCenter(childobject);
 
             // Offset the position of center by a distance
-            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.13f, "y");
+            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, 0.155f, "y");
 
             //Create 3D Text
             GameObject IndexTextContainer = Create3DTextAsGameObject(
@@ -503,7 +503,7 @@ namespace Instantiate
         {            
             if (IdxImage == null)
             {
-                Debug.LogError("CircleImage template is not found or not assigned.");
+                Debug.LogError("CircleImage template is not found or not assigned."); //TODO: FIX THIS METHOD & MAKE THE SAME FOR PV.
                 return;
             }
 
@@ -521,7 +521,7 @@ namespace Instantiate
             Vector3 centerPosition = renderer.bounds.center;
 
             // Define the vertical offset 
-            float verticalOffset = 0.13f;
+            float verticalOffset = 0.15f;
             Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
 
             // Instantiate the image object at the offset position
@@ -537,7 +537,7 @@ namespace Instantiate
             //Set Initial Visivility to false
             circleImage.SetActive(false);
         }
-        public void UserIndicatorInstantiator(ref GameObject UserIndicator, GameObject parentObject, string stepKey, string userInfoName)
+        public void UserIndicatorInstantiator(ref GameObject UserIndicator, GameObject parentObject, string stepKey, string namingBase, string inGameText, float fontSize)
         {            
             if (UserIndicator == null)
             {
@@ -565,11 +565,11 @@ namespace Instantiate
             GameObject newArrow = null;
 
             // Instantiate arrow at the offset position
-            newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, userInfoName+" Arrow", arrowOffset, rotationQuaternion, parentObject);
+            newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, namingBase+" Arrow", arrowOffset, rotationQuaternion, parentObject);
 
             //Create 3D Text
             GameObject IndexTextContainer = Create3DTextAsGameObject(
-                userInfoName, $"{userInfoName} UserText", 0.15f,
+                inGameText, $"{namingBase} UserText", fontSize,
                 TextAlignmentOptions.Center, Color.white, newArrow.transform.position,
                 newArrow.transform.rotation, true, true, newArrow);
 
@@ -591,7 +591,7 @@ namespace Instantiate
             userObject.transform.rotation = Quaternion.identity;
 
             //Instantiate Arrow
-            UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname);
+            UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname, UserInfoname, 0.15f);
         }
         public void CalculateandSetLengthPositions(string key)
         {
@@ -1085,7 +1085,7 @@ namespace Instantiate
 
                     //Instantiate new Arrow
                     // ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
-                    UserIndicatorInstantiator(ref OtherUserIndacator, GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, eventArgs.Key);
+                    UserIndicatorInstantiator(ref OtherUserIndacator, GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, eventArgs.Key, eventArgs.Key, 0.15f);
                 }
                 else
                 {
