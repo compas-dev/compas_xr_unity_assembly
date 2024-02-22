@@ -587,7 +587,7 @@ namespace Instantiate
             //Instantiate Arrow
             UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname, UserInfoname, 0.15f);
         }
-        public void CalculateandSetLengthPositions(string key)
+        public void CalculateandSetLengthPositions(string key) //TODO: LOCAL POSITION DID NOT WORK FOR THE LINE. BUT CHECK IT.
         {
             //Find Gameobject Associated with that step
             GameObject element = Elements.FindObject(key);
@@ -595,6 +595,7 @@ namespace Instantiate
 
             //Find gameobject center
             Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
+            Vector3 renderlocalCenter = element.FindObject(step.data.element_ids[0] + " Geometry").transform.localPosition;
 
             //Find length from assembly dictionary
             float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
@@ -602,6 +603,10 @@ namespace Instantiate
             //Calculate position of P1 and P2 
             Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
             Vector3 P2Position = center + element.transform.right * (length / 2);
+
+            //TODO: TESTING... ADJUSTED LOCAL POSITION
+            Vector3 P1PositionLocal = renderlocalCenter + element.transform.right * (length / 2)* -1;
+
 
             //Set Positions of P1 and P2
             ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
@@ -619,8 +624,13 @@ namespace Instantiate
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
             Vector3 ElementsPosition = Elements.transform.position;
+            Vector3 ElementsLocalPosition = Elements.transform.localPosition;
             Vector3 P1Adjusted = new Vector3(P1Position.x, ElementsPosition.y, P1Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
             Vector3 P2Adjusted = new Vector3(P2Position.x, ElementsPosition.y, P2Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
+            
+            //TODO: TESTING... ADJUSTED LOCAL POSITION //TODO: FIX THIS SOME HOW.
+            Vector3 P1AdjustedLocal = new Vector3(P1PositionLocal.x, ElementsLocalPosition.y, P1PositionLocal.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
+            
 
             //Get distance between position of P1, P2 and position of elements
             float P1distance = Vector3.Distance(P1Position, P1Adjusted); //TODO: CHECK DISTANCE CALCULATION.
@@ -628,8 +638,11 @@ namespace Instantiate
 
             //Draw lines between the two points for P1 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
             LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
-            P1Line.SetPosition(0, P1Position);
-            P1Line.SetPosition(1, P1Adjusted);
+            // P1Line.SetPosition(0, P1Position);
+            // P1Line.SetPosition(1, P1Adjusted);
+            //TODO: TESTED LOCAL POSITION
+            P1Line.SetPosition(0, P1PositionLocal);
+            P1Line.SetPosition(1, P1AdjustedLocal);
 
             //Draw lines between the two points for P2 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
             LineRenderer P2Line = ObjectLengthsTags.FindObject("P2Tag").GetComponent<LineRenderer>();
