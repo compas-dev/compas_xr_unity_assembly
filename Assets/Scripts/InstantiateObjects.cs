@@ -60,6 +60,7 @@ namespace Instantiate
         public GameObject MyUserIndacator;
         private GameObject OtherUserIndacator;
         private GameObject ObjectLengthsTags;
+        public GameObject PriorityViewerLine;
 
         //Struct for storing Rotation Values
         public struct Rotation
@@ -103,6 +104,7 @@ namespace Instantiate
             MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
             OtherUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
+            PriorityViewerLine = GameObject.Find("PriorityViewerLine");
 
             //Set Initial Visulization Modes
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
@@ -638,6 +640,8 @@ namespace Instantiate
             Vector3 P1Adjusted = new Vector3(P1Position.x, ElementsPosition.y, P1Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
             Vector3 P2Adjusted = new Vector3(P2Position.x, ElementsPosition.y, P2Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
             
+            Debug.Log("P1Position: " + P1Position);
+            Debug.Log("P1Adjusted: " + P1Adjusted);
             //INSTANTIATE CUBES AT P1 AND P1ADJUSTED TO SEE WHERE THEY ARE
             // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             // cube.transform.position = P1Adjusted;
@@ -710,7 +714,131 @@ namespace Instantiate
             //Update Distance Text
             UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
         }
-    
+        public void CreatePriorityViewerItems(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth)
+        {
+            //Fetch priority item from PriorityTreeDIct
+            List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriority];
+
+            Debug.Log("PriorityList: " + priorityList.Count);
+            Debug.Log("CurrentPriority: " + selectedPriority);
+            Debug.Log("LineObject: " + lineObject.name);
+
+            //draw a line between points
+            DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, 0.1f, Color.red);
+        }
+        public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, float? ptRadius=null, Color? ptColor=null) //TODO: ADD CREATE POINT BOOL.
+        {
+            //TODO: DEBUG ME.
+            //Create a new line object
+            LineRenderer lineRenderer = lineObject.GetComponent<LineRenderer>();
+            Debug.Log("IAMHERE");
+            //Add a line renderer component to the line object if it is null
+            if (lineRenderer == null)
+            {
+                lineRenderer = lineObject.AddComponent<LineRenderer>();
+            }
+
+            //If the gameobject reference contains children
+            if (lineObject.transform.childCount > 0)
+            {
+                //Destroy all children
+                foreach (Transform child in lineObject.transform)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+
+            //Set the line color and width
+            lineRenderer.startColor = lineColor;
+            lineRenderer.endColor = lineColor;
+            lineRenderer.startWidth = lineWidth;
+            lineRenderer.endWidth = lineWidth;
+
+            //Check list length
+            int listLength = keyslist.Count;
+
+            //Only draw the line if the list length is greater then 1
+            if (listLength < 1)
+            {
+                //Set the line positions & point positions
+                lineRenderer.positionCount = keyslist.Count;
+
+                for (int i = 0; i < keyslist.Count; i++)
+                {
+                    GameObject element = Elements.FindObject(keyslist[i]);
+                    Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[i]].data.element_ids[0] + " Geometry"));
+                    lineRenderer.SetPosition(i, center);
+
+                    //Create points if the bool is true
+                    if (createPoints)
+                    {
+                        if(ptRadius != null && ptColor != null)
+                        {
+                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[i] + "Point", lineObject);
+                        }
+                        else
+                        {
+                            Debug.Log("DrawLineFromKeys: Point Radius and Color not provided.");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //If create points set reference line to not visible, but create the sphere for the object
+                if(listLength != 0)
+                {                        
+                    if(createPoints)
+                    {
+                        if(ptRadius != null && ptColor != null)
+                        {
+                            //Set the line object to not visible
+                            lineObject.SetActive(false);
+
+                            //Get the center of the only object in the list
+                            GameObject element = Elements.FindObject(keyslist[0]);
+                            Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[0]].data.element_ids[0] + " Geometry"));
+
+                            //Create singular point if it is only 1.
+                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[0] + "Point", lineObject);
+                        }
+                        else
+                        {
+                            Debug.Log("DrawLineFromKeys: Point Radius and Color not provided.");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("DrawLineFromKeys: List length is 0.");
+                }
+            }
+
+        }
+
+        public GameObject CreateSphereAtPosition(Vector3 position, float radius, Color color, string name=null, GameObject parentObject=null)
+        {
+            //Create a new sphere
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.position = position;
+            sphere.transform.localScale = new Vector3(radius, radius, radius);
+            sphere.GetComponent<Renderer>().material.color = color;
+
+            //Set the name of the sphere
+            if (name != null)
+            {
+                sphere.name = name;
+            }
+
+            //Set the parent of the sphere
+            if (parentObject != null)
+            {
+                sphere.transform.SetParent(parentObject.transform);
+            }
+
+            return sphere;
+        }
+
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
@@ -1108,7 +1236,7 @@ namespace Instantiate
                 }
             }
         }
-        public void ApplyColorForTouch(string CurrentPriority)
+        public void ApplyColorForHigherPriority(string CurrentPriority)
         {
             Debug.Log($"Applying color for touch : {CurrentPriority}.");
             if (databaseManager.BuildingPlanDataItem.steps != null)

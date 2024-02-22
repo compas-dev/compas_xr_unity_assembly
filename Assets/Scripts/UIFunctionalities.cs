@@ -596,7 +596,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
     }  
-    public void SearchElementButton()
+    public void SearchElementButton() //TODO: MAKE THIS SEARCH FOR STEP INSTEAD OF ELEMENT ID, AND ADD ONSCREENWARNING IF NOT FOUND.
     {
         //Search for step button clicked
         Debug.Log("Search for Step Button Pressed");
@@ -1516,21 +1516,21 @@ public class UIFunctionalities : MonoBehaviour
         {
             //Turn on Priority Tags
             ARSpaceTextControler(true, "PriorityText", "PriorityImage");
+
+            //Set visibility of line reference
+            instantiateObjects.PriorityViewerLine.SetActive(true);
             
-            //Color Elements Based on Priority
-            instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
+            //Create the priority line
+            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewerLine, Color.red, 0.1f);
+
+            // Color Elements Based on Priority
+            instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority);
 
             //Set UI Color
             SetUIObjectColor(PriorityViewerToggleObject, Yellow);
         }
         else
         {
-            Debug.Log("Priority Toggle Off");
-            Debug.Log($"Toggle state is {toggle.isOn}");
-            if(PriorityViewerToggleObject == null)
-            {
-            Debug.Log($"Priority Viewer Toggle Object is null {PriorityViewerToggleObject}");
-            }
             
             //Color Elements by visulization mode
             if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.ActorView)
@@ -1545,6 +1545,9 @@ public class UIFunctionalities : MonoBehaviour
             {
                 Debug.LogWarning("Could not find Visulization Mode.");
             }
+
+            //Set visibility of line reference
+            instantiateObjects.PriorityViewerLine.SetActive(false);
 
             //Turn off Priority Tags
             ARSpaceTextControler(false, "PriorityText", "PriorityImage");
@@ -1698,7 +1701,7 @@ public class UIFunctionalities : MonoBehaviour
                 EditorSelectedTextObject.SetActive(true);
 
                 //Apply color color based on build state
-                instantiateObjects.ApplyColorForTouch(databaseManager.CurrentPriority);
+                instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority);
                 // ColliderControler();
 
                 //Update mode so we know to search for touch input
