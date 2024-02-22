@@ -477,7 +477,7 @@ public class UIFunctionalities : MonoBehaviour
                 Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
                 string elementID = PreviousStep.data.element_ids[0];
 
-                instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, previousStepElement.FindObject(elementID + " Geometry"));
+                instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, key, previousStepElement.FindObject(elementID + " Geometry"));
 
                 //If Priority Viewer toggle is on then color the add additional color based on priority
                 if (PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
@@ -623,7 +623,7 @@ public class UIFunctionalities : MonoBehaviour
                 if(previousElement != null)
                 {
                     //Color based on current mode
-                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
+                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, SearchedElementStepID, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
 
                     //if it is equal to current step color it human or robot
                     if(SearchedElementStepID == CurrentStep)
@@ -784,7 +784,7 @@ public class UIFunctionalities : MonoBehaviour
                     }
 
                     //Update color and touch depending on what is on.
-                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, Elements.FindObject(key).FindObject(stepToUnbuild.data.element_ids[0] + " Geometry"));
+                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, stepToUnbuild, key, Elements.FindObject(key).FindObject(stepToUnbuild.data.element_ids[0] + " Geometry"));
                 
                 }
             }
@@ -1697,8 +1697,9 @@ public class UIFunctionalities : MonoBehaviour
                 CurrentStepTextObject.SetActive(false);
                 EditorSelectedTextObject.SetActive(true);
 
-                //Control Selectable objects in scene
-                ColliderControler();
+                //Apply color color based on build state
+                instantiateObjects.ApplyColorForTouch(databaseManager.CurrentPriority);
+                // ColliderControler();
 
                 //Update mode so we know to search for touch input
                 TouchSearchModeController(TouchMode.ElementEditSelection);
@@ -1721,8 +1722,23 @@ public class UIFunctionalities : MonoBehaviour
                 //Update mode so we are no longer searching for touch
                 TouchSearchModeController(TouchMode.None);
 
-                //Color Elements by build status
-                instantiateObjects.ApplyColorBasedOnBuildState();
+                //Color Elements by visulization mode
+                if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.ActorView)
+                {
+                    instantiateObjects.ApplyColorBasedOnActor();
+                }
+                else if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.BuiltUnbuilt)
+                {
+                    instantiateObjects.ApplyColorBasedOnBuildState();
+                }
+                else if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority); //TODO: WITH PV UPDATE THIS WOULD CHANGE.
+                }
+                else
+                {
+                    Debug.LogWarning("Could not find Visulization Mode.");
+                }
 
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, White);
@@ -1937,15 +1953,15 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log($"Active Game Object Priority: {databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority}");
 
             //If active game objects step priority is higher then current step priority then set builder button to inactive else its active
-            if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
-            {
-                Debug.Log("Priority is higher then current priority. Setting button to inactive.");
-                BuildStatusButtonObject.GetComponent<Button>().interactable = false;
-            }
-            else
-            {
-                BuildStatusButtonObject.GetComponent<Button>().interactable = true;
-            }
+            // if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
+            // {
+            //     Debug.Log("Priority is higher then current priority. Setting button to inactive.");
+            //     BuildStatusButtonObject.GetComponent<Button>().interactable = false;
+            // }
+            // else
+            // {
+            //     BuildStatusButtonObject.GetComponent<Button>().interactable = true;
+            // }
             
             //Color the object based on human or robot
             instantiateObjects.ColorHumanOrRobot(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.actor, databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.is_built, activeGameObject);
@@ -2011,18 +2027,26 @@ public class UIFunctionalities : MonoBehaviour
         {
             GameObject Box = GameObject.Find("BoundingArea");
             var element = Box.transform.parent;
+            GameObject elementGameobject = Box.transform.parent.gameObject;
 
-            if (element != null)
+            if (element != null && elementGameobject != null)
             {
                 if (CurrentStep != null)
                 {
                     if (element.name != CurrentStep)
                     {
-
+                        //Find Step in the dictionary
                         Step step = databaseManager.BuildingPlanDataItem.steps[element.name];
                         
-                        instantiateObjects.ColorBuiltOrUnbuilt(step.data.is_built, element.gameObject.FindObject(step.data.element_ids[0] + " Geometry"));                          
-                        
+                        if(step != null)
+                        {
+                            //color object based on visulization mode.
+                            instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, step, element.name, elementGameobject.FindObject(step.data.element_ids[0] + " Geometry"));                        
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Fix Element Color: Step is null.");
+                        }                        
                     }
                 }
 

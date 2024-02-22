@@ -167,7 +167,7 @@ namespace Instantiate
             CreateBackgroundImageForText(ref PriorityImage, elementPrefab, 0.15f, $"{elementPrefab.name}PriorityImage", false);
 
             //Case Switches to evaluate color and touch modes.
-            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
+            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, geometryObject);
             
             //Check if the visulization tags mode is on
             if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
@@ -587,7 +587,7 @@ namespace Instantiate
             //Instantiate Arrow
             UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname, UserInfoname, 0.15f);
         }
-        public void CalculateandSetLengthPositions(string key)
+        public void CalculateandSetLengthPositions(string key) //TODO: LOCAL POSITION DID NOT WORK FOR THE LINE. BUT CHECK IT.
         {
             //Find Gameobject Associated with that step
             GameObject element = Elements.FindObject(key);
@@ -595,6 +595,16 @@ namespace Instantiate
 
             //Find gameobject center
             Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
+            
+            //TODO: TESTING THIS.
+            // Vector3 renderlocalCenter = element.FindObject(step.data.element_ids[0] + " Geometry").transform.localPosition;
+
+            //TODO: Instantiate gameobject at render local center to see where it is.
+            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube.transform.position = renderlocalCenter;
+            // cube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            // cube.name = "RenderLocalCenterCube";
+            // cube.GetComponent<Renderer>().material.color = Color.red;
 
             //Find length from assembly dictionary
             float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
@@ -602,6 +612,9 @@ namespace Instantiate
             //Calculate position of P1 and P2 
             Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
             Vector3 P2Position = center + element.transform.right * (length / 2);
+
+            // TODO: TESTING... ADJUSTED LOCAL POSITION
+            // Vector3 P1PositionLocal = renderlocalCenter + element.transform.right * (length / 2)* -1;
 
             //Set Positions of P1 and P2
             ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
@@ -619,8 +632,28 @@ namespace Instantiate
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
             Vector3 ElementsPosition = Elements.transform.position;
+
+            // Vector3 ElementsLocalPosition = Elements.transform.localPosition;
+
             Vector3 P1Adjusted = new Vector3(P1Position.x, ElementsPosition.y, P1Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
             Vector3 P2Adjusted = new Vector3(P2Position.x, ElementsPosition.y, P2Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
+            
+            //INSTANTIATE CUBES AT P1 AND P1ADJUSTED TO SEE WHERE THEY ARE
+            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube.transform.position = P1Adjusted;
+            // cube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            // cube.name = "P1AdjustedCube";
+            // cube.GetComponent<Renderer>().material.color = Color.red;
+
+            // GameObject cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube2.transform.position = P1Position;
+            // cube2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            // cube2.name = "P1Cube";
+            // cube2.GetComponent<Renderer>().material.color = Color.yellow;
+
+            //TODO: TESTING... ADJUSTED LOCAL POSITION //TODO: FIX THIS SOME HOW.
+            // Vector3 P1AdjustedLocal = new Vector3(P1PositionLocal.x, ElementsLocalPosition.y, P1PositionLocal.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
+            
 
             //Get distance between position of P1, P2 and position of elements
             float P1distance = Vector3.Distance(P1Position, P1Adjusted); //TODO: CHECK DISTANCE CALCULATION.
@@ -628,8 +661,46 @@ namespace Instantiate
 
             //Draw lines between the two points for P1 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
             LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
+            P1Line.useWorldSpace = true; //SETS POSITION RELATIVE TO LOCAL POSITION OF THE OBJECT. (ALLIGNED WITH PARENT OBJECTS POSITION)
             P1Line.SetPosition(0, P1Position);
             P1Line.SetPosition(1, P1Adjusted);
+
+            //Place cube at line positions.
+            // GameObject P1LineObject = ObjectLengthsTags.FindObject("P1Line");
+
+            // Debug.Log("ObjectLengthsTransformPosition: " + ObjectLengthsTags.transform.position);
+            // Debug.Log("P1cubePosition: " + cube2.transform.position);
+            // Debug.Log("P1cubeLocalPosition: " + cube2.transform.localPosition);
+            // Debug.Log("P1AdjustedCubePosition: " + cube.transform.position);
+            // Debug.Log("P1AdjustedCubeLocalPosition: " + cube.transform.localPosition);
+            // Debug.Log("ObjectLengthsLocalPosition: " + ObjectLengthsTags.transform.localPosition);
+            // Debug.Log("P1LineObjectTransformPosition: " + P1LineObject.transform.position);
+            // Debug.Log("P1LineObjectLocalPosition: " + P1LineObject.transform.localPosition);
+
+            // GameObject cube3 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube3.transform.position = P1Line.GetPosition(0);
+            // cube3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            // cube3.name = "P1LineCube";
+            // cube3.GetComponent<Renderer>().material.color = Color.green;
+            // cube3.transform.SetParent(P1LineObject.transform);
+
+            // GameObject cube4 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube4.transform.position = P1Line.GetPosition(1);
+            // cube4.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            // cube4.name = "P1LineCube2";
+            // cube4.GetComponent<Renderer>().material.color = Color.blue;
+            // cube4.transform.SetParent(P1LineObject.transform);
+            
+            // P1Line.useWorldSpace = false;
+
+            //DRAW LINES A DIFFERENT WAY.
+            // LineRenderer P1Line2 = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
+            // P1Line2.useWorldSpace = false; //SETS POSITION RELATIVE TO LOCAL POSITION OF THE OBJECT. (ALLIGNED WITH PARENT OBJECTS POSITION)
+            // Vector3 P1TagPosition = ObjectLengthsTags.FindObject("P1Tag").transform.position;
+            // Vector3 P1TagPositionAdjusted = new Vector3(P1TagPosition.x, P1TagPosition.y - P1distance, P1TagPosition.z);
+            // P1Line2.SetPosition(0, P1TagPosition);
+            // P1Line2.SetPosition(1, P1TagPositionAdjusted);
+            
 
             //Draw lines between the two points for P2 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
             LineRenderer P2Line = ObjectLengthsTags.FindObject("P2Tag").GetComponent<LineRenderer>();
@@ -835,7 +906,7 @@ namespace Instantiate
         }
 
     /////////////////////////////// Material and colors ////////////////////////////////////////
-        public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, GameObject geometryObject)
+        public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
             switch (visulizationController.VisulizationMode)
@@ -855,11 +926,10 @@ namespace Instantiate
                     //Do nothing
                     break;
                 case TouchMode.ElementEditSelection:
-                    //Disable collider if the element edit selection is on and the element priority is not the same as my current element.
-                    if (step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
+                    //Color the object if it is a lower priority then the current one.
+                    if (step.data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
                     {    
-                        geometryObject.GetComponent<Collider>().enabled = false;
-                        geometryObject.GetComponent<Renderer>().material = LockedObjectMaterial;
+                        ColorObjectByLowerPriority(key, databaseManager.CurrentPriority, geometryObject);
                     }
                     break;
             }
@@ -937,7 +1007,39 @@ namespace Instantiate
                 string elementID = step.data.element_ids[0];
 
                 //Color based on visulization mode
-                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, gamobj.FindObject(elementID + " Geometry"));
+                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, gamobj.FindObject(elementID + " Geometry"));
+            }
+        }
+        public void ColorObjectByLowerPriority(string key, string currentPriority, GameObject gameObject)
+        {
+            //Get Object Renderer
+            Renderer m_renderer= gameObject.GetComponentInChildren<Renderer>();
+
+            //Step for the for key
+            Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
+            if(currentPriority != null)
+            {
+                //Color based if it is lower then current priority
+                if (step.data.priority > Convert.ToInt16(currentPriority))
+                {
+                    //If the steps priority is not the same as the selected priority then color it grey
+                    Debug.Log($"ColorObjectByLowerPriority: Coloring object {gameObject.name} grey");
+
+                    //Create a new color for the object based on its current color, and add a greyscale blend factor
+                    Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
+
+                    //Set the object to the new color
+                    m_renderer.material.color = objectAdjustedColor;
+                }
+                else
+                {
+                    Debug.Log($"ColorObjectByLowerPriority: Gameobject {key} is of a lower priority then current step.");
+                }
+            }
+            else
+            {
+                Debug.Log("ColorObjectByLowerPriority: Current Priority is null.");
             }
         }
         public void ApplyColorBasedOnBuildState()
@@ -998,6 +1100,28 @@ namespace Instantiate
                     {
                         //Color based on priority
                         ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Could not find object with key: {entry.Key}");
+                    }
+                }
+            }
+        }
+        public void ApplyColorForTouch(string CurrentPriority)
+        {
+            Debug.Log($"Applying color for touch : {CurrentPriority}.");
+            if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
+                {
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    
+                    //If the objects are not null color by priority function.
+                    if (gameObject != null)
+                    {
+                        //Color object if it is of a higher priority then the current priority
+                        ColorObjectByLowerPriority(entry.Key, CurrentPriority, gameObject);
                     }
                     else
                     {
