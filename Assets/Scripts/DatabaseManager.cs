@@ -282,7 +282,8 @@ public class DatabaseManager : MonoBehaviour
     //     await Task.WhenAll(downloadTasks);
     // }        
 
-public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetadata)
+    //TODO: REVIEW ALEX'S CODE BELOW.
+    public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetadata)
     {
         List<Task> downloadTasks = new List<Task>();
         
@@ -310,7 +311,6 @@ public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetad
         //Await all download tasks are done before refreshing.
         await Task.WhenAll(downloadTasks);
     }
-
     private async Task DownloadFile(string downloadUrl, string filePath)
     {
         using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
@@ -329,6 +329,7 @@ public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetad
         }
     }
 
+    //TODO: REVIEW ALEX'S CODE ABOVE.
     public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>

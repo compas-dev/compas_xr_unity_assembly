@@ -62,6 +62,7 @@ namespace Instantiate
         private GameObject ObjectLengthsTags;
         public GameObject PriorityViewrLineObject;
         public GameObject PriorityViewerPointsObject;
+        public List<Vector3> PriorityLineCurrentPositions = new List<Vector3>();
 
         //Struct for storing Rotation Values
         public struct Rotation
@@ -459,6 +460,7 @@ namespace Instantiate
             TextMeshPro textMesh = textContainer.AddComponent<TextMeshPro>();
             textMesh.text = text;
             textMesh.fontSize = fontSize;
+            textMesh.autoSizeTextContainer = true;
             textMesh.alignment = textAlignment;
             textMesh.color = textColor;
 
@@ -819,6 +821,37 @@ namespace Instantiate
             }
 
         }
+        public void UpdatePriorityLine(string selectedPriority, GameObject lineObject)
+        {
+            //Fetch priority item from PriorityTreeDIct
+            List<Vector3> priorityObjectPositions = GetPositionsFromPriorityGroup(selectedPriority);
+
+            //Update the line positions
+            UpdateLinePositionsByVectorList(priorityObjectPositions, lineObject);
+        }
+        public void UpdateLinePositionsByVectorList(List<Vector3> posVectorList, GameObject lineObject)
+        {
+            //Create a new line object
+            LineRenderer lineRenderer = lineObject.GetComponent<LineRenderer>();
+
+            //Check list length
+            int listLength = posVectorList.Count;
+
+            //Only draw the line if the list length is greater then 1
+            if (listLength > 1)
+            {
+
+                for (int i = 0; i < posVectorList.Count; i++)
+                {
+                    Debug.Log($"PositionsListVector {i}: {posVectorList[i]}");
+                    lineRenderer.SetPosition(i, posVectorList[i]);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("UpdateLinePositionsByVectorList: List length is 0.");
+            }
+        }
         public GameObject CreateSphereAtPosition(Vector3 position, float radius, Color color, string name=null, GameObject parentObject=null)
         {
             //Create a new sphere
@@ -1035,7 +1068,23 @@ namespace Instantiate
 
             return rotationQuaternion;
         }
+        public List<Vector3> GetPositionsFromPriorityGroup(string priorityGroup)
+        {
+            List<Vector3> positions = new List<Vector3>();
 
+            //Get the list of keys from the priority group
+            List<string> keys = databaseManager.PriorityTreeDict[priorityGroup];
+
+            //Get the positions of the keys
+            foreach (string key in keys)
+            {
+                GameObject element = Elements.FindObject(key);
+                Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0] + " Geometry"));
+                positions.Add(center);
+            }
+
+            return positions;
+        }
     /////////////////////////////// Material and colors ////////////////////////////////////////
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
