@@ -826,6 +826,8 @@ namespace Instantiate
         }
         public void UpdatePriorityLine(string selectedPriority, GameObject lineObject)
         {
+            Debug.Log($"UpdatingPriorityLine: priority {selectedPriority}");
+            
             //Fetch priority item from PriorityTreeDIct
             List<Vector3> priorityObjectPositions = GetPositionsFromPriorityGroup(selectedPriority);
 
@@ -846,7 +848,6 @@ namespace Instantiate
 
                 for (int i = 0; i < posVectorList.Count; i++)
                 {
-                    Debug.Log($"PositionsListVector {i}: {posVectorList[i]}");
                     lineRenderer.SetPosition(i, posVectorList[i]);
                 }
             }
