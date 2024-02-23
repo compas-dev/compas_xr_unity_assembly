@@ -60,7 +60,8 @@ namespace Instantiate
         public GameObject MyUserIndacator;
         private GameObject OtherUserIndacator;
         private GameObject ObjectLengthsTags;
-        public GameObject PriorityViewerLine;
+        public GameObject PriorityViewrLineObject;
+        public GameObject PriorityViewerPointsObject;
 
         //Struct for storing Rotation Values
         public struct Rotation
@@ -104,7 +105,8 @@ namespace Instantiate
             MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
             OtherUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
-            PriorityViewerLine = GameObject.Find("PriorityViewerLine");
+            PriorityViewrLineObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerLine");
+            PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
             //Set Initial Visulization Modes
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
@@ -714,7 +716,7 @@ namespace Instantiate
             //Update Distance Text
             UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
         }
-        public void CreatePriorityViewerItems(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth)
+        public void CreatePriorityViewerItems(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth, float ptRadius, Color ptColor, GameObject ptsParentObject)
         {
             //Fetch priority item from PriorityTreeDIct
             List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriority];
@@ -724,25 +726,25 @@ namespace Instantiate
             Debug.Log("LineObject: " + lineObject.name);
 
             //draw a line between points
-            DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, 0.1f, Color.red);
+            DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, ptRadius, ptColor, ptsParentObject);
         }
-        public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, float? ptRadius=null, Color? ptColor=null) //TODO: ADD CREATE POINT BOOL.
+        public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, float? ptRadius=null, Color? ptColor=null, GameObject ptsParentObject=null)
         {
-            //TODO: DEBUG ME.
             //Create a new line object
             LineRenderer lineRenderer = lineObject.GetComponent<LineRenderer>();
-            Debug.Log("IAMHERE");
+
             //Add a line renderer component to the line object if it is null
             if (lineRenderer == null)
             {
+                Debug.Log("LineRenderer is null. for object: " + lineObject.name);
                 lineRenderer = lineObject.AddComponent<LineRenderer>();
             }
 
             //If the gameobject reference contains children
-            if (lineObject.transform.childCount > 0)
+            if (ptsParentObject && ptsParentObject.transform.childCount > 0)
             {
                 //Destroy all children
-                foreach (Transform child in lineObject.transform)
+                foreach (Transform child in ptsParentObject.transform)
                 {
                     Destroy(child.gameObject);
                 }
@@ -758,13 +760,15 @@ namespace Instantiate
             int listLength = keyslist.Count;
 
             //Only draw the line if the list length is greater then 1
-            if (listLength < 1)
+            if (listLength > 1)
             {
                 //Set the line positions & point positions
                 lineRenderer.positionCount = keyslist.Count;
 
                 for (int i = 0; i < keyslist.Count; i++)
                 {
+                    Debug.Log("KeysList: " + keyslist[i]);
+
                     GameObject element = Elements.FindObject(keyslist[i]);
                     Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[i]].data.element_ids[0] + " Geometry"));
                     lineRenderer.SetPosition(i, center);
@@ -774,7 +778,7 @@ namespace Instantiate
                     {
                         if(ptRadius != null && ptColor != null)
                         {
-                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[i] + "Point", lineObject);
+                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[i] + "Point", ptsParentObject);
                         }
                         else
                         {
@@ -792,7 +796,7 @@ namespace Instantiate
                     {
                         if(ptRadius != null && ptColor != null)
                         {
-                            //Set the line object to not visible
+                            //Set the line object to not visible because there is just 1 point and cannot create a line.
                             lineObject.SetActive(false);
 
                             //Get the center of the only object in the list
@@ -800,7 +804,7 @@ namespace Instantiate
                             Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[0]].data.element_ids[0] + " Geometry"));
 
                             //Create singular point if it is only 1.
-                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[0] + "Point", lineObject);
+                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[0] + "Point", ptsParentObject);
                         }
                         else
                         {
@@ -815,7 +819,6 @@ namespace Instantiate
             }
 
         }
-
         public GameObject CreateSphereAtPosition(Vector3 position, float radius, Color color, string name=null, GameObject parentObject=null)
         {
             //Create a new sphere

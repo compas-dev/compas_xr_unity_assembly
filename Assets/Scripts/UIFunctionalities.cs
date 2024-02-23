@@ -1517,11 +1517,12 @@ public class UIFunctionalities : MonoBehaviour
             //Turn on Priority Tags
             ARSpaceTextControler(true, "PriorityText", "PriorityImage");
 
-            //Set visibility of line reference
-            instantiateObjects.PriorityViewerLine.SetActive(true);
-            
+            //Set visibility of reference objects
+            instantiateObjects.PriorityViewrLineObject.SetActive(true);
+            instantiateObjects.PriorityViewerPointsObject.SetActive(true);
+
             //Create the priority line
-            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewerLine, Color.red, 0.1f);
+            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
 
             // Color Elements Based on Priority
             instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority);
@@ -1546,8 +1547,9 @@ public class UIFunctionalities : MonoBehaviour
                 Debug.LogWarning("Could not find Visulization Mode.");
             }
 
-            //Set visibility of line reference
-            instantiateObjects.PriorityViewerLine.SetActive(false);
+            //Set visibility of reference objects
+            instantiateObjects.PriorityViewrLineObject.SetActive(false);
+            instantiateObjects.PriorityViewerPointsObject.SetActive(false);
 
             //Turn off Priority Tags
             ARSpaceTextControler(false, "PriorityText", "PriorityImage");
