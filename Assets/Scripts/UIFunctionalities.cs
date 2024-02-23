@@ -56,7 +56,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject TrajectoryReviewRequestMessageObject;
     public GameObject TrajectoryApprovalTimedOutMessageObject;
 
-    //Visualizer Menu Toggle Objects
+    //Visualizer Menu Objects
     private GameObject VisualzierBackground;
     private GameObject PreviewBuilderButtonObject;
     public GameObject IDToggleObject;
@@ -66,6 +66,11 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_Text ObjectLengthsText;
     private GameObject ObjectLengthsTags;
     public GameObject PriorityViewerToggleObject;
+    public GameObject NextPriorityButtonObject;
+    public GameObject PreviousPriorityButtonObject;
+    public GameObject PriorityViewerBackground;
+    public GameObject SelectedPriorityTextObject;
+    public TMP_Text SelectedPriorityText;
 
     //Menu Toggle Button Objects
     private GameObject MenuBackground;
@@ -79,8 +84,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject EditorBackground;
     private GameObject BuilderEditorButtonObject;
     private GameObject BuildStatusButtonObject;
-    // private Button BuildStatusButton;
-
+    
     //Communication Specific Objects
     private TMP_InputField MqttBrokerInputField;
     private TMP_InputField MqttPortInputField;
@@ -161,7 +165,7 @@ public class UIFunctionalities : MonoBehaviour
         arCamera = GameObject.Find("XR Origin").FindObject("Camera Offset").FindObject("Main Camera").GetComponent<Camera>();
 
         //Find the Raycast manager in the script in order to use it to acquire data
-        rayManager = FindObjectOfType<ARRaycastManager>(); //TODO: CHECK THIS WITH THE PHONE.
+        rayManager = FindObjectOfType<ARRaycastManager>();
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
@@ -239,6 +243,11 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Robot toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
+        PriorityViewerBackground = PriorityViewerToggleObject.FindObject("BackgroundPriorityViewer");
+        SelectedPriorityTextObject = PriorityViewerToggleObject.FindObject("SelectedPriorityText");
+        SelectedPriorityText = SelectedPriorityTextObject.GetComponent<TMP_Text>();
+        FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref NextPriorityButtonObject, "NextPriorityButton", (() => print_string_on_click("Next Priority Group Button Pressed")));
+        FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref PreviousPriorityButtonObject, "PreviousPriorityButton", (() => print_string_on_click("Previous Priority Group Button Pressed")));
 
         //Find Object Lengths Toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
@@ -957,7 +966,7 @@ public class UIFunctionalities : MonoBehaviour
             instantiateObjects.ApplyColorBasedOnPriority(Priority);
             
             //Create the priority line if it is on
-            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+            instantiateObjects.CreatePriorityViewerItems(Priority, ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
         }
         
         //Current Priority Text current Priority Items
@@ -1517,12 +1526,15 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn && PriorityViewerToggleObject != null)
         {
-            //Turn on Priority Tags
+            //Turn on Priority Tags in 3D Space
             ARSpaceTextControler(true, "PriorityText", "PriorityImage");
 
-            //Set visibility of reference objects
+            //Set visibility of 3D reference objects
             instantiateObjects.PriorityViewrLineObject.SetActive(true);
             instantiateObjects.PriorityViewerPointsObject.SetActive(true);
+
+            //Set visibility of onScreen Button Objects
+            PriorityViewerObjectsGraphicsController(true, databaseManager.CurrentPriority);
 
             //Create the priority line
             instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
@@ -1557,8 +1569,28 @@ public class UIFunctionalities : MonoBehaviour
             //Turn off Priority Tags
             ARSpaceTextControler(false, "PriorityText", "PriorityImage");
 
+            //Set visibility of onScreen Button Objects
+            PriorityViewerObjectsGraphicsController(false);
+
             //Set UI Color
             SetUIObjectColor(PriorityViewerToggleObject, White);
+        }
+    }
+    public void PriorityViewerObjectsGraphicsController(bool? isVisible, string selectedPrioritytext=null)
+    {
+        //Set Visibility of Priority on screen button objects.
+        if(isVisible.HasValue)
+        {
+            NextPriorityButtonObject.SetActive(isVisible.Value);
+            PreviousPriorityButtonObject.SetActive(isVisible.Value);
+            SelectedPriorityTextObject.SetActive(isVisible.Value);
+            PriorityViewerBackground.SetActive(isVisible.Value);
+        }
+
+        //Set Text of Selected Priority if it is not null.
+        if(selectedPrioritytext != null)
+        {
+            SelectedPriorityTextObject.GetComponent<TMP_Text>().text = selectedPrioritytext;
         }
     }
     

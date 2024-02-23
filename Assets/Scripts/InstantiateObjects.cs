@@ -1089,6 +1089,7 @@ namespace Instantiate
 
             return positions;
         }
+
     /////////////////////////////// Material and colors ////////////////////////////////////////
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
@@ -1176,8 +1177,6 @@ namespace Instantiate
             //If the steps priority is not the same as the selected priority then color it grey
             if (StepPriority != SelectedPriority)
             {
-                Debug.Log($"Coloring object {gamobj.name} grey");
-
                 //Create a new color for the object based on its current color, and add a greyscale blend factor
                 Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
 
