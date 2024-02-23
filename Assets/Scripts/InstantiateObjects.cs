@@ -788,6 +788,9 @@ namespace Instantiate
                         }
                     }
                 }
+
+                //Set the line object to visible incase it is on an automatic update when it is not visible.
+                lineObject.SetActive(true);
             }
             else
             {

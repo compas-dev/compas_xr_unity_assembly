@@ -955,6 +955,9 @@ public class UIFunctionalities : MonoBehaviour
         {
             //Update Priority Viewer
             instantiateObjects.ApplyColorBasedOnPriority(Priority);
+            
+            //Create the priority line if it is on
+            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
         }
         
         //Current Priority Text current Priority Items
@@ -1525,7 +1528,7 @@ public class UIFunctionalities : MonoBehaviour
             instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
 
             // Color Elements Based on Priority
-            instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority);
+            instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
 
             //Set UI Color
             SetUIObjectColor(PriorityViewerToggleObject, Yellow);
