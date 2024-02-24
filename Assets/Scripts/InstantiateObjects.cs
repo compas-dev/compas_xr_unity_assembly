@@ -59,7 +59,7 @@ namespace Instantiate
         private GameObject PriorityImage;
         public GameObject MyUserIndacator;
         private GameObject OtherUserIndacator;
-        private GameObject ObjectLengthsTags;
+        public GameObject ObjectLengthsTags;
         public GameObject PriorityViewrLineObject;
         public GameObject PriorityViewerPointsObject;
         public List<Vector3> PriorityLineCurrentPositions = new List<Vector3>();
@@ -593,39 +593,53 @@ namespace Instantiate
             //Instantiate Arrow
             UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname, UserInfoname, 0.15f);
         }
-        public void CalculateandSetLengthPositions(string key) //TODO: LOCAL POSITION DID NOT WORK FOR THE LINE. BUT CHECK IT.
+        public (Vector3, Vector3) FindP1orP2Positions(string key, bool isP2)
         {
             //Find Gameobject Associated with that step
             GameObject element = Elements.FindObject(key);
             Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
             //Find gameobject center
-            Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
-            
-            //TODO: TESTING THIS.
-            // Vector3 renderlocalCenter = element.FindObject(step.data.element_ids[0] + " Geometry").transform.localPosition;
-
-            //TODO: Instantiate gameobject at render local center to see where it is.
-            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // cube.transform.position = renderlocalCenter;
-            // cube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            // cube.name = "RenderLocalCenterCube";
-            // cube.GetComponent<Renderer>().material.color = Color.red;
+            Vector3 center = FindGameObjectCenter(element.FindObject(step.data.element_ids[0] + " Geometry"));
 
             //Find length from assembly dictionary
             float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
 
-            //Calculate position of P1 and P2 
-            Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
-            Vector3 P2Position = center + element.transform.right * (length / 2);
+            Vector3 ptPosition = new Vector3(0, 0, 0);
+            //Calculate position of P1 or P2 
+            if(!isP2)
+            {                
+                ptPosition = center + element.transform.right * (length / 2)* -1;
+            }
+            else
+            {
+                ptPosition = center + element.transform.right * (length / 2);
+            }
 
-            // TODO: TESTING... ADJUSTED LOCAL POSITION
-            // Vector3 P1PositionLocal = renderlocalCenter + element.transform.right * (length / 2)* -1;
+            //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
+            Vector3 ElementsPosition = Elements.transform.position;
+            Vector3 ptPositionAdjusted = new Vector3(0,0,0);
+            if (ptPosition != Vector3.zero)
+            {
+                ptPositionAdjusted = new Vector3(ptPosition.x, ElementsPosition.y, ptPosition.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
+            }
+            else
+            {
+                Debug.LogError("P1 or P2 Position is null.");
+            }
+
+            return (ptPosition, ptPositionAdjusted);
+        }
+        public void CalculateandSetLengthPositions(string key)
+        {
+            //Find P1 and P2 Positions
+            (Vector3 P1Position, Vector3 P1Adjusted) = FindP1orP2Positions(key, false);
+            (Vector3 P2Position, Vector3 P2Adjusted) = FindP1orP2Positions(key, true);
 
             //Set Positions of P1 and P2
             ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
             ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
-
+            
             //Check if the component has a billboard component and if it doesn't add it.
             if (ObjectLengthsTags.FindObject("P1Tag").GetComponent<HelpersExtensions.Billboard>() == null)
             {
@@ -636,87 +650,37 @@ namespace Instantiate
                 ObjectLengthsTags.FindObject("P2Tag").AddComponent<HelpersExtensions.Billboard>();
             }
 
-            //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
-            Vector3 ElementsPosition = Elements.transform.position;
-
-            // Vector3 ElementsLocalPosition = Elements.transform.localPosition;
-
-            Vector3 P1Adjusted = new Vector3(P1Position.x, ElementsPosition.y, P1Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
-            Vector3 P2Adjusted = new Vector3(P2Position.x, ElementsPosition.y, P2Position.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
-            
-            Debug.Log("P1Position: " + P1Position);
-            Debug.Log("P1Adjusted: " + P1Adjusted);
-            //INSTANTIATE CUBES AT P1 AND P1ADJUSTED TO SEE WHERE THEY ARE
-            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // cube.transform.position = P1Adjusted;
-            // cube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            // cube.name = "P1AdjustedCube";
-            // cube.GetComponent<Renderer>().material.color = Color.red;
-
-            // GameObject cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // cube2.transform.position = P1Position;
-            // cube2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            // cube2.name = "P1Cube";
-            // cube2.GetComponent<Renderer>().material.color = Color.yellow;
-
-            //TODO: TESTING... ADJUSTED LOCAL POSITION //TODO: FIX THIS SOME HOW.
-            // Vector3 P1AdjustedLocal = new Vector3(P1PositionLocal.x, ElementsLocalPosition.y, P1PositionLocal.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P1Position.y, ElementsPosition.z)
-            
-
             //Get distance between position of P1, P2 and position of elements
             float P1distance = Vector3.Distance(P1Position, P1Adjusted); //TODO: CHECK DISTANCE CALCULATION.
             float P2distance = Vector3.Distance(P1Position, P2Adjusted); //TODO: CHECK DISTANCE CALCULATION.
 
             //Draw lines between the two points for P1 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
             LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
-            P1Line.useWorldSpace = true; //SETS POSITION RELATIVE TO LOCAL POSITION OF THE OBJECT. (ALLIGNED WITH PARENT OBJECTS POSITION)
+            P1Line.useWorldSpace = true;
             P1Line.SetPosition(0, P1Position);
             P1Line.SetPosition(1, P1Adjusted);
 
-            //Place cube at line positions.
-            // GameObject P1LineObject = ObjectLengthsTags.FindObject("P1Line");
-
-            // Debug.Log("ObjectLengthsTransformPosition: " + ObjectLengthsTags.transform.position);
-            // Debug.Log("P1cubePosition: " + cube2.transform.position);
-            // Debug.Log("P1cubeLocalPosition: " + cube2.transform.localPosition);
-            // Debug.Log("P1AdjustedCubePosition: " + cube.transform.position);
-            // Debug.Log("P1AdjustedCubeLocalPosition: " + cube.transform.localPosition);
-            // Debug.Log("ObjectLengthsLocalPosition: " + ObjectLengthsTags.transform.localPosition);
-            // Debug.Log("P1LineObjectTransformPosition: " + P1LineObject.transform.position);
-            // Debug.Log("P1LineObjectLocalPosition: " + P1LineObject.transform.localPosition);
-
-            // GameObject cube3 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // cube3.transform.position = P1Line.GetPosition(0);
-            // cube3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            // cube3.name = "P1LineCube";
-            // cube3.GetComponent<Renderer>().material.color = Color.green;
-            // cube3.transform.SetParent(P1LineObject.transform);
-
-            // GameObject cube4 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // cube4.transform.position = P1Line.GetPosition(1);
-            // cube4.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            // cube4.name = "P1LineCube2";
-            // cube4.GetComponent<Renderer>().material.color = Color.blue;
-            // cube4.transform.SetParent(P1LineObject.transform);
-            
-            // P1Line.useWorldSpace = false;
-
-            //DRAW LINES A DIFFERENT WAY.
-            // LineRenderer P1Line2 = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
-            // P1Line2.useWorldSpace = false; //SETS POSITION RELATIVE TO LOCAL POSITION OF THE OBJECT. (ALLIGNED WITH PARENT OBJECTS POSITION)
-            // Vector3 P1TagPosition = ObjectLengthsTags.FindObject("P1Tag").transform.position;
-            // Vector3 P1TagPositionAdjusted = new Vector3(P1TagPosition.x, P1TagPosition.y - P1distance, P1TagPosition.z);
-            // P1Line2.SetPosition(0, P1TagPosition);
-            // P1Line2.SetPosition(1, P1TagPositionAdjusted);
-            
-
-            //Draw lines between the two points for P2 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
+            //Draw lines between the two points for P2
             LineRenderer P2Line = ObjectLengthsTags.FindObject("P2Tag").GetComponent<LineRenderer>();
+            P2Line.useWorldSpace = true;
             P2Line.SetPosition(0, P2Position);
             P2Line.SetPosition(1, P2Adjusted);
 
             //Update Distance Text
             UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
+        }
+        public void UpdateObjectLengthsLines(string currentStep, GameObject p1LineObject, GameObject p2LineObject)
+        {
+            //Find P1 positions & update line
+            (Vector3 P1Position, Vector3 P1Adjusted) = FindP1orP2Positions(currentStep, false);
+            List<Vector3> P1Positions = new List<Vector3> { P1Position, P1Adjusted };
+            UpdateLinePositionsByVectorList(P1Positions, p1LineObject);
+
+            //FindPostions of P2 & Update line
+            (Vector3 P2Position, Vector3 P2Adjusted) = FindP1orP2Positions(currentStep, true);
+            List<Vector3> P2Positions = new List<Vector3> { P2Position, P2Adjusted };
+            UpdateLinePositionsByVectorList(P2Positions, p2LineObject);
+
         }
         public void CreatePriorityViewerItems(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth, float ptRadius, Color ptColor, GameObject ptsParentObject)
         {

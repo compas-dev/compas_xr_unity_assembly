@@ -61,7 +61,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PreviewBuilderButtonObject;
     public GameObject IDToggleObject;
     public GameObject RobotToggleObject;
-    private GameObject ObjectLengthsToggleObject;
+    public GameObject ObjectLengthsToggleObject;
     private GameObject ObjectLengthsUIPanelObjects;
     private TMP_Text ObjectLengthsText;
     private GameObject ObjectLengthsTags;

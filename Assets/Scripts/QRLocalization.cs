@@ -6,6 +6,7 @@ using UnityEngine;
 using Vuforia;
 using Instantiate;
 using UnityEngine.UI;
+using Helpers;
 
 public class QRLocalization : MonoBehaviour
 {
@@ -89,7 +90,6 @@ public class QRLocalization : MonoBehaviour
                     ObjectLengthsTags.transform.rotation = rot;
                     PriorityViewerObjects.transform.rotation = rot;
 
-
                     //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
                     pos = TranslatedPosition(qrObject, position_data, rotationQuaternion);
 
@@ -103,6 +103,12 @@ public class QRLocalization : MonoBehaviour
                     if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                     {
                         instantiateObjects.UpdatePriorityLine(databaseManager.CurrentPriority,instantiateObjects.PriorityViewrLineObject);
+                    }
+
+                    //Update Object lenghts lines if the Object Lengths toggle is on
+                    if (uiFunctionalities.ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        instantiateObjects.UpdateObjectLengthsLines(uiFunctionalities.CurrentStep, instantiateObjects.ObjectLengthsTags.FindObject("P1Tag"), instantiateObjects.ObjectLengthsTags.FindObject("P2Tag"));
                     }
 
                     Debug.Log($"QR: Translation from QR object: {qrObject.name}");
