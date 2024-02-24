@@ -62,7 +62,6 @@ namespace Instantiate
         public GameObject ObjectLengthsTags;
         public GameObject PriorityViewrLineObject;
         public GameObject PriorityViewerPointsObject;
-        public List<Vector3> PriorityLineCurrentPositions = new List<Vector3>();
 
         //Struct for storing Rotation Values
         public struct Rotation
@@ -652,7 +651,7 @@ namespace Instantiate
 
             //Get distance between position of P1, P2 and position of elements
             float P1distance = Vector3.Distance(P1Position, P1Adjusted); //TODO: CHECK DISTANCE CALCULATION.
-            float P2distance = Vector3.Distance(P1Position, P2Adjusted); //TODO: CHECK DISTANCE CALCULATION.
+            float P2distance = Vector3.Distance(P2Position, P2Adjusted); //TODO: CHECK DISTANCE CALCULATION.
 
             //Draw lines between the two points for P1 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
             LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
