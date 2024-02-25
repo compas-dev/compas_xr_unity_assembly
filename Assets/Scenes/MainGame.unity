@@ -2182,7 +2182,7 @@ GameObject:
   - component: {fileID: 313547791}
   - component: {fileID: 313547790}
   m_Layer: 5
-  m_Name: SearchItemNotFoundText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2819,7 +2819,7 @@ GameObject:
   - component: {fileID: 495326049}
   - component: {fileID: 495326048}
   m_Layer: 5
-  m_Name: PriorityCompleteText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8021,7 +8021,7 @@ GameObject:
   - component: {fileID: 1671755880}
   - component: {fileID: 1671755879}
   m_Layer: 5
-  m_Name: FailedToFetchDownloadUriText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14201,7 +14201,7 @@ GameObject:
   - component: {fileID: 243013153015567331}
   - component: {fileID: 8261270148412213775}
   m_Layer: 5
-  m_Name: PriorityIncorrectText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20968,6 +20968,7 @@ MonoBehaviour:
   IsbuiltPriorityLockedImage: {fileID: 0}
   MQTTFailedToConnectMessageObject: {fileID: 0}
   MQTTConnectionLostMessageObject: {fileID: 0}
+  ErrorFetchingDownloadUriMessageObject: {fileID: 0}
   ErrorDownloadingObjectMessageObject: {fileID: 0}
   TrajectoryReviewRequestMessageObject: {fileID: 0}
   TrajectoryApprovalTimedOutMessageObject: {fileID: 0}
@@ -22866,8 +22867,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 898444919064344333}
-  - {fileID: 1100266355}
   - {fileID: 3721982429225813119}
+  - {fileID: 1100266355}
   - {fileID: 1304579640}
   - {fileID: 4622388828145102494}
   - {fileID: 3045994672343444378}
@@ -23908,7 +23909,7 @@ GameObject:
   - component: {fileID: 5457611538149159235}
   - component: {fileID: 1578073558730056913}
   m_Layer: 5
-  m_Name: MQTTConnectionFailedText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24716,7 +24717,7 @@ GameObject:
   - component: {fileID: 2862571404600697171}
   - component: {fileID: 3112328431643362151}
   m_Layer: 5
-  m_Name: PriorityIncompleteText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25506,7 +25507,7 @@ GameObject:
   - component: {fileID: 347498181293080093}
   - component: {fileID: 6956713260156476418}
   m_Layer: 5
-  m_Name: TrajectoryApprovalTimedOutText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27903,7 +27904,7 @@ GameObject:
   - component: {fileID: 3683846872707743788}
   - component: {fileID: 3178332345906448808}
   m_Layer: 5
-  m_Name: MQTTConnectionLostText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33613,7 +33614,7 @@ GameObject:
   - component: {fileID: 7197290371882932041}
   - component: {fileID: 768722899843545572}
   m_Layer: 5
-  m_Name: TrajectoryReviewRequestText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -36295,7 +36296,7 @@ GameObject:
   - component: {fileID: 3346576421432767845}
   - component: {fileID: 6679642899620851232}
   m_Layer: 5
-  m_Name: ObjectFailedToDownloadText
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

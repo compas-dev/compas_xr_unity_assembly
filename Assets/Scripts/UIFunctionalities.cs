@@ -662,8 +662,8 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
-            Debug.Log("SearchElementButton: The element could not be found from User Search.");
-            SignalOnscreenElementNotFoundWarning(ElementSearchInputField.text);
+            string message = $"WARNING: The item {ElementSearchInputField.text} could not be found. Please retype information and try search again.";
+            SignalOnScreenMessageFromReference(ref SearchItemNotFoundWarningMessageObject, message, "Search Object Not Found");
         }     
     }
     public void PreviousStepButton()
@@ -816,7 +816,9 @@ public class UIFunctionalities : MonoBehaviour
             {
                 Debug.Log($"Priority Check: Current Priority is more then 1 greater then the step priority. Incorrect Priority");
 
-                SignalOnScreenPriorityIncorrectWarning(step.data.priority.ToString(), databaseManager.CurrentPriority);
+                //Signal on screen message for priority incorrect
+                string message = $"WARNING: This elements priority is incorrect. It is priority {step.data.priority.ToString()} and next priority to build is {Convert.ToInt16(databaseManager.CurrentPriority) + 1}";
+                SignalOnScreenMessageFromReference(ref PriorityIncorrectWarningMessageObject, message, "Priority Incorrect Warning");
 
                 //Return false to not push data.
                 return false;
@@ -850,7 +852,8 @@ public class UIFunctionalities : MonoBehaviour
                     Debug.Log($"Priority Check: Current Priority is complete. Unlocking Next Priority.");
 
                     //Signal on screen message for priority complete
-                    SignalOnScreenPriorityCompleteMessage(databaseManager.CurrentPriority, step.data.priority.ToString());
+                    string message = $"The previous priority {databaseManager.CurrentPriority} is complete you are now moving on to priority {step.data.priority.ToString()}.";
+                    SignalOnScreenMessageFromReference(ref PriorityCompleteMessageObject, message ,"Priority Complete Message");
 
                     //Set Current Priority
                     SetCurrentPriority(step.data.priority.ToString());
@@ -868,9 +871,10 @@ public class UIFunctionalities : MonoBehaviour
                 //If the list is not empty return false because not all elements of that priority are built and signal on screen warning.
                 else
                 {
-                    //Print out the priority tree as a check
-                    SignalOnScreenPriorityIncompleteWarning(UnbuiltElements, databaseManager.CurrentPriority);
-                    
+                    //Signal on screen message for priority incomplete
+                    string message = $"WARNING: This element cannot build because the following elements from Current Priority {databaseManager.CurrentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
+                    SignalOnScreenMessageFromReference(ref PriorityIncompleteWarningMessageObject, message, "Priority Incomplete Warning");
+
                     //Return true to not push data.
                     return false;
                 }
@@ -999,68 +1003,6 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
-    private void SignalOnScreenPriorityIncompleteWarning(List<string> UnbuiltElements, string currentPriority)
-    {
-        
-        Debug.Log($"Priority Warning: Signal On Screen Message for Incomplete Priority.");
-
-        //Find text component for on screen message
-        TMP_Text messageComponent = PriorityIncompleteWarningMessageObject.FindObject("PriorityIncompleteText").GetComponent<TMP_Text>();
-
-        //Define message for the onscreen text
-        string message = $"WARNING: This element cannot build because the following elements from Current Priority {currentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
-        
-        if(messageComponent != null && message != null && PriorityIncompleteWarningMessageObject != null)
-        {
-            //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(PriorityIncompleteWarningMessageObject, messageComponent, message);
-        }
-        else
-        {
-            Debug.LogWarning("Priority Message: Could not find message object or message component.");
-        }
-
-    }
-    private void SignalOnScreenPriorityIncorrectWarning(string elementsPriority, string currentPriority)
-    {  
-        Debug.Log($"Priority Warning: Signal On Screen Message for Incorrect Priority.");
-
-        //Find text component for on screen message
-        TMP_Text messageComponent = PriorityIncorrectWarningMessageObject.FindObject("PriorityIncorrectText").GetComponent<TMP_Text>();
-
-        //Define message for the onscreen text
-        string message = $"WARNING: This elements priority is incorrect. It is priority {elementsPriority} and next priority to build is {Convert.ToInt16(currentPriority) + 1}";
-        
-        if(messageComponent != null && message != null && PriorityIncorrectWarningMessageObject != null)
-        {
-            //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(PriorityIncorrectWarningMessageObject, messageComponent, message);
-        }
-        else
-        {
-            Debug.LogWarning("Priority Message: Could not find message object or message component.");
-        }
-    }
-    private void SignalOnscreenElementNotFoundWarning(string searchedText)
-    {
-        Debug.Log($"Element Not Found: Signal On Screen Message for Element Not Found.");
-
-        //Find text component for on screen message
-        TMP_Text messageComponent = SearchItemNotFoundWarningMessageObject.FindObject("SearchItemNotFoundText").GetComponent<TMP_Text>();
-
-        //Define message for the onscreen text
-        string message = $"WARNING: The item {searchedText} could not be found. Please retype information and try search again.";
-        
-        if(messageComponent != null && message != null && SearchItemNotFoundWarningMessageObject != null)
-        {
-            //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(SearchItemNotFoundWarningMessageObject, messageComponent, message);
-        }
-        else
-        {
-            Debug.LogWarning("Element Not Found Message: Could not find message object or message component.");
-        }
-    }
     public void SignalTrajectoryReviewRequest(string key)
     {
         Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key}.");
@@ -1129,24 +1071,21 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("MQTT Message: Could not find message object or message component.");
         }
     }
-    public void SignalOnScreenPriorityCompleteMessage(string currentPriority, string newPriority)
+    public void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
     {
-        Debug.Log($"Priority Complete: Signal On Screen Message for priority complete.");
+        Debug.Log($"{logMessageName}: Signal On Screen Message.");
 
         //Find text component for on screen message
-        TMP_Text messageComponent = PriorityCompleteMessageObject.FindObject("PriorityCompleteText").GetComponent<TMP_Text>();
+        TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
 
-        //Define message for the onscreen text
-        string message = $"The previous priority {currentPriority} is complete you are now moving on to priority {newPriority}.";
-        
-        if(messageComponent != null && message != null && PriorityCompleteMessageObject != null)
+        if(messageTextComponent != null && message != null && messageObjectReference != null)
         {
             //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(PriorityCompleteMessageObject, messageComponent, message);
+            SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
         }
         else
         {
-            Debug.LogWarning("Priority Complete Message: Could not find message object or message component.");
+            Debug.LogWarning($"{logMessageName}: Could not find message object or message component.");
         }
     }
     public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
