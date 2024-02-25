@@ -133,6 +133,7 @@ public class UIFunctionalities : MonoBehaviour
     public string CurrentStep = null;
     public string SearchedElement = "None";
     public string SearchedElementStepID;
+    public string SelectedPriority = "None";
     
     void Start()
     {
@@ -246,8 +247,8 @@ public class UIFunctionalities : MonoBehaviour
         PriorityViewerBackground = PriorityViewerToggleObject.FindObject("BackgroundPriorityViewer");
         SelectedPriorityTextObject = PriorityViewerToggleObject.FindObject("SelectedPriorityText");
         SelectedPriorityText = SelectedPriorityTextObject.GetComponent<TMP_Text>();
-        FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref NextPriorityButtonObject, "NextPriorityButton", (() => print_string_on_click("Next Priority Group Button Pressed")));
-        FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref PreviousPriorityButtonObject, "PreviousPriorityButton", (() => print_string_on_click("Previous Priority Group Button Pressed")));
+        FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref NextPriorityButtonObject, "NextPriorityButton", SetNextPriorityGroup);
+        FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref PreviousPriorityButtonObject, "PreviousPriorityButton", SetPreviousPriorityGroup);
 
         //Find Object Lengths Toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
@@ -1455,7 +1456,7 @@ public class UIFunctionalities : MonoBehaviour
     public void SetObjectLengthsText(float P1distance, float P2distance)
     {
         //Update Distance Text
-        ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)}      P2 | {(float)Math.Round(P2distance, 2)}";
+        ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)}     P2 | {(float)Math.Round(P2distance, 2)}";
     }
     public void ToggleRobot(Toggle toggle)
     {
@@ -1536,8 +1537,11 @@ public class UIFunctionalities : MonoBehaviour
             //Set visibility of onScreen Button Objects
             PriorityViewerObjectsGraphicsController(true, databaseManager.CurrentPriority);
 
+            //Set Selected Priority
+            SelectedPriority = databaseManager.CurrentPriority;
+
             //Create the priority line
-            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
 
             // Color Elements Based on Priority
             instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
@@ -1566,6 +1570,9 @@ public class UIFunctionalities : MonoBehaviour
             instantiateObjects.PriorityViewrLineObject.SetActive(false);
             instantiateObjects.PriorityViewerPointsObject.SetActive(false);
 
+            //Set Selected Priority
+            SelectedPriority = "None";
+
             //Turn off Priority Tags
             ARSpaceTextControler(false, "PriorityText", "PriorityImage");
 
@@ -1590,10 +1597,87 @@ public class UIFunctionalities : MonoBehaviour
         //Set Text of Selected Priority if it is not null.
         if(selectedPrioritytext != null)
         {
-            SelectedPriorityTextObject.GetComponent<TMP_Text>().text = selectedPrioritytext;
+            SelectedPriorityText.text = selectedPrioritytext;
         }
     }
-    
+    public void SetNextPriorityGroup()
+    {
+        Debug.Log("SetNextPriorityGroup: Next Priority Button Pressed");
+
+        //Set the text of the priority viewer to the next priority
+        if(SelectedPriority != "None")
+        {
+            //Convert the selected priority to an int
+            int SelectedPriorityInt = Convert.ToInt16(SelectedPriority);
+            int newPriorityGroupInt = SelectedPriorityInt + 1;
+
+            //Check if the next priority is not null
+            if(newPriorityGroupInt <= databaseManager.PriorityTreeDict.Count - 1)
+            {                
+                // Color previous elements of priority back to the original color
+                instantiateObjects.ApplyColortoPriorityGroup(SelectedPriorityInt.ToString(), newPriorityGroupInt.ToString());
+                
+                //Create the priority line
+                instantiateObjects.CreatePriorityViewerItems(newPriorityGroupInt.ToString(), ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+
+                //Color elements of new priority
+                instantiateObjects.ApplyColortoPriorityGroup(newPriorityGroupInt.ToString(), newPriorityGroupInt.ToString(), true);
+
+                //Set the text with the graphics controler
+                PriorityViewerObjectsGraphicsController(true, newPriorityGroupInt.ToString());
+
+                //Set the next priority
+                SelectedPriority = (SelectedPriorityInt + 1).ToString();
+            }
+            else
+            {
+                Debug.Log("SetNextPriorityGroup: We have reached the priority groups limit.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("SetNextPriorityGroup: Selected Priority is null.");
+        }
+    }
+    public void SetPreviousPriorityGroup()
+    {
+        Debug.Log("SetPreviousPriorityGroup: Next Priority Button Pressed");
+
+        //Set the text of the priority viewer to the next priority
+        if(SelectedPriority != "None")
+        {
+            //Convert the selected priority to an int
+            int SelectedPriorityInt = Convert.ToInt16(SelectedPriority);
+            int newPriorityGroupInt = SelectedPriorityInt - 1;
+
+            //Check if the next priority is not null
+            if(newPriorityGroupInt >= 0)
+            {
+                // Color previous elements of priority back to the original color
+                instantiateObjects.ApplyColortoPriorityGroup(SelectedPriorityInt.ToString(), newPriorityGroupInt.ToString());
+                
+                //Create the priority line
+                instantiateObjects.CreatePriorityViewerItems(newPriorityGroupInt.ToString(), ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+
+                //Color elements of new priority
+                instantiateObjects.ApplyColortoPriorityGroup(newPriorityGroupInt.ToString(), newPriorityGroupInt.ToString(), true);
+
+                //Set the text with the graphics controler
+                PriorityViewerObjectsGraphicsController(true, newPriorityGroupInt.ToString());
+
+                //Set the next priority
+                SelectedPriority = (SelectedPriorityInt - 1).ToString();
+            }
+            else
+            {
+                Debug.Log("SetPreviousPriorityGroup: We have reached the zero priority group.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("SetPreviousPriorityGroup: Selected Priority is null.");
+        }
+    }
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
     private void ToggleInfo(Toggle toggle)
     {

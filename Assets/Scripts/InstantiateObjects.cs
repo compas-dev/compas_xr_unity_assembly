@@ -184,7 +184,7 @@ namespace Instantiate
             //If Priority Viewer toggle is on then color the add additional color based on priority:
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
-                ColorObjectByPriority(databaseManager.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
+                ColorObjectByPriority(UIFunctionalities.SelectedPriority, step.data.priority.ToString(), Key, geometryObject);
 
                 //Set tag and Image visibility if the mode is on
                 elementPrefab.FindObject(elementPrefab.name + "PriorityText").gameObject.SetActive(true);
@@ -650,10 +650,10 @@ namespace Instantiate
             }
 
             //Get distance between position of P1, P2 and position of elements
-            float P1distance = Vector3.Distance(P1Position, P1Adjusted); //TODO: CHECK DISTANCE CALCULATION.
-            float P2distance = Vector3.Distance(P2Position, P2Adjusted); //TODO: CHECK DISTANCE CALCULATION.
+            float P1distance = Vector3.Distance(P1Position, P1Adjusted);
+            float P2distance = Vector3.Distance(P2Position, P2Adjusted);
 
-            //Draw lines between the two points for P1 //TODO: FIGURE OUT HOW TO UPDATE POSITION WHEN THE OBJECT MOVES FOR TRACKING.
+            //Draw lines between the two points for P1
             LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
             P1Line.useWorldSpace = true;
             P1Line.SetPosition(0, P1Position);
@@ -685,10 +685,6 @@ namespace Instantiate
         {
             //Fetch priority item from PriorityTreeDIct
             List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriority];
-
-            Debug.Log("PriorityList: " + priorityList.Count);
-            Debug.Log("CurrentPriority: " + selectedPriority);
-            Debug.Log("LineObject: " + lineObject.name);
 
             //draw a line between points
             DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, ptRadius, ptColor, ptsParentObject);
@@ -1204,7 +1200,7 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on Priority
-                            ColorObjectByPriority(databaseManager.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -1226,7 +1222,7 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on priority
-                            ColorObjectByPriority(databaseManager.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -1245,12 +1241,45 @@ namespace Instantiate
                     if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
                     {
                         //Color based on priority
-                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
                     }
                     else
                     {
                         Debug.LogWarning($"Could not find object with key: {entry.Key}");
                     }
+                }
+            }
+        }
+        public void ApplyColortoPriorityGroup(string selectedPriorityGroup, string newPriorityGroup, bool newPriority=false)
+        {
+            //Get the list of keys from the priority group
+            List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriorityGroup];
+
+            //Loop through keys in the priority list to color
+            foreach (string key in priorityList)
+            {
+                GameObject gameObject = GameObject.Find(key);
+
+                if (gameObject != null)
+                {
+                    if (key != UIFunctionalities.CurrentStep)
+                    {
+                        if (newPriority)
+                        {
+                            //Color the object based on current app settings
+                            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[key], key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+                        }
+                        else
+                        {
+                            //Color the object based on the priority group
+                            Debug.Log("SetPriority" + selectedPriorityGroup + "Priority of selected item: " + databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString() + " Key: " + key + " GameObject: " + gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]) + " PriorityGroup: ");
+                            ColorObjectByPriority(newPriorityGroup, databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString(), key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Could not find object with key: {key}");
                 }
             }
         }
