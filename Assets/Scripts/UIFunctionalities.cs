@@ -54,6 +54,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject PriorityCompleteMessageObject;
     public GameObject MQTTFailedToConnectMessageObject;
     public GameObject MQTTConnectionLostMessageObject;
+    public GameObject ErrorFetchingDownloadUriMessageObject;
     public GameObject ErrorDownloadingObjectMessageObject;
     public GameObject TrajectoryReviewRequestMessageObject;
     public GameObject TrajectoryApprovalTimedOutMessageObject;
@@ -231,6 +232,7 @@ public class UIFunctionalities : MonoBehaviour
         SearchItemNotFoundWarningMessageObject = MessagesParent.FindObject("SearchItemNotFoundWarningMessage");
         MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
         MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
+        ErrorFetchingDownloadUriMessageObject = MessagesParent.FindObject("ErrorFetchingDownloadUriMessage");
         ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
         TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
         TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
