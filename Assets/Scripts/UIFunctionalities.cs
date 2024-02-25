@@ -47,6 +47,8 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_InputField ElementSearchInputField;
     private GameObject ElementSearchObjects;
     private GameObject SearchElementButtonObject;
+
+    //On Screen Messages
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
     private GameObject PriorityCompleteMessageObject;
@@ -55,6 +57,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ErrorDownloadingObjectMessageObject;
     public GameObject TrajectoryReviewRequestMessageObject;
     public GameObject TrajectoryApprovalTimedOutMessageObject;
+    public GameObject SearchItemNotFoundWarningMessageObject;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -225,6 +228,7 @@ public class UIFunctionalities : MonoBehaviour
         PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
         PriorityCompleteMessageObject = MessagesParent.FindObject("PriorityCompleteMessage");
+        SearchItemNotFoundWarningMessageObject = MessagesParent.FindObject("SearchItemNotFoundWarningMessage");
         MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
         MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
         ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
@@ -492,7 +496,7 @@ public class UIFunctionalities : MonoBehaviour
                 //If Priority Viewer toggle is on then color the add additional color based on priority
                 if (PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
-                    instantiateObjects.ColorObjectByPriority(databaseManager.CurrentPriority, PreviousStep.data.priority.ToString(), CurrentStep, previousStepElement.FindObject(elementID + " Geometry"));
+                    instantiateObjects.ColorObjectByPriority(SelectedPriority, PreviousStep.data.priority.ToString(), CurrentStep, previousStepElement.FindObject(elementID + " Geometry"));
                 }
             }
         }
@@ -606,7 +610,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
     }  
-    public void SearchElementButton() //TODO: MAKE THIS SEARCH FOR STEP INSTEAD OF ELEMENT ID, AND ADD ONSCREENWARNING IF NOT FOUND.
+    public void SearchElementButton()
     {
         //Search for step button clicked
         Debug.Log("Search for Step Button Pressed");
@@ -656,9 +660,8 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
-            //TODO: Trigger ON Screen Text that says the step was not found.
-
-            Debug.Log("Trigger Onscreen text about finding the element.");
+            Debug.Log("SearchElementButton: The element could not be found from User Search.");
+            SignalOnscreenElementNotFoundWarning(ElementSearchInputField.text);
         }     
     }
     public void PreviousStepButton()
@@ -882,7 +885,7 @@ public class UIFunctionalities : MonoBehaviour
         //Check if priority is correct.
         if (LocalPriorityChecker(step))
         {
-            //Change Build Status //TODO: WHAT DO I DO IF I AM UNBUILDING 0... I think most logical would be to set current priority to 0 do nothing with LastBuiltIndex.
+            //Change Build Status
             if(step.data.is_built)
             {
                 //Change Build Status
@@ -968,6 +971,12 @@ public class UIFunctionalities : MonoBehaviour
             
             //Create the priority line if it is on
             instantiateObjects.CreatePriorityViewerItems(Priority, ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+
+            //Set the selected priority
+            SelectedPriority = Priority;
+
+            //Set selected priority text
+            PriorityViewerObjectsGraphicsController(true, Priority);
         }
         
         //Current Priority Text current Priority Items
@@ -986,6 +995,8 @@ public class UIFunctionalities : MonoBehaviour
         //Print setting current priority
         Debug.Log($"Setting Current Priority to {Priority} ");
     }
+
+    /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
     private void SignalOnScreenPriorityIncompleteWarning(List<string> UnbuiltElements, string currentPriority)
     {
         
@@ -1026,6 +1037,26 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Debug.LogWarning("Priority Message: Could not find message object or message component.");
+        }
+    }
+    private void SignalOnscreenElementNotFoundWarning(string searchedText)
+    {
+        Debug.Log($"Element Not Found: Signal On Screen Message for Element Not Found.");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = SearchItemNotFoundWarningMessageObject.FindObject("SearchItemNotFoundText").GetComponent<TMP_Text>();
+
+        //Define message for the onscreen text
+        string message = $"WARNING: The item {searchedText} could not be found. Please retype information and try search again.";
+        
+        if(messageComponent != null && message != null && SearchItemNotFoundWarningMessageObject != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(SearchItemNotFoundWarningMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("Element Not Found Message: Could not find message object or message component.");
         }
     }
     public void SignalTrajectoryReviewRequest(string key)
@@ -1678,6 +1709,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("SetPreviousPriorityGroup: Selected Priority is null.");
         }
     }
+
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
     private void ToggleInfo(Toggle toggle)
     {
