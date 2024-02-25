@@ -8,7 +8,7 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
-public class SaveAppSettings : MonoBehaviour
+public class FirebaseConfigSettings : MonoBehaviour
 {
     private TMP_InputField applicationIdInput;
     private TMP_InputField apiKeyInput;

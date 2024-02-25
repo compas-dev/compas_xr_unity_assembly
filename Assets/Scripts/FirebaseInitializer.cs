@@ -12,11 +12,11 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 
 public class FirebaseInitializer : MonoBehaviour
 {
-    public MqttConfigManager mqttConfigManager;
+    public MqttFirebaseConfigManager mqttConfigManager;
 
     public void Start()
     {
-         mqttConfigManager = FindObjectOfType<MqttConfigManager>();
+        mqttConfigManager = FindObjectOfType<MqttFirebaseConfigManager>();
         if (mqttConfigManager == null)
         {
             Debug.LogError("MqttConfigManager not found in the scene.");

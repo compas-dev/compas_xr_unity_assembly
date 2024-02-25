@@ -7,7 +7,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 using Newtonsoft.Json;
 using TMPro;
 
-public class MqttConfigManager : M2MqttUnityClient
+public class MqttFirebaseConfigManager : M2MqttUnityClient
 {
     [Header("MQTT Settings")]
     [Tooltip("Set the topic to publish")]
@@ -16,7 +16,7 @@ public class MqttConfigManager : M2MqttUnityClient
     public string topicPublish = ""; // topic to publish
     public string messagePublish = ""; // message to publish
 
-    private SaveAppSettings saveAppSettingsScript;
+    private FirebaseConfigSettings saveFirebaseConfigSettingsScript;
 
     public GameObject greenScreenPanel; // Assign this in the Unity Editor
     private float flashDuration = 1.0f; // Duration of the flash
@@ -63,8 +63,8 @@ public class MqttConfigManager : M2MqttUnityClient
         GameObject firebaseManager = GameObject.Find("Firebase_Manager");
         if (firebaseManager != null)
         {
-            saveAppSettingsScript = firebaseManager.GetComponent<SaveAppSettings>();
-            if (saveAppSettingsScript == null)
+            saveFirebaseConfigSettingsScript = firebaseManager.GetComponent<FirebaseConfigSettings>();
+            if (saveFirebaseConfigSettingsScript == null)
             {
                 Debug.LogError("SaveAppSettings script not found on Firebase_Manager.");
             }
@@ -81,7 +81,7 @@ public class MqttConfigManager : M2MqttUnityClient
     {
         if (client != null && client.IsConnected)
         {
-            string topicToSubscribe = saveAppSettingsScript.topicSubscribeInput.text;
+            string topicToSubscribe = saveFirebaseConfigSettingsScript.topicSubscribeInput.text;
 
             // Check if the topic to subscribe is different from the current topic
             if (!string.IsNullOrEmpty(topicToSubscribe) && topicToSubscribe != currentTopic)
@@ -106,7 +106,7 @@ public class MqttConfigManager : M2MqttUnityClient
     
     private void SubscribeToTopic()
     {
-        string topicToSubscribe = saveAppSettingsScript.topicSubscribeInput.text;
+        string topicToSubscribe = saveFirebaseConfigSettingsScript.topicSubscribeInput.text;
         if (!string.IsNullOrEmpty(topicToSubscribe))
         {
             client.Subscribe(new string[] { topicToSubscribe }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
@@ -120,7 +120,7 @@ public class MqttConfigManager : M2MqttUnityClient
 
     private void UnsubscribeCurrentTopic()
     {
-        string topicToUnsubscribe = saveAppSettingsScript.topicSubscribeInput.text;
+        string topicToUnsubscribe = saveFirebaseConfigSettingsScript.topicSubscribeInput.text;
         Debug.Log($"Client: {client}");
         if (!string.IsNullOrEmpty(topicToUnsubscribe))
         {
@@ -161,7 +161,7 @@ public class MqttConfigManager : M2MqttUnityClient
         FirebaseManager.Instance.storageBucket = resultDataDict["storageBucket"];
         FirebaseManager.Instance.projectId = resultDataDict["projectId"];
 
-        saveAppSettingsScript.UpdateInputFields();
+        saveFirebaseConfigSettingsScript.UpdateInputFields();
 
     }
 
