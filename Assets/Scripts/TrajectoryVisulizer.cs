@@ -77,17 +77,17 @@ public class TrajectoryVisulizer : MonoBehaviour
         if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && joint_names.Count > 0 || parentObject != null)
         {
             //Get the number of configurations in the trajectory
-            int trajectoryCount = TrajectoryConfigs.Count -1;
+            int trajectoryCount = TrajectoryConfigs.Count;
 
             //Find the parent object for holding trajectory Objects
-            for (int i = 0; i < trajectoryCount; i++)
+            for (int i = 0; i < trajectoryCount -1; i++)
             {
                 //Instantiate a new robot object in the ActiveRobotObjectsParent
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
-                // VisulizeRobotConfig(TrajectoryConfigs[i].ToArray(), temporaryRobot, joint_names); //TODO: Possibly Stuck here?
+                VisulizeRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names); //TODO: Possibly Stuck here?
 
                 //Set temporary Robots parent to the ActiveRobot.
                 temporaryRobot.transform.SetParent(parentObject.transform);
@@ -101,17 +101,33 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
 
     //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS. IF I CAN COORDINATE WITH THE PLANNING.
-    public void VisulizeRobotConfig(float[] config, GameObject robotToConfigure, List<string> joint_names) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void VisulizeRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
-        int count =0;
-        foreach (string name in joint_names) //TODO: LOOP THROUGH THE JOINTS OF THE URDF BY NAME.
+        //Get the number of joints in the list
+        int configCount = config.Count;
+
+        //Find the parent object for holding trajectory Objects
+        for (int i = 0; i < configCount -1; i++) //TODO: LOOP THROUGH THE JOINTS OF THE URDF BY NAME.
         {
-            GameObject joint = robotToConfigure.FindObject(name); //TODO: FIND OBJECT WITH A SPECIFIC JOINT NAME FROM THIS URDF.
+            GameObject joint = robotToConfigure.FindObject(jointNames[i]); //TODO: FIND OBJECT WITH A SPECIFIC JOINT NAME FROM THIS URDF.
             if (joint)
             {
-                joint.GetComponent<JointStateWriter>().Write(config[count]); //TODO: WRITES THE CONFIGURATION TO THE JOINT. BASED ON THE LIST ORDER.
+                //Get the jointStateWriter component from the joint.
+                JointStateWriter jointStateWriter = joint.GetComponent<JointStateWriter>();
+                
+                //If the jointStateWriter is not found, add it to the joint.
+                if (!jointStateWriter)
+                {
+                    jointStateWriter = joint.AddComponent<JointStateWriter>();    
+                }
+                
+                //Write the joint value to the joint.
+                jointStateWriter.Write(config[i]);
             }  
-            count ++;
+            else
+            {
+                Debug.Log($"VisulizeRobotConfig: Joint {name} not found in the robotToConfigure.");
+            }
         }
 
     }
