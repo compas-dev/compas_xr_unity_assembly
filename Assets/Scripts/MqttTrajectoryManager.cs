@@ -46,6 +46,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     //Other Scripts
     public UIFunctionalities UIFunctionalities;
     public DatabaseManager databaseManager;
+    public TrajectoryVisulizer trajectoryVisulizer;
 
     protected override void Start()
     {
@@ -76,6 +77,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Find UI Functionalities
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+            trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
         }
 
         //Connect to MQTT Broker on start with default settings.
@@ -262,6 +264,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             
             //TODO: NEED SOME SORT OF SAFETY CHECK OF HEADER RESPONSEID OR SOMETHING TO DEAL WITH MESSAGES THAT ARE SENT FROM CONTROLER, BUT ARE INCORRECT.
             //TODO: IT WILL CAUSE A BIG PROBLEM IF I DON'T REQUEST A TRAJECTORY BUT I RECEIVE ONE.... This fix cannot happen until I test the header and responseID back and forth.
+            //TODO: ADD ERROR MESAGE HANDELING FOR THE INCORRECT ELEMENT ID AND FOR THE INCORRECT HEADER ITEMS
 
             //If I am not the primary user checks
             if (!serviceManager.PrimaryUser)
@@ -307,6 +310,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
 
                     //Set visibility and interactibility of trajectory review elements
                     UIFunctionalities.TrajectoryServicesUIControler(false, false, true, true, false, false);
+
+                    //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
 
                     //Set the current trajectory of the Service Manager && Set current Service to Approve Trajectory
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
