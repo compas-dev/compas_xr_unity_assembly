@@ -5,6 +5,7 @@ using JSON;
 using MQTTDataCompasXR;
 using Helpers;
 using RosSharp.RosBridgeClient;
+using Newtonsoft.Json;
 
 
 public class TrajectoryVisulizer : MonoBehaviour
@@ -41,8 +42,7 @@ public class TrajectoryVisulizer : MonoBehaviour
 
         //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
         //Get the joint names for the active robot
-        JointNames = new List<string>();
-        AddJointNamesList("UR5", JointNames);
+        JointNames = AddJointNamesList("UR5", JointNames);
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
         SetActiveRobot(BuiltInRobotsParent, "UR5", ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory);
@@ -70,24 +70,33 @@ public class TrajectoryVisulizer : MonoBehaviour
         temporaryRobot.transform.SetParent(ActiveRobot.transform);
     }
 
-    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
-        //Get the number of configurations in the trajectory
-        int trajectoryCount = TrajectoryConfigs.Count -1;
+        Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
 
-        //Find the parent object for holding trajectory Objects
-        for (int i = 0; i < trajectoryCount; i++)
+        if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && joint_names.Count > 0 || parentObject != null)
         {
-            //Instantiate a new robot object in the ActiveRobotObjectsParent
-            GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
-            temporaryRobot.name = $"Config {i}";
+            //Get the number of configurations in the trajectory
+            int trajectoryCount = TrajectoryConfigs.Count -1;
 
-            //Visulize the robot configuration
-            VisulizeRobotConfig(TrajectoryConfigs[i].ToArray(), temporaryRobot, joint_names);
+            //Find the parent object for holding trajectory Objects
+            for (int i = 0; i < trajectoryCount; i++)
+            {
+                //Instantiate a new robot object in the ActiveRobotObjectsParent
+                GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
+                temporaryRobot.name = $"Config {i}";
 
-            //Set temporary Robots parent to the ActiveRobot.
-            temporaryRobot.transform.SetParent(parentObject.transform);
-            temporaryRobot.SetActive(visibility);
+                //Visulize the robot configuration
+                // VisulizeRobotConfig(TrajectoryConfigs[i].ToArray(), temporaryRobot, joint_names); //TODO: Possibly Stuck here?
+
+                //Set temporary Robots parent to the ActiveRobot.
+                temporaryRobot.transform.SetParent(parentObject.transform);
+                temporaryRobot.SetActive(visibility);
+            }
+        }
+        else
+        {
+            Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
         }
     }
 
@@ -107,111 +116,111 @@ public class TrajectoryVisulizer : MonoBehaviour
 
     }
 
-    public void AddJointNamesList(string robotName, List<string> jointNames)
+    public List<string> AddJointNamesList(string robotName, List<string> jointNames)
     {
         switch(robotName)
+        {
+            case "UR3": //TODO: CHECK JOINT NAMES
             {
-                case "UR3": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
+                //Add specific joint names for the UR5 robot
+                jointNames.Add("shoulder_link");
+                jointNames.Add("upper_arm_link");
+                jointNames.Add("forearm_link");
+                jointNames.Add("wrist_1_link");
+                jointNames.Add("wrist_2_link");
+                jointNames.Add("wrist_3_link");
 
-                    break;
-                }
-                case "UR5":
-                {
-                    //Add specific joint names for the UR5 robot
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
+                break;
+            }
+            case "UR5":
+            {
+                //Add specific joint names for the UR5 robot
+                jointNames.Add("shoulder_link");
+                jointNames.Add("upper_arm_link");
+                jointNames.Add("forearm_link");
+                jointNames.Add("wrist_1_link");
+                jointNames.Add("wrist_2_link");
+                jointNames.Add("wrist_3_link");
 
-                    break;
-                }
-                case "UR10": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
+                break;
+            }
+            case "UR10": //TODO: CHECK JOINT NAMES
+            {
+                //Add specific joint names for the UR5 robot
+                jointNames.Add("shoulder_link");
+                jointNames.Add("upper_arm_link");
+                jointNames.Add("forearm_link");
+                jointNames.Add("wrist_1_link");
+                jointNames.Add("wrist_2_link");
+                jointNames.Add("wrist_3_link");
 
-                    break;
-                }
-                case "UR20": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
+                break;
+            }
+            case "UR20": //TODO: CHECK JOINT NAMES
+            {
+                //Add specific joint names for the UR5 robot
+                jointNames.Add("shoulder_link");
+                jointNames.Add("upper_arm_link");
+                jointNames.Add("forearm_link");
+                jointNames.Add("wrist_1_link");
+                jointNames.Add("wrist_2_link");
+                jointNames.Add("wrist_3_link");
 
-                    break;
-                }
-                case "ETHZurichRFL": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    jointNames.Add("link_0");
-                    jointNames.Add("link_1");
-                    jointNames.Add("link_2");
-                    jointNames.Add("link_3");
-                    jointNames.Add("link_4");
-                    jointNames.Add("link_5");
-                    jointNames.Add("link_6");
-                    jointNames.Add("link_7");
-                    jointNames.Add("link_8");
-                    jointNames.Add("link_9");
-                    jointNames.Add("link_10");
-                    jointNames.Add("link_11");
-                    jointNames.Add("link_12");
-                    jointNames.Add("link_13");
-                    jointNames.Add("link_14");
-                    jointNames.Add("link_15");
-                    jointNames.Add("link_16");
-                    jointNames.Add("link_17");
-                    jointNames.Add("link_18");
-                    jointNames.Add("link_19");
-                    jointNames.Add("link_20");
-                    jointNames.Add("link_21");
-                    jointNames.Add("link_22");
-                    jointNames.Add("link_23");
-                    jointNames.Add("link_24");
-                    jointNames.Add("link_25");
-                    jointNames.Add("link_26");
-                    jointNames.Add("link_27");
-                    jointNames.Add("link_28");
-                    jointNames.Add("link_29");
-                    jointNames.Add("link_30");
-                    jointNames.Add("link_31");
-                    jointNames.Add("link_32");
-                    jointNames.Add("link_33");
+                break;
+            }
+            case "ETHZurichRFL": //TODO: CHECK JOINT NAMES
+            {
+                //Add specific joint names for the UR5 robot
+                jointNames.Add("link_0");
+                jointNames.Add("link_1");
+                jointNames.Add("link_2");
+                jointNames.Add("link_3");
+                jointNames.Add("link_4");
+                jointNames.Add("link_5");
+                jointNames.Add("link_6");
+                jointNames.Add("link_7");
+                jointNames.Add("link_8");
+                jointNames.Add("link_9");
+                jointNames.Add("link_10");
+                jointNames.Add("link_11");
+                jointNames.Add("link_12");
+                jointNames.Add("link_13");
+                jointNames.Add("link_14");
+                jointNames.Add("link_15");
+                jointNames.Add("link_16");
+                jointNames.Add("link_17");
+                jointNames.Add("link_18");
+                jointNames.Add("link_19");
+                jointNames.Add("link_20");
+                jointNames.Add("link_21");
+                jointNames.Add("link_22");
+                jointNames.Add("link_23");
+                jointNames.Add("link_24");
+                jointNames.Add("link_25");
+                jointNames.Add("link_26");
+                jointNames.Add("link_27");
+                jointNames.Add("link_28");
+                jointNames.Add("link_29");
+                jointNames.Add("link_30");
+                jointNames.Add("link_31");
+                jointNames.Add("link_32");
+                jointNames.Add("link_33");
 
-                    break;
-                }
-                case "abbGofa":
-                {
-                    //Add specific joint names for the abbGofa robot
-                    jointNames.Add("link_1");
-                    jointNames.Add("link_2");
-                    jointNames.Add("link_3");
-                    jointNames.Add("link_4");
-                    jointNames.Add("link_5");
-                    jointNames.Add("link_6");
-
-                    break;
-                }
-            }        
+                break;
+            }
+            case "abbGofa":
+            {
+                //Add specific joint names for the abbGofa robot
+                jointNames.Add("link_1");
+                jointNames.Add("link_2");
+                jointNames.Add("link_3");
+                jointNames.Add("link_4");
+                jointNames.Add("link_5");
+                jointNames.Add("link_6");
+                break;
+            }
+        }      
+        return jointNames;  
     }
 
 }

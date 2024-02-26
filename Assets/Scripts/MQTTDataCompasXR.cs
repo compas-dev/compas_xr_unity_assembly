@@ -528,7 +528,7 @@ namespace MQTTDataCompasXR
             }
 
             var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
-            
+
             // Create and return a new GetTrajectoryResult instance
             return new GetTrajectoryResult(elementID, trajectory, header);
         }

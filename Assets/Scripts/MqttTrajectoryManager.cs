@@ -312,7 +312,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     UIFunctionalities.TrajectoryServicesUIControler(false, false, true, true, false, false);
 
                     //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
-                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
 
                     //Set the current trajectory of the Service Manager && Set current Service to Approve Trajectory
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
@@ -515,7 +515,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     }
     async Task TrajectoryApprovalTimeout(string elementID, float timeDurationSeconds)
     {
-        Debug.Log("MQTT: Trajectory Approval Timeout");
+        Debug.Log("MQTT: Trajectory Approval Timeout started.");
         
         await Task.Delay(TimeSpan.FromSeconds(timeDurationSeconds));
 
