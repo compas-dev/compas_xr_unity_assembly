@@ -17,7 +17,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     private GameObject BuiltInRobotsParent;
     
     //List for storing the joint names of the active robot...
-    //TODO: Ideally I could send this in the message so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
+    //TODO: Ideally I could send this in the message as a dictionary so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
     public List<string> JointNames;
 
         
@@ -42,10 +42,10 @@ public class TrajectoryVisulizer : MonoBehaviour
 
         //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
         //Get the joint names for the active robot
-        JointNames = AddJointNamesList("UR5", JointNames);
+        JointNames = AddJointNamesList("ETHZurichRFL", JointNames);
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
-        SetActiveRobot(BuiltInRobotsParent, "UR5", ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory);
+        SetActiveRobot(BuiltInRobotsParent, "ETHZurichRFL", ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory);
         //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
 
     }
@@ -139,6 +139,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             case "UR3": //TODO: CHECK JOINT NAMES
             {
                 //Add specific joint names for the UR5 robot
+                Debug.Log("AddJointNamesList: UR3");
                 jointNames.Add("shoulder_link");
                 jointNames.Add("upper_arm_link");
                 jointNames.Add("forearm_link");
@@ -151,6 +152,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             case "UR5":
             {
                 //Add specific joint names for the UR5 robot
+                Debug.Log("AddJointNamesList: UR5");
                 jointNames.Add("shoulder_link");
                 jointNames.Add("upper_arm_link");
                 jointNames.Add("forearm_link");
@@ -163,6 +165,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             case "UR10": //TODO: CHECK JOINT NAMES
             {
                 //Add specific joint names for the UR5 robot
+                Debug.Log("AddJointNamesList: UR10");
                 jointNames.Add("shoulder_link");
                 jointNames.Add("upper_arm_link");
                 jointNames.Add("forearm_link");
@@ -175,6 +178,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             case "UR20": //TODO: CHECK JOINT NAMES
             {
                 //Add specific joint names for the UR5 robot
+                Debug.Log("AddJointNamesList: UR20");
                 jointNames.Add("shoulder_link");
                 jointNames.Add("upper_arm_link");
                 jointNames.Add("forearm_link");
@@ -187,46 +191,48 @@ public class TrajectoryVisulizer : MonoBehaviour
             case "ETHZurichRFL": //TODO: CHECK JOINT NAMES
             {
                 //Add specific joint names for the UR5 robot
-                jointNames.Add("link_0");
-                jointNames.Add("link_1");
-                jointNames.Add("link_2");
-                jointNames.Add("link_3");
-                jointNames.Add("link_4");
-                jointNames.Add("link_5");
-                jointNames.Add("link_6");
-                jointNames.Add("link_7");
-                jointNames.Add("link_8");
-                jointNames.Add("link_9");
-                jointNames.Add("link_10");
-                jointNames.Add("link_11");
-                jointNames.Add("link_12");
-                jointNames.Add("link_13");
-                jointNames.Add("link_14");
-                jointNames.Add("link_15");
-                jointNames.Add("link_16");
-                jointNames.Add("link_17");
-                jointNames.Add("link_18");
-                jointNames.Add("link_19");
-                jointNames.Add("link_20");
-                jointNames.Add("link_21");
-                jointNames.Add("link_22");
-                jointNames.Add("link_23");
-                jointNames.Add("link_24");
-                jointNames.Add("link_25");
-                jointNames.Add("link_26");
-                jointNames.Add("link_27");
-                jointNames.Add("link_28");
-                jointNames.Add("link_29");
-                jointNames.Add("link_30");
-                jointNames.Add("link_31");
-                jointNames.Add("link_32");
-                jointNames.Add("link_33");
+                Debug.Log("AddJointNamesList: ETHZurichRFL");
+                jointNames.Add("bridge1");
+                jointNames.Add("bridge2");
+                jointNames.Add("robot11_xy_cart");
+                jointNames.Add("robot12_xy_cart");
+                jointNames.Add("robot11_base");
+                jointNames.Add("robot11_link_1");
+                jointNames.Add("robot11_link_2");
+                jointNames.Add("robot11_link_3");
+                jointNames.Add("robot11_link_4");
+                jointNames.Add("robot11_link_5");
+                jointNames.Add("robot11_link_6");
+                jointNames.Add("robot12_base");
+                jointNames.Add("robot12_link_1");
+                jointNames.Add("robot12_link_2");
+                jointNames.Add("robot12_link_3");
+                jointNames.Add("robot12_link_4");
+                jointNames.Add("robot12_link_5");
+                jointNames.Add("robot12_link_6");
+                jointNames.Add("robot21_xy_cart");
+                jointNames.Add("robot22_xy_cart");
+                jointNames.Add("robot21_base");
+                jointNames.Add("robot21_link_1");
+                jointNames.Add("robot21_link_2");
+                jointNames.Add("robot21_link_3");
+                jointNames.Add("robot21_link_4");
+                jointNames.Add("robot21_link_5");
+                jointNames.Add("robot21_link_6");
+                jointNames.Add("robot22_base");
+                jointNames.Add("robot22_link_1");
+                jointNames.Add("robot22_link_2");
+                jointNames.Add("robot22_link_3");
+                jointNames.Add("robot22_link_4");
+                jointNames.Add("robot22_link_5");
+                jointNames.Add("robot22_link_6");
 
                 break;
             }
             case "abbGofa":
             {
                 //Add specific joint names for the abbGofa robot
+                Debug.Log("AddJointNamesList: abbGofa");
                 jointNames.Add("link_1");
                 jointNames.Add("link_2");
                 jointNames.Add("link_3");
