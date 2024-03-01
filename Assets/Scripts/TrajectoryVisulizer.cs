@@ -159,11 +159,16 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         Debug.Log($"ColorRobotChildCount: {RobotParent.transform.childCount}");
 
-        if (URDFRenderComponents.Count !> 0)
+        Debug.Log($"ColorRobot: URDFRendererComponents list count = {URDFRenderComponents.Count}.");
+        Debug.Log($"ColorRobot: URDFRendererComponents list = {JsonConvert.SerializeObject(URDFRenderComponents)}.");
+        if (URDFRenderComponents.Count == 0)
         {
+            Debug.Log("I enter the loop to search for things to color.");
+
             //Loop through all the children of the game object
             foreach (Transform child in RobotParent.transform)
             {
+                Debug.Log("I SHOULD BE LOOKING FOR THE MESH RENDERERS.");
                 FindMeshRenderers(child, ref URDFRenderComponents);
             }
         }
@@ -171,6 +176,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         //Loop through the list objects and color them
         foreach (string gameObjectName in URDFRenderComponents)
         {
+            Debug.Log("I enter this loop to reneder the URDF components.");
             //Find the object with the name
             GameObject gameObject = RobotParent.FindObject(gameObjectName);
 
@@ -196,6 +202,7 @@ public class TrajectoryVisulizer : MonoBehaviour
 
     void FindMeshRenderers(Transform currentTransform, ref List<string> URDFRenderComponents)
     {
+        Debug.Log("FindMeshRenderers: Searching through URDF for MeshRenderers.");
         // Check if the current GameObject has a MeshRenderer component
         MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
@@ -210,6 +217,8 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             foreach (Transform child in currentTransform)
             {
+                Debug.Log($"FindMeshRenderers: Searching through URDF for MeshRenderers in {currentTransform.gameObject.name}.");
+                Debug.Log($"FindMeshRenderers: Child count = {currentTransform.childCount}.");
                 FindMeshRenderers(child, ref URDFRenderComponents);
             }
         }
