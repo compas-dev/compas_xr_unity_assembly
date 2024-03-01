@@ -46,6 +46,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     //Other Scripts
     public UIFunctionalities UIFunctionalities;
     public DatabaseManager databaseManager;
+    public TrajectoryVisulizer trajectoryVisulizer;
 
     protected override void Start()
     {
@@ -76,6 +77,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Find UI Functionalities
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+            trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
         }
 
         //Connect to MQTT Broker on start with default settings.
@@ -311,6 +313,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     //Set the current trajectory of the Service Manager && Set current Service to Approve Trajectory
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
+
+                    //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
 
                     //Publish request for approval counter and do not input header.
                     PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
