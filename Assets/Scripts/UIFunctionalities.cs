@@ -1281,7 +1281,7 @@ public class UIFunctionalities : MonoBehaviour
                 
                 float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
 
-                //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
+                //Print list item at the index of the remapped value
                 Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
 
                 //TODO: Color Static Robot Image based on SliderRemapedValue
