@@ -82,13 +82,15 @@ public class TrajectoryVisulizer : MonoBehaviour
             int trajectoryCount = TrajectoryConfigs.Count;
 
             //Find the parent object for holding trajectory Objects
-            for (int i = 0; i < trajectoryCount -1; i++)
+            for (int i = 0; i < trajectoryCount; i++)
             {
                 //Instantiate a new robot object in the ActiveRobotObjectsParent
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
+                Debug.Log($"VisulizeRobotTrajectory: Visulizing configuration {i} for {trajectoryID} with trajectory count of {TrajectoryConfigs[i].Count}.");
+                Debug.Log($"VisulizeRobotTrajectory: Actual Configuration {JsonConvert.SerializeObject(TrajectoryConfigs[i])}.");
                 VisulizeRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names); //TODO: Possibly Stuck here?
 
                 //Set temporary Robots parent to the ActiveRobot.
@@ -107,11 +109,15 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         //Get the number of joints in the list
         int configCount = config.Count;
+        Debug.Log($"VisulizeRobotConfig: Joint Names Count {jointNames.Count} found in the robotToConfigure.");
+        Debug.Log($"VisulizeRobotConfig: Config Count {configCount} found in the robotToConfigure.");
 
         //Find the parent object for holding trajectory Objects
-        for (int i = 0; i < configCount -1; i++) //TODO: LOOP THROUGH THE JOINTS OF THE URDF BY NAME.
+        for (int i = 0; i < configCount; i++) //TODO: LOOP THROUGH THE JOINTS OF THE URDF BY NAME.
         {
+            Debug.Log("THIS IS I " + i);
             GameObject joint = robotToConfigure.FindObject(jointNames[i]); //TODO: FIND OBJECT WITH A SPECIFIC JOINT NAME FROM THIS URDF.
+
             if (joint)
             {
                 //Get the jointStateWriter component from the joint.
@@ -159,16 +165,12 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         Debug.Log($"ColorRobotChildCount: {RobotParent.transform.childCount}");
 
-        Debug.Log($"ColorRobot: URDFRendererComponents list count = {URDFRenderComponents.Count}.");
-        Debug.Log($"ColorRobot: URDFRendererComponents list = {JsonConvert.SerializeObject(URDFRenderComponents)}.");
         if (URDFRenderComponents.Count == 0)
         {
-            Debug.Log("I enter the loop to search for things to color.");
-
+            Debug.Log("ColorRobot: URDFRenderComponents list is empty. Searching through URDF for MeshRenderers.");
             //Loop through all the children of the game object
             foreach (Transform child in RobotParent.transform)
             {
-                Debug.Log("I SHOULD BE LOOKING FOR THE MESH RENDERERS.");
                 FindMeshRenderers(child, ref URDFRenderComponents);
             }
         }
@@ -176,7 +178,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         //Loop through the list objects and color them
         foreach (string gameObjectName in URDFRenderComponents)
         {
-            Debug.Log("I enter this loop to reneder the URDF components.");
+            Debug.Log("ColorRobot: Coloring from URDFRendererComponents list.");
             //Find the object with the name
             GameObject gameObject = RobotParent.FindObject(gameObjectName);
 
@@ -199,7 +201,6 @@ public class TrajectoryVisulizer : MonoBehaviour
             }
         }
     }
-
     void FindMeshRenderers(Transform currentTransform, ref List<string> URDFRenderComponents)
     {
         Debug.Log("FindMeshRenderers: Searching through URDF for MeshRenderers.");
@@ -228,7 +229,6 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
 
     }
-
     public List<string> AddJointNamesList(string robotName, List<string> jointNames)
     {
         switch(robotName)
@@ -289,41 +289,76 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 //Add specific joint names for the UR5 robot
                 Debug.Log("AddJointNamesList: ETHZurichRFL");
-                jointNames.Add("bridge1");
-                jointNames.Add("bridge2");
-                jointNames.Add("robot11_xy_cart");
-                jointNames.Add("robot12_xy_cart");
-                jointNames.Add("robot11_base");
-                jointNames.Add("robot11_link_1");
-                jointNames.Add("robot11_link_2");
-                jointNames.Add("robot11_link_3");
-                jointNames.Add("robot11_link_4");
-                jointNames.Add("robot11_link_5");
-                jointNames.Add("robot11_link_6");
-                jointNames.Add("robot12_base");
-                jointNames.Add("robot12_link_1");
-                jointNames.Add("robot12_link_2");
-                jointNames.Add("robot12_link_3");
-                jointNames.Add("robot12_link_4");
-                jointNames.Add("robot12_link_5");
-                jointNames.Add("robot12_link_6");
-                jointNames.Add("robot21_xy_cart");
-                jointNames.Add("robot22_xy_cart");
-                jointNames.Add("robot21_base");
-                jointNames.Add("robot21_link_1");
-                jointNames.Add("robot21_link_2");
-                jointNames.Add("robot21_link_3");
-                jointNames.Add("robot21_link_4");
-                jointNames.Add("robot21_link_5");
-                jointNames.Add("robot21_link_6");
-                jointNames.Add("robot22_base");
+                // jointNames.Add("bridge1");
+                // jointNames.Add("bridge2");
+                // jointNames.Add("robot11_xy_cart");
+                // jointNames.Add("robot12_xy_cart");
+                // jointNames.Add("robot11_base");
+                // jointNames.Add("robot11_link_1");
+                // jointNames.Add("robot11_link_2");
+                // jointNames.Add("robot11_link_3");
+                // jointNames.Add("robot11_link_4");
+                // jointNames.Add("robot11_link_5");
+                // jointNames.Add("robot11_link_6");
+                // jointNames.Add("robot12_base");
+                // jointNames.Add("robot12_link_1");
+                // jointNames.Add("robot12_link_2");
+                // jointNames.Add("robot12_link_3");
+                // jointNames.Add("robot12_link_4");
+                // jointNames.Add("robot12_link_5");
+                // jointNames.Add("robot12_link_6");
+                // jointNames.Add("robot21_xy_cart");
+                // jointNames.Add("robot22_xy_cart");
+                // jointNames.Add("robot21_base");
+                // jointNames.Add("robot21_link_1");
+                // jointNames.Add("robot21_link_2");
+                // jointNames.Add("robot21_link_3");
+                // jointNames.Add("robot21_link_4");
+                // jointNames.Add("robot21_link_5");
+                // jointNames.Add("robot21_link_6");
+                // jointNames.Add("robot22_base");
+                // jointNames.Add("robot22_link_1");
+                // jointNames.Add("robot22_link_2");
+                // jointNames.Add("robot22_link_3");
+                // jointNames.Add("robot22_link_4");
+                // jointNames.Add("robot22_link_5");
+                // jointNames.Add("robot22_link_6");
                 jointNames.Add("robot22_link_1");
                 jointNames.Add("robot22_link_2");
                 jointNames.Add("robot22_link_3");
+                jointNames.Add("bridge1");
+                jointNames.Add("robot11_xy_cart");
+                jointNames.Add("robot12_xy_cart");
+                jointNames.Add("robot12_link_4");
+                jointNames.Add("robot12_link_5");
+                jointNames.Add("robot12_link_6");
+                jointNames.Add("robot12_link_1");
+                jointNames.Add("robot12_link_2");
+                jointNames.Add("robot12_link_3");
+                jointNames.Add("robot21_base");
+                jointNames.Add("robot22_base");
+                jointNames.Add("bridge2");
+                jointNames.Add("robot11_base");
+                jointNames.Add("robot12_base");            
+                jointNames.Add("robot21_link_6");
+                jointNames.Add("robot21_link_5");
+                jointNames.Add("robot21_link_4");
+                jointNames.Add("robot21_link_3");
+                jointNames.Add("robot21_link_2");
+                jointNames.Add("robot21_link_1");
+                jointNames.Add("robot21_xy_cart");
+                jointNames.Add("robot22_xy_cart");
                 jointNames.Add("robot22_link_4");
                 jointNames.Add("robot22_link_5");
                 jointNames.Add("robot22_link_6");
+                jointNames.Add("robot11_link_6");
+                jointNames.Add("robot11_link_5");
+                jointNames.Add("robot11_link_4");
+                jointNames.Add("robot11_link_3");
+                jointNames.Add("robot11_link_2");
+                jointNames.Add("robot11_link_1");
 
+                
                 break;
             }
             case "abbGofa":
