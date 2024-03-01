@@ -6,6 +6,7 @@ using MQTTDataCompasXR;
 using Helpers;
 using RosSharp.RosBridgeClient;
 using Newtonsoft.Json;
+using Unity.VisualScripting;
 
 
 public class TrajectoryVisulizer : MonoBehaviour
@@ -19,7 +20,8 @@ public class TrajectoryVisulizer : MonoBehaviour
     //List for storing the joint names of the active robot...
     //TODO: Ideally I could send this in the message as a dictionary so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
     public List<string> JointNames;
-
+    public int? previousSliderValue;
+    public List<string> URDFRenderComponents;
         
     // Start is called before the first frame update
     void Start()
@@ -128,6 +130,92 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 Debug.Log($"VisulizeRobotConfig: Joint {name} not found in the robotToConfigure.");
             }
+        }
+
+    }
+    public void ColorRobotConfigfromSliderInput(int sliderValue, Material inactiveMaterial, Material activeMaterial, ref int? previousSliderValue)
+    {
+        Debug.Log($"ColorRobotConfigfromSlider: Coloring robot config {sliderValue} for active trajectory.");
+        //If the previous version is not null find it and color it inactive
+        if(previousSliderValue != null)
+        {
+            //Find the parent associated with the slider value
+            GameObject previousRobotGameObject = ActiveTrajectory.FindObject($"Config {previousSliderValue}");
+
+            //Color the robot active robot
+            ColorRobot(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
+        }
+        
+        //Find the parent associated with the slider value
+        GameObject robotGameObject = ActiveTrajectory.FindObject($"Config {sliderValue}");
+
+        //Color the robot active robot
+        ColorRobot(robotGameObject, activeMaterial, ref URDFRenderComponents);
+
+        //Set the previous slider value to the current slider value
+        previousSliderValue = sliderValue;
+    }
+    public void ColorRobot(GameObject RobotParent, Material material, ref List<string> URDFRenderComponents)
+    {
+        Debug.Log($"ColorRobotChildCount: {RobotParent.transform.childCount}");
+
+        if (URDFRenderComponents.Count !> 0)
+        {
+            //Loop through all the children of the game object
+            foreach (Transform child in RobotParent.transform)
+            {
+                FindMeshRenderers(child, ref URDFRenderComponents);
+            }
+        }
+
+        //Loop through the list objects and color them
+        foreach (string gameObjectName in URDFRenderComponents)
+        {
+            //Find the object with the name
+            GameObject gameObject = RobotParent.FindObject(gameObjectName);
+
+            //If the object is found, color it
+            if (gameObject)
+            {
+                //Get the mesh renderer component from the object
+                MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+
+                //If the mesh renderer is found, color it
+                if (meshRenderer)
+                {
+                    //Set the material of the mesh renderer
+                    meshRenderer.material = material;
+                }
+                else
+                {
+                    Debug.Log($"ColorRobot: MeshRenderer not found for {gameObjectName} when searching through URDF list.");
+                }
+            }
+        }
+    }
+
+    void FindMeshRenderers(Transform currentTransform, ref List<string> URDFRenderComponents)
+    {
+        // Check if the current GameObject has a MeshRenderer component
+        MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
+        if (meshRenderer != null)
+        {
+            // If found, do something with the MeshRenderer, like add it to a list
+            Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name}");
+            URDFRenderComponents.Add(meshRenderer.gameObject.name);
+        }
+
+        // Traverse through all child game objects recursively
+        if (currentTransform.childCount > 0)
+        {
+            foreach (Transform child in currentTransform)
+            {
+                FindMeshRenderers(child, ref URDFRenderComponents);
+            }
+        }
+        else
+        {
+            Debug.Log($"FindMeshRenderers: No MeshRenderer found in URDF on GameObject {currentTransform.gameObject.name}");
         }
 
     }

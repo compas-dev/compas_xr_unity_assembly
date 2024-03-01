@@ -28,6 +28,7 @@ public class UIFunctionalities : MonoBehaviour
     public InstantiateObjects instantiateObjects;
     public Eventmanager eventManager;
     public MqttTrajectoryManager mqttTrajectoryManager;
+    public TrajectoryVisulizer trajectoryVisulizer;
     
     //Primary UI Objects
     private GameObject VisibilityMenuObject;
@@ -159,6 +160,7 @@ public class UIFunctionalities : MonoBehaviour
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
         mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
+        trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -1264,12 +1266,13 @@ public class UIFunctionalities : MonoBehaviour
                 float SliderMax = 1; //Input Slider Max Value == 1
                 float SliderMin = 0; // Input Slider Min Value == 0
                 
-                float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
+                float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount-1); 
 
                 //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
                 Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
 
-                //TODO: Color Static Robot Image based on SliderRemapedValue
+                //Color Static Robot Image based on SliderRemapedValue
+                trajectoryVisulizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisulizer.previousSliderValue);
             }
             else
             {
