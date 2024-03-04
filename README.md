@@ -36,12 +36,13 @@ Register your Android/iOS app with [Firebase](https://firebase.google.com/docs/u
 ![Screenshot 2024-03-04 at 12 45 05](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/67ec8475-cc0c-4256-b8ab-51454d35612e)
 
 - Here you can add both an Android and an iOS app to your project.
-- You should use a format such as ```com.ETHZ.cdf``` for your bundle identifier. Make sure that your bundle identifier is unique (a strict requirement for iOS app development)
+- If you are using the Compas XR app that is already built and don't plan on making changes in Unity, use the following bundle identifier: ```com.ETHZ.cdf``
+- If you are rebuilding the app in Unity, make sure that your bundle identifier is unique (a strict requirement for iOS app development). Maintain the same format: com.xxxx.yyyy
   
 ![Screenshot 2024-03-04 at 12 54 53](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/331d1ad5-4ccb-4bfa-9573-22e624ba21c7)
 
-4. Download the ```google-services.json``` file associated with your Firebase project  for Android and ```GoogleService-Info.plist``` for iOS. These files contain the information that you need to connect your Android app to the Firebase backend, and will need to be included either in the FirebaseInitialize script in the Unity project or at the start of the app, before initializing Firebase. You will need to look for the following parameters:
-App id, api key, database url, storage bucket, and project id
+4. Download the ```google-services.json``` file associated with your Firebase project  for Android and ```GoogleService-Info.plist``` for iOS. These files contain the information that you need to connect your app to the Firebase backend, and will need to be included either in the FirebaseInitialize script in the Unity project or at the start of the app, before initializing Firebase. You will need to look for the following parameters:
+app id, api key, database url, storage bucket, and project id.
 
 ![Screenshot 2024-03-04 at 12 55 26](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/354c66a2-6c8a-4334-b8f8-ea04d5257303)
 
@@ -244,9 +245,9 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 
 ![Screenshot 2024-02-20 at 11 08 07 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9f7da855-0d4b-4e3b-8abd-4626b66a9651)
 
-   - Under Team, open the drop-down down and select the development team/individual
-   - Optional: this is the last chance to adjust the Bundle Identifier and App Name before installing
-   - At the top, make sure the iOS device is connected and click the play triangle to start building and installing on device
+   - Under Team, open the drop-down down and select the development team/individual.
+   - Optional: this is the last chance to adjust the Bundle Identifier and App Name before installing.
+   - At the top, make sure the iOS device is connected and click the play triangle to start building and installing on device.
   
 ![305433081-c74fa3ac-bf67-45bb-ac26-9328f617de50](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9cddcb83-b85a-45ae-9dbd-eba0fad7945d)
 
@@ -255,8 +256,28 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
      
 ![Screenshot 2024-02-20 at 11 41 05 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9feb24a9-2d88-4aed-8d62-6a2a7f5f88d2)
 
-   - You will be asked to unlock the device and the app will install and open automatically 
+   - You will be asked to unlock the device and the app will install and open automatically.
 
+
+### Turning Devices into Developer Devices
+
+ ### Android:
+
+ - Go to "Settings".
+ - Tap "About device" or "About phone".
+ - Tap “Software information”
+ - Tap “Build number” seven times.
+ - Enter your pattern, PIN or password to enable the Developer options menu.
+
+ ### iOS
+
+ - Connect your device to your MacBook via a USB cable.
+ - Open Xcode.
+ - On your device, go to the Settings app, and navigate to Privacy & Security > Developer Mode.
+ - Enable the toggle.
+ - You will receive a prompt from iOS to restart your device.
+ - Press Restart.
+ - Once again, go to the Settings app, and navigate to Privacy & Security > Developer Mode and check that the toggle is on.
      
 
 
