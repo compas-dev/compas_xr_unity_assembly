@@ -75,11 +75,8 @@ const firebaseConfig = {
 6. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console. To generate a SHA1, first you will need to set the keystore in the Unity project.
     - Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
     - Select an existing keystore, or create a new keystore using the toggle.
- 
- ![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
- 
     - Select an existing key, or create a new key using ```Create a new key```.
-    - Build an apk to be able to generate the SHA1 key
+    - Build an apk to be able to generate the SHA1 key (see below under ```Unity``` and ```Android``` build how to build)
     - After setting the keystore and key, as well as building the app once, you can generate a SHA1 by running this command in CMD (admin):
       
     ```
@@ -90,6 +87,9 @@ const firebaseConfig = {
     - Navigate to your Android App in your Firebase console.
     - From the main console view, click on your Android App at the top, and open the settings page.
     - Scroll down to your apps at the bottom of the page and click on Add Fingerprint.
+ 
+![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
+ 
     
 ![Screenshot 2024-03-04 at 13 36 07](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0c722295-5642-45b2-a2bc-f6454369b56e)
     
@@ -128,7 +128,7 @@ const firebaseConfig = {
   
 ### Android
 
-   -  In Player Settings, scroll down to Identification / Override Default Package Name/ and update Package Name to the value of the Bundle Identifier you provided when you registered your app with Firebase.
+   - In Player Settings, scroll down to Identification / Override Default Package Name/ and update Package Name to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - In Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
      Alternatively, one can just Build to obtain the ```sdk``` and distribute it to Android devices.
    - If an error occurs, check player settings against default player settings depicted below:
