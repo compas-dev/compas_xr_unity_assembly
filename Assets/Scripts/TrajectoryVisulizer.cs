@@ -111,8 +111,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
-    public void SetActiveRobotPosition()
+    public void SetActiveRobotPosition(Frame robotBaseFrame)
     {
+        Debug.Log($"SetActiveRobotPosition: Setting the active robot position based on the frame data. {robotBaseFrame.GetType()}");
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }
 

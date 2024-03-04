@@ -315,7 +315,14 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
                     //TODO: SET THE POSITION OF ACTIVE ROBOT BEFORE INSTANTIATION BASED ON RECEIVED BASE POSITION FROM TRAJECTORY
-                    trajectoryVisulizer.SetActiveRobotPosition();
+                    if (getTrajectoryResultmessage.RobotBaseFrame != null)
+                    {
+                        trajectoryVisulizer.SetActiveRobotPosition(getTrajectoryResultmessage.RobotBaseFrame);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): RobotBaseFrame is null.");
+                    }
 
                     //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
                     trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
