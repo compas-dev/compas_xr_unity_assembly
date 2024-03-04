@@ -24,19 +24,24 @@ Register your Android/iOS app with [Firebase](https://firebase.google.com/docs/u
 1. Create a Firebase account (https://console.firebase.google.com)
 
 2. Create a new project in the Firebase console
+   
 ![Screenshot 2024-03-04 at 12 12 26](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/f958aafe-d239-4182-a9d2-6928e2ef7317)
 ![Screenshot 2024-03-04 at 12 11 34](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0bc3df26-59cd-4389-ba31-c49c27d8f450)
 ![Screenshot 2024-03-04 at 12 11 44](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/f3c0cd81-dac5-4c71-97ad-b2a28f5622bd)
 ![Screenshot 2024-03-04 at 12 12 09](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b0135279-cd4b-4fa5-be66-8cd6f4c10656)
 
-3. Associate your project to a Unity app by clicking the Unity icon. 
+4. Associate your project to a Unity app by clicking the Unity icon.
+   
 ![Screenshot 2024-03-04 at 12 45 05](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/67ec8475-cc0c-4256-b8ab-51454d35612e)
+
 -Here you can add both an Android and an iOS app to your project.
 - You should use ```com.ETHZ.cdf``` as the package name while you're testing.
 - If you do not use the prescribed package name you will need to update the bundle identifier as described in the *Optional: Update the Project Bundle Identifier below.*
+  
 ![Screenshot 2024-03-04 at 12 54 53](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/331d1ad5-4ccb-4bfa-9573-22e624ba21c7)
 
 - You will now be able to download your Firebase app config information for both platforms .json for Android and .plist for iOS
+- 
 ![Screenshot 2024-03-04 at 12 55 26](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/354c66a2-6c8a-4334-b8f8-ea04d5257303)
 
 
