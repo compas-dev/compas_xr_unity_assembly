@@ -82,6 +82,7 @@ const firebaseConfig = {
 ![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
 
 
+ 7. Generate the SHA1 key and copy it into your Firebase project.
     - After setting the keystore and key, as well as building the app once, you can generate a SHA1 by running this command in CMD (admin):
       
     ```
@@ -133,7 +134,7 @@ const firebaseConfig = {
 
    - In Player Settings, scroll down to Identification / Override Default Package Name/ and update Package Name to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - In Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
-     Alternatively, one can just Build to obtain the ```sdk``` and distribute it to Android devices.
+     Alternatively, one can just Build to obtain the ```apk``` and distribute it to Android devices.
    - If an error occurs, check player settings against default player settings depicted below:
 
    ![1](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9f6b28c8-be15-472c-bd90-d800e595abba)
