@@ -30,6 +30,7 @@ Register your Android/iOS app with [Firebase](https://firebase.google.com/docs/u
 ![Screenshot 2024-03-04 at 12 11 44](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/f3c0cd81-dac5-4c71-97ad-b2a28f5622bd)
 ![Screenshot 2024-03-04 at 12 12 09](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b0135279-cd4b-4fa5-be66-8cd6f4c10656)
 
+
 3. Associate your project to a Unity app by clicking the Unity icon.
    
 ![Screenshot 2024-03-04 at 12 45 05](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/67ec8475-cc0c-4256-b8ab-51454d35612e)
@@ -118,39 +119,19 @@ const firebaseConfig = {
    
 2. Open the Unity Project.
 
-3. Update the Project Bundle Identifier.
+3. Update the Project Settings
     - Select the File > Build Settings menu option.
-    - Select Android in the Platform list
-    - Click Player Settings.
-    - In the Player Settings panel scroll down to Bundle Identifier and update the value to the package name you provided when you registered your app with Firebase.
+    - Select Android or iOS in the Platform list and click Switch Platform to set the target platform.
+    - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
+    - Select the active platform and click Player Settings.
+    - In the Player Settings panel adjust the following settings accordingly for Android, respectively iOS
   
 ### Android
-(Unless you wish to test the project with the given credentials, please follow all steps below. Otherwise, skip to 7)
-Register your Android app with [Firebase](https://firebase.google.com/docs/unity/setup).
-1. Create a Unity project in the Firebase console.
 
-2. Associate your project to an app by clicking the Add app button, and selecting the Unity icon.
-    - You should use ```com.ETHZ.cdf``` as the package name while you're testing.
-    - If you do not use the prescribed package name you will need to update the bundle identifier as described in the
-      - *Optional: Update the Project Bundle Identifier below.*
-    - change the rules in ```Realtime Database``` to :
-
-```
-{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}
-```
-      
-7. Build for Android.
-    - Select the File > Build Settings menu option.
-    - Select Android in the Platform list.
-    - Click Switch Platform to select Android as the target platform.
-    - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
-    - Click Build and Run.
-    - If an error occurs check player settings against default player settings depicted below:
+   -  In Player Settings, scroll down to Identification / Override Default Package Name/ and update Package Name to the value of the Bundle Identifier you provided when you registered your app with Firebase.
+   - In Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
+     Alternatively, one can just Build to obtain the ```sdk``` and distribute it to Android devices.
+   - If an error occurs, check player settings against default player settings depicted below:
 
    ![1](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9f6b28c8-be15-472c-bd90-d800e595abba)
    ![2](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/b607ceba-24c9-4ea8-ad95-0c4107da7db8)
