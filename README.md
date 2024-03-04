@@ -209,6 +209,8 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 
 ![Screenshot 2024-03-04 at 18 29 06](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/1541047c-a754-45a9-9805-faf11a3ef0d4)
 
+![Screenshot 2024-02-20 at 10 40 10 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/6ef29efe-61f4-405d-a3ff-df393a4b77ad)
+
 ![Screenshot 2024-03-04 at 18 31 04](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/707281bb-0748-4dea-aeba-434219d81c0e)
 
 
