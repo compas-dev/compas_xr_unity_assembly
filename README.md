@@ -180,7 +180,7 @@ const firebaseConfig = {
    
    Most likely it will fail and you will need to do the following fixes:
 
-      ###1. In Xcode: 
+      ### 1. In Xcode: 
 
       - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
       - Sign in with your Apple ID.
@@ -193,13 +193,22 @@ const firebaseConfig = {
 ![Screenshot 2024-02-20 at 11 19 44 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/a9310653-0ee0-43d5-9b72-7901c3379327)
 
 
-      ###2. In Terminal:
+      ### 2. In Terminal:
 
       - Set the export path for gems as follows: ```export PATH="/Users/username/.gem/ruby/2.6.0/bin:$PATH"```
       - Install gem active support: ```gem install activesupport -v 6.1.7.6 --user-install```
 
 ![Screenshot 2024-02-20 at 11 01 53 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/7ccb26ac-dac4-4c23-b73f-ba210327f2a1)
 
+
+      ### 3. Back in Unity: 
+
+      - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
+      - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
+
+![Screenshot 2024-03-04 at 18 29 06](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/1541047c-a754-45a9-9805-faf11a3ef0d4)
+
+![Screenshot 2024-03-04 at 18 31 04](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/707281bb-0748-4dea-aeba-434219d81c0e)
 
 
 
