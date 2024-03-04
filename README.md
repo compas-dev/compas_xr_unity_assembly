@@ -16,6 +16,96 @@ Alternatively, they can also be added post-installation from "Add Modules".
 ![image](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/347d98fb-2103-49ab-baa0-659cd0316295)
 
 
+### Firebase
+
+
+Register your Android/iOS app with [Firebase](https://firebase.google.com/docs/unity/setup).
+
+1. Create a Firebase account (https://console.firebase.google.com)
+
+2. Create a new project in the Firebase console
+![Screenshot 2024-03-04 at 12 12 26](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/f958aafe-d239-4182-a9d2-6928e2ef7317)
+![Screenshot 2024-03-04 at 12 11 34](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0bc3df26-59cd-4389-ba31-c49c27d8f450)
+![Screenshot 2024-03-04 at 12 11 44](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/f3c0cd81-dac5-4c71-97ad-b2a28f5622bd)
+![Screenshot 2024-03-04 at 12 12 09](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b0135279-cd4b-4fa5-be66-8cd6f4c10656)
+
+3. Associate your project to a Unity app by clicking the Unity icon. 
+![Screenshot 2024-03-04 at 12 45 05](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/67ec8475-cc0c-4256-b8ab-51454d35612e)
+-Here you can add both an Android and an iOS app to your project.
+- You should use ```com.ETHZ.cdf``` as the package name while you're testing.
+- If you do not use the prescribed package name you will need to update the bundle identifier as described in the *Optional: Update the Project Bundle Identifier below.*
+![Screenshot 2024-03-04 at 12 54 53](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/331d1ad5-4ccb-4bfa-9573-22e624ba21c7)
+
+- You will now be able to download your Firebase app config information for both platforms .json for Android and .plist for iOS
+![Screenshot 2024-03-04 at 12 55 26](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/354c66a2-6c8a-4334-b8f8-ea04d5257303)
+
+
+4. Accessing Firebase config information afterwards
+    - In your Firebase console, navigate to Project Overview and click the gear icon.
+    - In the drop-down window select Project Settings
+  
+![Screenshot 2024-03-04 at 12 55 55](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5cf1d388-0efc-4ff8-9394-4fc2d390620c)
+
+    - In the project settings window under Your apps
+    - The Required Config Information is listed under the section SDK setup and configuration / ```google-services.json``` for Android, respectively ```GoogleService-Info.plist``` for iOS
+    - An example of these configurations is shown below:
+
+```
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAO_YVROUIc866BqgWgcBpPxUe6SVG5O9g",
+  authDomain: "cdf-project-f570f.firebaseapp.com",
+  databaseURL: "https://cdf-project-f570f-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "cdf-project-f570f",
+  storageBucket: "cdf-project-f570f.appspot.com",
+  messagingSenderId: "641027065982",
+  appId: "1:641027065982:web:20ca92f0a2326bc3dab02f",
+  measurementId: "G-RZ5BVHNGK8"
+};
+```
+
+5. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console. To generate a SHA1, first you will need to set the keystore in the Unity project.
+    - Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
+    - Select an existing keystore, or create a new keystore using the toggle.
+    - Select an existing key, or create a new key using ```Create a new key```.
+    - Build an apk to be able to generate the SHA1 key
+    - After setting the keystore and key, as well as building the app once, you can generate a SHA1 by running this command in CMD (admin):
+      
+    ```
+    keytool -list -v -keystore <path_to_keystore> -alias <key_name>
+    ```
+
+    - Copy the SHA1 digest string into your clipboard.
+    - Navigate to your Android App in your Firebase console.
+    - From the main console view, click on your Android App at the top, and open the settings page.
+    - Scroll down to your apps at the bottom of the page and click on Add Fingerprint.
+    - Paste the SHA1 digest of your key into the form. The SHA1 box will illuminate if the string is valid. If it's not valid, check that you have copied the entire SHA1 digest string.
+      
+6. Download the ```google-services.json``` file associated with your Firebase project from the console. This file contains the information mentioned above that, you need to connect your Android app to the Firebase backend, and will need to be included either in the FirebaseInitialize script in the Unity project or at the start of the app, before initializing Firebase. You will need to look for the following parameters:
+App id, api key, database url, storage bucket, and project id
+
+
+7. Optional: Update the Project Bundle Identifier.
+    - If you did not use ```com.ETHZ.cdf``` as the project package name you will need to update the sample's Bundle Identifier.
+    - Select the File > Build Settings menu option.
+    - Select Android in the Platform list
+    - Click Player Settings.
+    - In the Player Settings panel scroll down to Bundle Identifier and update the value to the package name you provided when you registered your app with Firebase.
+  
+8. Change the rules in ```Realtime Database``` to :
+
+```
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+
+
 
 
 
