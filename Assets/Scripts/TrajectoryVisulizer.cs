@@ -44,7 +44,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         
         //Find Objects for retreiving and storing the active robots in the scene
-        instantiateObjects = GameObject.Find("InstantiateObjects").GetComponent<InstantiateObjects>();
+        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         BuiltInRobotsParent = GameObject.Find("Robots");
         ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 

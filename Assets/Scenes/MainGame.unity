@@ -50019,6 +50019,7 @@ MonoBehaviour:
   Checkfirebase: {fileID: 1077438725447714118}
   QRLocalization: {fileID: 8767998526698590026}
   MqttTrajectoryReceiver: {fileID: 3555920155599777618}
+  TrajectoryVisulizer: {fileID: 3286733832950485788}
 --- !u!4 &5813617637826940773
 Transform:
   m_ObjectHideFlags: 0
@@ -56962,7 +56963,6 @@ MonoBehaviour:
   ActiveRobot: {fileID: 0}
   ActiveTrajectory: {fileID: 0}
   JointNames: []
-  URDFRenderComponents: []
 --- !u!1 &8444615727984397944
 GameObject:
   m_ObjectHideFlags: 0
