@@ -182,8 +182,8 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 
    ### 1. In Xcode: 
 
-   - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
-   - Sign in with your Apple ID.
+      - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
+      - Sign in with your Apple ID.
 
 ![Screenshot 2024-02-20 at 11 08 41 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b711a51-1817-4589-9a30-2123fb270cb0)
 
