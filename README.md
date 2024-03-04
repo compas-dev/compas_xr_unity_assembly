@@ -154,7 +154,7 @@ const firebaseConfig = {
     - Select the active platform and click Player Settings.
     - In the Player Settings panel adjust the following settings accordingly for Android, respectively iOS
   
-### Android
+   ### Unity - Android
 
    - In Player Settings, scroll down to Identification / Override Default Package Name/ and update Package Name to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - In Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
