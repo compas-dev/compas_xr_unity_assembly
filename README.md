@@ -180,7 +180,7 @@ const firebaseConfig = {
    
    Most likely it will fail and you will need to do the following fixes:
 
-      ### 1. In Xcode: 
+   ### 1. In Xcode: 
 
       - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
       - Sign in with your Apple ID.
@@ -193,7 +193,7 @@ const firebaseConfig = {
 ![Screenshot 2024-02-20 at 11 19 44 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/a9310653-0ee0-43d5-9b72-7901c3379327)
 
 
-      ### 2. In Terminal:
+   ### 2. In Terminal:
 
       - Set the export path for gems as follows: ```export PATH="/Users/username/.gem/ruby/2.6.0/bin:$PATH"```
       - Install gem active support: ```gem install activesupport -v 6.1.7.6 --user-install```
@@ -201,7 +201,7 @@ const firebaseConfig = {
 ![Screenshot 2024-02-20 at 11 01 53 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/7ccb26ac-dac4-4c23-b73f-ba210327f2a1)
 
 
-      ### 3. Back in Unity: 
+   ### 3. Back in Unity: 
 
       - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
       - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
@@ -226,29 +226,27 @@ const firebaseConfig = {
     ###Note - it is possible to build for iOS from a Windows computer, but the resulting folder needs to go through a MacBook with Xcode in order to be installed or distributed on an iOS device.
               - ideally one would Build or Build and Run the project from a MacBook that has Xcode installed.
     - In File > Build Settings click on Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
-  
-<img width="604" alt="Screenshot 2024-02-16 at 14 28 06" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/16aec886-085d-4db1-b9e2-88f0d5613b1b">
-
-8. Optional: Unless you have Xcode installed,
-   - Go to your MacBook's AppStore and install Xcode
-   - Install necessary iOS modules
+    
+![Screenshot 2024-03-04 at 18 35 23](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b6eab44a-526d-4875-9f99-1410c9d613ec)
 
 
-8. Install on iOS Device with Xcode
-   - Open the file with the last build on your computer
-   - Select the "Name".xcworkspace file and open it with Xcode
+   ### 4. In Finder:
+
+   - Open the Builds folder and find the file with the last build on your computer, eg. ```01```
+   - Select the ```BuildName".xcworkspace``` file and open it with Xcode. Make sure you open the ```.xcworkspace``` and not the.xcodeproj
+
+   ### 5. In Xcode: 
+   
    - In Xcode click the file's name on the left column to open the Settings
-   - Under Signing and Capabilities \ All, tick ```Automatically manage signing``` and confirm ```Enable Automatic```
-   - 
-     ![Screenshot 2024-02-16 at 14 51 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2d47b798-3f99-4662-b858-2a358d44b79a)
+   - Under Signing and Capabilities > All, tick ```Automatically manage signing``` and confirm ```Enable Automatic```
+
+![Screenshot 2024-02-20 at 11 08 07 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9f7da855-0d4b-4e3b-8abd-4626b66a9651)
 
    - Under Team, open the drop-down down and select the development team/individual
    - Optional: this is the last chance to adjust the Bundle Identifier and App Name before installing
-   - Connect iOS device by cable
-   - Unless the device is already enabled as Developer, the possibility to enable the mode opens after connecting to Xcode
-   - At the top, make sure the device is connected and click the play triangle to start building and installing on device
+   - At the top, make sure the iOS device is connected and click the play triangle to start building and installing on device
   
-     ![Screenshot 2024-02-16 at 14 48 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/c74fa3ac-bf67-45bb-ac26-9328f617de50)
+![Screenshot 2024-02-16 at 14 48 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/c74fa3ac-bf67-45bb-ac26-9328f617de50)
 
      
 
