@@ -107,7 +107,7 @@ const firebaseConfig = {
 ![Screenshot 2024-03-04 at 17 18 33](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5bee71ab-430c-4ede-9128-78343ff565d1)
 
 
-### the following steps are specific to Android development if building from Unity    
+### *The following steps are specific to Android development if building from Unity:   
 
 8. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console.
    To generate a SHA1, first you will need to set the keystore in the Unity project.
