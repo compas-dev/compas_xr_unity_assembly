@@ -149,7 +149,7 @@ const firebaseConfig = {
 
 3. Update the Project Settings
     - Select the File > Build Settings menu option.
-    - Select Android or iOS in the Platform list and click Switch Platform to set the target platform.
+    - Select ```Android``` or ```iOS``` in the Platform list and click Switch Platform to set the target platform.
     - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
     - Select the active platform and click Player Settings.
     - In the Player Settings panel adjust the following settings accordingly for Android, respectively iOS
@@ -157,19 +157,19 @@ const firebaseConfig = {
    ### Unity - Android
 
    - In Player Settings, under the Android panel: scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
-   - In Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
+   - In File > Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
      Alternatively, one can just Build to obtain the ```apk``` and distribute it to Android devices.
    - If an error occurs, check player settings against default player settings depicted below:
 
-   ![1](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9f6b28c8-be15-472c-bd90-d800e595abba)
-   ![2](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/b607ceba-24c9-4ea8-ad95-0c4107da7db8)
-   ![3](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/bba71c84-8296-41ff-8739-b9034298ec35)
-   ![4](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/08849be6-852b-4831-95a0-cc55e39520d4)
-   ![5](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/6876b6f9-3412-4c52-824a-111b0ed6abb3)
-   ![6](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/2387f5f6-864c-4278-8f97-bf61440ebda2)
-   ![7](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9b6efd26-9adf-4a89-ad15-285423f39dcb)
-   ![8](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/fbe00a7a-2182-4031-ae9b-d5c689baf924)
-   ![9](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/466a5be1-bfde-4336-b6d9-b83d8ec21fbe)
+![1](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9f6b28c8-be15-472c-bd90-d800e595abba)
+![2](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/b607ceba-24c9-4ea8-ad95-0c4107da7db8)
+![3](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/bba71c84-8296-41ff-8739-b9034298ec35)
+![4](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/08849be6-852b-4831-95a0-cc55e39520d4)
+![5](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/6876b6f9-3412-4c52-824a-111b0ed6abb3)
+![6](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/2387f5f6-864c-4278-8f97-bf61440ebda2)
+![7](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/9b6efd26-9adf-4a89-ad15-285423f39dcb)
+![8](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/fbe00a7a-2182-4031-ae9b-d5c689baf924)
+![9](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/466a5be1-bfde-4336-b6d9-b83d8ec21fbe)
 
   
    ### Unity - iOS 
@@ -178,22 +178,19 @@ const firebaseConfig = {
    - Scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - Scroll down to ```Camera Usage Description``` and write a message describing the need to use the camera, such as ```"please allow camera use for AR"```.
    - Scroll down to ```iOS version``` and pick the adequate version (min. 14 to support current project packages).
-
-   ![Screenshot 2024-02-16 at 11 56 27](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/625d7f8f-12d1-424f-9e54-c420b6986748)
-
    - If an error occurs, during a build, check player settings against default player settings depicted below:
-   
+![Screenshot 2024-03-04 at 17 41 14](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e9eff300-2a88-4700-9a56-c9c2fd2c96d6)
+![Screenshot 2024-03-04 at 17 41 28](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b3242215-34d1-44bd-918d-5e4a2d41262d)
+![Screenshot 2024-03-04 at 17 41 41](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2be88dcf-7e32-41ad-8965-3815a1b0ed7b)
 
-6. Build for iOS.
-    - Select the File > Build Settings menu option.
-    - Select iOS in the Platform list.
-    - Click Switch Platform to select iOS as the target platform.
-    - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
-    - Click Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
   
-      <img width="604" alt="Screenshot 2024-02-16 at 14 28 06" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/16aec886-085d-4db1-b9e2-88f0d5613b1b">
+    ### *Note - it is possible to build for iOS from a Windows computer, but the resulting folder needs to go through a MacBook with Xcode in order to be installed or distributed on an iOS device.
+              - ideally one would Build or Build and Run the project from a MacBook that has Xcode installed.
+    - In File > Build Settings click on Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
+  
+<img width="604" alt="Screenshot 2024-02-16 at 14 28 06" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/16aec886-085d-4db1-b9e2-88f0d5613b1b">
 
-8. Optional: Unless you have Xcode installed,
+8. *Optional: Unless you have Xcode installed,
    - Go to your MacBook's AppStore and install Xcode
    - Install necessary iOS modules
 
