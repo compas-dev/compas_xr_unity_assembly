@@ -248,7 +248,7 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
    - Optional: this is the last chance to adjust the Bundle Identifier and App Name before installing
    - At the top, make sure the iOS device is connected and click the play triangle to start building and installing on device
   
-![Screenshot 2024-02-16 at 14 48 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/c74fa3ac-bf67-45bb-ac26-9328f617de50)
+![305433081-c74fa3ac-bf67-45bb-ac26-9328f617de50](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9cddcb83-b85a-45ae-9dbd-eba0fad7945d)
 
 
    - The first time you build with Xcode, it will ask for the MacBook's password for codesign. Click on Always Allow as many times as the pop up appears.
