@@ -182,8 +182,8 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 
    ### 1. In Xcode: 
 
-      - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
-      - Sign in with your Apple ID.
+   - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
+   - Sign in with your Apple ID.
 
 ![Screenshot 2024-02-20 at 11 08 41 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b711a51-1817-4589-9a30-2123fb270cb0)
 
@@ -249,6 +249,11 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
    - At the top, make sure the iOS device is connected and click the play triangle to start building and installing on device
   
 ![Screenshot 2024-02-16 at 14 48 31](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/c74fa3ac-bf67-45bb-ac26-9328f617de50)
+
+
+   - The first time you build with Xcode, it will ask for the MacBook's password for codesign. Click on Always Allow as many times as the pop up appears.
+     
+![Screenshot 2024-02-20 at 11 41 05 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9feb24a9-2d88-4aed-8d62-6a2a7f5f88d2)
 
      
 
