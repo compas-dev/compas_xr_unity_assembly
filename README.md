@@ -174,7 +174,7 @@ const firebaseConfig = {
   
    ### Unity - iOS 
 
-   Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver. 
+Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver. 
 ![Screenshot 2024-02-20 at 10 44 26 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84193ecc-35bf-44fd-8e56-f6c53edbce43)
    
    
@@ -182,29 +182,29 @@ const firebaseConfig = {
 
    ### 1. In Xcode: 
 
-      - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
-      - Sign in with your Apple ID.
+   - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
+   - Sign in with your Apple ID.
 
 ![Screenshot 2024-02-20 at 11 08 41 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b711a51-1817-4589-9a30-2123fb270cb0)
 
-      - Connect your iOS device to the laptop via a USB cable and unless your device is already in Developer Mode, scroll down and see the instructions for Developer Devices.
-      - Install necessary modules in Xcode (e.g. iOS 17.2)
+   - Connect your iOS device to the laptop via a USB cable and unless your device is already in Developer Mode, scroll down and see the instructions for Developer Devices.
+   - Install necessary modules in Xcode (e.g. iOS 17.2)
 
 ![Screenshot 2024-02-20 at 11 19 44 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/a9310653-0ee0-43d5-9b72-7901c3379327)
 
 
    ### 2. In Terminal:
 
-      - Set the export path for gems as follows: ```export PATH="/Users/username/.gem/ruby/2.6.0/bin:$PATH"```
-      - Install gem active support: ```gem install activesupport -v 6.1.7.6 --user-install```
+   - Set the export path for gems as follows: ```export PATH="/Users/username/.gem/ruby/2.6.0/bin:$PATH"```
+   - Install gem active support: ```gem install activesupport -v 6.1.7.6 --user-install```
 
 ![Screenshot 2024-02-20 at 11 01 53 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/7ccb26ac-dac4-4c23-b73f-ba210327f2a1)
 
 
    ### 3. Back in Unity: 
 
-      - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
-      - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
+    - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
+    - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
 
 ![Screenshot 2024-03-04 at 18 29 06](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/1541047c-a754-45a9-9805-faf11a3ef0d4)
 
@@ -213,6 +213,7 @@ const firebaseConfig = {
 
 
    In the Player Settings, under the iOS panel:
+   
    - Scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - Scroll down to ```Camera Usage Description``` and write a message describing the need to use the camera, such as ```"please allow camera use for AR"```.
    - Scroll down to ```iOS version``` and pick the adequate version (min. 14 to support current project packages).
@@ -223,9 +224,10 @@ const firebaseConfig = {
 ![Screenshot 2024-03-04 at 17 41 41](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2be88dcf-7e32-41ad-8965-3815a1b0ed7b)
 
   
-    ###Note - it is possible to build for iOS from a Windows computer, but the resulting folder needs to go through a MacBook with Xcode in order to be installed or distributed on an iOS device.
-              - ideally one would Build or Build and Run the project from a MacBook that has Xcode installed.
-    - In File > Build Settings click on Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
+   ### Note - it is possible to build for iOS from a Windows computer, but the resulting folder needs to go through a MacBook with Xcode in order to be installed or distributed on an iOS device.
+   
+   - Ideally one would Build or Build and Run the project from a MacBook that has Xcode installed.
+   - In File > Build Settings click on Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
     
 ![Screenshot 2024-03-04 at 18 35 23](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b6eab44a-526d-4875-9f99-1410c9d613ec)
 
