@@ -42,7 +42,7 @@ Register your Android/iOS app with [Firebase](https://firebase.google.com/docs/u
 
 4. Download the ```google-services.json``` file associated with your Firebase project  for Android and ```GoogleService-Info.plist``` for iOS. These files contain the information that you need to connect your Android app to the Firebase backend, and will need to be included either in the FirebaseInitialize script in the Unity project or at the start of the app, before initializing Firebase. You will need to look for the following parameters:
 App id, api key, database url, storage bucket, and project id
-  
+
 ![Screenshot 2024-03-04 at 12 55 26](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/354c66a2-6c8a-4334-b8f8-ea04d5257303)
 
  - An example of these configurations is shown below:
@@ -142,7 +142,7 @@ const firebaseConfig = {
 
 1. Open Unity Hub. In Projects, click on Open(MacOS) or ADD(Windows). Locate the folder you downloaded from GitHub `compas_xr_unity` on the drive and add it.
 
-   <img width="781" alt="Screenshot 2023-10-30 at 11 34 07" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/cac60d2a-8f64-466f-a8da-d92565934d21">
+<img width="781" alt="Screenshot 2023-10-30 at 11 34 07" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/cac60d2a-8f64-466f-a8da-d92565934d21">
 
    
 2. Open the Unity Project.
@@ -174,23 +174,53 @@ const firebaseConfig = {
   
    ### Unity - iOS 
 
+   Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver. 
+![Screenshot 2024-02-20 at 10 44 26 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84193ecc-35bf-44fd-8e56-f6c53edbce43)
+   
+   
+   Most likely it will fail and you will need to do the following fixes:
+
+      ###1. In Xcode: 
+
+      - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
+      - Sign in with your Apple ID.
+
+![Screenshot 2024-02-20 at 11 08 41 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b711a51-1817-4589-9a30-2123fb270cb0)
+
+      - Connect your iOS device to the laptop via a USB cable and unless your device is already in Developer Mode, scroll down and see the instructions for Developer Devices.
+      - Install necessary modules in Xcode (e.g. iOS 17.2)
+
+![Screenshot 2024-02-20 at 11 19 44 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/a9310653-0ee0-43d5-9b72-7901c3379327)
+
+
+      ###2. In Terminal:
+
+      - Set the export path for gems as follows: ```export PATH="/Users/username/.gem/ruby/2.6.0/bin:$PATH"```
+      - Install gem active support: ```gem install activesupport -v 6.1.7.6 --user-install```
+
+![Screenshot 2024-02-20 at 11 01 53 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/7ccb26ac-dac4-4c23-b73f-ba210327f2a1)
+
+
+
+
    In the Player Settings, under the iOS panel:
    - Scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - Scroll down to ```Camera Usage Description``` and write a message describing the need to use the camera, such as ```"please allow camera use for AR"```.
    - Scroll down to ```iOS version``` and pick the adequate version (min. 14 to support current project packages).
    - If an error occurs, during a build, check player settings against default player settings depicted below:
+     
 ![Screenshot 2024-03-04 at 17 41 14](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/e9eff300-2a88-4700-9a56-c9c2fd2c96d6)
 ![Screenshot 2024-03-04 at 17 41 28](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/b3242215-34d1-44bd-918d-5e4a2d41262d)
 ![Screenshot 2024-03-04 at 17 41 41](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2be88dcf-7e32-41ad-8965-3815a1b0ed7b)
 
   
-    ### *Note - it is possible to build for iOS from a Windows computer, but the resulting folder needs to go through a MacBook with Xcode in order to be installed or distributed on an iOS device.
+    ###Note - it is possible to build for iOS from a Windows computer, but the resulting folder needs to go through a MacBook with Xcode in order to be installed or distributed on an iOS device.
               - ideally one would Build or Build and Run the project from a MacBook that has Xcode installed.
     - In File > Build Settings click on Build and select a folder location on your drive for the build. Ideally you should create a folder called Builds and within it, individual files for each build.
   
 <img width="604" alt="Screenshot 2024-02-16 at 14 28 06" src="https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/16aec886-085d-4db1-b9e2-88f0d5613b1b">
 
-8. *Optional: Unless you have Xcode installed,
+8. Optional: Unless you have Xcode installed,
    - Go to your MacBook's AppStore and install Xcode
    - Install necessary iOS modules
 
