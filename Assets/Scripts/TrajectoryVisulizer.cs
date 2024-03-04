@@ -111,14 +111,20 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
-    public void SetActiveRobotPosition(Frame robotBaseFrame)
+    public void SetActiveRobotPosition(Frame robotBaseFrame, ref GameObject ActiveRobotObjects)
     {
-        Debug.Log($"SetActiveRobotPosition: Setting the active robot position based on the frame data. {robotBaseFrame.GetType()}");
-        Debug.Log($"SetActiveRobotPosition: robotBaseFrame information: {JsonConvert.SerializeObject(robotBaseFrame)}");
-        Debug.Log($"SetActiveRobotPosition: robotBaseFrame point information: {robotBaseFrame.point}, {robotBaseFrame.point.GetType()}");
-        Debug.Log($"SetActiveRobotPosition: robotBaseFrame point information: {robotBaseFrame.xaxis}, {robotBaseFrame.xaxis.GetType()}");
-        Debug.Log($"SetActiveRobotPosition: robotBaseFrame point information: {robotBaseFrame.yaxis}, {robotBaseFrame.yaxis.GetType()}");
+        //Fetch position data from the dictionary
+        Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
 
+        //Fetch rotation data from the dictionary
+        InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+        
+        //Convert Firebase rotation data to Quaternion rotation. Additionally
+        Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
+
+        //Set the position and rotation of the active robot object based on the QR code data
+        ActiveRobotObjects.transform.position = positionData;
+        ActiveRobotObjects.transform.rotation = rotationQuaternion;
 
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }

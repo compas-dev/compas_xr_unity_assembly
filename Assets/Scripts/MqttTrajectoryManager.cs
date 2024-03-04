@@ -317,7 +317,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     //TODO: SET THE POSITION OF ACTIVE ROBOT BEFORE INSTANTIATION BASED ON RECEIVED BASE POSITION FROM TRAJECTORY
                     if (getTrajectoryResultmessage.RobotBaseFrame != null)
                     {
-                        trajectoryVisulizer.SetActiveRobotPosition(getTrajectoryResultmessage.RobotBaseFrame);
+                        trajectoryVisulizer.SetActiveRobotPosition(getTrajectoryResultmessage.RobotBaseFrame, ref trajectoryVisulizer.ActiveRobot);
                     }
                     else
                     {
