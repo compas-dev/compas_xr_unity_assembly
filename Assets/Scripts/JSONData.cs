@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEngine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace JSON
 {   
@@ -50,22 +52,57 @@ namespace JSON
             //Create a new instance of the class
             Frame frame = new Frame();
 
-            //Convert System.double items to float for use in instantiation
-            List<object> pointslist = frameDataDict["point"] as List<object>;
-            List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
-            List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict)}");
+            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict["point"])}");
+            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict["xaxis"])}");
+            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict["yaxis"])}");
+            Debug.Log($"Frame Data type: {frameDataDict.GetType()}");
+            Debug.Log($"Frame Data Dictionary: {JsonConvert.SerializeObject(frameDataDict)}");
+            Debug.Log("Frame Data Dictionary: " + frameDataDict["point"].GetType() + " " + frameDataDict["xaxis"].GetType() + " " + frameDataDict["yaxis"].GetType() + " "); //TODO: THIS RETURNS AN ARRAY TYPE
 
-            if (pointslist != null && xaxislist != null && yaxislist != null)
+            if (frameDataDict["point"] is List<object> && frameDataDict["xaxis"] is List<object> && frameDataDict["yaxis"] is List<object>)
             {
-                frame.point = pointslist.Select(Convert.ToSingle).ToArray();
-                frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-                frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+                //Convert System.double items to float for use in instantiation
+                List<object> pointslist = frameDataDict["point"] as List<object>;
+                List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
+                List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+
+                if (pointslist != null && xaxislist != null && yaxislist != null)
+                {
+                    frame.point = pointslist.Select(Convert.ToSingle).ToArray();
+                    frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
+                    frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+                }
+                else
+                {
+                    Debug.LogError("One of the Frame lists is null");
+                }
+            }
+            else if(frameDataDict["point"] is float[] && frameDataDict["xaxis"] is float[] && frameDataDict["yaxis"] is float[])
+            {
+                frame.point = (float[])frameDataDict["point"];
+                frame.xaxis = (float[])frameDataDict["xaxis"];
+                frame.yaxis = (float[])frameDataDict["yaxis"];
+            }
+            else if(frameDataDict["point"] is JArray && frameDataDict["xaxis"] is JArray && frameDataDict["yaxis"] is JArray)
+            {
+                JArray pointsArray = frameDataDict["point"] as JArray;
+                JArray xaxisArray = frameDataDict["xaxis"] as JArray;
+                JArray yaxisArray = frameDataDict["yaxis"] as JArray;
+
+                // Convert JArrays to arrays of floats
+                float[] points = pointsArray.Select(token => (float)token).ToArray();
+                float[] xaxis = xaxisArray.Select(token => (float)token).ToArray();
+                float[] yaxis = yaxisArray.Select(token => (float)token).ToArray();
+
+                frame.point = points;
+                frame.xaxis = xaxis;
+                frame.yaxis = yaxis;
             }
             else
             {
-                Debug.LogError("One of the Frame lists is null");
+                Debug.LogError("FrameParse: Frame Data is not a List, Array, or JArray.");
             }
-
             return frame;
         }
 

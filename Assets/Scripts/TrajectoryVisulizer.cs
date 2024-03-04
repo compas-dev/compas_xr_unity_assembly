@@ -114,6 +114,12 @@ public class TrajectoryVisulizer : MonoBehaviour
     public void SetActiveRobotPosition(Frame robotBaseFrame)
     {
         Debug.Log($"SetActiveRobotPosition: Setting the active robot position based on the frame data. {robotBaseFrame.GetType()}");
+        Debug.Log($"SetActiveRobotPosition: robotBaseFrame information: {JsonConvert.SerializeObject(robotBaseFrame)}");
+        Debug.Log($"SetActiveRobotPosition: robotBaseFrame point information: {robotBaseFrame.point}, {robotBaseFrame.point.GetType()}");
+        Debug.Log($"SetActiveRobotPosition: robotBaseFrame point information: {robotBaseFrame.xaxis}, {robotBaseFrame.xaxis.GetType()}");
+        Debug.Log($"SetActiveRobotPosition: robotBaseFrame point information: {robotBaseFrame.yaxis}, {robotBaseFrame.yaxis.GetType()}");
+
+
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }
 

@@ -524,7 +524,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     }
     async Task TrajectoryApprovalTimeout(string elementID, float timeDurationSeconds)
     {
-        Debug.Log("MQTT: Trajectory Approval Timeout");
+        Debug.Log("MQTT: Trajectory Approval Timeout Started.");
         
         await Task.Delay(TimeSpan.FromSeconds(timeDurationSeconds));
 

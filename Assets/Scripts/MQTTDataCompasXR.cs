@@ -523,9 +523,11 @@ namespace MQTTDataCompasXR
             var elementID = jsonObject["element_id"].ToString();
 
             //TODO: GET FRAME INFORMATION FROM JSONSTRING
-            Frame robotBaseFrame = Frame.Parse(jsonObject["robot_base_frame"] as Dictionary<string, object>);
+            var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
+            Debug.Log($"Robot baseframe type: {robotBaseFrameDict.GetType()}");
+            Debug.Log($"Robot baseframe data: {JsonConvert.SerializeObject(robotBaseFrameDict)}");
+            Frame robotBaseFrame = Frame.Parse(robotBaseFrameDict);
             Debug.Log($"Robot baseframe: point: {robotBaseFrame.point}, xaxis {robotBaseFrame.xaxis}, yaxis {robotBaseFrame.yaxis}");
-
             if (robotBaseFrame == null)
             {
                 throw new Exception("Robot Base Frame is null");
