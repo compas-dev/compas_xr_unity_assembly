@@ -145,6 +145,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         //If the previous version is not null find it and color it inactive
         if(previousSliderValue != null)
         {
+            Debug.Log ("ColorRobotConfigfromSlider: Previous slider value is not null.");
             //Find the parent associated with the slider value
             GameObject previousRobotGameObject = ActiveTrajectory.FindObject($"Config {previousSliderValue}");
 
@@ -154,6 +155,11 @@ public class TrajectoryVisulizer : MonoBehaviour
         
         //Find the parent associated with the slider value
         GameObject robotGameObject = ActiveTrajectory.FindObject($"Config {sliderValue}");
+
+        if (robotGameObject == null)
+        {
+            Debug.Log($"ColorRobotConfigfromSlider: Robot GameObject not found for Config {sliderValue}.");
+        }
 
         //Color the robot active robot
         ColorRobot(robotGameObject, activeMaterial, ref URDFRenderComponents);
@@ -175,10 +181,18 @@ public class TrajectoryVisulizer : MonoBehaviour
             }
         }
 
+        Debug.Log("ColorRobot: Coloring Robot, URDFRenderComponents list is not empty.");
+        Debug.Log($"ColorRobot: URDFRenderComponents {JsonConvert.SerializeObject(URDFRenderComponents)}.");
+        Debug.Log($"ColorRobot: URDFRenderComponents Count {URDFRenderComponents.Count}.");
         //Loop through the list objects and color them
         foreach (string gameObjectName in URDFRenderComponents)
         {
-            Debug.Log("ColorRobot: Coloring from URDFRendererComponents list.");
+            // Debug.Log("ColorRobot: Coloring from URDFRendererComponents list.");
+            // Debug.Log($"ColorRobot: URDF COMPONENT LIST = {JsonConvert.SerializeObject(URDFRenderComponents)}.");
+            // Debug.Log($"ColorRobot: Coloring {gameObjectName}.");
+            // Debug.Log("ColorRobot: Material is " + material.name + ".");
+            Debug.Log($"ColorRobot: Coloring Robot {RobotParent.name} with Material {material.name}.");
+
             //Find the object with the name
             GameObject gameObject = RobotParent.FindObject(gameObjectName);
 
@@ -186,7 +200,9 @@ public class TrajectoryVisulizer : MonoBehaviour
             if (gameObject)
             {
                 //Get the mesh renderer component from the object
-                MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+                MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
+
+                Debug.Log($"ColorRobot: HERE Found MeshRenderer for {gameObjectName}.");
 
                 //If the mesh renderer is found, color it
                 if (meshRenderer)
@@ -210,7 +226,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             // If found, do something with the MeshRenderer, like add it to a list
             Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name}");
-            URDFRenderComponents.Add(meshRenderer.gameObject.name);
+            URDFRenderComponents.Add(currentTransform.gameObject.name);
         }
 
         // Traverse through all child game objects recursively
