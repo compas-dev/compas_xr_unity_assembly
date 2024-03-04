@@ -64,14 +64,14 @@ const firebaseConfig = {
 5. Accessing Firebase config information afterwards
     - In your Firebase console, navigate to Project Overview and click the gear icon.
     - In the drop-down window select Project Settings
+    - In the Project Settings window under Your apps
+    - The required config information is listed under the section SDK setup and configuration -  ```google-services.json``` for Android, respectively ```GoogleService-Info.plist``` for iOS
   
 ![Screenshot 2024-03-04 at 12 55 55](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5cf1d388-0efc-4ff8-9394-4fc2d390620c)
 
-    - In the project settings window under Your apps
-    - The Required Config Information is listed under the section SDK setup and configuration -  ```google-services.json``` for Android, respectively ```GoogleService-Info.plist``` for iOS
-   
+    
 
-5. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console. To generate a SHA1, first you will need to set the keystore in the Unity project.
+6. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console. To generate a SHA1, first you will need to set the keystore in the Unity project.
     - Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
     - Select an existing keystore, or create a new keystore using the toggle.
  
@@ -95,7 +95,7 @@ const firebaseConfig = {
     - Paste the SHA1 digest of your key into the form. The SHA1 box will illuminate if the string is valid. If it's not valid, check that you have copied the entire SHA1 digest string.
     
 
-6. Change the rules in ```Realtime Database``` to :
+7. Change the rules in ```Realtime Database``` to :
 
 ```
 {
