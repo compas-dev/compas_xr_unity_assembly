@@ -71,11 +71,28 @@ const firebaseConfig = {
 ![Screenshot 2024-03-04 at 12 55 55](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5cf1d388-0efc-4ff8-9394-4fc2d390620c)
 
 
-6. In the Project Overview, under ```All products``` select and add the following: Authentication, Realtime Database and Storage.
+6. In the Project Overview, under ```All products``` click to add the following: Authentication, Realtime Database and Storage.
 
 ![Screenshot 2024-03-04 at 16 45 08](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0f7d0961-e7cf-4c5b-b9f7-943d25e5edb8)
 
-7. Change the rules in ```Realtime Database``` to :
+
+7. Create a Database
+
+   - In Project Overview, under Project shortcuts, click on ```Realtime Database```
+   - Click on Create Database
+   - Set the Databse location according to your needs and ```Start in locked mode```
+   
+
+![Screenshot 2024-03-04 at 17 04 10](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b26269e-78c5-4ddb-aace-5ad31d072369)
+
+![Screenshot 2024-03-04 at 17 04 27](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/890bcbbc-1b47-4abc-8724-975256c49a03)
+
+![Screenshot 2024-03-04 at 17 04 59](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9564497f-fab5-4cf6-ad23-6f77ef19e5c3)
+
+
+8. Change the rules in ```Realtime Database``` to  allow writing.
+
+   - In Project Shortcuts, under Realtime Database, click on ```Rules``` and change ```false``` to ```true``` and ```Publish```
 
 ```
 {
@@ -85,6 +102,11 @@ const firebaseConfig = {
   }
 }
 ```
+
+![Screenshot 2024-03-04 at 17 18 14](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/1f2acb6e-fc26-4814-aff3-7755553e126f)
+![Screenshot 2024-03-04 at 17 18 33](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5bee71ab-430c-4ede-9128-78343ff565d1)
+
+
     
 
 8. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console.
