@@ -98,8 +98,6 @@ public class TrajectoryVisulizer : MonoBehaviour
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
-                Debug.Log($"VisulizeRobotTrajectory: Visulizing configuration {i} for {trajectoryID} with trajectory count of {TrajectoryConfigs[i].Count}.");
-                Debug.Log($"VisulizeRobotTrajectory: Actual Configuration {JsonConvert.SerializeObject(TrajectoryConfigs[i])}.");
                 VisulizeRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names);
 
                 //Set temporary Robots parent to the ActiveRobot.
@@ -113,18 +111,17 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
-    //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS. IF I CAN COORDINATE WITH THE PLANNING.
+    //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS + JointNames?. IF I CAN COORDINATE WITH THE PLANNING... Problem is this locks it into only working for compas... less open for other libraries.
     public void VisulizeRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
+        Debug.Log($"VisulizeRobotConfig: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
+        
         //Get the number of joints in the list
         int configCount = config.Count;
-        Debug.Log($"VisulizeRobotConfig: Joint Names Count {jointNames.Count} found in the robotToConfigure.");
-        Debug.Log($"VisulizeRobotConfig: Config Count {configCount} found in the robotToConfigure.");
 
         //Find the parent object for holding trajectory Objects
         for (int i = 0; i < configCount; i++) //TODO: LOOP THROUGH THE JOINTS OF THE URDF BY NAME.
         {
-            Debug.Log("THIS IS I " + i);
             GameObject joint = robotToConfigure.FindObject(jointNames[i]); //TODO: FIND OBJECT WITH A SPECIFIC JOINT NAME FROM THIS URDF.
 
             if (joint)
@@ -190,17 +187,10 @@ public class TrajectoryVisulizer : MonoBehaviour
             }
         }
 
-        Debug.Log("ColorRobot: Coloring Robot, URDFRenderComponents list is not empty.");
-        Debug.Log($"ColorRobot: URDFRenderComponents {JsonConvert.SerializeObject(URDFRenderComponents)}.");
-        Debug.Log($"ColorRobot: URDFRenderComponents Count {URDFRenderComponents.Count}.");
         //Loop through the list objects and color them
         foreach (KeyValuePair<string, string> component in URDFRenderComponents)
         {
-            // Debug.Log("ColorRobot: Coloring from URDFRendererComponents list.");
-            // Debug.Log($"ColorRobot: URDF COMPONENT LIST = {JsonConvert.SerializeObject(URDFRenderComponents)}.");
-            // Debug.Log($"ColorRobot: Coloring {gameObjectName}.");
-            // Debug.Log("ColorRobot: Material is " + material.name + ".");
-            Debug.Log($"ColorRobot: Coloring Robot {RobotParent.name} with Material {material.name}.");
+            //Get the name of the object associated with the mesh renderer
             string gameObjectName = component.Value;
 
             //Find the object with the name
@@ -210,9 +200,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             if (gameObject)
             {
                 //Get the mesh renderer component from the object
-                MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>(); //TODO: USED GET COMPONENT INSTEAD OF GETCOMPONOENTINCHILDREN
-
-                Debug.Log($"ColorRobot: HERE Found MeshRenderer for {gameObject}.");
+                MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
 
                 //If the mesh renderer is found, color it
                 if (meshRenderer)
@@ -231,19 +219,17 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         Debug.Log("FindMeshRenderers: Searching through URDF for MeshRenderers.");
         // Check if the current GameObject has a MeshRenderer component
-        MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>(); //TODO: USED GET COMPONENT INSTEAD OF GETCOMPONOENTINCHILDREN
+        MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
 
         if (meshRenderer != null)
         {
-
             //InstanceID of the MeshRenderer
             int instanceID = meshRenderer.GetInstanceID();
-            Debug.Log($"FindMeshRenderers: InstanceID = {instanceID}.");
 
             // If found, do something with the MeshRenderer, like add it to a list
             if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
             {
-                Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name}");
+                Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name} and renaming to {meshRenderer.gameObject.name + $"_{instanceID.ToString()}"}.");
                 meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
                 URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
             }
