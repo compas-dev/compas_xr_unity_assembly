@@ -72,7 +72,8 @@ const firebaseConfig = {
 
     
 
-6. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console. To generate a SHA1, first you will need to set the keystore in the Unity project.
+6. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console.
+   To generate a SHA1, first you will need to set the keystore in the Unity project.
     - Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
     - Select an existing keystore, or create a new keystore using the toggle.
     - Select an existing key, or create a new key using ```Create a new key```.
@@ -100,7 +101,7 @@ const firebaseConfig = {
    
     
 
-7. Change the rules in ```Realtime Database``` to :
+8. Change the rules in ```Realtime Database``` to :
 
 ```
 {
