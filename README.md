@@ -70,9 +70,24 @@ const firebaseConfig = {
   
 ![Screenshot 2024-03-04 at 12 55 55](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5cf1d388-0efc-4ff8-9394-4fc2d390620c)
 
+
+6. In the Project Overview, under ```All products``` select and add the following: Authentication, Realtime Database and Storage.
+
+![Screenshot 2024-03-04 at 16 45 08](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0f7d0961-e7cf-4c5b-b9f7-943d25e5edb8)
+
+7. Change the rules in ```Realtime Database``` to :
+
+```
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
     
 
-6. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console.
+8. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console.
    To generate a SHA1, first you will need to set the keystore in the Unity project.
     - Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
     - Select an existing keystore, or create a new keystore using the toggle.
@@ -83,7 +98,7 @@ const firebaseConfig = {
 ![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
 
 
- 7. Generate the SHA1 key and copy it into your Firebase project.
+ 9. Generate the SHA1 key and copy it into your Firebase project.
     - After setting the keystore and key, as well as building the app once, you can generate a SHA1 by running this command in CMD (admin):
       
     ```
@@ -98,20 +113,6 @@ const firebaseConfig = {
     
 ![Screenshot 2024-03-04 at 13 36 07](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0c722295-5642-45b2-a2bc-f6454369b56e)
     
-   
-    
-
-8. Change the rules in ```Realtime Database``` to :
-
-```
-{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}
-```
-
 
 
 
