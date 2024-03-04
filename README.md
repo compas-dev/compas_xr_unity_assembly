@@ -176,7 +176,7 @@ const firebaseConfig = {
   
    ### Unity - iOS 
 
-   - Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver.
+      - Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver.
      
 ![Screenshot 2024-02-20 at 10 44 26 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84193ecc-35bf-44fd-8e56-f6c53edbce43)
    
