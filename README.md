@@ -77,6 +77,11 @@ const firebaseConfig = {
     - Select an existing keystore, or create a new keystore using the toggle.
     - Select an existing key, or create a new key using ```Create a new key```.
     - Build an apk to be able to generate the SHA1 key (see below under ```Unity``` and ```Android``` build how to build)
+    
+ 
+![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
+
+
     - After setting the keystore and key, as well as building the app once, you can generate a SHA1 by running this command in CMD (admin):
       
     ```
@@ -87,13 +92,11 @@ const firebaseConfig = {
     - Navigate to your Android App in your Firebase console.
     - From the main console view, click on your Android App at the top, and open the settings page.
     - Scroll down to your apps at the bottom of the page and click on Add Fingerprint.
- 
-![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
- 
+    - Paste the SHA1 digest of your key into the form. The SHA1 box will illuminate if the string is valid. If it's not valid, check that you have copied the entire SHA1 digest string.
     
 ![Screenshot 2024-03-04 at 13 36 07](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0c722295-5642-45b2-a2bc-f6454369b56e)
     
-    - Paste the SHA1 digest of your key into the form. The SHA1 box will illuminate if the string is valid. If it's not valid, check that you have copied the entire SHA1 digest string.
+   
     
 
 7. Change the rules in ```Realtime Database``` to :
