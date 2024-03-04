@@ -203,8 +203,8 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 
    ### 3. Back in Unity: 
 
-    - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
-    - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
+   - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
+   - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
 
 ![Screenshot 2024-03-04 at 18 29 06](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/1541047c-a754-45a9-9805-faf11a3ef0d4)
 
@@ -254,6 +254,8 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
    - The first time you build with Xcode, it will ask for the MacBook's password for codesign. Click on Always Allow as many times as the pop up appears.
      
 ![Screenshot 2024-02-20 at 11 41 05 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/9feb24a9-2d88-4aed-8d62-6a2a7f5f88d2)
+
+   - You will be asked to unlock the device and the app will install and open automatically 
 
      
 
