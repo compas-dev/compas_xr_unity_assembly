@@ -156,7 +156,7 @@ const firebaseConfig = {
   
    ### Unity - Android
 
-   - In Player Settings, scroll down to Identification / Override Default Package Name/ and update Package Name to the value of the Bundle Identifier you provided when you registered your app with Firebase.
+   - In Player Settings, under the Android panel: scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - In Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
      Alternatively, one can just Build to obtain the ```apk``` and distribute it to Android devices.
    - If an error occurs, check player settings against default player settings depicted below:
@@ -172,43 +172,17 @@ const firebaseConfig = {
    ![9](https://github.com/gramaziokohler/compas_xr_unity/assets/94670422/466a5be1-bfde-4336-b6d9-b83d8ec21fbe)
 
   
-### iOS - can only be installed on ios from a MacBook running Xcode
-1. Create a Unity project in the Firebase console.
+   ### Unity - iOS 
 
-2. Associate your project to an app by clicking the Add app button, and selecting the iOS icon.
-    - You should use ```com.ETHZ.compas.xr.ios``` as the package name while you're testing.
-    - If you do not use the prescribed package name you will need to update the bundle identifier as described in the
-      - *Optional: Update the Project Bundle Identifier below.*
-    - change the rules in ```Realtime Database``` to :
+   In the Player Settings, under the iOS panel:
+   - Scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
+   - Scroll down to ```Camera Usage Description``` and write a message describing the need to use the camera, such as ```"please allow camera use for AR"```.
+   - Scroll down to ```iOS version``` and pick the adequate version (min. 14 to support current project packages).
 
-```
-{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}
-```
+   ![Screenshot 2024-02-16 at 11 56 27](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/625d7f8f-12d1-424f-9e54-c420b6986748)
 
-3. Accessing Firebase config information
-    - In your Firebase console, navigate to Project Overview and click the gear icon.
-    - In the drop-down window select Project Settings
-    - In the project settings window under Your apps / Apple Apps select Compas_XR
-    - The Required Config Information is listed under the section SDK setup and configuration / ```GoogleService-Info.plist```, which is the equivalent of the ```google-services.json``` for ios
-
-4. Download the ```GoogleService-Info.plist``` file associated with your Firebase project from the console. This file contains the information mentioned above that, you need to connect your iOS app to the Firebase backend, and will need to be included either in the FirebaseInitialize script in the Unity project or at the start of the app, before initializing Firebase. You will need to look for the following parameters:
-App id, api key, database url, storage bucket, and project id.
-
-5. Optional: Update the Project Bundle Identifier in Unity.
-    - If you did not use ```com.ETHZ.compas.xr.ios``` as the project package name you will need to update the sample's Bundle Identifier.
-    - Select Android in the Platform list
-    - Click Player Settings.
-    - In the Player Settings, under the iOS panel:
-         - scroll down to Bundle Identifier and update the value to the package name you provided when you registered your app with Firebase.
-         - scroll down to Camera Usage Description and write a message describing the need to use the camera, such as "please allow camera use for AR"
-         - scroll down to iOS version and pick the adequate version (min. 14 to support current project packages)
-
-      ![Screenshot 2024-02-16 at 11 56 27](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/625d7f8f-12d1-424f-9e54-c420b6986748)
+   - If an error occurs, during a build, check player settings against default player settings depicted below:
+   
 
 6. Build for iOS.
     - Select the File > Build Settings menu option.
