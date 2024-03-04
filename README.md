@@ -64,10 +64,11 @@ const firebaseConfig = {
 ```
 
 5. Accessing Firebase config information afterwards
-    - In your Firebase console, navigate to Project Overview and click the gear icon.
-    - In the drop-down window select Project Settings
-    - In the Project Settings window under Your apps
-    - The required config information is listed under the section SDK setup and configuration -  ```google-services.json``` for Android, respectively ```GoogleService-Info.plist``` for iOS
+   
+- In your Firebase console, navigate to Project Overview and click the gear icon.
+- In the drop-down window select Project Settings
+- In the Project Settings window under Your apps
+- The required config information is listed under the section SDK setup and configuration -  ```google-services.json``` for Android, respectively ```GoogleService-Info.plist``` for iOS
   
 ![Screenshot 2024-03-04 at 12 55 55](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/5cf1d388-0efc-4ff8-9394-4fc2d390620c)
 
@@ -79,9 +80,9 @@ const firebaseConfig = {
 
 7. Create a Database
 
-   - In Project Overview, under Project shortcuts, click on ```Realtime Database```
-   - Click on Create Database
-   - Set the Databse location according to your needs and ```Start in locked mode```
+- In Project Overview, under Project shortcuts, click on ```Realtime Database```
+- Click on Create Database
+- Set the Databse location according to your needs and ```Start in locked mode```
    
 
 ![Screenshot 2024-03-04 at 17 04 10](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b26269e-78c5-4ddb-aace-5ad31d072369)
@@ -110,18 +111,18 @@ const firebaseConfig = {
 
 ### *The following steps are specific to Android development if building from Unity:   
 
-8. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console.
-   To generate a SHA1, first you will need to set the keystore in the Unity project.
-    - Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
-    - Select an existing keystore, or create a new keystore using the toggle.
-    - Select an existing key, or create a new key using ```Create a new key```.
-    - Build an apk to be able to generate the SHA1 key (see below under ```Unity``` and ```Android``` build how to build)
+9. Android apps must be signed by a SHA1 key, and the key's signature must be registered to your project in the Firebase Console. To generate a SHA1, first you will need to set the keystore in the Unity project.
+   
+- Go to ```Publishing Settings``` under ```Player Settings``` in the Unity editor.
+- Select an existing keystore, or create a new keystore using the toggle.
+- Select an existing key, or create a new key using ```Create a new key```.
+- Build an apk to be able to generate the SHA1 key (see below under ```Unity``` and ```Android``` build how to build)
     
  
 ![Screenshot 2024-03-04 at 13 34 22](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84c69d22-b6a1-491e-9c4c-5e284f44eb8f)
 
 
- 9. Generate the SHA1 key and copy it into your Firebase project.
+ 10. Generate the SHA1 key and copy it into your Firebase project.
     - After setting the keystore and key, as well as building the app once, you can generate a SHA1 by running this command in CMD (admin):
       
     ```
@@ -149,11 +150,11 @@ const firebaseConfig = {
 2. Open the Unity Project.
 
 3. Update the Project Settings
-    - Select the File > Build Settings menu option.
-    - Select ```Android``` or ```iOS``` in the Platform list and click Switch Platform to set the target platform.
-    - Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
-    - Select the active platform and click Player Settings.
-    - In the Player Settings panel adjust the following settings accordingly for Android, respectively iOS
+- Select the File > Build Settings menu option.
+- Select ```Android``` or ```iOS``` in the Platform list and click Switch Platform to set the target platform.
+- Wait for the spinner (compiling) icon to stop in the bottom right corner of the Unity status bar.
+- Select the active platform and click Player Settings.
+- In the Player Settings panel adjust the following settings accordingly for Android, respectively iOS
   
    ### Unity - Android
 
