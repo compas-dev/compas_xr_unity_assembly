@@ -159,7 +159,7 @@ const firebaseConfig = {
    ### Unity - Android
 
    - In Player Settings, under the Android panel: scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
-   - In File > Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the Developer Device section.
+   - In File > Build Settings, click Build and Run to build the project on an Android device. * In case the device is not a developer device, scroll at the bottom to the ```Turning Devices into Developer Devices``` section.
      Alternatively, one can just Build to obtain the ```apk``` and distribute it to Android devices.
    - If an error occurs, check player settings against default player settings depicted below:
 
@@ -176,7 +176,7 @@ const firebaseConfig = {
   
    ### Unity - iOS 
 
-   - Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver.
+   - Once the target platform has been switched to iOS, Unity will try to install CocoaPods, an iOS resolver.
      
 ![Screenshot 2024-02-20 at 10 44 26 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84193ecc-35bf-44fd-8e56-f6c53edbce43)
    
@@ -190,7 +190,7 @@ const firebaseConfig = {
 
 ![Screenshot 2024-02-20 at 11 08 41 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/2b711a51-1817-4589-9a30-2123fb270cb0)
 
-   - Connect your iOS device to the laptop via a USB cable and unless your device is already in Developer Mode, scroll down and see the instructions for Developer Devices.
+   - Connect your iOS device to the laptop via a USB cable and unless your device is already in Developer Mode, scroll down and see the instructions for ```Turning Devices into Developer Devices```.
    - Install necessary modules in Xcode (e.g. iOS 17.2)
 
 ![Screenshot 2024-02-20 at 11 19 44 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/a9310653-0ee0-43d5-9b72-7901c3379327)
