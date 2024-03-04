@@ -16,6 +16,7 @@ public class QRLocalization : MonoBehaviour
     private GameObject UserObjects;
     private GameObject ObjectLengthsTags;
     private GameObject PriorityViewerObjects;
+    private GameObject ActiveRobotObjects;
 
     //Public Scripts
     public InstantiateObjects instantiateObjects;
@@ -43,6 +44,7 @@ public class QRLocalization : MonoBehaviour
         UserObjects = GameObject.Find("ActiveUserObjects");
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
         PriorityViewerObjects = GameObject.Find("PriorityViewerObjects");
+        ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
     }
 
@@ -89,6 +91,7 @@ public class QRLocalization : MonoBehaviour
                     UserObjects.transform.rotation = rot;
                     ObjectLengthsTags.transform.rotation = rot;
                     PriorityViewerObjects.transform.rotation = rot;
+                    ActiveRobotObjects.transform.rotation = rot;
 
                     //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
                     pos = TranslatedPosition(qrObject, position_data, rotationQuaternion);
@@ -98,6 +101,7 @@ public class QRLocalization : MonoBehaviour
                     UserObjects.transform.position = pos;
                     ObjectLengthsTags.transform.position = pos;
                     PriorityViewerObjects.transform.position = pos;
+                    ActiveRobotObjects.transform.position = pos;
 
                     //Update priority viewer objects if it is on
                     if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)

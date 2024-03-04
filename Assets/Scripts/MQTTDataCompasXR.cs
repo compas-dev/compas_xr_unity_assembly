@@ -8,6 +8,7 @@ using RosSharp.RosBridgeClient.MessageTypes.Rosapi;
 using Unity.VisualScripting.AssemblyQualifiedNameParser;
 using Newtonsoft.Json;
 using MQTTDataCompasXR;
+using JSON;
 
 namespace MQTTDataCompasXR
 {
@@ -482,16 +483,16 @@ namespace MQTTDataCompasXR
         // Accessible properties
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
+        public Frame RobotBaseFrame { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<List<float>> Trajectory { get; private set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
 
-        //TODO: ADD ROBOT LOCATION (BASEFRAME) TO THIS MESSAGE.
-
         // Constructor for creating a new GetTrajectoryResult Message instance
-        public GetTrajectoryResult(string elementID, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+        public GetTrajectoryResult(string elementID, Frame robotBaseFrame, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
         {
             Header = header ?? new Header();
             ElementID = elementID;
+            RobotBaseFrame = robotBaseFrame;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
         }
@@ -520,7 +521,16 @@ namespace MQTTDataCompasXR
 
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
-            
+
+            //TODO: GET FRAME INFORMATION FROM JSONSTRING
+            Frame robotBaseFrame = Frame.Parse(jsonObject["robot_base_frame"] as Dictionary<string, object>);
+            Debug.Log($"Robot baseframe: point: {robotBaseFrame.point}, xaxis {robotBaseFrame.xaxis}, yaxis {robotBaseFrame.yaxis}");
+
+            if (robotBaseFrame == null)
+            {
+                throw new Exception("Robot Base Frame is null");
+            }
+
             //throw exception if trajectory is null //TODO: THIS IS WHERE YOU INCLUDED THE EXCEPTION. HOWEVER MAYBE IT SHOULD BE IN THE TRAJECTORY MANAGER CLASS METHOD?
             if (jsonObject["trajectory"] == null)
             {
@@ -530,7 +540,7 @@ namespace MQTTDataCompasXR
             var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
             
             // Create and return a new GetTrajectoryResult instance
-            return new GetTrajectoryResult(elementID, trajectory, header);
+            return new GetTrajectoryResult(elementID, robotBaseFrame, trajectory, header);
         }
     }
 

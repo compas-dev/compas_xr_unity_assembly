@@ -223,7 +223,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         //Store the message
         StoreMessage(msg);
     }
-    private void CompasXRIncomingMessageHandler(string topic, string message)
+    private void CompasXRIncomingMessageHandler(string topic, string message) //TODO: Split this into various methods for message handeling on various topics.... to make the code more legible and understandable.
     {
         //Get Trajectory Request Message
         if (topic == compasXRTopics.subscribers.getTrajectoryRequestTopic)
@@ -313,6 +313,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     //Set the current trajectory of the Service Manager && Set current Service to Approve Trajectory
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
+
+                    //TODO: SET THE POSITION OF ACTIVE ROBOT BEFORE INSTANTIATION BASED ON RECEIVED BASE POSITION FROM TRAJECTORY
+                    trajectoryVisulizer.SetActiveRobotPosition();
 
                     //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
                     trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);

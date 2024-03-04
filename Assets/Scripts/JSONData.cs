@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using System;
+using UnityEngine;
 
 namespace JSON
 {   
@@ -40,6 +43,41 @@ namespace JSON
         public float[] point { get; set; }
         public float[] xaxis { get; set; }
         public float[] yaxis { get; set; }
+
+        // Method to parse an instance of the class from a json string
+        public static Frame Parse(Dictionary<string, object> frameDataDict)
+        {            
+            //Create a new instance of the class
+            Frame frame = new Frame();
+
+            //Convert System.double items to float for use in instantiation
+            List<object> pointslist = frameDataDict["point"] as List<object>;
+            List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
+            List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+
+            if (pointslist != null && xaxislist != null && yaxislist != null)
+            {
+                frame.point = pointslist.Select(Convert.ToSingle).ToArray();
+                frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
+                frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+            }
+            else
+            {
+                Debug.LogError("One of the Frame lists is null");
+            }
+
+            return frame;
+        }
+
+        public Dictionary<string, object> GetData()
+        {
+            return new Dictionary<string, object>
+            {
+                { "point", point },
+                { "xaxis", xaxis },
+                { "yaxis", yaxis }
+            };
+        }
     }
 
     /////////////// Classes For Building Plan Desearialization///////////////////

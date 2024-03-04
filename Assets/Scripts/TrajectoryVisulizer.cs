@@ -111,6 +111,11 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
+    public void SetActiveRobotPosition()
+    {
+        Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
+    }
+
     //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS + JointNames?. IF I CAN COORDINATE WITH THE PLANNING... Problem is this locks it into only working for compas... less open for other libraries.
     public void VisulizeRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
