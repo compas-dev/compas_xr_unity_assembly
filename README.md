@@ -94,7 +94,7 @@ const firebaseConfig = {
 
 8. Change the rules in ```Realtime Database``` to  allow writing.
 
-   - In Project Shortcuts, under Realtime Database, click on ```Rules``` and change ```false``` to ```true``` and ```Publish```
+- In Project Shortcuts, under Realtime Database, click on ```Rules``` and change ```false``` to ```true``` and ```Publish```
 
 ```
 {
@@ -129,11 +129,11 @@ const firebaseConfig = {
     keytool -list -v -keystore <path_to_keystore> -alias <key_name>
     ```
 
-    - Copy the SHA1 digest string into your clipboard.
-    - Navigate to your Android App in your Firebase console.
-    - From the main console view, click on your Android App at the top, and open the settings page.
-    - Scroll down to your apps at the bottom of the page and click on Add Fingerprint.
-    - Paste the SHA1 digest of your key into the form. The SHA1 box will illuminate if the string is valid. If it's not valid, check that you have copied the entire SHA1 digest string.
+- Copy the SHA1 digest string into your clipboard.
+- Navigate to your Android App in your Firebase console.
+- From the main console view, click on your Android App at the top, and open the settings page.
+- Scroll down to your apps at the bottom of the page and click on Add Fingerprint.
+- Paste the SHA1 digest of your key into the form. The SHA1 box will illuminate if the string is valid. If it's not valid, check that you have copied the entire SHA1 digest string.
     
 ![Screenshot 2024-03-04 at 13 36 07](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/0c722295-5642-45b2-a2bc-f6454369b56e)
     
@@ -176,13 +176,14 @@ const firebaseConfig = {
   
    ### Unity - iOS 
 
-Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver. 
+   - Once the target platform gas been switched to iOS, Unity will try to install CocoaPods, an iOS resolver.
+     
 ![Screenshot 2024-02-20 at 10 44 26 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/84193ecc-35bf-44fd-8e56-f6c53edbce43)
    
    
-   Most likely it will fail and you will need to do the following fixes:
+   - Most likely it will fail and you will need to do the following fixes:
 
-   ### 1. In Xcode: 
+   ### in Xcode: 
 
    - Make sure you have ```Xcode``` and the ```Developer Tools``` installed on your MacBook. If you don't, go to your MacBook's AppStore and install Xcode.
    - Sign in with your Apple ID.
@@ -195,7 +196,7 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 ![Screenshot 2024-02-20 at 11 19 44 AM (1)](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/a9310653-0ee0-43d5-9b72-7901c3379327)
 
 
-   ### 2. In Terminal:
+   ### in Terminal:
 
    - Set the export path for gems as follows: ```export PATH="/Users/username/.gem/ruby/2.6.0/bin:$PATH"```
    - Install gem active support: ```gem install activesupport -v 6.1.7.6 --user-install```
@@ -203,7 +204,7 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 ![Screenshot 2024-02-20 at 11 01 53 AM](https://github.com/gramaziokohler/compas_xr_unity/assets/146987499/7ccb26ac-dac4-4c23-b73f-ba210327f2a1)
 
 
-   ### 3. Back in Unity: 
+   ### back in Unity: 
 
    - Under Assets > External Dependency Manager > iOS resolver > Install CocoaPods
    - Under Assets > External Dependency Manager > iOS resolver > Settings check that you have matching settings with the ones below:
@@ -216,7 +217,7 @@ Once the target platform gas been switched to iOS, Unity will try to install Coc
 
 
 
-   In the Player Settings, under the iOS panel:
+   ### in the Player Settings, under the iOS panel:
    
    - Scroll down to Identification / Override Default Package Name/ and update ```Package Name``` to the value of the Bundle Identifier you provided when you registered your app with Firebase.
    - Scroll down to ```Camera Usage Description``` and write a message describing the need to use the camera, such as ```"please allow camera use for AR"```.
