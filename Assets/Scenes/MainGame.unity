@@ -56962,6 +56962,7 @@ MonoBehaviour:
   ActiveRobot: {fileID: 0}
   ActiveTrajectory: {fileID: 0}
   JointNames: []
+  URDFRenderComponents: []
 --- !u!1 &8444615727984397944
 GameObject:
   m_ObjectHideFlags: 0

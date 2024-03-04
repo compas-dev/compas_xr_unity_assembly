@@ -7,6 +7,7 @@ using Helpers;
 using RosSharp.RosBridgeClient;
 using Newtonsoft.Json;
 using Unity.VisualScripting;
+using Vuforia;
 
 
 public class TrajectoryVisulizer : MonoBehaviour
@@ -21,7 +22,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     //TODO: Ideally I could send this in the message as a dictionary so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
     public List<string> JointNames;
     public int? previousSliderValue;
-    public List<string> URDFRenderComponents;
+    public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
         
     // Start is called before the first frame update
     void Start()
@@ -167,7 +168,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         //Set the previous slider value to the current slider value
         previousSliderValue = sliderValue;
     }
-    public void ColorRobot(GameObject RobotParent, Material material, ref List<string> URDFRenderComponents)
+    public void ColorRobot(GameObject RobotParent, Material material, ref Dictionary<string, string> URDFRenderComponents)
     {
         Debug.Log($"ColorRobotChildCount: {RobotParent.transform.childCount}");
 
@@ -185,13 +186,14 @@ public class TrajectoryVisulizer : MonoBehaviour
         Debug.Log($"ColorRobot: URDFRenderComponents {JsonConvert.SerializeObject(URDFRenderComponents)}.");
         Debug.Log($"ColorRobot: URDFRenderComponents Count {URDFRenderComponents.Count}.");
         //Loop through the list objects and color them
-        foreach (string gameObjectName in URDFRenderComponents)
+        foreach (KeyValuePair<string, string> component in URDFRenderComponents)
         {
             // Debug.Log("ColorRobot: Coloring from URDFRendererComponents list.");
             // Debug.Log($"ColorRobot: URDF COMPONENT LIST = {JsonConvert.SerializeObject(URDFRenderComponents)}.");
             // Debug.Log($"ColorRobot: Coloring {gameObjectName}.");
             // Debug.Log("ColorRobot: Material is " + material.name + ".");
             Debug.Log($"ColorRobot: Coloring Robot {RobotParent.name} with Material {material.name}.");
+            string gameObjectName = component.Value;
 
             //Find the object with the name
             GameObject gameObject = RobotParent.FindObject(gameObjectName);
@@ -200,7 +202,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             if (gameObject)
             {
                 //Get the mesh renderer component from the object
-                MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
+                MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>(); //TODO: USED GET COMPONENT INSTEAD OF GETCOMPONOENTINCHILDREN
 
                 Debug.Log($"ColorRobot: HERE Found MeshRenderer for {gameObjectName}.");
 
@@ -217,16 +219,25 @@ public class TrajectoryVisulizer : MonoBehaviour
             }
         }
     }
-    void FindMeshRenderers(Transform currentTransform, ref List<string> URDFRenderComponents)
+    void FindMeshRenderers(Transform currentTransform, ref Dictionary<string,string> URDFRenderComponents)
     {
         Debug.Log("FindMeshRenderers: Searching through URDF for MeshRenderers.");
         // Check if the current GameObject has a MeshRenderer component
-        MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
+        MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>(); //TODO: USED GET COMPONENT INSTEAD OF GETCOMPONOENTINCHILDREN
+
         if (meshRenderer != null)
         {
+
+            //InstanceID of the MeshRenderer
+            int instanceID = meshRenderer.GetInstanceID();
+            Debug.Log($"FindMeshRenderers: InstanceID = {instanceID}.");
+
             // If found, do something with the MeshRenderer, like add it to a list
-            Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name}");
-            URDFRenderComponents.Add(currentTransform.gameObject.name);
+            if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
+            {
+                Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name}");
+                URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
+            }
         }
 
         // Traverse through all child game objects recursively
