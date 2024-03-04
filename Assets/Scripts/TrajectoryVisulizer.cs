@@ -8,10 +8,14 @@ using RosSharp.RosBridgeClient;
 using Newtonsoft.Json;
 using Unity.VisualScripting;
 using Vuforia;
+using Instantiate;
 
 
 public class TrajectoryVisulizer : MonoBehaviour
 {
+    //Other script objects
+    private InstantiateObjects instantiateObjects;
+
     //GameObjects for storing the active robot objects in the scene
     public GameObject ActiveRobotObjects;
     public GameObject ActiveRobot;
@@ -40,6 +44,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         
         //Find Objects for retreiving and storing the active robots in the scene
+        instantiateObjects = GameObject.Find("InstantiateObjects").GetComponent<InstantiateObjects>();
         BuiltInRobotsParent = GameObject.Find("Robots");
         ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
@@ -48,12 +53,12 @@ public class TrajectoryVisulizer : MonoBehaviour
         JointNames = AddJointNamesList("ETHZurichRFL", JointNames);
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
-        SetActiveRobot(BuiltInRobotsParent, "ETHZurichRFL", ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory);
+        SetActiveRobot(BuiltInRobotsParent, "ETHZurichRFL", ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial);
         //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
 
     }
 
-    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory)
+    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material)
     {
         //Set the active robot in the scene
         GameObject selectedRobot = BuiltInRobotsParent.FindObject(robotName);
@@ -71,6 +76,9 @@ public class TrajectoryVisulizer : MonoBehaviour
 
         //Set temporary Robots parent to the ActiveRobot.
         temporaryRobot.transform.SetParent(ActiveRobot.transform);
+
+        //Color the active robot
+        ColorRobot(temporaryRobot, material, ref URDFRenderComponents);
     }
 
     public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
@@ -92,7 +100,7 @@ public class TrajectoryVisulizer : MonoBehaviour
                 //Visulize the robot configuration
                 Debug.Log($"VisulizeRobotTrajectory: Visulizing configuration {i} for {trajectoryID} with trajectory count of {TrajectoryConfigs[i].Count}.");
                 Debug.Log($"VisulizeRobotTrajectory: Actual Configuration {JsonConvert.SerializeObject(TrajectoryConfigs[i])}.");
-                VisulizeRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names); //TODO: Possibly Stuck here?
+                VisulizeRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names);
 
                 //Set temporary Robots parent to the ActiveRobot.
                 temporaryRobot.transform.SetParent(parentObject.transform);
@@ -204,7 +212,7 @@ public class TrajectoryVisulizer : MonoBehaviour
                 //Get the mesh renderer component from the object
                 MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>(); //TODO: USED GET COMPONENT INSTEAD OF GETCOMPONOENTINCHILDREN
 
-                Debug.Log($"ColorRobot: HERE Found MeshRenderer for {gameObjectName}.");
+                Debug.Log($"ColorRobot: HERE Found MeshRenderer for {gameObject}.");
 
                 //If the mesh renderer is found, color it
                 if (meshRenderer)
@@ -214,7 +222,7 @@ public class TrajectoryVisulizer : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log($"ColorRobot: MeshRenderer not found for {gameObjectName} when searching through URDF list.");
+                    Debug.Log($"ColorRobot: MeshRenderer not found for {gameObject} when searching through URDF list.");
                 }
             }
         }
@@ -236,6 +244,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
             {
                 Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name}");
+                meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
                 URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
             }
         }
