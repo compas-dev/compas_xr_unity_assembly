@@ -233,6 +233,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Deserialize the message usign parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             GetTrajectoryRequest getTrajectoryResultmessage = GetTrajectoryRequest.Parse(message);
 
+            //TODO: SET LAST REQUESTED TRAJECTORY OF SERVICE MANAGER....
+
             //Check the device ID to see if it is mine, and if it is not apply Get Trajectory Request Transaction lock.
             if (getTrajectoryResultmessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
             {
@@ -262,8 +264,12 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Deserialize the message using parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
             
-            //TODO: NEED SOME SORT OF SAFETY CHECK OF HEADER RESPONSEID OR SOMETHING TO DEAL WITH MESSAGES THAT ARE SENT FROM CONTROLER, BUT ARE INCORRECT.
-            //TODO: IT WILL CAUSE A BIG PROBLEM IF I DON'T REQUEST A TRAJECTORY BUT I RECEIVE ONE.... This fix cannot happen until I test the header and responseID back and forth.
+            //TODO: CHECK THESE THREE PARTS OF THE MESSAGE... HEADER: SEQUENCEID & RESPONSEID.... MSG: ELEMENTID
+                //TODO: IF THEY ARE NOT EXPECTED VALUES SIGNAL ON SCREEN MESSAGE (ONLY IF I AM THE PRIMARYUSER.)AND RETURN TO REQUEST TRAJECTORY SERVICE.
+            
+            //TODO: IS DIRTY BOOL... GETS FLIPPED TO TRUE WHEN TIME OUT.... IF TRUE && MESSAGE == DIRTY MESSAGE THEN RETURN AND DO NOTHING.
+
+            //TODO: SET LAST TRAJECTORY RESULT OF SERVICE MANAGER....
 
             //If I am not the primary user checks
             if (!serviceManager.PrimaryUser)
@@ -274,7 +280,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     //Release Trajectory Request Transaction lock
                     serviceManager.TrajectoryRequestTransactionLock = false;
 
-                    //Signal On Screen Message for 
+                    //Signal On Screen Message for //TODO: THIS SHOULD INCLUDE ACTIVE ROBOT NAME SO I CAN SET IT if it is not the same as mine.
                     UIFunctionalities.SignalTrajectoryReviewRequest(getTrajectoryResultmessage.ElementID);
 
                     //Set curent trajectory of the Service Manager
@@ -314,19 +320,11 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
-                    //TODO: SET THE POSITION OF ACTIVE ROBOT BEFORE INSTANTIATION BASED ON RECEIVED BASE POSITION FROM TRAJECTORY
-                    if (getTrajectoryResultmessage.RobotBaseFrame != null)
-                    {
-                        trajectoryVisulizer.SetActiveRobotPosition(getTrajectoryResultmessage.RobotBaseFrame, ref trajectoryVisulizer.ActiveRobot);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): RobotBaseFrame is null.");
-                    }
-
                     //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
-                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
 
+                    //TODO: IF ACTIVEROBOTNAME DOES NOT MATCH MINE SIGNAL ON SCREEN MESSAGE TO INFORM ME AND SET ACTIVE ROBOT.
+                    
                     //Publish request for approval counter and do not input header.
                     PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
 
@@ -360,13 +358,6 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             ApproveTrajectory trajectoryApprovalMessage = ApproveTrajectory.Parse(message);
 
             //Approve trajectory approvalStatus rejction message received 
-            /*//TODO: I think the is the most error prone area of the code...
-            Returns all users back to the Request Trajectory topic, but it can cause a condition where we all request a trajectory at the same time, so each phone thinks it is the primary user.
-            This will be complex to fix, and Gonzalo said we should just be honest about this and inform people.....
-            I think I could come up with a solution (Transactional when someone else requests a trajectory... it somehow informs the other phones and prevents them from requesting one until that person is back on service request.)
-            This may include another topic or something like that, but I am not sure and would take some more additional thought.
-            //TODO: I have an idea... I subscribe to request topic, and when a request message is sent, I add a requestTransactionLock for devicesID's that are not mine.... Only problem is still depends on the speed of the messages.
-            */
             if (trajectoryApprovalMessage.ApprovalStatus == 0)
             {
                 //If I am primary user reset service manager items and unsubscribe from Approval Counter Result topic

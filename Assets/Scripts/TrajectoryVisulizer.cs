@@ -15,6 +15,7 @@ public class TrajectoryVisulizer : MonoBehaviour
 {
     //Other script objects
     private InstantiateObjects instantiateObjects;
+    private MqttTrajectoryManager mqttTrajectoryManager;
 
     //GameObjects for storing the active robot objects in the scene
     public GameObject ActiveRobotObjects;
@@ -45,46 +46,74 @@ public class TrajectoryVisulizer : MonoBehaviour
 
     private void OnStartInitilization()
     {
-        
         //Find Objects for retreiving and storing the active robots in the scene
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+        mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
         BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
         ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
-
-        //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
+    }
+    public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility)
+    {
         //Get the joint names for the active robot
-        JointNames = AddJointNamesList("ETHZurichRFL", JointNames);
+        JointNames = AddJointNamesList(robotName , JointNames);
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
-        SetActiveRobot(BuiltInRobotsParent, "ETHZurichRFL", ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial);
-        //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
-
+        SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
     }
-
-    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material)
+    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material, bool visibility)
     {
         //Set the active robot in the scene
         GameObject selectedRobot = BuiltInRobotsParent.FindObject(robotName);
 
-        //Instantiate a new robot object in the ActiveRobotObjectsParent
-        GameObject temporaryRobot = Instantiate(selectedRobot, selectedRobot.transform.position, selectedRobot.transform.rotation);
+        if(selectedRobot != null)
+        {
+            //If the current elements exist then destroy them.
+            if(ActiveRobot != null)
+            {
+                Destroy(ActiveRobot);
+            }
+            if(ActiveTrajectory != null)
+            {
+                Destroy(ActiveTrajectory);
+            }
+            
+            //Instantiate a new robot object in the ActiveRobotObjectsParent
+            GameObject temporaryRobot = Instantiate(selectedRobot, selectedRobot.transform.position, selectedRobot.transform.rotation);
 
-        //Create the active robot parent object and Active trajectory 
-        ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
-        ActiveRobot.name = "ActiveRobot";
-        ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
-        ActiveTrajectory = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
-        ActiveTrajectory.name = "ActiveTrajectory";
-        ActiveTrajectory.transform.SetParent(ActiveRobotObjectsParent.transform);
+            //If extra rotation is needed then rotate the URDF.
+            if(yRotation)
+            {
+                temporaryRobot.transform.Rotate(0, 90, 0);
+            }
 
-        //Set temporary Robots parent to the ActiveRobot.
-        temporaryRobot.transform.SetParent(ActiveRobot.transform);
+            //Create the active robot parent object and Active trajectory 
+            ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
+            ActiveRobot.name = "ActiveRobot";
+            ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
+            ActiveTrajectory = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
+            ActiveTrajectory.name = "ActiveTrajectory";
+            ActiveTrajectory.transform.SetParent(ActiveRobotObjectsParent.transform);
 
-        //Color the active robot
-        ColorRobot(temporaryRobot, material, ref URDFRenderComponents);
+            //Updating Service Manager with My active Robot Name
+            mqttTrajectoryManager.serviceManager.ActiveRobotName = robotName;
+
+            //Set temporary Robots parent to the ActiveRobot.
+            temporaryRobot.transform.SetParent(ActiveRobot.transform);
+
+            //Color the active robot
+            ColorRobot(temporaryRobot, material, ref URDFRenderComponents);
+        
+            //Set the active robot visibility.
+            temporaryRobot.SetActive(visibility);
+        }
+        else
+        {
+            Debug.Log($"SetActiveRobot: Robot {robotName} not found in the BuiltInRobotsParent.");
+            //TODO: SIGNAL ONSCREEN WARNING ABOUT THE ROBOT NOT FINDING ROBOT OBJECT.
+        }
     }
 
-    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
         Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
 
@@ -98,6 +127,9 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 //Instantiate a new robot object in the ActiveRobotObjectsParent
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
+                
+                //Set the position of the robot by the included robot baseframe
+                SetRobotPosition(robotBaseFrame, temporaryRobot);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
@@ -114,9 +146,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
-    public void SetActiveRobotPosition(Frame robotBaseFrame, ref GameObject ActiveRobot)
+    public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition)
     {
-        Debug.Log("SetActiveRobotPosition: Setting the active robot position.");
+        Debug.Log("SetRobotPosition: Setting the active robot position.");
 
         //Fetch position data from the dictionary
         Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
@@ -128,8 +160,8 @@ public class TrajectoryVisulizer : MonoBehaviour
         Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
 
         //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-        ActiveRobot.transform.localPosition = positionData;
-        ActiveRobot.transform.localRotation = rotationQuaternion;
+        robotToPosition.transform.localPosition = positionData;
+        robotToPosition.transform.localRotation = rotationQuaternion;
 
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }

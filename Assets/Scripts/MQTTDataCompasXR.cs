@@ -109,8 +109,11 @@ namespace MQTTDataCompasXR
         //Bool to control if I am the primary user in this transaction.
         public bool PrimaryUser { get; set; }
 
+        //Active Robot Name as a string
+        public string ActiveRobotName { get; set; } //TODO: Needs to be used
+
         //List to store current trajectory under review.
-        public List<List<float>> CurrentTrajectory { get; set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+        public List<List<float>> CurrentTrajectory { get; set; } 
 
         //Current Service ennum
         public CurrentService currentService { get; set; }
@@ -118,11 +121,18 @@ namespace MQTTDataCompasXR
         //Get Trajectory Request Transaction Lock
         public bool TrajectoryRequestTransactionLock { get; set; }
 
-        //TODO: FIGURE OUT A WAY TO IGNORE UNEXPECTED REQUEST FROM PLANNER... THROW OUT MESSAGES THAT I AM NOT EXPECTING.
-        //TODO: THIS SHOULD BE DONE THROUGH AN ISDIRTY BOOL... BASICALLY THE TIMEOUT INCLUDES FLIPPING THE IS DIRTY BOOL TO TRUE, AND THEN I IGNORE ANY RESPONSES WITH THAT SAME RESPONSEID.
+        //The last GetTrajectoryRequest message sent
+        public GetTrajectoryRequest LastGetTrajectoryRequest { get; set; } //TODO: Needs to be used
 
-        //TODO: ADD LAST REQUEST MESSAGE TO THIS CLASS TO CHECK IF THE MESSAGE I RECEIVED IS THE SAME AS THE ONE I SENT.
-        
+        //The last GetTrajectoryResult message received
+        public GetTrajectoryResult LastGetTrajectoryResult { get; set; } //TODO: Needs to be used
+
+        //Is Dirty Bool used for time outs
+        public bool IsDirty { get; set; } //TODO: Needs to be used
+
+        //Is Dirty Header used for time outs to know what to ignore
+        public Header IsDirtyHeader { get; set; } //TODO: Needs to be used
+
         //Constructer for ServiceManager
         public ServiceManager()
         {
@@ -485,10 +495,10 @@ namespace MQTTDataCompasXR
         public string ElementID { get; private set; }
         public Frame RobotBaseFrame { get; private set; }
         public string TrajectoryID { get; private set; }
-        public List<List<float>> Trajectory { get; private set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+        public List<List<float>> Trajectory { get; private set; } 
 
         // Constructor for creating a new GetTrajectoryResult Message instance
-        public GetTrajectoryResult(string elementID, Frame robotBaseFrame, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+        public GetTrajectoryResult(string elementID, Frame robotBaseFrame, List<List<float>> trajectory, Header header=null) 
         {
             Header = header ?? new Header();
             ElementID = elementID;
@@ -698,10 +708,10 @@ namespace MQTTDataCompasXR
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
-        public List<List<float>> Trajectory { get; private set; } //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+        public List<List<float>> Trajectory { get; private set; } 
 
         // Constructor for creating a new SendTrajectory Message instance
-        public SendTrajectory(string elementID, List<List<float>> trajectory, Header header=null) //TODO: CHECK TYPE OF TRAJECTORY INFORMATION FROM PLANNER
+        public SendTrajectory(string elementID, List<List<float>> trajectory, Header header=null) 
         {
             Header = header ?? new Header();
             ElementID = elementID;

@@ -60,6 +60,8 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject TrajectoryReviewRequestMessageObject;
     public GameObject TrajectoryApprovalTimedOutMessageObject;
     public GameObject SearchItemNotFoundWarningMessageObject;
+    public GameObject ActiveRobotIsNullWarningMessageObject;
+    public GameObject TransactionLockActiveWarningMessageObject;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -250,6 +252,8 @@ public class UIFunctionalities : MonoBehaviour
         ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
         TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
         TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
+        ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
+        TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockWarningMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
@@ -366,7 +370,7 @@ public class UIFunctionalities : MonoBehaviour
             RobotSelectionDropdown.options = robotOptions;
         }
         //Find Object, Execute button and add event listner for on click method
-        FindButtonandSetOnClickAction(RobotSelectionControlObjects, ref SetActiveRobotButton, "SetActiveRobotButton", () => print_string_on_click("Set ACTIVE ROBOT FROM DROPDOWN ITEM."));
+        FindButtonandSetOnClickAction(RobotSelectionControlObjects, ref SetActiveRobotButton, "SetActiveRobotButton", () => SetActiveRobotButtonMethod(RobotSelectionDropdown));
     }
     public void SetUIObjectColor(GameObject Button, Color color)
     {
@@ -1080,6 +1084,16 @@ public class UIFunctionalities : MonoBehaviour
         //Return the new option
         return newOption;
     }
+    public void SetActiveRobotButtonMethod(TMP_Dropdown tmpDropDown, bool visibility = true)
+    {
+        Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {tmpDropDown.options[tmpDropDown.value].text}");
+        
+        //Robot name from dropdown
+        string robotName = tmpDropDown.options[tmpDropDown.value].text;
+
+        //Set Active Robot
+        trajectoryVisulizer.SetActiveRobotFromDropdown(robotName, true, visibility);
+    }
 
     /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
     public void SignalTrajectoryReviewRequest(string key)
@@ -1091,6 +1105,13 @@ public class UIFunctionalities : MonoBehaviour
 
         //Define message for the onscreen text
         string message = $"REQUEST : Trajectory Review requested by other user for step : {key}";
+        
+        //If the transaction lock message is active turn it off
+        if(TransactionLockActiveWarningMessageObject.activeSelf)
+        {
+            //Set visibility of transaction lock active warning message
+            TransactionLockActiveWarningMessageObject.SetActive(false);
+        }
         
         if(messageComponent != null && message != null && TrajectoryReviewRequestMessageObject != null)
         {
@@ -1295,18 +1316,38 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Request Trajectory Button Pressed: Requesting Trajectory for Step {CurrentStep}");
 
-        //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData());
+        if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
+        {
+            Debug.Log("RequestTrajectoryButtonMethod : You cannot request because transaction lock is active");
 
-        //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
-        mqttTrajectoryManager.serviceManager.PrimaryUser = true;
-        mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
+            //If the active robot is null signal On Screen Message
+            SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
+            
+            return;
+        }
+        else if (trajectoryVisulizer.ActiveRobot == null)
+        {
+            Debug.Log("RequestTrajectoryButtonMethod : Active Robot is null");
+         
+            //If the active robot is null signal On Screen Message
+            SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
 
-        //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.... THIS IS A BIT DIFFICULT BECAUSE I CANNOT PROVIDE CANCELATION LIKE OTHER MESSAGE.
+            return;
+        }
+        else
+        {    
+            //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
+            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData());
 
-        //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
-        //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
-        TrajectoryServicesUIControler(true, false, false, false, false, false);
+            //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
+            mqttTrajectoryManager.serviceManager.PrimaryUser = true;
+            mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
+
+            //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.... THIS IS A BIT DIFFICULT BECAUSE I CANNOT PROVIDE CANCELATION LIKE OTHER MESSAGE.
+
+            //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
+            TrajectoryServicesUIControler(true, false, false, false, false, false);
+        }
     }
     public void ApproveTrajectoryButtonMethod()
     {
@@ -1516,7 +1557,19 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn && RequestTrajectoryButtonObject != null)
         {
-            //TODO: Set robot URDF OBJECT TO ACTIVE AT ZERO CONFIGURATION.
+            //Check if the Active Robot is null and if it is signal on screen message.
+            if(trajectoryVisulizer.ActiveRobot == null)
+            {
+                SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
+            }
+            else if(trajectoryVisulizer.ActiveRobot && CurrentStep != null)
+            {
+                trajectoryVisulizer.ActiveRobot.SetActive(true);
+            }
+            else
+            {
+                Debug.LogWarning("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
+            }
 
             //Check current step data to set visibility and interactibility of request trajectory button.
             if(CurrentStep != null)
@@ -1533,22 +1586,32 @@ public class UIFunctionalities : MonoBehaviour
             SetUIObjectColor(RobotToggleObject, Yellow);
         }
         else
-        {
-            //TODO: Set robot URDF OBJECT TO INACTIVE//DESTROY STATIC ROBOT IMAGES IF THEY EXIST.
-            
+        {            
             //If the request trajectory button is visable then set everything to not visable.
             if (RequestTrajectoryButtonObject.activeSelf)
             {
                 //Set Visibility of Request Trajectory Button
                 TrajectoryServicesUIControler(false, false, false, false, false, false);
             }
+            
+            //Set Visibility of Robot Selection Objects
             if (RobotSelectionDropdownObject.activeSelf)
             {
                 //Set Visibility of Robot Selection Objects
                 RobotSelectionDropdownObject.SetActive(false);
                 SetActiveRobotButton.SetActive(false);
             }
-
+            
+            //Set Visibility of Robot.
+            if(trajectoryVisulizer.ActiveRobot.activeSelf)
+            {
+                trajectoryVisulizer.ActiveRobot.SetActive(false);
+            }
+            else if(trajectoryVisulizer.ActiveTrajectory.activeSelf) //TODO: SHOULD THIS DESTROY?
+            {
+                trajectoryVisulizer.ActiveTrajectory.SetActive(false);
+            }
+            
             //Set the color of the Robot toggle button to white.
             SetUIObjectColor(RobotToggleObject, White);
         }
