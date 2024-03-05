@@ -27,6 +27,9 @@ public class TrajectoryVisulizer : MonoBehaviour
     public List<string> JointNames;
     public int? previousSliderValue;
     public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
+
+    //List of available robots
+    public List<string> RobotURDFList = new List<string> {"UR3", "UR5", "UR10e", "ETHZurichRFL"};
         
     // Start is called before the first frame update
     void Start()

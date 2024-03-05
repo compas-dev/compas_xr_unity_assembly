@@ -116,6 +116,10 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject TrajectoryReviewSliderObject;
     public Slider TrajectoryReviewSlider;
     public GameObject ExecuteTrajectoryButtonObject;
+    public GameObject RobotSelectionControlObjects;
+    public GameObject RobotSelectionDropdownObject;
+    public TMP_Dropdown RobotSelectionDropdown;
+    public GameObject SetActiveRobotButton;
 
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
@@ -343,6 +347,26 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Execute button and add event listner for on click method
         FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
+        //Find Objects for active robot selection
+        RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
+        RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
+        RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
+        List<TMP_Dropdown.OptionData> robotOptions = SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisulizer.RobotURDFList);
+        if(RobotSelectionControlObjects == null)
+        {
+            Debug.Log("Robot Selection Control Objects is null.");
+
+        }
+        else if (RobotSelectionDropdownObject == null)
+        {
+            Debug.Log("Robot Selection Dropdown Object is null.");
+        }
+        else
+        {
+            RobotSelectionDropdown.options = robotOptions;
+        }
+        //Find Object, Execute button and add event listner for on click method
+        FindButtonandSetOnClickAction(RobotSelectionControlObjects, ref SetActiveRobotButton, "SetActiveRobotButton", () => print_string_on_click("Set ACTIVE ROBOT FROM DROPDOWN ITEM."));
     }
     public void SetUIObjectColor(GameObject Button, Color color)
     {
@@ -582,7 +606,7 @@ public class UIFunctionalities : MonoBehaviour
         if(RobotToggleObject.GetComponent<Toggle>().isOn)
         {
             //Set interaction based on current step.
-            SetTrajectoryRequestUIFromKey(CurrentStep);
+            SetRoboticUIElementsFromKey(CurrentStep);
         }
 
         //Update Preview Geometry the visulization is remapped correctly
@@ -1018,7 +1042,7 @@ public class UIFunctionalities : MonoBehaviour
         if(RobotToggleObject.GetComponent<Toggle>().isOn)
         {
             //Set interaction based on current step.
-            SetTrajectoryRequestUIFromKey(CurrentStep);
+            SetRoboticUIElementsFromKey(CurrentStep);
         }
         
         //Set On Screen Text
@@ -1026,6 +1050,35 @@ public class UIFunctionalities : MonoBehaviour
         
         //Print setting current priority
         Debug.Log($"Setting Current Priority to {Priority} ");
+    }
+    public List<TMP_Dropdown.OptionData> SetDropDownOptionsFromStringList(TMP_Dropdown dropDown, List<string> stringList)
+    {
+        //Create a new list of option data
+        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
+
+        //Iterate through the robot list and add them to the option data list
+        foreach(string stringItem in stringList)
+        {
+            options.Add(new TMP_Dropdown.OptionData(stringItem));
+        }
+
+        Debug.Log($"SetDropDownOptionsFromStringList: Added Options {options} to Dropdown {dropDown.name}");
+        
+        //Return the options list
+        return options;
+    }
+    public TMP_Dropdown.OptionData AddOptionDataToDropdown(string option, TMP_Dropdown dropDown)
+    {
+        Debug.Log($"AddOptionDataToDropdown: Adding Option {option} to Dropdown {dropDown.name}");
+        
+        //Create a new option data
+        TMP_Dropdown.OptionData newOption = new TMP_Dropdown.OptionData(option);
+
+        //Add the option to the dropdown
+        dropDown.options.Add(newOption);
+
+        //Return the new option
+        return newOption;
     }
 
     /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
@@ -1469,7 +1522,7 @@ public class UIFunctionalities : MonoBehaviour
             if(CurrentStep != null)
             {
                 //Set interaction based on current step.
-                SetTrajectoryRequestUIFromKey(CurrentStep);
+                SetRoboticUIElementsFromKey(CurrentStep);
             }
             else
             {
@@ -1489,18 +1542,28 @@ public class UIFunctionalities : MonoBehaviour
                 //Set Visibility of Request Trajectory Button
                 TrajectoryServicesUIControler(false, false, false, false, false, false);
             }
+            if (RobotSelectionDropdownObject.activeSelf)
+            {
+                //Set Visibility of Robot Selection Objects
+                RobotSelectionDropdownObject.SetActive(false);
+                SetActiveRobotButton.SetActive(false);
+            }
 
             //Set the color of the Robot toggle button to white.
             SetUIObjectColor(RobotToggleObject, White);
         }
     }
-    public void SetTrajectoryRequestUIFromKey(string key)
+    public void SetRoboticUIElementsFromKey(string key)
     {
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
         //If step is a robot step then make the request button visible.
         if(step.data.actor == "ROBOT")
         {
+            //Set Robot Selection Objects to visible
+            RobotSelectionDropdownObject.SetActive(true);
+            SetActiveRobotButton.SetActive(true);
+
             //If the step is not built and priority is current priority then make request button visible and interactable
             if (!step.data.is_built && step.data.priority.ToString() == databaseManager.CurrentPriority)
             {    
@@ -1516,6 +1579,10 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
+            //Set Robot Selection Objects to visible
+            RobotSelectionDropdownObject.SetActive(true);
+            SetActiveRobotButton.SetActive(true);
+
             //Set Visibility of Request Trajectory Button
             TrajectoryServicesUIControler(false, false, false, false, false, false);
         }

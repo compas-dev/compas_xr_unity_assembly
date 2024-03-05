@@ -24421,12 +24421,12 @@ GameObject:
   - component: {fileID: 980625173}
   - component: {fileID: 980625172}
   m_Layer: 5
-  m_Name: SetActiveRobot
+  m_Name: SetActiveRobotButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &980625171
 RectTransform:
   m_ObjectHideFlags: 0
@@ -31475,7 +31475,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1266740586
 RectTransform:
   m_ObjectHideFlags: 0
@@ -31553,9 +31553,6 @@ MonoBehaviour:
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: UR 10 e
-      m_Image: {fileID: 0}
-      m_Color: {r: 1, g: 1, b: 1, a: 1}
-    - m_Text: UR 20
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: abbGofa
@@ -66097,6 +66094,10 @@ MonoBehaviour:
   TrajectoryReviewSliderObject: {fileID: 0}
   TrajectoryReviewSlider: {fileID: 0}
   ExecuteTrajectoryButtonObject: {fileID: 0}
+  RobotSelectionControlObjects: {fileID: 0}
+  RobotSelectionDropdownObject: {fileID: 0}
+  RobotSelectionDropdown: {fileID: 0}
+  SetActiveRobotButton: {fileID: 0}
   Elements: {fileID: 0}
   QRMarkers: {fileID: 0}
   UserObjects: {fileID: 0}
@@ -79996,6 +79997,11 @@ MonoBehaviour:
   ActiveRobot: {fileID: 0}
   ActiveTrajectory: {fileID: 0}
   JointNames: []
+  RobotURDFList:
+  - UR3
+  - UR5
+  - UR10e
+  - ETHZurichRFL
 --- !u!1 &8444615727984397944
 GameObject:
   m_ObjectHideFlags: 0

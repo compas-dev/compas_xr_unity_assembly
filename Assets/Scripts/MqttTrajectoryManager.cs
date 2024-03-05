@@ -292,7 +292,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
                     {
                         //Set interactibility based on my current element.
-                        UIFunctionalities.SetTrajectoryRequestUIFromKey(UIFunctionalities.CurrentStep);
+                        UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
                     }
 
                     Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
