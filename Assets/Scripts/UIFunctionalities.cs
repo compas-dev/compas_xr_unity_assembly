@@ -81,9 +81,17 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject MenuBackground;
     private GameObject ReloadButtonObject;
     private GameObject InfoToggleObject;
+    private GameObject LoadFromROSToggleObject;
     private GameObject InfoPanelObject;
     public GameObject CommunicationToggleObject;
     private GameObject CommunicationPanelObject;
+    private GameObject LoadURDFFromROSPannelObject;
+
+    //Load URDF from ROS Objects
+    private TMP_InputField LoadURDFRosHostInputField;
+    private TMP_InputField LoadURDFRosPortInputField;
+    public GameObject LoadURDFRosConnectButtonObject;
+    public GameObject URDFReadButtonObject;
 
     //Editor Toggle Objects
     private GameObject EditorBackground;
@@ -267,6 +275,9 @@ public class UIFunctionalities : MonoBehaviour
         /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
         
         //Find Info Toggle, and Add Listener for OnValueChanged method
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref LoadFromROSToggleObject, "LoadURDFFromROSButton", ToggleLoadFromROS);
+
+        //Find Info Toggle, and Add Listener for OnValueChanged method
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref InfoToggleObject, "Info_Button", ToggleInfo);
 
         //Find Object, Button, and Add Listener for OnClick method
@@ -287,6 +298,14 @@ public class UIFunctionalities : MonoBehaviour
         //Find Panel Objects used for Info and communication
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
         CommunicationPanelObject = CanvasObject.FindObject("CommunicationPanel");
+        LoadURDFFromROSPannelObject = CanvasObject.FindObject("LoadURDFFromROSPannel");
+
+        //Find panel objects used for loading a URDF from ROS
+        LoadURDFRosHostInputField = LoadURDFFromROSPannelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
+        LoadURDFRosPortInputField = LoadURDFFromROSPannelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
+        FindButtonandSetOnClickAction(LoadURDFFromROSPannelObject, ref LoadURDFRosConnectButtonObject, "ROSConnectButton", () => print_string_on_click("LOAD ROS CONNECT BUTTONPRESSED"));
+        FindButtonandSetOnClickAction(LoadURDFFromROSPannelObject, ref URDFReadButtonObject, "ReadRobotDescriptionButton", () => print_string_on_click("READ ROBOT DESCRIPTION BUTTONPRESSED"));
+        //TODO: FIND IMAGES AND LINK TO EVENTS...
 
         //Find Background Images for Toggles
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
@@ -426,6 +445,7 @@ public class UIFunctionalities : MonoBehaviour
                 ReloadButtonObject.SetActive(true);
                 CommunicationToggleObject.SetActive(true);
                 EditorToggleObject.SetActive(true);
+                LoadFromROSToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, Yellow);
@@ -443,12 +463,16 @@ public class UIFunctionalities : MonoBehaviour
                 if(CommunicationToggleObject.GetComponent<Toggle>().isOn){
                     CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
                 }
+                if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn){
+                    LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
+                }
                 //Set Visibility of buttons
                 MenuBackground.SetActive(false);
                 InfoToggleObject.SetActive(false);
                 ReloadButtonObject.SetActive(false);
                 CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
+                LoadFromROSToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -1659,12 +1683,18 @@ public class UIFunctionalities : MonoBehaviour
     {
         if(InfoPanelObject != null)
         {
+            Debug.Log("Info Toggle Pressed");
+
             if (toggle.isOn)
             {             
                 //Check if communication toggle is on and if it is turn it off
                 if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
                 {
                     CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                else if (LoadFromROSToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
                 }
                 
                 //Set Visibility of Information panel
@@ -1692,6 +1722,8 @@ public class UIFunctionalities : MonoBehaviour
     {
         if(CommunicationPanelObject != null)
         {
+            Debug.Log("Communication Toggle Pressed");
+
             if (toggle.isOn)
             {             
                 //Check if info toggle is on and if it is turn it off
@@ -1699,7 +1731,11 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     InfoToggleObject.GetComponent<Toggle>().isOn = false;
                 }
-                
+                else if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+
                 //Set Visibility of Information panel
                 CommunicationPanelObject.SetActive(true);
 
@@ -1786,6 +1822,8 @@ public class UIFunctionalities : MonoBehaviour
     {
         if (EditorBackground != null && BuilderEditorButtonObject != null && BuildStatusButtonObject != null)
         {    
+            Debug.Log("Editor Toggle Pressed");
+            
             if (toggle.isOn)
             {             
                 //Set Visibility of buttons
@@ -1848,6 +1886,46 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find one of the buttons in the Editor Menu.");
         }  
+    }
+    public void ToggleLoadFromROS(Toggle toggle)
+    {
+       if(LoadURDFFromROSPannelObject != null)
+        {
+            Debug.Log("Load URDF From ROS Toggle Pressed");
+
+            if (toggle.isOn)
+            {             
+                //Check if info toggle is on and if it is turn it off
+                if(InfoToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    InfoToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                else if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                //Set Visibility of Information panel
+                LoadURDFFromROSPannelObject.SetActive(true);
+
+                //Set color of toggle
+                SetUIObjectColor(LoadFromROSToggleObject, Yellow);
+
+            }
+            else
+            {
+                //TODO: TURN OFF IMAGES.
+
+                //Set Visibility of Information panel
+                LoadURDFFromROSPannelObject.SetActive(false);
+
+                //Set color of toggle
+                SetUIObjectColor(LoadFromROSToggleObject, White);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Communication Panel.");
+        }
     }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
