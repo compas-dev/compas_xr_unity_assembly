@@ -83,7 +83,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             //If extra rotation is needed then rotate the URDF.
             if(yRotation)
             {
-                temporaryRobot.transform.Rotate(0, 90, 0);
+                temporaryRobot.transform.Rotate(0, 90, 0); //TODO: CHECK THIS.
             }
 
             //Create the active robot parent object and Active trajectory 
@@ -129,7 +129,7 @@ public class TrajectoryVisulizer : MonoBehaviour
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                 
                 //Set the position of the robot by the included robot baseframe
-                SetRobotPosition(robotBaseFrame, temporaryRobot);
+                SetRobotPosition(robotBaseFrame, temporaryRobot, true);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
@@ -146,7 +146,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
-    public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition)
+    public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition, bool compoundRotations) //TODO: FIX ME.
     {
         Debug.Log("SetRobotPosition: Setting the active robot position.");
 
@@ -159,13 +159,42 @@ public class TrajectoryVisulizer : MonoBehaviour
         //Convert Firebase rotation data to Quaternion rotation. Additionally
         Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
 
-        //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-        robotToPosition.transform.localPosition = positionData;
-        robotToPosition.transform.localRotation = rotationQuaternion;
+        //If the compundRotations then rotate by the game object rotation + Rotation
+        if (compoundRotations)
+        {
+            //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
+            robotToPosition.transform.localPosition = positionData;
+            robotToPosition.transform.localRotation = robotToPosition.transform.rotation * rotationQuaternion; //TODO: CHECK THIS WITH QR POSITIONING.
+        }
+        else
+        {
+            //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
+            robotToPosition.transform.localPosition = positionData;
+            robotToPosition.transform.localRotation = rotationQuaternion;
+        }
 
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }
 
+    public void SetActiveRobotPosition(Frame robotBaseFrame)
+    {
+        Debug.Log("SetRobotPosition: Setting the active robot position.");
+
+        //Fetch position data from the dictionary
+        Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
+
+        //Fetch rotation data from the dictionary
+        InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+        
+        //Convert Firebase rotation data to Quaternion rotation. Additionally
+        Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData); //TODO: DOES THIS NEED TO BE INVERSE?
+
+        //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
+        ActiveRobot.transform.localPosition = positionData;
+        ActiveRobot.transform.localRotation = rotationQuaternion;
+
+        Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
+    }
     //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS + JointNames?. IF I CAN COORDINATE WITH THE PLANNING... Problem is this locks it into only working for compas... less open for other libraries.
     public void VisulizeRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {

@@ -320,6 +320,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
+                    //TODO: TESTING SET ACTIVE ROBOT POSITION
+                    trajectoryVisulizer.SetActiveRobotPosition(getTrajectoryResultmessage.RobotBaseFrame);
+
                     //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
                     trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
 
