@@ -45,7 +45,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         
         //Find Objects for retreiving and storing the active robots in the scene
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
-        BuiltInRobotsParent = GameObject.Find("Robots");
+        BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
         ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
         //TODO: THESE METHODS SHOULD BE WRAPPED INTO AN EVENT THAT IS TRIGGERED WHEN THE ROBOT IS SELECTED.
@@ -114,7 +114,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     public void SetActiveRobotPosition(Frame robotBaseFrame, ref GameObject ActiveRobot)
     {
         Debug.Log("SetActiveRobotPosition: Setting the active robot position.");
-        
+
         //Fetch position data from the dictionary
         Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
 
