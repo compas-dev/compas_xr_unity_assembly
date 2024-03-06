@@ -253,7 +253,7 @@ public class UIFunctionalities : MonoBehaviour
         TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
         TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
         ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
-        TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockWarningMessage");
+        TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockActiveWarningMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
@@ -1101,7 +1101,7 @@ public class UIFunctionalities : MonoBehaviour
         Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key}.");
 
         //Find text component for on screen message
-        TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("TrajectoryReviewRequestText").GetComponent<TMP_Text>();
+        TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
 
         //Define message for the onscreen text
         string message = $"REQUEST : Trajectory Review requested by other user for step : {key}";

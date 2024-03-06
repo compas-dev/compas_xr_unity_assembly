@@ -308,7 +308,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             else
             {
                 //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
-                if (getTrajectoryResultmessage.Trajectory.Count > 0)
+                if (getTrajectoryResultmessage.Trajectory.Count > 0) //TODO: && ServiceManager.ActiveRobotName == getTrajectoryResultmessage.ActiveRobotName
                 {
                     //Subscribe to Approval Counter Result topic
                     SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
@@ -320,13 +320,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                     serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
-                    //TODO: TESTING SET ACTIVE ROBOT POSITION
-                    trajectoryVisulizer.SetActiveRobotPosition(getTrajectoryResultmessage.RobotBaseFrame);
-
                     //Visulize the trajectory from the message //TODO: TESTING SHOULD BE REFINED.
-                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
-
-                    //TODO: IF ACTIVEROBOTNAME DOES NOT MATCH MINE SIGNAL ON SCREEN MESSAGE TO INFORM ME AND SET ACTIVE ROBOT.
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
                     
                     //Publish request for approval counter and do not input header.
                     PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());

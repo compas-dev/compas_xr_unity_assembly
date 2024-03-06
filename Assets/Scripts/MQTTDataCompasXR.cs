@@ -532,18 +532,15 @@ namespace MQTTDataCompasXR
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
 
-            //TODO: GET FRAME INFORMATION FROM JSONSTRING
+            //TODO: TRY AND CATCH FOR PARSING FRAME?
             var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
-            Debug.Log($"Robot baseframe type: {robotBaseFrameDict.GetType()}");
-            Debug.Log($"Robot baseframe data: {JsonConvert.SerializeObject(robotBaseFrameDict)}");
             Frame robotBaseFrame = Frame.Parse(robotBaseFrameDict);
-            Debug.Log($"Robot baseframe: point: {robotBaseFrame.point}, xaxis {robotBaseFrame.xaxis}, yaxis {robotBaseFrame.yaxis}");
             if (robotBaseFrame == null)
             {
                 throw new Exception("Robot Base Frame is null");
             }
 
-            //throw exception if trajectory is null //TODO: THIS IS WHERE YOU INCLUDED THE EXCEPTION. HOWEVER MAYBE IT SHOULD BE IN THE TRAJECTORY MANAGER CLASS METHOD?
+            //throw exception if trajectory is null //TODO: MAYBE IT SHOULD BE IN THE TRAJECTORY MANAGER CLASS METHOD?
             if (jsonObject["trajectory"] == null)
             {
                 throw new Exception("Trajectory is null");

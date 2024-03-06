@@ -160,18 +160,18 @@ public class TrajectoryVisulizer : MonoBehaviour
         Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
 
         //If the compundRotations then rotate by the game object rotation + Rotation
-        if (compoundRotations)
-        {
-            //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-            robotToPosition.transform.localPosition = positionData;
-            robotToPosition.transform.localRotation = robotToPosition.transform.rotation * rotationQuaternion; //TODO: CHECK THIS WITH QR POSITIONING.
-        }
-        else
-        {
+        // if (compoundRotations)
+        // {
+        //     //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
+        //     robotToPosition.transform.localPosition = positionData;
+        //     robotToPosition.transform.localRotation = robotToPosition.transform.rotation * rotationQuaternion; //TODO: CHECK THIS WITH QR POSITIONING.
+        // }
+        // else
+        // {
             //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
             robotToPosition.transform.localPosition = positionData;
             robotToPosition.transform.localRotation = rotationQuaternion;
-        }
+        // }
 
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }
