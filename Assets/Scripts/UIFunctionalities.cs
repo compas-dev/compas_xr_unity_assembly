@@ -372,7 +372,6 @@ public class UIFunctionalities : MonoBehaviour
         }
         //Find Object, Execute button and add event listner for on click method
         FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
-        // FindButtonandSetOnClickAction(RobotSelectionControlObjects, ref SetActiveRobotButton, "SetActiveRobotButton", () => SetActiveRobotButtonMethod(RobotSelectionDropdown));
     }
     public void SetUIObjectColor(GameObject Button, Color color)
     {
@@ -626,8 +625,11 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     trajectoryVisulizer.ActiveRobot.SetActive(false);
                 }
-
-                //TODO: DESTROY THE ROBOT TRAJECTORY?
+                //If the Active Trajectory child count is greater the 0 then destroy children
+                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                {
+                    trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+                }
             }
             else
             {

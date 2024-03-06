@@ -122,10 +122,10 @@ namespace MQTTDataCompasXR
         public bool TrajectoryRequestTransactionLock { get; set; }
 
         //The last GetTrajectoryRequest message sent
-        public GetTrajectoryRequest LastGetTrajectoryRequest { get; set; } //TODO: Needs to be used
+        public GetTrajectoryRequest LastGetTrajectoryRequestMessage { get; set; } //TODO: Needs to be used
 
         //The last GetTrajectoryResult message received
-        public GetTrajectoryResult LastGetTrajectoryResult { get; set; } //TODO: Needs to be used
+        public GetTrajectoryResult LastGetTrajectoryResultMessage { get; set; } //TODO: Needs to be used
 
         //Is Dirty Bool used for time outs
         public bool IsDirty { get; set; } //TODO: Needs to be used
@@ -139,7 +139,7 @@ namespace MQTTDataCompasXR
             UserCount = new SimpleCounter();
             ApprovalCount = new SimpleCounter();
             PrimaryUser = false;
-            CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
+            CurrentTrajectory = null;
             currentService = CurrentService.None;
         }
 

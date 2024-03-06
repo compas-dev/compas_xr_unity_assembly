@@ -135,7 +135,6 @@ public class TrajectoryVisulizer : MonoBehaviour
             //TODO: SIGNAL ONSCREEN WARNING ABOUT THE ROBOT NOT FINDING ROBOT OBJECT.
         }
     }
-
     public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
         Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
@@ -168,7 +167,6 @@ public class TrajectoryVisulizer : MonoBehaviour
             Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
         }
     }
-
     public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition, bool compoundRotations) //TODO: FIX ME.
     {
         Debug.Log("SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
@@ -205,6 +203,7 @@ public class TrajectoryVisulizer : MonoBehaviour
 
         Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
     }
+
     //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS + JointNames?. IF I CAN COORDINATE WITH THE PLANNING... Problem is this locks it into only working for compas... less open for other libraries.
     public void VisulizeRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
