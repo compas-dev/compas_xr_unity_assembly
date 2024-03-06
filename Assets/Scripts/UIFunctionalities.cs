@@ -121,7 +121,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject RobotSelectionControlObjects;
     public GameObject RobotSelectionDropdownObject;
     public TMP_Dropdown RobotSelectionDropdown;
-    public GameObject SetActiveRobotButton;
+    public GameObject SetActiveRobotToggleObject;
 
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
@@ -356,6 +356,7 @@ public class UIFunctionalities : MonoBehaviour
         RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
         RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
         List<TMP_Dropdown.OptionData> robotOptions = SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisulizer.RobotURDFList);
+        RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
         if(RobotSelectionControlObjects == null)
         {
             Debug.Log("Robot Selection Control Objects is null.");
@@ -370,7 +371,8 @@ public class UIFunctionalities : MonoBehaviour
             RobotSelectionDropdown.options = robotOptions;
         }
         //Find Object, Execute button and add event listner for on click method
-        FindButtonandSetOnClickAction(RobotSelectionControlObjects, ref SetActiveRobotButton, "SetActiveRobotButton", () => SetActiveRobotButtonMethod(RobotSelectionDropdown));
+        FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
+        // FindButtonandSetOnClickAction(RobotSelectionControlObjects, ref SetActiveRobotButton, "SetActiveRobotButton", () => SetActiveRobotButtonMethod(RobotSelectionDropdown));
     }
     public void SetUIObjectColor(GameObject Button, Color color)
     {
@@ -1084,17 +1086,52 @@ public class UIFunctionalities : MonoBehaviour
         //Return the new option
         return newOption;
     }
-    public void SetActiveRobotButtonMethod(TMP_Dropdown tmpDropDown, bool visibility = true)
+    public void SetActiveRobotToggleMethod(Toggle toggle)
     {
-        Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {tmpDropDown.options[tmpDropDown.value].text}");
-        
-        //Robot name from dropdown
-        string robotName = tmpDropDown.options[tmpDropDown.value].text;
+        if(toggle!=null && toggle.isOn)
+        {
+            Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {RobotSelectionDropdown.options[RobotSelectionDropdown.value].text}");
+            
+            //Robot name from dropdown and visibility based on current visibility of active robot if it is on.
+            string robotName = RobotSelectionDropdown.options[RobotSelectionDropdown.value].text;
+            
+            //Set active robot visibility based on the CurrentStep
+            bool visibility = false;
+            if(CurrentStep != null && RobotToggleObject.GetComponent<Toggle>().isOn)
+            {
+                if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.actor == "ROBOT")
+                {
+                    visibility = true;
+                }
+            }
 
-        //Set Active Robot
-        trajectoryVisulizer.SetActiveRobotFromDropdown(robotName, true, visibility);
+            //Set Active Robot
+            trajectoryVisulizer.SetActiveRobotFromDropdown(robotName, true, visibility);
+
+            //Turn on the true image
+            toggle.GetComponent<Image>().enabled = true;
+        }
+        else
+        {
+            Debug.Log("SettingActiveRobotButtonMethod: Destroying Current Active Robot");
+
+            //If the active robot is not null destroy it.
+            if(trajectoryVisulizer.ActiveRobotObjects.transform.childCount > 0)
+            {
+                trajectoryVisulizer.DestroyActiveRobotObjects();
+            }
+
+            //Turn on the false image
+            toggle.GetComponent<Image>().enabled = false;            
+        }
     }
+    public void RobotSelectionDropdownValueChanged(int dropDownValue)
+    {
+        Debug.Log($"RobotSelectionDropdownValueChanged: Robot Selection Dropdown Value Changed to {dropDownValue}. Setting Current Active Robot to False.");
 
+        //Set Active Robot Toggle to False
+        SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+    }
     /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
     public void SignalTrajectoryReviewRequest(string key)
     {
@@ -1557,12 +1594,8 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn && RequestTrajectoryButtonObject != null)
         {
-            //Check if the Active Robot is null and if it is signal on screen message.
-            if(trajectoryVisulizer.ActiveRobot == null)
-            {
-                SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
-            }
-            else if(trajectoryVisulizer.ActiveRobot && CurrentStep != null)
+            //Set Visibility of Request Trajectory Button
+            if(trajectoryVisulizer.ActiveRobot && CurrentStep != null)
             {
                 trajectoryVisulizer.ActiveRobot.SetActive(true);
             }
@@ -1570,6 +1603,10 @@ public class UIFunctionalities : MonoBehaviour
             {
                 Debug.LogWarning("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
             }
+
+            //Set Robot Selection Objects to visible
+            RobotSelectionDropdownObject.SetActive(true);
+            SetActiveRobotToggleObject.SetActive(true);
 
             //Check current step data to set visibility and interactibility of request trajectory button.
             if(CurrentStep != null)
@@ -1593,25 +1630,24 @@ public class UIFunctionalities : MonoBehaviour
                 //Set Visibility of Request Trajectory Button
                 TrajectoryServicesUIControler(false, false, false, false, false, false);
             }
-            
+                        
             //Set Visibility of Robot Selection Objects
-            if (RobotSelectionDropdownObject.activeSelf)
-            {
-                //Set Visibility of Robot Selection Objects
-                RobotSelectionDropdownObject.SetActive(false);
-                SetActiveRobotButton.SetActive(false);
-            }
-            
+            RobotSelectionDropdownObject.SetActive(false);
+            SetActiveRobotToggleObject.SetActive(false);
+                        
             //Set Visibility of Robot.
-            if(trajectoryVisulizer.ActiveRobot.activeSelf)
+            if(trajectoryVisulizer.ActiveRobotObjects.transform.childCount > 0)
             {
-                trajectoryVisulizer.ActiveRobot.SetActive(false);
+                if(trajectoryVisulizer.ActiveRobot.activeSelf)
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(false);
+                }
+                else if(trajectoryVisulizer.ActiveTrajectory.activeSelf) //TODO: SHOULD THIS DESTROY?
+                {
+                    trajectoryVisulizer.ActiveTrajectory.SetActive(false);
+                }
             }
-            else if(trajectoryVisulizer.ActiveTrajectory.activeSelf) //TODO: SHOULD THIS DESTROY?
-            {
-                trajectoryVisulizer.ActiveTrajectory.SetActive(false);
-            }
-            
+
             //Set the color of the Robot toggle button to white.
             SetUIObjectColor(RobotToggleObject, White);
         }
@@ -1623,9 +1659,6 @@ public class UIFunctionalities : MonoBehaviour
         //If step is a robot step then make the request button visible.
         if(step.data.actor == "ROBOT")
         {
-            //Set Robot Selection Objects to visible
-            RobotSelectionDropdownObject.SetActive(true);
-            SetActiveRobotButton.SetActive(true);
 
             //If the step is not built and priority is current priority then make request button visible and interactable
             if (!step.data.is_built && step.data.priority.ToString() == databaseManager.CurrentPriority)
@@ -1644,7 +1677,7 @@ public class UIFunctionalities : MonoBehaviour
         {
             //Set Robot Selection Objects to visible
             RobotSelectionDropdownObject.SetActive(true);
-            SetActiveRobotButton.SetActive(true);
+            SetActiveRobotToggleObject.SetActive(true);
 
             //Set Visibility of Request Trajectory Button
             TrajectoryServicesUIControler(false, false, false, false, false, false);

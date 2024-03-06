@@ -52,13 +52,36 @@ public class TrajectoryVisulizer : MonoBehaviour
         BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
         ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
     }
-    public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility)
+    public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
     {
         //Get the joint names for the active robot
         JointNames = AddJointNamesList(robotName , JointNames);
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
         SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
+    }
+    public void DestroyActiveRobotObjects()
+    {
+        //Destroy the active robot in the scene
+        if(ActiveRobot != null)
+        {
+            Destroy(ActiveRobot);
+        }
+        if(ActiveTrajectory != null)
+        {
+            Destroy(ActiveTrajectory);
+        }
+    }
+    public void DestroyActiveTrajectoryChildren()
+    {
+        //Destroy the active robot in the scene
+        if(ActiveTrajectory != null)
+        {
+            foreach (Transform child in ActiveTrajectory.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
     }
     private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material, bool visibility)
     {
@@ -148,7 +171,7 @@ public class TrajectoryVisulizer : MonoBehaviour
 
     public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition, bool compoundRotations) //TODO: FIX ME.
     {
-        Debug.Log("SetRobotPosition: Setting the active robot position.");
+        Debug.Log("SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
 
         //Fetch position data from the dictionary
         Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
@@ -159,23 +182,10 @@ public class TrajectoryVisulizer : MonoBehaviour
         //Convert Firebase rotation data to Quaternion rotation. Additionally
         Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
 
-        //If the compundRotations then rotate by the game object rotation + Rotation
-        // if (compoundRotations)
-        // {
-        //     //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-        //     robotToPosition.transform.localPosition = positionData;
-        //     robotToPosition.transform.localRotation = robotToPosition.transform.rotation * rotationQuaternion; //TODO: CHECK THIS WITH QR POSITIONING.
-        // }
-        // else
-        // {
-            //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-            robotToPosition.transform.localPosition = positionData;
-            robotToPosition.transform.localRotation = rotationQuaternion;
-        // }
-
-        Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
+        //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
+        robotToPosition.transform.localPosition = positionData;
+        robotToPosition.transform.localRotation = rotationQuaternion;
     }
-
     public void SetActiveRobotPosition(Frame robotBaseFrame)
     {
         Debug.Log("SetRobotPosition: Setting the active robot position.");
