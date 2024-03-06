@@ -613,6 +613,26 @@ public class UIFunctionalities : MonoBehaviour
         {
             //Set interaction based on current step.
             SetRoboticUIElementsFromKey(CurrentStep);
+
+            //If the current robot is not null then set visibility
+            if(trajectoryVisulizer.ActiveRobot != null)
+            {
+                if(step.data.actor == "ROBOT")
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(true);
+                    trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
+                }
+                else
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(false);
+                }
+
+                //TODO: DESTROY THE ROBOT TRAJECTORY?
+            }
+            else
+            {
+                Debug.LogWarning("SetCurrentStep: Active Robot is null.");
+            }
         }
 
         //Update Preview Geometry the visulization is remapped correctly
@@ -1108,8 +1128,8 @@ public class UIFunctionalities : MonoBehaviour
             //Set Active Robot
             trajectoryVisulizer.SetActiveRobotFromDropdown(robotName, true, visibility);
 
-            //Turn on the true image
-            toggle.GetComponent<Image>().enabled = true;
+            //Turn on the check mark image on
+            SetActiveRobotToggleObject.FindObject("Image").SetActive(true);
         }
         else
         {
@@ -1121,8 +1141,8 @@ public class UIFunctionalities : MonoBehaviour
                 trajectoryVisulizer.DestroyActiveRobotObjects();
             }
 
-            //Turn on the false image
-            toggle.GetComponent<Image>().enabled = false;            
+            //Turn on the check mark image off
+            SetActiveRobotToggleObject.FindObject("Image").SetActive(false);           
         }
     }
     public void RobotSelectionDropdownValueChanged(int dropDownValue)
@@ -1601,7 +1621,7 @@ public class UIFunctionalities : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
+                Debug.Log("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
             }
 
             //Set Robot Selection Objects to visible
