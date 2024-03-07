@@ -577,7 +577,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 Debug.Log("MQTT: Trajectory Approval Timeout: Primary User has not moved on to service 3: Services will be reset.");
 
                 //Publish cancelation on ApproveTrajectory Topic
-                PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.CurrentTrajectory, 3).GetData());
+                PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.ActiveRobotName, serviceManager.CurrentTrajectory, 3).GetData());
                 
                 //Unsubsribe from Approval Counter Result topic
                 UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
