@@ -16,6 +16,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     //Other script objects
     private InstantiateObjects instantiateObjects;
     private MqttTrajectoryManager mqttTrajectoryManager;
+    private UIFunctionalities uiFunctionalities;
 
     //GameObjects for storing the active robot objects in the scene
     public GameObject ActiveRobotObjects;
@@ -48,6 +49,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     {
         //Find Objects for retreiving and storing the active robots in the scene
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+        uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
         mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
         BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
         ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
@@ -100,8 +102,8 @@ public class TrajectoryVisulizer : MonoBehaviour
                 Destroy(ActiveTrajectory);
             }
             
-            //Instantiate a new robot object in the ActiveRobotObjectsParent
-            GameObject temporaryRobot = Instantiate(selectedRobot, selectedRobot.transform.position, selectedRobot.transform.rotation);
+            //Instantiate a new robot object in the ActiveRobotObjectsParent //TODO: CHECK THIS.
+            GameObject temporaryRobot = Instantiate(selectedRobot, ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
 
             //If extra rotation is needed then rotate the URDF.
             if(yRotation)
@@ -132,7 +134,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         else
         {
             Debug.Log($"SetActiveRobot: Robot {robotName} not found in the BuiltInRobotsParent.");
-            //TODO: SIGNAL ONSCREEN WARNING ABOUT THE ROBOT NOT FINDING ROBOT OBJECT.
+            uiFunctionalities.SignalOnScreenMessageWithButton(uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage);
         }
     }
     public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.

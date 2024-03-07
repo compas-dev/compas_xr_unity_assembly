@@ -62,6 +62,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject SearchItemNotFoundWarningMessageObject;
     public GameObject ActiveRobotIsNullWarningMessageObject;
     public GameObject TransactionLockActiveWarningMessageObject;
+    public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -254,6 +255,7 @@ public class UIFunctionalities : MonoBehaviour
         TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
         ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
         TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockActiveWarningMessage");
+        ActiveRobotCouldNotBeFoundWarningMessage = MessagesParent.FindObject("ActiveRobotCouldNotBeFoundWarningMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
