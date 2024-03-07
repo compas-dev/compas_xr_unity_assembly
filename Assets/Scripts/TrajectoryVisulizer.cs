@@ -25,7 +25,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     
     //List for storing the joint names of the active robot...
     //TODO: Ideally I could send this in the message as a dictionary so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
-    public List<string> JointNames;
+    public List<string> JointNames; //TODO: UPDATE THIS TO A DICT OF JOINT NAMES AND VALUES.
     public int? previousSliderValue;
     public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
 

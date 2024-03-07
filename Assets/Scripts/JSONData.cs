@@ -52,14 +52,6 @@ namespace JSON
             //Create a new instance of the class
             Frame frame = new Frame();
 
-            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict)}");
-            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict["point"])}");
-            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict["xaxis"])}");
-            Debug.Log($"Frame Data: {JsonConvert.SerializeObject(frameDataDict["yaxis"])}");
-            Debug.Log($"Frame Data type: {frameDataDict.GetType()}");
-            Debug.Log($"Frame Data Dictionary: {JsonConvert.SerializeObject(frameDataDict)}");
-            Debug.Log("Frame Data Dictionary: " + frameDataDict["point"].GetType() + " " + frameDataDict["xaxis"].GetType() + " " + frameDataDict["yaxis"].GetType() + " "); //TODO: THIS RETURNS AN ARRAY TYPE
-
             if (frameDataDict["point"] is List<object> && frameDataDict["xaxis"] is List<object> && frameDataDict["yaxis"] is List<object>)
             {
                 //Convert System.double items to float for use in instantiation

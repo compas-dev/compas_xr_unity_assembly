@@ -1396,7 +1396,7 @@ public class UIFunctionalities : MonoBehaviour
         else
         {    
             //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
-            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData());
+            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName).GetData());
 
             //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
             mqttTrajectoryManager.serviceManager.PrimaryUser = true;
@@ -1417,17 +1417,17 @@ public class UIFunctionalities : MonoBehaviour
         TrajectoryServicesUIControler(false, false, true, false, false, false);
         
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
     }
     public void RejectTrajectoryButtonMethod()
     {
         Debug.Log($"Reject Trajectory Button Pressed: Rejecting Trajectory for Step {CurrentStep}");
 
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
 
         //Make the approval and disapproval button not interactable to prevent sending multiple approvals and disapprovals....
-        TrajectoryServicesUIControler(false, false, true, false, false, false); //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+        TrajectoryServicesUIControler(false, false, true, false, false, false);
     }
     public void TrajectorySliderReviewMethod(float value)
     {
@@ -1440,8 +1440,8 @@ public class UIFunctionalities : MonoBehaviour
                 //Remap input value to the count of the trajectory
                 float SliderValue = value;
                 int TrajectoryConfigurationsCount = mqttTrajectoryManager.serviceManager.CurrentTrajectory.Count; 
-                float SliderMax = 1; //Input Slider Max Value == 1
-                float SliderMin = 0; // Input Slider Min Value == 0
+                float SliderMax = 1;
+                float SliderMin = 0;
                 
                 float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount-1); 
 
@@ -1466,13 +1466,13 @@ public class UIFunctionalities : MonoBehaviour
         Debug.Log($"Execute Trajectory Button Pressed: Executing Trajectory for Step {CurrentStep}");
 
         //Publish new SendTrajectoryMessage to the trajectory execution topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData());
 
         //Make the execute button not interactable to prevent sending multiple just a precaustion, should be handled by message handler anyway.
-        TrajectoryServicesUIControler(false, false, false, false, true, false); //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+        TrajectoryServicesUIControler(false, false, false, false, true, false);
 
         //Publish new ApproveTrajectoryMessage for CONSENSUS APPROVAL
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
     }
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////

@@ -9,6 +9,7 @@ using Unity.VisualScripting.AssemblyQualifiedNameParser;
 using Newtonsoft.Json;
 using MQTTDataCompasXR;
 using JSON;
+using RosSharp.Urdf;
 
 namespace MQTTDataCompasXR
 {
@@ -131,7 +132,7 @@ namespace MQTTDataCompasXR
         public bool IsDirty { get; set; } //TODO: Needs to be used
 
         //Is Dirty Header used for time outs to know what to ignore
-        public Header IsDirtyHeader { get; set; } //TODO: Needs to be used
+        public Header IsDirtyMessageHeader { get; set; } //TODO: Needs to be used
 
         //Constructer for ServiceManager
         public ServiceManager()
@@ -141,6 +142,11 @@ namespace MQTTDataCompasXR
             PrimaryUser = false;
             CurrentTrajectory = null;
             currentService = CurrentService.None;
+            LastGetTrajectoryRequestMessage = null;
+            LastGetTrajectoryResultMessage = null;
+            IsDirty = false;
+            IsDirtyMessageHeader = null;
+            TrajectoryRequestTransactionLock = false;
         }
 
         //Enum for current service
@@ -196,9 +202,6 @@ namespace MQTTDataCompasXR
     }
     /////////////////////////////////////////// Classes for Compas XR Custom Messages //////////////////////////////////////////////////
     
-    //TODO: MAJOR TODO: CHECK IF THE HEADER PARSING PRODUCES INCORRECT HEADER INFORMATION ON SENDING OF NEW MESSAGES.
-    //TODO: CHECK OVERALL STRUCTURE OF PASSING INFORMATION BACK AND FORTH BETWEEN GH AND UNITY. 
-    //TODO: THERE IS A LOT OF CONDITIONAL INPUTS THAT ARE NOT IN THE PYTHON FILE, AND I AM NOT SURE IF THIS IS BECAUSE THE SPECIFICITY OF C# AND PARSING OR IF IT IS BECAUSE IMPORT WAS INCORRECT IN PYTHON FILE. 
     //TODO: ELEMENT ID SHOULD ACTUALLY BE STEP ID EVERYWHERE.
     //TODO: IMPLEMENT EXCEPTIONS FOR FETCHING DATA.
     [System.Serializable]
@@ -446,14 +449,16 @@ namespace MQTTDataCompasXR
         // Accessible properties
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
+        public string RobotName { get; private set; }
         public string TrajectoryID { get; private set; }
 
         // Constructor for creating a new GetTrajectoryRequest Message instance
-        public GetTrajectoryRequest(string elementID, Header header=null)
+        public GetTrajectoryRequest(string elementID, string robotName, Header header=null)
         {
             //Only moment to increment the responseID is when I send a new trajectory request.
             Header = header ?? new Header(true);
             ElementID = elementID;
+            RobotName = robotName;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
 
@@ -464,6 +469,7 @@ namespace MQTTDataCompasXR
             {
                 { "header", Header.GetData() },
                 { "element_id", ElementID },
+                { "robot_name", RobotName },
                 { "trajectory_id", TrajectoryID }
             };
         }
@@ -480,9 +486,10 @@ namespace MQTTDataCompasXR
 
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
+            var robotName = jsonObject["robot_name"].ToString();
             
             // Create and return a new GetTrajectoryResult instance
-            return new GetTrajectoryRequest(elementID, header);
+            return new GetTrajectoryRequest(elementID, robotName, header);
         }
     }
 
@@ -493,15 +500,17 @@ namespace MQTTDataCompasXR
         // Accessible properties
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
+        public string RobotName { get; private set; }
         public Frame RobotBaseFrame { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<List<float>> Trajectory { get; private set; } 
 
         // Constructor for creating a new GetTrajectoryResult Message instance
-        public GetTrajectoryResult(string elementID, Frame robotBaseFrame, List<List<float>> trajectory, Header header=null) 
+        public GetTrajectoryResult(string elementID, string robotName, Frame robotBaseFrame, List<List<float>> trajectory, Header header=null) 
         {
             Header = header ?? new Header();
             ElementID = elementID;
+            RobotName = robotName;
             RobotBaseFrame = robotBaseFrame;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
@@ -514,6 +523,8 @@ namespace MQTTDataCompasXR
             {
                 { "header", Header.GetData() },
                 { "element_id", ElementID },
+                { "robot_name", RobotName },
+                { "robot_base_frame", RobotBaseFrame.GetData() },
                 { "trajectory_id", TrajectoryID },
                 { "trajectory", Trajectory }
             };
@@ -531,6 +542,7 @@ namespace MQTTDataCompasXR
 
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
+            var robotName = jsonObject["robot_name"].ToString();
 
             //TODO: TRY AND CATCH FOR PARSING FRAME?
             var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
@@ -549,7 +561,7 @@ namespace MQTTDataCompasXR
             var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
             
             // Create and return a new GetTrajectoryResult instance
-            return new GetTrajectoryResult(elementID, robotBaseFrame, trajectory, header);
+            return new GetTrajectoryResult(elementID, robotName, robotBaseFrame, trajectory, header);
         }
     }
 
@@ -560,15 +572,17 @@ namespace MQTTDataCompasXR
         // Accessible properties
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
+        public string RobotName { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<List<float>> Trajectory { get; private set; }
         public int ApprovalStatus { get; private set; }
 
         // Constructor for creating a new ApproveTrajectory Message instance
-        public ApproveTrajectory(string elementID, List<List<float>> trajectory, int approvalStatus, Header header=null)
+        public ApproveTrajectory(string elementID, string robotName, List<List<float>> trajectory, int approvalStatus, Header header=null)
         {
             Header = header ?? new Header();
             ElementID = elementID;
+            RobotName = robotName;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
             ApprovalStatus = approvalStatus;
@@ -581,6 +595,7 @@ namespace MQTTDataCompasXR
             {
                 { "header", Header.GetData() },
                 { "element_id", ElementID },
+                { "robot_name", RobotName },
                 { "trajectory_id", TrajectoryID },
                 { "trajectory", Trajectory },
                 { "approval_status", ApprovalStatus }
@@ -599,11 +614,12 @@ namespace MQTTDataCompasXR
 
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
+            var robotName = jsonObject["robot_name"].ToString();
             var approvalStatus = Convert.ToInt16(jsonObject["approval_status"]);
             var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
             
             // Create and return a new GetTrajectoryResult instance
-            return new ApproveTrajectory(elementID, trajectory, approvalStatus, header);
+            return new ApproveTrajectory(elementID, robotName, trajectory, approvalStatus, header);
         }
     }
 
@@ -704,14 +720,16 @@ namespace MQTTDataCompasXR
         // Accessible properties
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
+        public string Robotname { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<List<float>> Trajectory { get; private set; } 
 
         // Constructor for creating a new SendTrajectory Message instance
-        public SendTrajectory(string elementID, List<List<float>> trajectory, Header header=null) 
+        public SendTrajectory(string elementID, string robotName, List<List<float>> trajectory, Header header=null) 
         {
             Header = header ?? new Header();
             ElementID = elementID;
+            Robotname = robotName;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
         }
@@ -723,6 +741,7 @@ namespace MQTTDataCompasXR
             {
                 { "header", Header.GetData() },
                 { "element_id", ElementID },
+                { "robot_name", Robotname },
                 { "trajectory_id", TrajectoryID },
                 { "trajectory", Trajectory }
             };
@@ -740,10 +759,11 @@ namespace MQTTDataCompasXR
 
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
+            var robotName = jsonObject["robot_name"].ToString();
             var trajectory = JsonConvert.DeserializeObject<List<List<float>>>(jsonObject["trajectory"].ToString());
 
             // Create and return a new GetTrajectoryResult instance
-            return new SendTrajectory(elementID, trajectory, header);
+            return new SendTrajectory(elementID, robotName, trajectory, header);
         }
 
     }
