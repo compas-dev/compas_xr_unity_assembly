@@ -56,8 +56,21 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
     public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
     {
+        //Clear data objects from the previous robot
+        if(JointNames.Count > 0)
+        {
+            JointNames.Clear();
+        }
+        if(URDFRenderComponents.Count > 0)
+        {
+            URDFRenderComponents.Clear();
+        }
+        
         //Get the joint names for the active robot
         JointNames = AddJointNamesList(robotName , JointNames);
+
+        Debug.Log("jointNames: " + JointNames.Count);
+        Debug.Log("joint name serilized:" + JsonConvert.SerializeObject(JointNames));
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
         SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
@@ -153,7 +166,7 @@ public class TrajectoryVisulizer : MonoBehaviour
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                 
                 //Set the position of the robot by the included robot baseframe
-                SetRobotPosition(robotBaseFrame, temporaryRobot, true);
+                SetRobotPosition(robotBaseFrame, temporaryRobot);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
@@ -177,9 +190,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         //Visulize the robot trajectory
         InstantiateRobotTrajectory(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, joint_names, parentObject, visibility);  
     }
-    public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition, bool compoundRotations) //TODO: FIX ME.
+    public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition)
     {
-        Debug.Log("SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
+        Debug.Log($"SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
 
         //Fetch position data from the dictionary
         Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
@@ -289,6 +302,10 @@ public class TrajectoryVisulizer : MonoBehaviour
                 FindMeshRenderers(child, ref URDFRenderComponents);
             }
         }
+        else
+        {
+            Debug.Log("ColorRobot: URDFRenderComponents list is not empty. Coloring URDF from list.");
+        }
 
         //Loop through the list objects and color them
         foreach (KeyValuePair<string, string> component in URDFRenderComponents)
@@ -384,10 +401,10 @@ public class TrajectoryVisulizer : MonoBehaviour
 
                 break;
             }
-            case "UR10": //TODO: CHECK JOINT NAMES
+            case "UR10e": //TODO: CHECK JOINT NAMES
             {
                 //Add specific joint names for the UR5 robot
-                Debug.Log("AddJointNamesList: UR10");
+                Debug.Log("AddJointNamesList: UR10e");
                 jointNames.Add("shoulder_link");
                 jointNames.Add("upper_arm_link");
                 jointNames.Add("forearm_link");
