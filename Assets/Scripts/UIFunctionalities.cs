@@ -63,6 +63,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ActiveRobotIsNullWarningMessageObject;
     public GameObject TransactionLockActiveWarningMessageObject;
     public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
+    public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -256,6 +257,7 @@ public class UIFunctionalities : MonoBehaviour
         ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
         TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockActiveWarningMessage");
         ActiveRobotCouldNotBeFoundWarningMessage = MessagesParent.FindObject("ActiveRobotCouldNotBeFoundWarningMessage");
+        ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
 
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
@@ -1244,6 +1246,68 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Debug.LogWarning("Trajectory Review Request Message: Something Is messed up with on click event listner.");
+        }
+
+    }
+    public void SignalActiveRobotUpdateFromPlanner(string key, string robotName, string activeRobotName, Action visualizeRobotMethod)
+    {
+        Debug.Log($"SignalActiveRobotUpdateFromPlanner: Other User is Requesting review of Trajectory for Step {key} .");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = ActiveRobotUpdatedFromPlannerMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
+
+
+        //Set message to notify that the active robot has been updated
+        string message = $"WARNING: You requested for {activeRobotName} but reply Trajectory is for {robotName}. ACTIVE ROBOT UPDATED.";
+
+        //Update Active robot usign the dropdown.
+        int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
+
+        //If the robot is in the dropdown options then update the active robot
+        if(robotSelection != -1)
+        {            
+            if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
+            {
+                SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+            }
+
+            //Set the dropdown value to the robot selection
+            RobotSelectionDropdown.value = robotSelection;
+
+            //Set Active Robot
+            SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
+        }
+        else
+        {
+            Debug.LogError("SignalActiveRobotUpdateFromPlanner: Could not find robot in dropdown options.");
+        }
+        
+        //Check Messaging componenets
+        if(messageComponent != null && message != null && ActiveRobotUpdatedFromPlannerMessageObject != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(ActiveRobotUpdatedFromPlannerMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("SignalActiveRobotUpdateFromPlanner: Could not find message object or message component.");
+        }
+
+        //Add additional for acknolwedge button to acknowledge button if they are not already there.
+        GameObject AcknowledgeButton = ActiveRobotUpdatedFromPlannerMessageObject.FindObject("AcknowledgeButton");
+
+        //Check if this item already has a listner or not.
+        if (AcknowledgeButton!= null && AcknowledgeButton.GetComponent<Button>().onClick.GetPersistentEventCount() <= 1)
+        {
+            //Add Listner for Acknowledge Button of this message to visualize robot
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => visualizeRobotMethod());
+
+            //Add Listner for Acknowledge Button of this to set interactibility of review trajectory buttons //TODO: CAN GET RID OF THIS.
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => TrajectoryServicesUIControler(false, false, true, true, false, false));
+        }
+        else
+        {
+            Debug.LogWarning("SignalActiveRobotUpdateFromPlanner: Something Is messed up with on click event listner.");
         }
 
     }

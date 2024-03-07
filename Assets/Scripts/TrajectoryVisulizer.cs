@@ -152,8 +152,8 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
     public void InstantiateRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
-        Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
-
+        Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
+        
         if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && joint_names.Count > 0 || parentObject != null)
         {
             //Get the number of configurations in the trajectory
@@ -179,11 +179,14 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
         else
         {
+            //TODO: THIS SHOULD BE AN ERROR MESSAGE INSTEAD.
             Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
         }
     }
     public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility)
     {
+        Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
+        
         //Set active robot visibility to false and visualize the trajectory from the message
         ActiveRobot.SetActive(false);
 

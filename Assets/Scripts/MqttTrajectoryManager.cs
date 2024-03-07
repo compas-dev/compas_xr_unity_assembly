@@ -323,6 +323,13 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         //Set last result message of the Service Manager
         serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
 
+        //If the count is greater then Zero then start the trajectory approval time out
+        if(getTrajectoryResultmessage.Trajectory.Count > 0)
+        {
+            // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
+            _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 10); //TODO: MAKE THIS LONGER.... TODO: THIS SHOULD MOVE.
+        }
+
         //If I am not the primary user checks
         if (!serviceManager.PrimaryUser)
         {
@@ -332,19 +339,19 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 //Release Trajectory Request Transaction lock
                 serviceManager.TrajectoryRequestTransactionLock = false;
 
-                //Signal On Screen Message for //TODO: THIS SHOULD INCLUDE ACTIVE ROBOT NAME SO I CAN SET IT if it is not the same as mine.
+                //Signal On Screen Message for trajectory review
                 UIFunctionalities.SignalTrajectoryReviewRequest(
-                getTrajectoryResultmessage.ElementID,
-                getTrajectoryResultmessage.RobotName,
-                serviceManager.ActiveRobotName,
-                () => trajectoryVisulizer.VisulizeRobotTrajectory(
-                    getTrajectoryResultmessage.Trajectory,
-                    getTrajectoryResultmessage.RobotBaseFrame,
-                    getTrajectoryResultmessage.TrajectoryID,
-                    trajectoryVisulizer.ActiveRobot,
-                    trajectoryVisulizer.JointNames,
-                    trajectoryVisulizer.ActiveTrajectory,
-                    true));
+                    getTrajectoryResultmessage.ElementID,
+                    getTrajectoryResultmessage.RobotName,
+                    serviceManager.ActiveRobotName,
+                    () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                        getTrajectoryResultmessage.Trajectory,
+                        getTrajectoryResultmessage.RobotBaseFrame,
+                        getTrajectoryResultmessage.TrajectoryID,
+                        trajectoryVisulizer.ActiveRobot,
+                        trajectoryVisulizer.JointNames,
+                        trajectoryVisulizer.ActiveTrajectory,
+                        true));
 
                 //Set curent trajectory of the Service Manager
                 serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
@@ -371,7 +378,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         else
         {
             //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
-            if (getTrajectoryResultmessage.Trajectory.Count > 0) //TODO: && ServiceManager.ActiveRobotName == getTrajectoryResultmessage.ActiveRobotName
+            if (getTrajectoryResultmessage.Trajectory.Count > 0)
             {
                 //Subscribe to Approval Counter Result topic
                 SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
@@ -384,15 +391,32 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
                 //Set active robot visibility to false and visualize the trajectory from the message
-                trajectoryVisulizer.ActiveRobot.SetActive(false);
-                trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
+                if(getTrajectoryResultmessage.RobotName != serviceManager.ActiveRobotName)
+                {
+                    UIFunctionalities.SignalActiveRobotUpdateFromPlanner(
+                        getTrajectoryResultmessage.ElementID,
+                        getTrajectoryResultmessage.RobotName,
+                        serviceManager.ActiveRobotName,
+                        () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                            getTrajectoryResultmessage.Trajectory,
+                            getTrajectoryResultmessage.RobotBaseFrame,
+                            getTrajectoryResultmessage.TrajectoryID,
+                            trajectoryVisulizer.ActiveRobot,
+                            trajectoryVisulizer.JointNames,
+                            trajectoryVisulizer.ActiveTrajectory,
+                            true));
+                    
+                    Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is not the same as the active robot name signaling on screen control.");
+
+                }
+                else
+                {
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
+                    Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
+                }
                 
                 //Publish request for approval counter and do not input header.
                 PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
-
-                // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
-                _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 120); //TODO: MAKE THIS LONGER.
-
             }
             //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
             else
@@ -611,6 +635,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             }
             else
             {
+                //TODO: MAKE THIS RESET INDIVIDUAL USERS.
                 Debug.Log("MQTT: Trajectory Approval Timeout: Primary User has already moved on to Service 3.");
             }
         }
