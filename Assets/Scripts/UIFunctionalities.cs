@@ -1156,17 +1156,49 @@ public class UIFunctionalities : MonoBehaviour
         //Set Active Robot Toggle to False
         SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
     }
+
     /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
-    public void SignalTrajectoryReviewRequest(string key)
+    public void SignalTrajectoryReviewRequest(string key, string robotName, string activeRobotName, Action visualizeRobotMethod)
     {
-        Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key}.");
+        Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key} .");
 
         //Find text component for on screen message
         TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
 
         //Define message for the onscreen text
-        string message = $"REQUEST : Trajectory Review requested by other user for step : {key}";
-        
+        string message = null;
+        if(activeRobotName != robotName)
+        {
+            //Set message to notify that the active robot has been updated
+            message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}. YOUR ACTIVE ROBOT UPDATED.";
+
+            //Update Active robot usign the dropdown.
+            int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
+
+            //If the robot is in the dropdown options then update the active robot
+            if(robotSelection != -1)
+            {            
+                if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+
+                //Set the dropdown value to the robot selection
+                RobotSelectionDropdown.value = robotSelection;
+
+                //Set Active Robot
+                SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
+            }
+            else
+            {
+                Debug.LogError("Trajectory Review Request Message: Could not find robot in dropdown options.");
+            }
+        }
+        else
+        {
+            message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}.";
+        }
+
         //If the transaction lock message is active turn it off
         if(TransactionLockActiveWarningMessageObject.activeSelf)
         {
@@ -1202,6 +1234,9 @@ public class UIFunctionalities : MonoBehaviour
                     RobotToggleObject.GetComponent<Toggle>().isOn = true;
                 }
             });
+
+            //Add Listner for Acknowledge Button of this message to visualize robot
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => visualizeRobotMethod());
 
             //Add Listner for Acknowledge Button of this to set interactibility of review trajectory buttons
             AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => TrajectoryServicesUIControler(false, false, true, true, false, false));

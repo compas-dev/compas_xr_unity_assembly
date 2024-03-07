@@ -333,7 +333,18 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 serviceManager.TrajectoryRequestTransactionLock = false;
 
                 //Signal On Screen Message for //TODO: THIS SHOULD INCLUDE ACTIVE ROBOT NAME SO I CAN SET IT if it is not the same as mine.
-                UIFunctionalities.SignalTrajectoryReviewRequest(getTrajectoryResultmessage.ElementID);
+                UIFunctionalities.SignalTrajectoryReviewRequest(
+                getTrajectoryResultmessage.ElementID,
+                getTrajectoryResultmessage.RobotName,
+                serviceManager.ActiveRobotName,
+                () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                    getTrajectoryResultmessage.Trajectory,
+                    getTrajectoryResultmessage.RobotBaseFrame,
+                    getTrajectoryResultmessage.TrajectoryID,
+                    trajectoryVisulizer.ActiveRobot,
+                    trajectoryVisulizer.JointNames,
+                    trajectoryVisulizer.ActiveTrajectory,
+                    true));
 
                 //Set curent trajectory of the Service Manager
                 serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;

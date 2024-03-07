@@ -137,7 +137,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             uiFunctionalities.SignalOnScreenMessageWithButton(uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage);
         }
     }
-    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void InstantiateRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
         Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
 
@@ -157,7 +157,7 @@ public class TrajectoryVisulizer : MonoBehaviour
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
-                VisulizeRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names);
+                SetRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names);
 
                 //Set temporary Robots parent to the ActiveRobot.
                 temporaryRobot.transform.SetParent(parentObject.transform);
@@ -168,6 +168,14 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
         }
+    }
+    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility)
+    {
+        //Set active robot visibility to false and visualize the trajectory from the message
+        ActiveRobot.SetActive(false);
+
+        //Visulize the robot trajectory
+        InstantiateRobotTrajectory(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, joint_names, parentObject, visibility);  
     }
     public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition, bool compoundRotations) //TODO: FIX ME.
     {
@@ -207,7 +215,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
 
     //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS + JointNames?. IF I CAN COORDINATE WITH THE PLANNING... Problem is this locks it into only working for compas... less open for other libraries.
-    public void VisulizeRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void SetRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
         Debug.Log($"VisulizeRobotConfig: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
         
