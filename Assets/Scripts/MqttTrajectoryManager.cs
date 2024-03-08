@@ -313,15 +313,23 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
         }
     }
-    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)
+    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY?
     {
-        //TODO: CHECK THESE THREE PARTS OF THE MESSAGE... HEADER: SEQUENCEID & RESPONSEID.... MSG: ELEMENTID
-            //TODO: IF THEY ARE NOT EXPECTED VALUES SIGNAL ON SCREEN MESSAGE (ONLY IF I AM THE PRIMARYUSER.)AND RETURN TO REQUEST TRAJECTORY SERVICE.
-        
-        //TODO: IS DIRTY BOOL... GETS FLIPPED TO TRUE WHEN TIME OUT.... IF TRUE && MESSAGE == DIRTY MESSAGE THEN RETURN AND DO NOTHING.
 
-        //Set last result message of the Service Manager
-        serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
+        //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
+        // if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
+        // {
+        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID)
+        //     {
+        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
+        //         return;
+        //     }
+        //     else
+        //     {
+        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+        //         serviceManager.IsDirty = false;
+        //     }
+        // }
 
         //If the count is greater then Zero then start the trajectory approval time out
         if(getTrajectoryResultmessage.Trajectory.Count > 0)
@@ -330,55 +338,71 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 10); //TODO: MAKE THIS LONGER.... TODO: THIS SHOULD MOVE.
         }
 
+        //Set last result message of the Service Manager
+        serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
+        
         //If I am not the primary user checks
         if (!serviceManager.PrimaryUser)
         {
-            //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
-            if (getTrajectoryResultmessage.Trajectory.Count > 0)
-            {
-                //Release Trajectory Request Transaction lock
-                serviceManager.TrajectoryRequestTransactionLock = false;
-
-                //Signal On Screen Message for trajectory review
-                UIFunctionalities.SignalTrajectoryReviewRequest(
-                    getTrajectoryResultmessage.ElementID,
-                    getTrajectoryResultmessage.RobotName,
-                    serviceManager.ActiveRobotName,
-                    () => trajectoryVisulizer.VisulizeRobotTrajectory(
-                        getTrajectoryResultmessage.Trajectory,
-                        getTrajectoryResultmessage.RobotBaseFrame,
-                        getTrajectoryResultmessage.TrajectoryID,
-                        trajectoryVisulizer.ActiveRobot,
-                        trajectoryVisulizer.JointNames,
-                        trajectoryVisulizer.ActiveTrajectory,
-                        true));
-
-                //Set curent trajectory of the Service Manager
-                serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
-
-                //Set current Service to Approve Trajectory
-                serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
-            }
-            else
-            {
-                //Set Service Manager Request Transaction lock
-                serviceManager.TrajectoryRequestTransactionLock = false;
-
-                //If the robot toggle is on set the TrajectoryRequest UI From my current step.
-                if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
+        //     if(getTrajectoryResultmessage.Header.ResponseID == serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
+        //     && getTrajectoryResultmessage.Header.SequenceID == serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
+        //     && getTrajectoryResultmessage.ElementID == serviceManager.LastGetTrajectoryRequestMessage.ElementID)
+        //     {
+                //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
+                if (getTrajectoryResultmessage.Trajectory.Count > 0)
                 {
-                    //Set interactibility based on my current element.
-                    UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
-                }
+                    //Release Trajectory Request Transaction lock
+                    serviceManager.TrajectoryRequestTransactionLock = false;
 
-                Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
-            }
+                    //Signal On Screen Message for trajectory review
+                    UIFunctionalities.SignalTrajectoryReviewRequest(
+                        getTrajectoryResultmessage.ElementID,
+                        getTrajectoryResultmessage.RobotName,
+                        serviceManager.ActiveRobotName,
+                        () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                            getTrajectoryResultmessage.Trajectory,
+                            getTrajectoryResultmessage.RobotBaseFrame,
+                            getTrajectoryResultmessage.TrajectoryID,
+                            trajectoryVisulizer.ActiveRobot,
+                            trajectoryVisulizer.JointNames,
+                            trajectoryVisulizer.ActiveTrajectory,
+                            true));
+
+                    //Set curent trajectory of the Service Manager
+                    serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
+
+                    //Set current Service to Approve Trajectory
+                    serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
+                }
+                else
+                {
+                    //Set Service Manager Request Transaction lock
+                    serviceManager.TrajectoryRequestTransactionLock = false;
+
+                    //If the robot toggle is on set the TrajectoryRequest UI From my current step.
+                    if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        //Set interactibility based on my current element.
+                        UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
+                    }
+
+                    Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
+                }
+            // }
+            // else
+            // {
+            //     Debug.LogWarning("MQTT: GetTrajectoryResult (!PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
+            //     return;
+            // }
         }
         //I am the primary user
         else
-        {
+        {           
             //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
             if (getTrajectoryResultmessage.Trajectory.Count > 0)
+    //     && getTrajectoryResultmessage.Header.ResponseID == serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
+    //     && getTrajectoryResultmessage.Header.SequenceID == serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
+    //     && getTrajectoryResultmessage.ElementID == serviceManager.LastGetTrajectoryRequestMessage.ElementID)
             {
                 //Subscribe to Approval Counter Result topic
                 SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
@@ -421,9 +445,15 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
             else
             {
-                Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Trajectory count is zero. Resetting Service Manager and returning to Request Trajectory Service.");
+                Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Trajectory count is zero or message structure does not match expected. Resetting Service Manager and returning to Request Trajectory Service.");
 
-                //TODO: IF THE REQUEST MESSAGE HAS A DIFFERENT ROBOT NAME THEN MINE SIGNAL ON SCREEN MESSAGE
+                // if(getTrajectoryResultmessage.Header.ResponseID != serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID ||
+                // getTrajectoryResultmessage.Header.SequenceID != serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1 ||
+                // getTrajectoryResultmessage.ElementID != serviceManager.LastGetTrajectoryRequestMessage.ElementID)
+                // {
+                //     Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
+                //     //TODO: SIGNAL ONSCREEN MESSAGE.
+                // }
 
                 //Set Primary user back to false
                 serviceManager.PrimaryUser = false;
@@ -437,8 +467,23 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         }
 
     }
-    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage)
+    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage) //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL?
     {
+        //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
+        // if(serviceManager.IsDirty)
+        // {
+        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID)
+        //     {
+        //         Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true and the message is the same as the dirty message. No action taken.");
+        //         return;
+        //     }
+        //     else
+        //     {
+        //         Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+        //         serviceManager.IsDirty = false;
+        //     }
+        // }
+
         //Approve trajectory approvalStatus rejction message received 
         if (trajectoryApprovalMessage.ApprovalStatus == 0)
         {
@@ -632,12 +677,21 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
 
                 //TODO: ADD IS DIRTY BOOL AND SET TO FALSE HERE
+                serviceManager.IsDirty = true;
+                serviceManager.IsDirtyMessageHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
             }
             else
             {
-                //TODO: MAKE THIS RESET INDIVIDUAL USERS.
                 Debug.Log("MQTT: Trajectory Approval Timeout: Primary User has already moved on to Service 3.");
             }
+        }
+        else
+        {
+            Debug.Log("MQTT: TrajectoryApprovalTimeOut: I am not the primary user.");
+
+            //TODO: THIS CAN SEND An APPROVAL CANCLEATION MESSAGE AND RESET ME TO THE REQUEST TRAJECTORY SERVICE....
+                //TODO: THE ONLY PROBLEM IS THE TIME OUT DURATION NEEDS TO BE A MANAGABLE AMOUNT OF TIME FROM THE POINT THAT THE MESSAGE IS RECEIVED TO THE POINT THAT THE TRAJECTORY IS EXACUTED.
+
         }
     }
 
