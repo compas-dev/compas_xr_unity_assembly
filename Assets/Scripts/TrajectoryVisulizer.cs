@@ -28,6 +28,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     //List for storing the joint names of the active robot...
     //TODO: Ideally I could send this in the message as a dictionary so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
     public List<string> JointNames; //TODO: UPDATE THIS TO A DICT OF JOINT NAMES AND VALUES.
+    public Dictionary<string, string> URDFLinkNames = new Dictionary<string, string>();
     public int? previousSliderValue;
     public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
 
@@ -46,6 +47,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         
     }
 
+    ////////////////////////////////////////// Initilization & Selection //////////////////////////////////////////
     private void OnStartInitilization()
     {
         //Find Objects for retreiving and storing the active robots in the scene
@@ -57,10 +59,10 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
     public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
     {
-        //Clear data objects from the previous robot
-        if(JointNames.Count > 0)
+        //Clear data objects from the previous robot //TODO: NEED TO CLEAR URDF LINK NAMES AND RENDER COMPONENTS.
+        if(URDFLinkNames.Count > 0)
         {
-            JointNames.Clear();
+            URDFLinkNames.Clear();
         }
         if(URDFRenderComponents.Count > 0)
         {
@@ -68,36 +70,13 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
         
         //Get the joint names for the active robot
-        JointNames = AddJointNamesList(robotName , JointNames);
+        // JointNames = AddJointNamesList(robotName , JointNames);
 
-        Debug.Log("jointNames: " + JointNames.Count);
-        Debug.Log("joint name serilized:" + JsonConvert.SerializeObject(JointNames));
+        // Debug.Log("jointNames: " + JointNames.Count);
+        // Debug.Log("joint name serilized:" + JsonConvert.SerializeObject(JointNames));
 
         //Instantiate the active robot in the ActiveRobotObjectsParent
         SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
-    }
-    public void DestroyActiveRobotObjects()
-    {
-        //Destroy the active robot in the scene
-        if(ActiveRobot != null)
-        {
-            Destroy(ActiveRobot);
-        }
-        if(ActiveTrajectory != null)
-        {
-            Destroy(ActiveTrajectory);
-        }
-    }
-    public void DestroyActiveTrajectoryChildren()
-    {
-        //Destroy the active robot in the scene
-        if(ActiveTrajectory != null)
-        {
-            foreach (Transform child in ActiveTrajectory.transform)
-            {
-                Destroy(child.gameObject);
-            }
-        }
     }
     private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material, bool visibility)
     {
@@ -151,11 +130,13 @@ public class TrajectoryVisulizer : MonoBehaviour
             uiFunctionalities.SignalOnScreenMessageWithButton(uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage);
         }
     }
-    public void InstantiateRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+
+    ////////////////////////////////////////// Object Management /////// /////////////////////////////////////////////////////
+    public void InstantiateRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
     {
         Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
         
-        if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && joint_names.Count > 0 || parentObject != null)
+        if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && URDFLinks.Count > 0 || parentObject != null)
         {
             //Get the number of configurations in the trajectory
             int trajectoryCount = TrajectoryConfigs.Count;
@@ -167,11 +148,11 @@ public class TrajectoryVisulizer : MonoBehaviour
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                 
                 //Set the position of the robot by the included robot baseframe
-                SetRobotPosition(robotBaseFrame, temporaryRobot);
+                SetRobotPositionandRotation(robotBaseFrame, temporaryRobot);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
-                SetRobotConfig(TrajectoryConfigs[i], temporaryRobot, joint_names);
+                SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames); //TODO: CONVERT THIS TO A CUSTOM ACTION.
 
                 //Set temporary Robots parent to the ActiveRobot.
                 temporaryRobot.transform.SetParent(parentObject.transform);
@@ -184,9 +165,10 @@ public class TrajectoryVisulizer : MonoBehaviour
             Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
         }
     }
-    public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility)
+    public void VisulizeRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility)
     {
         Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
+        //If the child is not active for some reason, activate it.
         if(!ActiveRobot.transform.GetChild(0).gameObject.activeSelf)
         {
             ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
@@ -196,49 +178,100 @@ public class TrajectoryVisulizer : MonoBehaviour
         ActiveRobot.SetActive(false);
 
         //Visulize the robot trajectory
-        InstantiateRobotTrajectory(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, joint_names, parentObject, visibility);  
+        InstantiateRobotTrajectory(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);  
     }
-    public void SetRobotPosition(Frame robotBaseFrame, GameObject robotToPosition)
+    public void DestroyActiveRobotObjects()
     {
-        Debug.Log($"SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
+        //Destroy the active robot in the scene
+        if(ActiveRobot != null)
+        {
+            Destroy(ActiveRobot);
+        }
+        if(ActiveTrajectory != null)
+        {
+            Destroy(ActiveTrajectory);
+        }
+    }
+    public void DestroyActiveTrajectoryChildren()
+    {
+        //Destroy the active robot in the scene
+        if(ActiveTrajectory != null)
+        {
+            foreach (Transform child in ActiveTrajectory.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
 
-        //Fetch position data from the dictionary
-        Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
-
-        //Fetch rotation data from the dictionary
-        InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+    ////////////////////////////////////////// Position, Rotation, & Configuration ////////////////////////////////////////////
+    public void SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure,ref Dictionary<string, string> urdfLinkNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    {
+        Debug.Log($"SetRobotConfigfromDictWrapper: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
         
-        //Convert Firebase rotation data to Quaternion rotation. Additionally
-        Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
-
-        //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-        robotToPosition.transform.localPosition = positionData;
-        robotToPosition.transform.localRotation = rotationQuaternion;
-    }
-    public void SetActiveRobotPosition(Frame robotBaseFrame)
-    {
-        Debug.Log("SetRobotPosition: Setting the active robot position.");
-
-        //Fetch position data from the dictionary
-        Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
-
-        //Fetch rotation data from the dictionary
-        InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+        //If the URDFLinkNames are not found, find them.
+        if (urdfLinkNames.Count == 0)
+        {
+            FindLinkNames(robotToConfigure.transform, config, ref urdfLinkNames);
+        }            
         
-        //Convert Firebase rotation data to Quaternion rotation. Additionally
-        Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData); //TODO: DOES THIS NEED TO BE INVERSE?
-
-        //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
-        ActiveRobot.transform.localPosition = positionData;
-        ActiveRobot.transform.localRotation = rotationQuaternion;
-
-        Debug.Log("THIS IS WHERE YOU UPDATE THE ROBOTS POSITION BASED ON THE INFO.");
+        //Check if the config structure matches the URDF structure
+        if(ConfigJointsEqualURDFLinks(config, ref urdfLinkNames))
+        {
+            //Find the parent object for holding trajectory Objects
+            SetRobotConfigfromDict(config, robotToConfigure, urdfLinkNames);
+        }
+        else
+        {
+            //If the warning message is not active, signal the warning message that the config structure does not match the URDF Structure.
+            if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject.activeSelf == false)
+            {
+                string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
+                uiFunctionalities.SignalOnScreenMessageFromReference(ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, message, "SetRobotConfigfromDictWrapper");
+            }
+            Debug.LogWarning($"SetRobotConfigfromDictWrapper: Config dict {config.Count} (Count) and LinkNames dict {urdfLinkNames.Count} (Count) for search do not match.");
+        }
     }
-
-    //TODO: TRAJECTORY SHOULD BECOME A DICT OF CONFIGS + JointNames?. IF I CAN COORDINATE WITH THE PLANNING... Problem is this locks it into only working for compas... less open for other libraries.
-    public void SetRobotConfig(List<float> config, GameObject robotToConfigure, List<string> jointNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void SetRobotConfigfromDict(Dictionary<string, float> config, GameObject robotToConfigure, Dictionary<string, string> linkNames)
     {
-        Debug.Log($"VisulizeRobotConfig: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
+        Debug.Log($"SetRobotConfigFromDict: Visulizing robot configuration for gameObject {robotToConfigure.name}.");    
+
+        //Find the parent object for holding trajectory Objects
+        foreach (KeyValuePair<string, float> jointDescription in config)
+        {
+            //Get the name of the joint, value, and URDFLinkName
+            string jointName = jointDescription.Key;
+            float jointValue = jointDescription.Value;
+            string urdfLinkName = linkNames[jointName];
+
+            //Find the joint object in the robotToConfigure
+            GameObject urdfLinkObject = robotToConfigure.FindObject(urdfLinkName);
+
+            if (urdfLinkObject)
+            {
+                //Get the jointStateWriter component from the joint.
+                JointStateWriter jointStateWriter = urdfLinkObject.GetComponent<JointStateWriter>();
+                // UrdfJoint urdfJoint = joint.GetComponent<UrdfJoint>();
+            
+                //If the jointStateWriter is not found, add it to the joint.
+                if (!jointStateWriter)
+                {
+                    jointStateWriter = urdfLinkObject.AddComponent<JointStateWriter>();    
+                }
+                
+                //Write the joint value to the joint.
+                jointStateWriter.Write(jointValue);
+            }  
+            else
+            {
+                Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {name} not found in the robotToConfigure.");
+            }
+        }
+
+    }
+    public void SetRobotConfigfromList(List<float> config, GameObject robotToConfigure, List<string> jointNames)
+    {
+        Debug.Log($"SetRobotConfigFromList: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
         
         //Get the number of joints in the list
         int configCount = config.Count;
@@ -271,6 +304,25 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
 
     }
+    public void SetRobotPositionandRotation(Frame robotBaseFrame, GameObject robotToPosition)
+    {
+        Debug.Log($"SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
+
+        //Fetch position data from the dictionary
+        Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
+
+        //Fetch rotation data from the dictionary
+        InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+        
+        //Convert Firebase rotation data to Quaternion rotation. Additionally
+        Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
+
+        //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
+        robotToPosition.transform.localPosition = positionData;
+        robotToPosition.transform.localRotation = rotationQuaternion;
+    }
+
+    ////////////////////////////////////////// Color and Visiblity ////////////////////////////////////////////////////////////
     public void ColorRobotConfigfromSliderInput(int sliderValue, Material inactiveMaterial, Material activeMaterial, ref int? previousSliderValue)
     {
         Debug.Log($"ColorRobotConfigfromSlider: Coloring robot config {sliderValue} for active trajectory.");
@@ -345,9 +397,67 @@ public class TrajectoryVisulizer : MonoBehaviour
             }
         }
     }
-    void FindMeshRenderers(Transform currentTransform, ref Dictionary<string,string> URDFRenderComponents)
+
+    ////////////////////////////////////////// Organization and Structuring ///////////////////////////////////////////////////
+    private void FindLinkNames(Transform currentTransform, Dictionary<string, float> config, ref Dictionary<string,string> URDFLinkNames)
     {
-        Debug.Log("FindMeshRenderers: Searching through URDF for MeshRenderers.");
+        Debug.Log("FindLinkNames: Searching through URDF to find LinkNames Associated with Joint Names.");
+
+        // Check if the current GameObject has a MeshRenderer component
+        UrdfJoint urdfJoint = currentTransform.GetComponent<UrdfJoint>();
+
+        if (urdfJoint != null)
+        {
+            if(config.ContainsKey(urdfJoint.JointName) && !URDFLinkNames.ContainsKey(urdfJoint.JointName))
+            {
+                Debug.Log($"FindLinkNames: Found UrdfJointName {urdfJoint.JointName} in URDF on GameObject {currentTransform.gameObject.name}.");
+                URDFLinkNames.Add(urdfJoint.JointName, currentTransform.gameObject.name);
+            }
+        }
+
+        // Traverse through all child game objects recursively
+        if (currentTransform.childCount > 0)
+        {
+            foreach (Transform child in currentTransform)
+            {
+                FindLinkNames(child, config, ref URDFLinkNames);
+            }
+        }
+        else
+        {
+            Debug.Log($"FindLinkNames: No UrdfJoint found in URDF on GameObject {currentTransform.gameObject.name}");
+        }
+
+    }
+    private bool ConfigJointsEqualURDFLinks(Dictionary<string, float> config, ref Dictionary<string,string> URDFLinkNames)
+    {
+        Debug.Log("ConfigJointsEqualURDFLinks: Confirming URDF Link names and sent Joint names are Consistent.");
+        
+        bool isEqual = true;
+
+        //Loop through the list objects and color them
+        foreach (KeyValuePair<string, float> joint in config)
+        {
+            //Get the name of the object associated with the mesh renderer
+            string jointName = joint.Key;
+
+            //Try to fetch the joint name from the URDFLinkNames
+            if(URDFLinkNames.ContainsKey(jointName))
+            {
+                Debug.Log($"ConfigJointsEqualURDFLinks: Found joint {jointName} in URDFLinkNames.");
+            }
+            else
+            {
+                Debug.Log($"ConfigJointsEqualURDFLinks: Joint {jointName} not found in URDFLinkNames.");
+                isEqual = false;
+            }
+        }
+
+        return isEqual;
+    }
+    private void FindMeshRenderers(Transform currentTransform, ref Dictionary<string,string> URDFRenderComponents)
+    {
+        Debug.Log($"FindMeshRenderers: Searching for Mesh Renderer in {currentTransform.gameObject.name}.");
         // Check if the current GameObject has a MeshRenderer component
         MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
 
@@ -370,8 +480,6 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             foreach (Transform child in currentTransform)
             {
-                Debug.Log($"FindMeshRenderers: Searching through URDF for MeshRenderers in {currentTransform.gameObject.name}.");
-                Debug.Log($"FindMeshRenderers: Child count = {currentTransform.childCount}.");
                 FindMeshRenderers(child, ref URDFRenderComponents);
             }
         }

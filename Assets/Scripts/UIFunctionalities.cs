@@ -65,6 +65,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
     public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
     public GameObject TrajectoryResponseIncorrectWarningMessageObject;
+    public GameObject ConfigDoesNotMatchURDFStructureWarningMessageObject;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -260,7 +261,8 @@ public class UIFunctionalities : MonoBehaviour
         ActiveRobotCouldNotBeFoundWarningMessage = MessagesParent.FindObject("ActiveRobotCouldNotBeFoundWarningMessage");
         ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
         TrajectoryResponseIncorrectWarningMessageObject = MessagesParent.FindObject("TrajectoryResponseIncorrectWarningMessage");
-
+        ConfigDoesNotMatchURDFStructureWarningMessageObject = MessagesParent.FindObject("ConfigDoesNotMatchURDFStructureWarningMessage");
+        
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
         //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
