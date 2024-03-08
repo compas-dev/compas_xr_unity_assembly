@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Unity.VisualScripting;
 using Vuforia;
 using Instantiate;
+using RosSharp.Urdf;
 
 
 public class TrajectoryVisulizer : MonoBehaviour
@@ -186,6 +187,10 @@ public class TrajectoryVisulizer : MonoBehaviour
     public void VisulizeRobotTrajectory(List<List<float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility)
     {
         Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
+        if(!ActiveRobot.transform.GetChild(0).gameObject.activeSelf)
+        {
+            ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
+        }
         
         //Set active robot visibility to false and visualize the trajectory from the message
         ActiveRobot.SetActive(false);
@@ -247,6 +252,8 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 //Get the jointStateWriter component from the joint.
                 JointStateWriter jointStateWriter = joint.GetComponent<JointStateWriter>();
+                UrdfJoint urdfJoint = joint.GetComponent<UrdfJoint>();
+                Debug.Log($"VisulizeRobotConfig: URDF Joint of TYPE {urdfJoint.JointType} COMPONENT FOUND FOR NAME {urdfJoint.JointName} found in the robotToConfigure.");
                 
                 //If the jointStateWriter is not found, add it to the joint.
                 if (!jointStateWriter)

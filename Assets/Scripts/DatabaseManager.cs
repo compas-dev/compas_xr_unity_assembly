@@ -1575,11 +1575,10 @@ public class DatabaseManager : MonoBehaviour
         ApplicationSettingUpdate(this, new ApplicationSettingsEventArgs(){Settings = settings});
     }
 
-    //TODO: ON DESTROY METHOD... THIS CAN BE USED TO DELETE PEOPLE MY CURRENT USER FROM DATABASE WHEN THEY LEAVE THE SCENE & REMOVE ALL APP LISTNERS.
-     
-    // private void OnDestroy()
-    // {
-    //     // dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
-    //     // RemoveListners();
-    // }
+    // Event Handeling to take care of App Clean up. When the GameObject is destroyed it cleans up everything.     
+    protected virtual void OnDestroy()
+    {
+        dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
+        // RemoveListners();
+    }
 }
