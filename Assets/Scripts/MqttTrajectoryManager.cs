@@ -12,6 +12,7 @@ using System.Security.Claims;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 using System.Threading;
+using Firebase.Extensions;
 
 public class MqttTrajectoryManager : M2MqttUnityClient
 {
@@ -68,7 +69,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     {
         //Unsubscribe from Compas XR Topics
         UnsubscribeFromCompasXRTopics();
-        
+
         //Disconnect from MQTT
         Disconnect();
     }
@@ -260,6 +261,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.Log("MQTT: ApproveTrajectory Message Handeling");
 
             //Deserialize the message usign parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
+            Debug.Log("MQTT: ApproveTrajectory Message Handeling: " + message);
             ApproveTrajectory trajectoryApprovalMessage = ApproveTrajectory.Parse(message);
 
             //Approve Trajectory Message Handler
@@ -343,14 +345,29 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             serviceManager.ApprovalTimeOutCancelationToken = new CancellationTokenSource();
             
             //Float duration dependent on if I am Primary user or not
-            float duration = 120; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.
+            float duration = 30; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.
             if(!serviceManager.PrimaryUser)
             {
                 duration = 240; //TODO: DURATION FOR NON PRIMARY USER WAITING FOR CONSENSUS.
             }
 
             // Trajectory approval time out
-            _= TrajectoryApprovalTimeout(getTrajectoryResultmessage.ElementID, duration, serviceManager.ApprovalTimeOutCancelationToken.Token);
+            Task test = TrajectoryApprovalTimeout(getTrajectoryResultmessage.ElementID, duration, serviceManager.ApprovalTimeOutCancelationToken.Token);
+            test.ContinueWithOnMainThread(test =>
+            {
+                if (test.IsFaulted)
+                {
+                    Debug.LogError("MQTT: TrajectoryApprovalTimeout: Task is faulted.");
+                }
+                else if (test.IsCanceled)
+                {
+                    Debug.Log("MQTT: TrajectoryApprovalTimeout: Task is canceled.");
+                }
+                else
+                {
+                    Debug.Log("MQTT: TrajectoryApprovalTimeout: Task is completed.");
+                }
+            });
         }
 
         //Set last result message of the Service Manager
@@ -510,6 +527,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         //Approve trajectory approvalStatus rejction message received 
         if (trajectoryApprovalMessage.ApprovalStatus == 0)
         {
+            Debug.Log($"MQTT: ApproveTrajectory User {trajectoryApprovalMessage.Header.DeviceID} rejected trajectory {trajectoryApprovalMessage.TrajectoryID}");
+
             //If I am primary user reset service manager items and unsubscribe from Approval Counter Result topic
             if (serviceManager.PrimaryUser)
             {
@@ -637,6 +656,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 {
                     trajectoryVisulizer.DestroyActiveTrajectoryChildren();
                 }
+                
                 //If the Active Robot is not active set it to active
                 if(!trajectoryVisulizer.ActiveRobot.activeSelf)
                 {
