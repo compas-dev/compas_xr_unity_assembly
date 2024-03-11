@@ -106,7 +106,7 @@ public class QRLocalization : MonoBehaviour
                     //Update priority viewer objects if it is on
                     if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                     {
-                        instantiateObjects.UpdatePriorityLine(databaseManager.CurrentPriority,instantiateObjects.PriorityViewrLineObject);
+                        instantiateObjects.UpdatePriorityLine(uiFunctionalities.SelectedPriority ,instantiateObjects.PriorityViewrLineObject);
                     }
 
                     //Update Object lenghts lines if the Object Lengths toggle is on
