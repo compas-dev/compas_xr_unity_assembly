@@ -1151,6 +1151,9 @@ public class UIFunctionalities : MonoBehaviour
                 trajectoryVisulizer.DestroyActiveRobotObjects();
             }
 
+            //Change My Active Robot to null for MQTT Service Manager
+            mqttTrajectoryManager.serviceManager.ActiveRobotName = null;
+
             //Turn on the check mark image off
             SetActiveRobotToggleObject.FindObject("Image").SetActive(false);           
         }

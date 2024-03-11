@@ -59,7 +59,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
     public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
     {
-        //Clear data objects from the previous robot //TODO: NEED TO CLEAR URDF LINK NAMES AND RENDER COMPONENTS.
+        //Clear data objects from the previous robot
         if(URDFLinkNames.Count > 0)
         {
             URDFLinkNames.Clear();
@@ -132,7 +132,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
 
     ////////////////////////////////////////// Object Management /////// /////////////////////////////////////////////////////
-    public void InstantiateRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void InstantiateRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
     {
         Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
         
@@ -146,9 +146,6 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 //Instantiate a new robot object in the ActiveRobotObjectsParent
                 GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
-                
-                //Set the position of the robot by the included robot baseframe
-                SetRobotPositionandRotation(robotBaseFrame, temporaryRobot);
                 temporaryRobot.name = $"Config {i}";
 
                 //Visulize the robot configuration
@@ -156,6 +153,11 @@ public class TrajectoryVisulizer : MonoBehaviour
 
                 //Set temporary Robots parent to the ActiveRobot.
                 temporaryRobot.transform.SetParent(parentObject.transform);
+                
+                //Set the position of the robot by the included robot baseframe
+                SetRobotPositionandRotation(robotBaseFrame, temporaryRobot);
+                
+                //Set the active robot visibility.
                 temporaryRobot.SetActive(visibility);
             }
         }
@@ -165,7 +167,7 @@ public class TrajectoryVisulizer : MonoBehaviour
             Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
         }
     }
-    public void VisulizeRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, List<string> joint_names, GameObject parentObject, bool visibility)
+    public void VisulizeRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
     {
         Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
         //If the child is not active for some reason, activate it.
@@ -205,7 +207,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     }
 
     ////////////////////////////////////////// Position, Rotation, & Configuration ////////////////////////////////////////////
-    public void SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure,ref Dictionary<string, string> urdfLinkNames) //TODO: THIS COULD POSSIBLY BE A DICT OF CONFIGS w/ JOINT NAMES.
+    public void SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure,ref Dictionary<string, string> urdfLinkNames)
     {
         Debug.Log($"SetRobotConfigfromDictWrapper: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
         
