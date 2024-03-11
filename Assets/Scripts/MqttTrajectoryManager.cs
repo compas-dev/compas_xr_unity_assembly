@@ -316,26 +316,26 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY?
     {
 
-        //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-        // if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
-        // {
-        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID)
-        //     {
-        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
-        //         return;
-        //     }
-        //     else
-        //     {
-        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-        //         serviceManager.IsDirty = false;
-        //     }
-        // }
+        // Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
+        if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
+        {
+            if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID)
+            {
+                Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
+                return;
+            }
+            else
+            {
+                Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+                serviceManager.IsDirty = false;
+            }
+        }
 
         //If the count is greater then Zero then start the trajectory approval time out
         if(getTrajectoryResultmessage.Trajectory.Count > 0)
         {
-            // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
-            _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 120); //TODO: MAKE THIS LONGER.... TODO: THIS SHOULD MOVE.
+            // Trajectory approval time out //TODO: CHECK DURATION DURING BUILDING.
+            _= TrajectoryApprovalTimeout(getTrajectoryResultmessage.ElementID, 120);
         }
 
         //Set last result message of the Service Manager
@@ -344,10 +344,10 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         //If I am not the primary user checks
         if (!serviceManager.PrimaryUser)
         {
-        //     if(getTrajectoryResultmessage.Header.ResponseID == serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
-        //     && getTrajectoryResultmessage.Header.SequenceID == serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
-        //     && getTrajectoryResultmessage.ElementID == serviceManager.LastGetTrajectoryRequestMessage.ElementID)
-        //     {
+            if(getTrajectoryResultmessage.Header.ResponseID == serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
+            && getTrajectoryResultmessage.Header.SequenceID == serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
+            && getTrajectoryResultmessage.ElementID == serviceManager.LastGetTrajectoryRequestMessage.ElementID)
+            {
                 //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
                 if (getTrajectoryResultmessage.Trajectory.Count > 0)
                 {
@@ -388,21 +388,21 @@ public class MqttTrajectoryManager : M2MqttUnityClient
 
                     Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
                 }
-            // }
-            // else
-            // {
-            //     Debug.LogWarning("MQTT: GetTrajectoryResult (!PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
-            //     return;
-            // }
+            }
+            else
+            {
+                Debug.LogWarning("MQTT: GetTrajectoryResult (!PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
+                return;
+            }
         }
         //I am the primary user
         else
         {           
             //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
-            if (getTrajectoryResultmessage.Trajectory.Count > 0)
-    //     && getTrajectoryResultmessage.Header.ResponseID == serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
-    //     && getTrajectoryResultmessage.Header.SequenceID == serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
-    //     && getTrajectoryResultmessage.ElementID == serviceManager.LastGetTrajectoryRequestMessage.ElementID)
+            if (getTrajectoryResultmessage.Trajectory.Count > 0
+            && getTrajectoryResultmessage.Header.ResponseID == serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
+            && getTrajectoryResultmessage.Header.SequenceID == serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
+            && getTrajectoryResultmessage.ElementID == serviceManager.LastGetTrajectoryRequestMessage.ElementID)
             {
                 //Subscribe to Approval Counter Result topic
                 SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
@@ -447,13 +447,13 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             {
                 Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Trajectory count is zero or message structure does not match expected. Resetting Service Manager and returning to Request Trajectory Service.");
 
-                // if(getTrajectoryResultmessage.Header.ResponseID != serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID ||
-                // getTrajectoryResultmessage.Header.SequenceID != serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1 ||
-                // getTrajectoryResultmessage.ElementID != serviceManager.LastGetTrajectoryRequestMessage.ElementID)
-                // {
-                //     Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
-                //     //TODO: SIGNAL ONSCREEN MESSAGE.
-                // }
+                if(getTrajectoryResultmessage.Header.ResponseID != serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID ||
+                getTrajectoryResultmessage.Header.SequenceID != serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1 ||
+                getTrajectoryResultmessage.ElementID != serviceManager.LastGetTrajectoryRequestMessage.ElementID)
+                {
+                    Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
+                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
+                }
 
                 //Set Primary user back to false
                 serviceManager.PrimaryUser = false;
@@ -470,19 +470,19 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage) //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL?
     {
         //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-        // if(serviceManager.IsDirty)
-        // {
-        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID)
-        //     {
-        //         Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true and the message is the same as the dirty message. No action taken.");
-        //         return;
-        //     }
-        //     else
-        //     {
-        //         Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-        //         serviceManager.IsDirty = false;
-        //     }
-        // }
+        if(serviceManager.IsDirty)
+        {
+            if(serviceManager.IsDirtyMessageHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID)
+            {
+                Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true and the message is the same as the dirty message. No action taken.");
+                return;
+            }
+            else
+            {
+                Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+                serviceManager.IsDirty = false;
+            }
+        }
 
         //Approve trajectory approvalStatus rejction message received 
         if (trajectoryApprovalMessage.ApprovalStatus == 0)
@@ -676,7 +676,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 //Set visibility and interactibility of Request Trajectory Button
                 UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
 
-                //TODO: ADD IS DIRTY BOOL AND SET TO FALSE HERE
+                //Set is dirty to true and store the message header for comparison
                 serviceManager.IsDirty = true;
                 serviceManager.IsDirtyMessageHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
             }
@@ -687,11 +687,12 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         }
         else
         {
-            Debug.Log("MQTT: TrajectoryApprovalTimeOut: I am not the primary user.");
+            Debug.Log("MQTT: TrajectoryApprovalTimeOut: I am not the primary user. Sending Cancleation message to the ApproveTrajectory Topic.");
 
             //TODO: THIS CAN SEND An APPROVAL CANCLEATION MESSAGE AND RESET ME TO THE REQUEST TRAJECTORY SERVICE....
                 //TODO: THE ONLY PROBLEM IS THE TIME OUT DURATION NEEDS TO BE A MANAGABLE AMOUNT OF TIME FROM THE POINT THAT THE MESSAGE IS RECEIVED TO THE POINT THAT THE TRAJECTORY IS EXACUTED.
 
+            //TODO: SET CANCELATION TIMER SO IT WORKS FOR BOTH PRIMARY AND NON PRIMARY USERS.
         }
     }
 
