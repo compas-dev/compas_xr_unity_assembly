@@ -24,10 +24,8 @@ public class TrajectoryVisulizer : MonoBehaviour
     public GameObject ActiveRobot;
     public GameObject ActiveTrajectory;
     private GameObject BuiltInRobotsParent;
-    
-    //List for storing the joint names of the active robot...
-    //TODO: Ideally I could send this in the message as a dictionary so it is easier to find and more flexible, but for some reason joint names on CAD and in Unity do not match.
-    public List<string> JointNames; //TODO: UPDATE THIS TO A DICT OF JOINT NAMES AND VALUES.
+
+    //Dictionary for storing URDFLinkNames associated with JointNames. Updated by recursive method from updating robot.
     public Dictionary<string, string> URDFLinkNames = new Dictionary<string, string>();
     public int? previousSliderValue;
     public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
@@ -69,12 +67,6 @@ public class TrajectoryVisulizer : MonoBehaviour
             URDFRenderComponents.Clear();
         }
         
-        //Get the joint names for the active robot
-        // JointNames = AddJointNamesList(robotName , JointNames);
-
-        // Debug.Log("jointNames: " + JointNames.Count);
-        // Debug.Log("joint name serilized:" + JsonConvert.SerializeObject(JointNames));
-
         //Instantiate the active robot in the ActiveRobotObjectsParent
         SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
     }

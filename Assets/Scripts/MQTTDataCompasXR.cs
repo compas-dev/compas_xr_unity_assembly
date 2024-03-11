@@ -111,7 +111,7 @@ namespace MQTTDataCompasXR
         public bool PrimaryUser { get; set; }
 
         //Active Robot Name as a string
-        public string ActiveRobotName { get; set; } //TODO: Needs to be used
+        public string ActiveRobotName { get; set; }
 
         //List to store current trajectory under review.
         public List<Dictionary<string, float>> CurrentTrajectory { get; set; } 
@@ -123,16 +123,19 @@ namespace MQTTDataCompasXR
         public bool TrajectoryRequestTransactionLock { get; set; }
 
         //The last GetTrajectoryRequest message sent
-        public GetTrajectoryRequest LastGetTrajectoryRequestMessage { get; set; } //TODO: Needs to be used
+        public GetTrajectoryRequest LastGetTrajectoryRequestMessage { get; set; }
 
         //The last GetTrajectoryResult message received
-        public GetTrajectoryResult LastGetTrajectoryResultMessage { get; set; } //TODO: Needs to be used
+        public GetTrajectoryResult LastGetTrajectoryResultMessage { get; set; }
+
+        //Approval time out cancelation token source
+        public CancellationTokenSource ApprovalTimeOutCancelationToken { get; set; }
 
         //Is Dirty Bool used for time outs
-        public bool IsDirty { get; set; } //TODO: Needs to be used
+        public bool IsDirty { get; set; }
 
         //Is Dirty Header used for time outs to know what to ignore
-        public Header IsDirtyMessageHeader { get; set; } //TODO: Needs to be used
+        public Header IsDirtyMessageHeader { get; set; }
 
         //Constructer for ServiceManager
         public ServiceManager()
