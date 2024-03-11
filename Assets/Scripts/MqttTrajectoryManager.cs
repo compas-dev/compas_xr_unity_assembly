@@ -335,7 +335,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         if(getTrajectoryResultmessage.Trajectory.Count > 0)
         {
             // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
-            _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 10); //TODO: MAKE THIS LONGER.... TODO: THIS SHOULD MOVE.
+            _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 120); //TODO: MAKE THIS LONGER.... TODO: THIS SHOULD MOVE.
         }
 
         //Set last result message of the Service Manager
@@ -361,10 +361,10 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                         serviceManager.ActiveRobotName,
                         () => trajectoryVisulizer.VisulizeRobotTrajectory(
                             getTrajectoryResultmessage.Trajectory,
+                            trajectoryVisulizer.URDFLinkNames,
                             getTrajectoryResultmessage.RobotBaseFrame,
                             getTrajectoryResultmessage.TrajectoryID,
                             trajectoryVisulizer.ActiveRobot,
-                            trajectoryVisulizer.JointNames,
                             trajectoryVisulizer.ActiveTrajectory,
                             true));
 
@@ -423,10 +423,10 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                         serviceManager.ActiveRobotName,
                         () => trajectoryVisulizer.VisulizeRobotTrajectory(
                             getTrajectoryResultmessage.Trajectory,
+                            trajectoryVisulizer.URDFLinkNames,
                             getTrajectoryResultmessage.RobotBaseFrame,
                             getTrajectoryResultmessage.TrajectoryID,
                             trajectoryVisulizer.ActiveRobot,
-                            trajectoryVisulizer.JointNames,
                             trajectoryVisulizer.ActiveTrajectory,
                             true));
                     
@@ -435,7 +435,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 }
                 else
                 {
-                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.JointNames, trajectoryVisulizer.ActiveTrajectory, true);
+                    trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectory, true);
                     Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
                 }
                 
