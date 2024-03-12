@@ -63,9 +63,15 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         //Calling Base Update is a property of Inheritance from M2MqttUnityClient. Ensures that the base class is called First.
         base.Update();
     }
-
     public void OnDestroy()
     {
+        //Unsubscribe from Compas XR Topics
+        UnsubscribeFromCompasXRTopics();
+
+        //Remove event listners
+        RemoveConnectionEventListners();
+
+        //Disconnect from MQTT
         Disconnect();
     }
     
