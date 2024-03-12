@@ -25,8 +25,8 @@ public class OcclusionManagerAR : MonoBehaviour
             else
             {
                 // Optionally, disable or leave the occlusion manager disabled for other platforms
-                occlusionManager.enabled = false;
-                Debug.Log("AR Occlusion disabled for non-iOS platforms.");
+                // occlusionManager.enabled = false;
+                Debug.Log("AR Occlusion will not be Enabled because this is a non-iOS platforms.");
             }
         }
         else
