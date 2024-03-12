@@ -66,6 +66,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
     public GameObject TrajectoryResponseIncorrectWarningMessageObject;
     public GameObject ConfigDoesNotMatchURDFStructureWarningMessageObject;
+    public GameObject TrajectoryNullWarningMessageObject;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -262,6 +263,7 @@ public class UIFunctionalities : MonoBehaviour
         ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
         TrajectoryResponseIncorrectWarningMessageObject = MessagesParent.FindObject("TrajectoryResponseIncorrectWarningMessage");
         ConfigDoesNotMatchURDFStructureWarningMessageObject = MessagesParent.FindObject("ConfigDoesNotMatchURDFStructureWarningMessage");
+        TrajectoryNullWarningMessageObject = MessagesParent.FindObject("TrajectoryNullWarningMessage");
         
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
@@ -1793,7 +1795,6 @@ public class UIFunctionalities : MonoBehaviour
         //If step is a robot step then make the request button visible.
         if(step.data.actor == "ROBOT")
         {
-
             //If the step is not built and priority is current priority then make request button visible and interactable
             if (!step.data.is_built && step.data.priority.ToString() == databaseManager.CurrentPriority)
             {    
