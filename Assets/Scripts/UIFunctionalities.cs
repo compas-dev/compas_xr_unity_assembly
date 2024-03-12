@@ -328,7 +328,6 @@ public class UIFunctionalities : MonoBehaviour
         //Find communication toggle objects
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
-
         //Find Occlusion toggle objects should be found every time, but only turned on if the device is an iOS device
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref OcclusionToggleObject, "OcclusionToggle", ToggleAROcclusion);
 
