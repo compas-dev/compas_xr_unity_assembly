@@ -132,10 +132,10 @@ namespace MQTTDataCompasXR
         public CancellationTokenSource ApprovalTimeOutCancelationToken { get; set; }
 
         //Is Dirty Bool used for time outs
-        public bool IsDirty { get; set; }
+        public bool IsDirtyApproval { get; set; }
 
         //Is Dirty Header used for time outs to know what to ignore
-        public Header IsDirtyMessageHeader { get; set; }
+        public Header IsDirtyApprovalHeader { get; set; }
 
         //Constructer for ServiceManager
         public ServiceManager()
@@ -147,8 +147,8 @@ namespace MQTTDataCompasXR
             currentService = CurrentService.None;
             LastGetTrajectoryRequestMessage = null;
             LastGetTrajectoryResultMessage = null;
-            IsDirty = false;
-            IsDirtyMessageHeader = null;
+            IsDirtyApproval = false;
+            IsDirtyApprovalHeader = null;
             TrajectoryRequestTransactionLock = false;
         }
 

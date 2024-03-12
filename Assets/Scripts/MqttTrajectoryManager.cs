@@ -308,23 +308,23 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
         }
     }
-    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY?
+    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY RESPONSE.
     {
 
         // Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-        if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
-        {
-            if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID + 1)
-            {
-                Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
-                return;
-            }
-            else
-            {
-                Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-                serviceManager.IsDirty = false;
-            }
-        }
+        // if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
+        // {
+        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID + 1)
+        //     {
+        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
+        //         return;
+        //     }
+        //     else
+        //     {
+        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+        //         serviceManager.IsDirty = false;
+        //     }
+        // }
 
         //Set last result message of the Service Manager
         serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
@@ -512,9 +512,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage) //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL?
     {
         //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-        if(serviceManager.IsDirty)
+        if(serviceManager.IsDirtyApproval)
         {
-            if(serviceManager.IsDirtyMessageHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID)
+            if(serviceManager.IsDirtyApprovalHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID && trajectoryApprovalMessage.ApprovalStatus != 3)
             {
                 Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true and the message is the same as the dirty message. No action taken.");
                 return;
@@ -522,7 +522,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             else
             {
                 Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-                serviceManager.IsDirty = false;
+                serviceManager.IsDirtyApproval = false;
             }
         }
 
@@ -542,7 +542,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Time out Cancelation Token Update
             if(serviceManager.ApprovalTimeOutCancelationToken != null)
             {
-                Debug.Log("I SHOULD CANCLE THE TIME OUT.");
+                Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR REJECTION.");
                 serviceManager.ApprovalTimeOutCancelationToken.Cancel();
             }
             
@@ -619,7 +619,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Time out Cancelation Token: Cancel the time out because of consensus
             if(serviceManager.ApprovalTimeOutCancelationToken != null)
             {
-                Debug.Log("I SHOULD CANCLE THE TIME OUT.");
+                Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR CONSENSUS.");
                 serviceManager.ApprovalTimeOutCancelationToken.Cancel();
             }
 
@@ -641,7 +641,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Time out Cancelation Token: Cancel the time out because of consensus
             if(serviceManager.ApprovalTimeOutCancelationToken != null)
             {
-                Debug.Log("I SHOULD CANCLE THE TIME OUT.");
+                Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR TRAJECTORY CANCELATION FROM SOMEONE ELSE.");
                 serviceManager.ApprovalTimeOutCancelationToken.Cancel();
             }
 
@@ -755,8 +755,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
 
                     //Set is dirty to true and store the message header for comparison
-                    serviceManager.IsDirty = true;
-                    serviceManager.IsDirtyMessageHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
+                    serviceManager.IsDirtyApproval = true;
+                    serviceManager.IsDirtyApprovalHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
                 }
             }
             else
