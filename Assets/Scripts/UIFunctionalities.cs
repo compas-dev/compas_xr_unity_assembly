@@ -535,7 +535,7 @@ public class UIFunctionalities : MonoBehaviour
                 ReloadButtonObject.SetActive(false);
                 CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
-                LoadFromROSToggleObject.SetActive(true);
+                LoadFromROSToggleObject.SetActive(false);
 
                 //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
                 if(currentOperatingSystem == OperatingSystem.iOS)
