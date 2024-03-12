@@ -339,7 +339,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             serviceManager.ApprovalTimeOutCancelationToken = new CancellationTokenSource();
             
             //Float duration dependent on if I am Primary user or not
-            float duration = 120; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.
+            float duration = 30; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.
             if(!serviceManager.PrimaryUser)
             {
                 duration = 240; //TODO: DURATION FOR NON PRIMARY USER WAITING FOR CONSENSUS.
@@ -519,6 +519,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Time out Cancelation Token Update
             if(serviceManager.ApprovalTimeOutCancelationToken != null)
             {
+                Debug.Log("I SHOULD CANCLE THE TIME OUT.");
                 serviceManager.ApprovalTimeOutCancelationToken.Cancel();
             }
             
@@ -595,6 +596,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Time out Cancelation Token: Cancel the time out because of consensus
             if(serviceManager.ApprovalTimeOutCancelationToken != null)
             {
+                Debug.Log("I SHOULD CANCLE THE TIME OUT.");
                 serviceManager.ApprovalTimeOutCancelationToken.Cancel();
             }
 
@@ -616,6 +618,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Time out Cancelation Token: Cancel the time out because of consensus
             if(serviceManager.ApprovalTimeOutCancelationToken != null)
             {
+                Debug.Log("I SHOULD CANCLE THE TIME OUT.");
                 serviceManager.ApprovalTimeOutCancelationToken.Cancel();
             }
 
@@ -693,42 +696,49 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Throwing away if the cancelation is called.
             cancellationToken.ThrowIfCancellationRequested();
 
-            //If I am the Primary User
-            if (serviceManager.PrimaryUser && serviceManager.currentService.Equals(ServiceManager.CurrentService.ExacuteTrajectory))
+            if (serviceManager.CurrentTrajectory != null)
             {
-                Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has already moved on to Service 3.");
-                return;
+                //If I am the Primary User
+                if (serviceManager.PrimaryUser && serviceManager.currentService.Equals(ServiceManager.CurrentService.ExacuteTrajectory))
+                {
+                    Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has already moved on to Service 3.");
+                    return;
+                }
+                else
+                {
+                    Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
+
+                    //Publish cancelation on ApproveTrajectory Topic
+                    PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.ActiveRobotName, serviceManager.CurrentTrajectory, 3).GetData());
+                    
+                    //Unsubsribe from Approval Counter Result topic
+                    if (serviceManager.PrimaryUser)
+                    {
+                        UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+                    }
+
+                    //Set Primary user back to false && Current Service to None
+                    serviceManager.PrimaryUser = false;
+                    serviceManager.currentService = ServiceManager.CurrentService.None;
+
+                    //Reset ApprovalCount and UserCount
+                    serviceManager.ApprovalCount.Reset();
+                    serviceManager.UserCount.Reset();
+
+                    //Signal On Screen Message for Trajectory Approval Timeout
+                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+
+                    //Set visibility and interactibility of Request Trajectory Button
+                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+
+                    //Set is dirty to true and store the message header for comparison
+                    serviceManager.IsDirty = true;
+                    serviceManager.IsDirtyMessageHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
+                }
             }
             else
             {
-                Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
-
-                //Publish cancelation on ApproveTrajectory Topic
-                PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.ActiveRobotName, serviceManager.CurrentTrajectory, 3).GetData());
-                
-                //Unsubsribe from Approval Counter Result topic
-                if (serviceManager.PrimaryUser)
-                {
-                    UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
-                }
-
-                //Set Primary user back to false && Current Service to None
-                serviceManager.PrimaryUser = false;
-                serviceManager.currentService = ServiceManager.CurrentService.None;
-
-                //Reset ApprovalCount and UserCount
-                serviceManager.ApprovalCount.Reset();
-                serviceManager.UserCount.Reset();
-
-                //Signal On Screen Message for Trajectory Approval Timeout
-                UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
-
-                //Set visibility and interactibility of Request Trajectory Button
-                UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
-
-                //Set is dirty to true and store the message header for comparison
-                serviceManager.IsDirty = true;
-                serviceManager.IsDirtyMessageHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
+                Debug.Log("MQTT: TrajectoryApprovalTimeout: Current Trajectory is null and this method should not have been called. Either Cancelation did not happen properly, or there is a null trajectory on timeout.");
             }
 
         }

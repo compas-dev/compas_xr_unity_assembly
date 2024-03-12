@@ -1573,8 +1573,12 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Execute Trajectory Button Pressed: Executing Trajectory for Step {CurrentStep}");
 
+        //Send Trajectory message as dictionary
+        Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
+        Debug.Log("Send Trajectory Message: " + JsonConvert.SerializeObject(sendTrajectoryMessage));
+
         //Publish new SendTrajectoryMessage to the trajectory execution topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, sendTrajectoryMessage);
 
         //Make the execute button not interactable to prevent sending multiple just a precaustion, should be handled by message handler anyway.
         TrajectoryServicesUIControler(false, false, false, false, true, false);

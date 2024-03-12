@@ -718,7 +718,7 @@ namespace MQTTDataCompasXR
         }
     }
     [System.Serializable]
-    public class SendTrajectory
+    public class SendTrajectory //TODO: ROBOT BASE FRAME?
     {
         // Accessible properties
         public Header Header { get; private set; }
