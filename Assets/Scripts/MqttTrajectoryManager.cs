@@ -379,7 +379,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.ApprovalTimeOutCancelationToken = new CancellationTokenSource();
                     
                     //Float duration dependent on if I am Primary user or not
-                    float duration = 30; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
+                    float duration = 120; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
                     if(!serviceManager.PrimaryUser)
                     {
                         duration = 240; //TODO: DURATION FOR NON PRIMARY USER WAITING FOR CONSENSUS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
