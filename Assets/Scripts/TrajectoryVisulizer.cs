@@ -45,7 +45,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         
     }
 
-    ////////////////////////////////////////// Initilization & Selection //////////////////////////////////////////
+    ////////////////////////////////////////// Initilization & Selection //////////////////////////////////////////////////////
     private void OnStartInitilization()
     {
         //Find Objects for retreiving and storing the active robots in the scene
@@ -123,7 +123,7 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
     }
 
-    ////////////////////////////////////////// Object Management /////// /////////////////////////////////////////////////////
+    ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
     public void InstantiateRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
     {
         Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
