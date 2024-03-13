@@ -199,18 +199,8 @@ public class UIFunctionalities : MonoBehaviour
         //Find and set current operating system
         currentOperatingSystem = OperatingSystemManager.GetCurrentOS();
 
-        //if the current operating system is IOS then find the occlusion manager
-        if(currentOperatingSystem == OperatingSystem.iOS)
-        {
-            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
-            occlusionManager.enabled = true;
-
-            Debug.Log("AROcclusion: will be activated because current platform is ios");
-        }
-        else
-        {
-            Debug.Log("AROcclusion: will not be activated because current system is not ios");
-        }
+        //Set occlusion manager based on the current operating system.
+        SetOcclusionFromOS(ref occlusionManager, currentOperatingSystem);
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
@@ -558,6 +548,21 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
+    }
+    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    {
+        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
+        if(currentOperatingSystem == OperatingSystem.iOS)
+        {
+            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+            occlusionManager.enabled = true;
+
+            Debug.Log("AROcclusion: will be activated because current platform is ios");
+        }
+        else
+        {
+            Debug.Log("AROcclusion: will not be activated because current system is not ios");
+        }
     }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
