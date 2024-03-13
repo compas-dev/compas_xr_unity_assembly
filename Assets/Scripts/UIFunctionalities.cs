@@ -202,7 +202,14 @@ public class UIFunctionalities : MonoBehaviour
         //if the current operating system is IOS then find the occlusion manager
         if(currentOperatingSystem == OperatingSystem.iOS)
         {
-            occlusionManager = FindObjectOfType<AROcclusionManager>();
+            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+            occlusionManager.enabled = true;
+
+            Debug.Log("AROcclusion: will be activated because current platform is ios");
+        }
+        else
+        {
+            Debug.Log("AROcclusion: will not be activated because current system is not ios");
         }
 
         //Find Constant UI Pannel
