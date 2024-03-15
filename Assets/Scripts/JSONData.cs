@@ -29,7 +29,6 @@ namespace JSON
     [System.Serializable]
     public class Attributes
     {
-        // public string device_id { get; set; }
         public bool is_built { get; set;}
         public bool is_planned { get; set;}
         public string placed_by { get; set; }
@@ -70,7 +69,7 @@ namespace JSON
                     Debug.LogError("One of the Frame lists is null");
                 }
             }
-            else if(frameDataDict["point"] is float[] && frameDataDict["xaxis"] is float[] && frameDataDict["yaxis"] is float[])
+            else if(frameDataDict["point"] is float[] && frameDataDict["xaxis"] is float[] && frameDataDict["yaxis"] is float[]) //TODO: convert to static method for converting any type of anything to float lists.
             {
                 frame.point = (float[])frameDataDict["point"];
                 frame.xaxis = (float[])frameDataDict["xaxis"];
