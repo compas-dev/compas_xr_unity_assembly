@@ -41,7 +41,10 @@ public class RosConnectionManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        RosSocket.Close();
+        if(RosSocket != null && IsConnectedToRos)
+        {
+            RosSocket.Close();
+        }
     }
 
     private void OnConnected(object sender, EventArgs e)
