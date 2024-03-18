@@ -29,6 +29,7 @@ public class UIFunctionalities : MonoBehaviour
     public Eventmanager eventManager;
     public MqttTrajectoryManager mqttTrajectoryManager;
     public TrajectoryVisulizer trajectoryVisulizer;
+    public RosConnectionManager rosConnectionManager;
     
     //Primary UI Objects
     private GameObject VisibilityMenuObject;
@@ -183,6 +184,7 @@ public class UIFunctionalities : MonoBehaviour
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
         mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
         trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
+        rosConnectionManager = GameObject.Find("RosManager").GetComponent<RosConnectionManager>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -354,8 +356,8 @@ public class UIFunctionalities : MonoBehaviour
         //Find Pannel Objects used for connecting to a different ROS host
         RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
         RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
-        RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
-        FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", () => print_string_on_click("ROS CONNECT BUTTONPRESSED"));
+        RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsROSReconnectMessage");
+        FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", UpdateRosConnectionFromUserInputs);
 
         //Find Control Objects and set up events
         GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
@@ -1474,6 +1476,53 @@ public class UIFunctionalities : MonoBehaviour
             
             //Signal Manual Input text
             MqttUpdateConnectionMessage.SetActive(true);
+
+        }
+    }
+    public void UpdateRosConnectionFromUserInputs()
+    {
+        Debug.Log($"UpdateRosConnectionFromUserInputs: Attempting ROS Connection to ws://{RosHostInputField.text}:{RosPortInputField.text} from User Inputs.");
+        
+        //Set UI Color
+        SetUIObjectColor(RosConnectButtonObject, White);
+        
+        //Check inputs and if they are not null update the connection if they are null leave the default.
+        string rosHostInput = RosHostInputField.text;
+        string rosPortInput = RosPortInputField.text;
+
+        if (string.IsNullOrWhiteSpace(rosHostInput) || string.IsNullOrWhiteSpace(rosPortInput))
+        {
+            rosHostInput = "localhost";
+            rosPortInput = "9090";
+        }
+
+        //Ross bridge connection address
+        string newRosBridgeAddress = $"ws://{rosHostInput}:{rosPortInput}";
+
+        Debug.Log("UpdateRosConnectionFromUserInputs: New ROS Bridge Address: " + newRosBridgeAddress);
+        
+        //Check if the manual the port or broker is different then the current one.
+        if (newRosBridgeAddress != rosConnectionManager.RosBridgeServerUrl || !rosConnectionManager.IsConnectedToRos)
+        {
+            //If we are connected to ros then disconnect
+            if(rosConnectionManager.IsConnectedToRos)
+            {
+                //Disconnect from current ros bridge socket
+                rosConnectionManager.RosSocket.Close();
+            }
+            
+            //Update rosBridgeServerUrl from the inputs
+            rosConnectionManager.RosBridgeServerUrl = newRosBridgeAddress;
+
+            //Disconnect from current broker
+            rosConnectionManager.ConnectAndWait();
+        }
+        else
+        {
+            Debug.Log("UpdateRosConnectionFromUserInputs: ROS Host and Port are the same as our current and we are connected. Not updating connection.");
+            
+            //Signal Manual Input text
+            RosUpdateConnectionMessage.SetActive(true);
 
         }
     }
