@@ -167,7 +167,7 @@ namespace Instantiate
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
             
             //Create 3D Index Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key} | {step.data.element_ids[0]}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
             CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
 
             //Create Priority Text
