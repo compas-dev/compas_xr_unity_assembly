@@ -224,15 +224,6 @@ public class UIFunctionalities : MonoBehaviour
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
         IsbuiltPriorityLockedImage = IsBuiltButtonObject.FindObject("PriorityLockedImage");
 
-        //Find toggle for element search
-        FindToggleandSetOnValueChangedAction(ConstantUIPanelObjects, ref ElementSearchToggleObject, "ElementSearchToggle", ToggleElementSearch);
-        
-        //Find Element Search Button & Objects
-        ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
-        ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();
-        FindButtonandSetOnClickAction(ElementSearchObjects, ref SearchElementButtonObject, "SearchForElementButton", SearchElementButton);
-        SearchedElement = "None";
-
         //Find toggles for menu & Add on value changed event
         FindToggleandSetOnValueChangedAction(CanvasObject, ref MenuButtonObject, "Menu_Toggle", ToggleMenu);
 
@@ -282,10 +273,19 @@ public class UIFunctionalities : MonoBehaviour
         FindButtonandSetOnClickAction(VisibilityMenuObject, ref PreviewBuilderButtonObject, "Preview_Builder", ChangeVisualizationMode);
 
         //Find IDToggle Object, Button, and Add Listener for OnClick method
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID); //TODO: TOGGLES LIKE THIS.
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID);
 
         //Find Robot toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "Robot_Button", ToggleRobot);
+
+        //Find toggle for element search
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ElementSearchToggleObject, "ElementSearchToggle", ToggleElementSearch);
+
+        //Find Element Search Button & Objects
+        ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
+        ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();
+        FindButtonandSetOnClickAction(ElementSearchObjects, ref SearchElementButtonObject, "SearchForElementButton", SearchElementButton);
+        SearchedElement = "None";
 
         //Find Robot toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
@@ -465,6 +465,7 @@ public class UIFunctionalities : MonoBehaviour
                 ObjectLengthsToggleObject.SetActive(true);
                 IDToggleObject.SetActive(true);
                 PriorityViewerToggleObject.SetActive(true);
+                ElementSearchToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
@@ -479,6 +480,7 @@ public class UIFunctionalities : MonoBehaviour
                 ObjectLengthsToggleObject.SetActive(false);
                 IDToggleObject.SetActive(false);
                 PriorityViewerToggleObject.SetActive(false);
+                ElementSearchToggleObject.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
