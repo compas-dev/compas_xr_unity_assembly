@@ -243,7 +243,7 @@ public class UIFunctionalities : MonoBehaviour
         CurrentStepTextObject = GameObject.Find("Current_Index_Text");
         CurrentStepText = CurrentStepTextObject.GetComponent<TMPro.TMP_Text>();
 
-        GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltIndex_Text");
+        GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltElement_Text");
         LastBuiltIndexText = LastBuiltIndexTextObject.GetComponent<TMPro.TMP_Text>();
 
         GameObject CurrentPriorityTextObject = GameObject.Find("CurrentPriority_Text");
@@ -1097,7 +1097,7 @@ public class UIFunctionalities : MonoBehaviour
     public void SetLastBuiltText(string key)
     {
         //Set Last Built Text
-        LastBuiltIndexText.text = $"Last Built Step : {key}";
+        LastBuiltIndexText.text = $"Last Built Element : {key}";
     }
     public void SetCurrentPriority(string Priority)
     {        
