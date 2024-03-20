@@ -51,6 +51,9 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject SearchElementButtonObject;
 
     //On Screen Messages
+    public GameObject MessagesParent;
+    private GameObject OnScreenErrorMessagePrefab;
+    private GameObject OnScreenInfoMessagePrefab;
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
     private GameObject PriorityCompleteMessageObject;
@@ -247,9 +250,12 @@ public class UIFunctionalities : MonoBehaviour
         VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
 
-        //Find OnScreeen Messages
-        GameObject MessagesParent = CanvasObject.FindObject("OnScreenMessages");
-        PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
+        //Find OnScreeen Message Prefabs
+        MessagesParent = CanvasObject.FindObject("OnScreenMessages");
+        OnScreenErrorMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenErrorMessagePrefab");
+        OnScreenInfoMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenInfoMessagePrefab");
+
+        // PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
         PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
         PriorityCompleteMessageObject = MessagesParent.FindObject("PriorityCompleteMessage");
         SearchItemNotFoundWarningMessageObject = MessagesParent.FindObject("SearchItemNotFoundWarningMessage");
@@ -1007,7 +1013,10 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Signal on screen message for priority incomplete
                     string message = $"WARNING: This element cannot build because the following elements from Current Priority {databaseManager.CurrentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
-                    SignalOnScreenMessageFromReference(ref PriorityIncompleteWarningMessageObject, message, "Priority Incomplete Warning");
+                    // SignalOnScreenMessageFromReference(ref PriorityIncompleteWarningMessageObject, message, "Priority Incomplete Warning");
+
+                    //TODO: Use this everywhere.
+                    SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncompleteWarningMessageObject, "PriorityIncompleteWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incomplete Warning");
 
                     //Return true to not push data.
                     return false;
@@ -1386,6 +1395,36 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("MQTT Message: Could not find message object or message component.");
         }
     }
+
+    public void SignalOnScreenMessageFromPrefab(ref GameObject prefabReference, ref GameObject messageObjectReference, string activeMessageGameObjectName, GameObject activeMessageParent, string message, string logMessageName)
+    {
+        Debug.Log($"{logMessageName}: Signal On Screen Message.");
+
+        //If the message object reference is null then create it from the prefab
+        if(messageObjectReference == null)
+        {
+            //Instantiate the prefab
+            messageObjectReference = Instantiate(prefabReference);
+            messageObjectReference.transform.SetParent(activeMessageParent.transform, false);
+
+            //Set the name of the message object
+            messageObjectReference.name = activeMessageGameObjectName;
+        }
+
+        //Find text component for on screen message
+        TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
+
+        if(messageTextComponent != null && message != null && messageObjectReference != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning($"{logMessageName}: Could not find message object or message component.");
+        }
+    }
+
     public void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
     {
         Debug.Log($"{logMessageName}: Signal On Screen Message.");
