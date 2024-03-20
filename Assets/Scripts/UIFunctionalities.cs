@@ -256,8 +256,8 @@ public class UIFunctionalities : MonoBehaviour
         OnScreenInfoMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenInfoMessagePrefab");
 
         //OnScreen Messages with custom acknowledgement events.
-        ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
-        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
+        ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("Prefabs").FindObject("ActiveRobotUpdatedFromPlannerMessage");
+        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("Prefabs").FindObject("TrajectoryReviewRequestReceivedMessage");
         
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
@@ -674,7 +674,7 @@ public class UIFunctionalities : MonoBehaviour
                     trajectoryVisulizer.ActiveRobot.SetActive(false);
                 }
                 //If the Active Trajectory child count is greater the 0 then destroy children
-                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                if(trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                 {
                     trajectoryVisulizer.DestroyActiveTrajectoryChildren();
                 }
@@ -1893,9 +1893,9 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     trajectoryVisulizer.ActiveRobot.SetActive(false);
                 }
-                else if(trajectoryVisulizer.ActiveTrajectory.activeSelf) //TODO: SHOULD THIS DESTROY?
+                else if(trajectoryVisulizer.ActiveTrajectoryParentObject.activeSelf) //TODO: SHOULD THIS DESTROY?
                 {
-                    trajectoryVisulizer.ActiveTrajectory.SetActive(false);
+                    trajectoryVisulizer.ActiveTrajectoryParentObject.SetActive(false);
                 }
             }
 

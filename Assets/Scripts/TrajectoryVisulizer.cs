@@ -22,7 +22,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     //GameObjects for storing the active robot objects in the scene
     public GameObject ActiveRobotObjects;
     public GameObject ActiveRobot;
-    public GameObject ActiveTrajectory;
+    public GameObject ActiveTrajectoryParentObject;
     private GameObject BuiltInRobotsParent;
 
     //Dictionary for storing URDFLinkNames associated with JointNames. Updated by recursive method from updating robot.
@@ -68,9 +68,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
         
         //Instantiate the active robot in the ActiveRobotObjectsParent
-        SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
+        SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, visibility);
     }
-    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material, bool visibility)
+    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility)
     {
         //Set the active robot in the scene
         GameObject selectedRobot = BuiltInRobotsParent.FindObject(robotName);
@@ -82,9 +82,9 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 Destroy(ActiveRobot);
             }
-            if(ActiveTrajectory != null)
+            if(ActiveTrajectoryParentObject != null)
             {
-                Destroy(ActiveTrajectory);
+                Destroy(ActiveTrajectoryParentObject);
             }
             
             //Instantiate a new robot object in the ActiveRobotObjectsParent //TODO: CHECK THIS.
@@ -100,9 +100,9 @@ public class TrajectoryVisulizer : MonoBehaviour
             ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
             ActiveRobot.name = "ActiveRobot";
             ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
-            ActiveTrajectory = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
-            ActiveTrajectory.name = "ActiveTrajectory";
-            ActiveTrajectory.transform.SetParent(ActiveRobotObjectsParent.transform);
+            ActiveTrajectoryParentObject = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
+            ActiveTrajectoryParentObject.name = "ActiveTrajectory";
+            ActiveTrajectoryParentObject.transform.SetParent(ActiveRobotObjectsParent.transform);
 
             //Updating Service Manager with My active Robot Name
             mqttTrajectoryManager.serviceManager.ActiveRobotName = robotName;
@@ -183,17 +183,17 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             Destroy(ActiveRobot);
         }
-        if(ActiveTrajectory != null)
+        if(ActiveTrajectoryParentObject != null)
         {
-            Destroy(ActiveTrajectory);
+            Destroy(ActiveTrajectoryParentObject);
         }
     }
     public void DestroyActiveTrajectoryChildren()
     {
         //Destroy the active robot in the scene
-        if(ActiveTrajectory != null)
+        if(ActiveTrajectoryParentObject != null)
         {
-            foreach (Transform child in ActiveTrajectory.transform)
+            foreach (Transform child in ActiveTrajectoryParentObject.transform)
             {
                 Destroy(child.gameObject);
             }
@@ -333,14 +333,14 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             Debug.Log ("ColorRobotConfigfromSlider: Previous slider value is not null.");
             //Find the parent associated with the slider value
-            GameObject previousRobotGameObject = ActiveTrajectory.FindObject($"Config {previousSliderValue}");
+            GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
 
             //Color the robot active robot
             ColorRobot(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
         }
         
         //Find the parent associated with the slider value
-        GameObject robotGameObject = ActiveTrajectory.FindObject($"Config {sliderValue}");
+        GameObject robotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {sliderValue}");
 
         if (robotGameObject == null)
         {

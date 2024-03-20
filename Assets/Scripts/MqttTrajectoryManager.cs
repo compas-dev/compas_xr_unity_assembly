@@ -423,7 +423,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                                 getTrajectoryResultmessage.RobotBaseFrame,
                                 getTrajectoryResultmessage.TrajectoryID,
                                 trajectoryVisulizer.ActiveRobot,
-                                trajectoryVisulizer.ActiveTrajectory,
+                                trajectoryVisulizer.ActiveTrajectoryParentObject,
                                 true));
 
                         //Set curent trajectory of the Service Manager
@@ -478,7 +478,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                                     getTrajectoryResultmessage.RobotBaseFrame,
                                     getTrajectoryResultmessage.TrajectoryID,
                                     trajectoryVisulizer.ActiveRobot,
-                                    trajectoryVisulizer.ActiveTrajectory,
+                                    trajectoryVisulizer.ActiveTrajectoryParentObject,
                                     true));
                             
                             Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is not the same as the active robot name signaling on screen control.");
@@ -486,7 +486,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                         }
                         else
                         {
-                            trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectory, true);
+                            trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectoryParentObject, true);
                             Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
                         }
                         
@@ -558,7 +558,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             }
             
             //If the Active Trajectory child count is greater the 0 then destroy children
-            if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+            if(trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
             {
                 trajectoryVisulizer.DestroyActiveTrajectoryChildren();
             }
@@ -666,12 +666,12 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 serviceManager.currentService = ServiceManager.CurrentService.None;
                             
                 //If the Active Trajectory child count is greater the 0 then destroy children
-                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                if(trajectoryVisulizer.ActiveTrajectoryParentObject != null && trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                 {
                     trajectoryVisulizer.DestroyActiveTrajectoryChildren();
                 }
                 //If the Active Robot is not active set it to active
-                if(!trajectoryVisulizer.ActiveRobot.activeSelf)
+                if(trajectoryVisulizer.ActiveRobot != null && !trajectoryVisulizer.ActiveRobot.activeSelf)
                 {
                     trajectoryVisulizer.ActiveRobot.SetActive(true);
                 }
