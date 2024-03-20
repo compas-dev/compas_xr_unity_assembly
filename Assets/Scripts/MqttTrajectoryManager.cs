@@ -120,7 +120,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         base.OnConnectionLost();
 
         //Signal On screen message that connection has been lost
-        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.MQTTConnectionLostMessageObject);
+        string message = "WARNING: MQTT connection has been lost. Please check your internet connection and restart the application.";
+        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.MQTTConnectionLostMessageObject, "MQTTConnectionLostMessage", UIFunctionalities.MessagesParent, message, "OnConnectionLost: MQTT Connection Lost");
 
         Debug.Log("MQTT: CONNECTION LOST INTERNAL METHOD!");
     }
@@ -345,6 +346,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 if(serviceManager.PrimaryUser)
                 {                    
                     Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
+
+                    string message = "WARNING: Trajectory Response did not match expectations. Returning to Request Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject, "TrajectoryResponseIncorrectWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Message Structure incorrect.");
                     UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
 
                     //Set Primary user back to false
@@ -504,7 +508,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                         UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
 
                         //Set on screen message and return to trajectory request service
-                        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryNullWarningMessageObject);
+                        string message = "WARNING: The robotic controler replied with a Null trajectory. You will be returned to trajectory request.";
+                        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryNullWarningMessageObject, "TrajectoryNullWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Received trajectory is null");
                     }
                 }
             }
@@ -672,7 +677,11 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 }
 
                 //Signal OnScreen message for Trajectory Approval Canceled
-                UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+                if (trajectoryApprovalMessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
+                {
+                    string message = "WARNING : The trajectory approval has been canceled by another user. Returning to Request Trajectory Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "ApproveTrajectoryMessageReceivedHandler: Trajectory Cancled by another user.");
+                }
 
                 //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
                 UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
@@ -755,7 +764,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.UserCount.Reset();
 
                     //Signal On Screen Message for Trajectory Approval Timeout
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+                    string message = "WARNING : Trajectory Approval has timed out. Returning to Request Trajectory Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "TrajectoryApprovalTimeout: Trajectory Approval Cancled by Timeout.");
 
                     //Set visibility and interactibility of Request Trajectory Button
                     UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);

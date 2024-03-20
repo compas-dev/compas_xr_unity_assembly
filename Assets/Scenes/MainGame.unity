@@ -3946,12 +3946,12 @@ RectTransform:
   m_GameObject: {fileID: 146455954}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1695647251}
   - {fileID: 600457568}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -11445,12 +11445,12 @@ RectTransform:
   m_GameObject: {fileID: 382795928}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 178358622}
   - {fileID: 625926350}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -13962,12 +13962,12 @@ RectTransform:
   m_GameObject: {fileID: 491117130}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2078948268}
   - {fileID: 1040300387}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -26778,7 +26778,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'WARNING: Active Robot could not be found. Please confirm with planner
+  m_text: 'WARNING: Active Robot ETHZURICHRFL could not be found. Confirm with planner
     which Robot is in use, or load robot.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -32022,12 +32022,12 @@ RectTransform:
   m_GameObject: {fileID: 1100266354}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 495326047}
   - {fileID: 287693784}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -34254,12 +34254,12 @@ RectTransform:
   m_GameObject: {fileID: 1172793322}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 893072738}
   - {fileID: 2099957937}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -34362,6 +34362,57 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GeometryType: 3
+--- !u!1 &1174653748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1174653749}
+  m_Layer: 5
+  m_Name: OldMessages
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1174653749
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174653748}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3721982429225813119}
+  - {fileID: 1100266355}
+  - {fileID: 1304579640}
+  - {fileID: 4622388828145102494}
+  - {fileID: 3045994672343444378}
+  - {fileID: 8144523152968132295}
+  - {fileID: 2075386781}
+  - {fileID: 5059066053630686141}
+  - {fileID: 4811229107347803681}
+  - {fileID: 146455955}
+  - {fileID: 382795929}
+  - {fileID: 1172793323}
+  - {fileID: 1266690761}
+  - {fileID: 2106621048}
+  - {fileID: 2029963497}
+  - {fileID: 491117131}
+  m_Father: {fileID: 3793966868836742290}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1179482775
 GameObject:
   m_ObjectHideFlags: 0
@@ -37545,12 +37596,12 @@ RectTransform:
   m_GameObject: {fileID: 1266690760}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 417211526}
   - {fileID: 875714392}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -38454,12 +38505,12 @@ RectTransform:
   m_GameObject: {fileID: 1304579639}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 313547789}
   - {fileID: 1287112049}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -51131,8 +51182,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'ERROR: Application unable to fetch one or more Download URL''s. Please
-    connect device to unity and review error log.'
+  m_text: 'ERROR: Application unable to fetch URL for 0.obj. Please review the associated
+    file and try again.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -62268,7 +62319,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2023702814
 RectTransform:
   m_ObjectHideFlags: 0
@@ -62569,12 +62620,12 @@ RectTransform:
   m_GameObject: {fileID: 2029963496}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 722904501}
   - {fileID: 1189999104}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -63639,12 +63690,12 @@ RectTransform:
   m_GameObject: {fileID: 2075386780}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1671755878}
   - {fileID: 1292793074}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -64779,12 +64830,12 @@ RectTransform:
   m_GameObject: {fileID: 2106621047}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1891311268}
   - {fileID: 1675138709}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -70676,8 +70727,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'WARNING: MQTT Failed to connect. Please check your internet connection
-    and restart the application.'
+  m_text: 'WARNING: MQTT Failed to connect to broker: broker.hivemq.com on port:
+    1883. Please check your internet and try again.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -74984,12 +75035,12 @@ RectTransform:
   m_GameObject: {fileID: 7866450833507203421}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2018816341517958689}
   - {fileID: 5106112872646025457}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -75337,12 +75388,14 @@ MonoBehaviour:
   IsbuiltButtonImage: {fileID: 0}
   IsbuiltPriorityLockedImage: {fileID: 0}
   MessagesParent: {fileID: 0}
+  OnScreenErrorMessagePrefab: {fileID: 0}
+  OnScreenInfoMessagePrefab: {fileID: 0}
   MQTTFailedToConnectMessageObject: {fileID: 0}
   MQTTConnectionLostMessageObject: {fileID: 0}
   ErrorFetchingDownloadUriMessageObject: {fileID: 0}
   ErrorDownloadingObjectMessageObject: {fileID: 0}
   TrajectoryReviewRequestMessageObject: {fileID: 0}
-  TrajectoryApprovalTimedOutMessageObject: {fileID: 0}
+  TrajectoryCancledMessage: {fileID: 0}
   SearchItemNotFoundWarningMessageObject: {fileID: 0}
   ActiveRobotIsNullWarningMessageObject: {fileID: 0}
   TransactionLockActiveWarningMessageObject: {fileID: 0}
@@ -77038,12 +77091,12 @@ RectTransform:
   m_GameObject: {fileID: 1084757129529360923}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2989355232131151932}
   - {fileID: 3383133237174488435}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -77260,23 +77313,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3721982429225813119}
-  - {fileID: 1100266355}
-  - {fileID: 1304579640}
-  - {fileID: 4622388828145102494}
-  - {fileID: 3045994672343444378}
-  - {fileID: 8144523152968132295}
-  - {fileID: 2075386781}
-  - {fileID: 5059066053630686141}
-  - {fileID: 4811229107347803681}
-  - {fileID: 146455955}
-  - {fileID: 382795929}
-  - {fileID: 1172793323}
-  - {fileID: 1266690761}
-  - {fileID: 2106621048}
-  - {fileID: 2029963497}
-  - {fileID: 491117131}
   - {fileID: 1465083477}
+  - {fileID: 1174653749}
   m_Father: {fileID: 316923129428089353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -79234,12 +79272,12 @@ RectTransform:
   m_GameObject: {fileID: 4471730054109519493}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3534952238862150332}
   - {fileID: 5493502881460834216}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -79669,12 +79707,12 @@ RectTransform:
   m_GameObject: {fileID: 4089450176634305681}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5921344023347437752}
   - {fileID: 4012797580814813578}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -80226,12 +80264,12 @@ RectTransform:
   m_GameObject: {fileID: 5969604592596399957}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5845068815345923952}
   - {fileID: 594807786203601315}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -84004,8 +84042,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'ERROR: One or more objects failed to download. Please connect device to
-    unity and review error log.'
+  m_text: 'ERROR: Application failed download file for object 123.obj. Please review
+    the associated file and try again.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -84841,8 +84879,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'ERROR : Trajectory Approval Session has timed out and you are returned
-    to Request Trajectory.'
+  m_text: The trajectory approval has been canceled by another user. Returning to
+    Request Trajectory Service.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -87804,12 +87842,12 @@ RectTransform:
   m_GameObject: {fileID: 6550205211447683341}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_LocalScale: {x: 1.2499999, y: 1.2499999, z: 1.2499999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7169107558958238535}
   - {fileID: 5427259882171489070}
-  m_Father: {fileID: 3793966868836742290}
+  m_Father: {fileID: 1174653749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}

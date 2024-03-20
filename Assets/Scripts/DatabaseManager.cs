@@ -248,10 +248,9 @@ public class DatabaseManager : MonoBehaviour
                 if (task.IsFaulted)
                 {
                     //If there is an error when fetching an object signal and on screen message.
-                    if(!UIFunctionalities.ErrorFetchingDownloadUriMessageObject.activeSelf)
-                    {
-                        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorFetchingDownloadUriMessageObject);
-                    }
+                    string message = $"ERROR: Application unable to fetch URL for {fileMetadata.name}. Please review the associated file and try again.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorFetchingDownloadUriMessageObject, "ErrorFetchingDownloadUriMessage", UIFunctionalities.MessagesParent, message, "GetDownloadUriFromFilesMedata: Error Fetching Download URL");
+                    
                     Debug.LogError("Error fetching download URL from Firebase Storage");
                     return;
                 }
@@ -305,10 +304,9 @@ public class DatabaseManager : MonoBehaviour
             if (webRequest.result != UnityWebRequest.Result.Success)
             {
                 //If there is an error when downloading an object signal and on screen message.
-                if(!UIFunctionalities.ErrorDownloadingObjectMessageObject.activeSelf)
-                {
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorDownloadingObjectMessageObject);
-                }
+                string message = $"ERROR: Application failed download file for object {Path.GetFileName(filePath)}. Please review the associated file and try again.";
+                UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
+
                 Debug.LogError("File download error: " + webRequest.error);
             }
             else

@@ -52,8 +52,8 @@ public class UIFunctionalities : MonoBehaviour
 
     //On Screen Messages
     public GameObject MessagesParent;
-    private GameObject OnScreenErrorMessagePrefab;
-    private GameObject OnScreenInfoMessagePrefab;
+    public GameObject OnScreenErrorMessagePrefab;
+    public GameObject OnScreenInfoMessagePrefab;
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
     private GameObject PriorityCompleteMessageObject;
@@ -62,7 +62,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ErrorFetchingDownloadUriMessageObject;
     public GameObject ErrorDownloadingObjectMessageObject;
     public GameObject TrajectoryReviewRequestMessageObject;
-    public GameObject TrajectoryApprovalTimedOutMessageObject;
+    public GameObject TrajectoryCancledMessage;
     public GameObject SearchItemNotFoundWarningMessageObject;
     public GameObject ActiveRobotIsNullWarningMessageObject;
     public GameObject TransactionLockActiveWarningMessageObject;
@@ -255,23 +255,9 @@ public class UIFunctionalities : MonoBehaviour
         OnScreenErrorMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenErrorMessagePrefab");
         OnScreenInfoMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenInfoMessagePrefab");
 
-        // PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
-        PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
-        PriorityCompleteMessageObject = MessagesParent.FindObject("PriorityCompleteMessage");
-        SearchItemNotFoundWarningMessageObject = MessagesParent.FindObject("SearchItemNotFoundWarningMessage");
-        MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
-        MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
-        ErrorFetchingDownloadUriMessageObject = MessagesParent.FindObject("ErrorFetchingDownloadUriMessage");
-        ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
-        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
-        TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
-        ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
-        TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockActiveWarningMessage");
-        ActiveRobotCouldNotBeFoundWarningMessage = MessagesParent.FindObject("ActiveRobotCouldNotBeFoundWarningMessage");
+        //OnScreen Messages with custom acknowledgement events.
         ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
-        TrajectoryResponseIncorrectWarningMessageObject = MessagesParent.FindObject("TrajectoryResponseIncorrectWarningMessage");
-        ConfigDoesNotMatchURDFStructureWarningMessageObject = MessagesParent.FindObject("ConfigDoesNotMatchURDFStructureWarningMessage");
-        TrajectoryNullWarningMessageObject = MessagesParent.FindObject("TrajectoryNullWarningMessage");
+        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
         
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
@@ -729,7 +715,7 @@ public class UIFunctionalities : MonoBehaviour
                     if(searchedElement != null)
                     {
                         //TODO: ADD IF STATEMENT FOR IF IT IS CURRENT STEP or over arching color and colider controler.
-
+                        // instantiateObjects.ObjectColorandTouchEvaluater(mo) //TODO: DEPENDS ON SET UP OF PRIORITY VIEWER.
                         //Color Previous one if it is not null
                         instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID].data.is_built, searchedElement);
                     }
@@ -803,7 +789,8 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             string message = $"WARNING: The item {ElementSearchInputField.text} could not be found. Please retype information and try search again.";
-            SignalOnScreenMessageFromReference(ref SearchItemNotFoundWarningMessageObject, message, "Search Object Not Found");
+            // SignalOnScreenMessageFromReference(ref SearchItemNotFoundWarningMessageObject, message, "Search Object Not Found");
+            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", MessagesParent, message, "SearchElementButton: Could not find searched item.");
         }     
     }
     public void PreviousStepButton()
@@ -958,8 +945,9 @@ public class UIFunctionalities : MonoBehaviour
 
                 //Signal on screen message for priority incorrect
                 string message = $"WARNING: This elements priority is incorrect. It is priority {step.data.priority.ToString()} and next priority to build is {Convert.ToInt16(databaseManager.CurrentPriority) + 1}";
-                SignalOnScreenMessageFromReference(ref PriorityIncorrectWarningMessageObject, message, "Priority Incorrect Warning");
-
+                // SignalOnScreenMessageFromReference(ref PriorityIncorrectWarningMessageObject, message, "Priority Incorrect Warning");
+                
+                SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncorrectWarningMessageObject, "PriorityIncorrectWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incorrect Warning");
                 //Return false to not push data.
                 return false;
             }
@@ -993,8 +981,9 @@ public class UIFunctionalities : MonoBehaviour
 
                     //Signal on screen message for priority complete
                     string message = $"The previous priority {databaseManager.CurrentPriority} is complete you are now moving on to priority {step.data.priority.ToString()}.";
-                    SignalOnScreenMessageFromReference(ref PriorityCompleteMessageObject, message ,"Priority Complete Message");
-
+                    // SignalOnScreenMessageFromReference(ref PriorityCompleteMessageObject, message ,"Priority Complete Message");
+                    SignalOnScreenMessageFromPrefab(ref OnScreenInfoMessagePrefab, ref PriorityCompleteMessageObject, "PriorityCompleteMessage", MessagesParent, message, "LocalPriorityChecker: Priority Complete Message");
+                    
                     //Set Current Priority
                     SetCurrentPriority(step.data.priority.ToString());
 
@@ -1013,9 +1002,6 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Signal on screen message for priority incomplete
                     string message = $"WARNING: This element cannot build because the following elements from Current Priority {databaseManager.CurrentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
-                    // SignalOnScreenMessageFromReference(ref PriorityIncompleteWarningMessageObject, message, "Priority Incomplete Warning");
-
-                    //TODO: Use this everywhere.
                     SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncompleteWarningMessageObject, "PriorityIncompleteWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incomplete Warning");
 
                     //Return true to not push data.
@@ -1266,7 +1252,7 @@ public class UIFunctionalities : MonoBehaviour
         }
 
         //If the transaction lock message is active turn it off
-        if(TransactionLockActiveWarningMessageObject.activeSelf)
+        if(TransactionLockActiveWarningMessageObject != null && TransactionLockActiveWarningMessageObject.activeSelf)
         {
             //Set visibility of transaction lock active warning message
             TransactionLockActiveWarningMessageObject.SetActive(false);
@@ -1379,26 +1365,20 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.LogWarning("MQTT: MQTT Connection Failed.");
         
-        if(MQTTFailedToConnectMessageObject != null)
+        //Check if the Connectoin Toggle is on and if it is turn it off.
+        if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
         {
-            //Check if the Connectoin Toggle is on and if it is turn it off.
-            if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
-            {
-                CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
-            }
-            
-            //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(MQTTFailedToConnectMessageObject);
+            CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
         }
-        else
-        {
-            Debug.LogWarning("MQTT Message: Could not find message object or message component.");
-        }
+        
+        //Signal On Screen Message with Acknowledge Button
+        string message = $"WARNING: MQTT Failed to connect to broker: {mqttTrajectoryManager.brokerAddress} on port: {mqttTrajectoryManager.brokerPort}. Please check your internet and try again.";
+        SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref MQTTFailedToConnectMessageObject, "MQTTConnectionFailedMessage", MessagesParent, message, "SignalMQTTConnectionFailed: MQTT Connection Failed.");
+    
     }
-
     public void SignalOnScreenMessageFromPrefab(ref GameObject prefabReference, ref GameObject messageObjectReference, string activeMessageGameObjectName, GameObject activeMessageParent, string message, string logMessageName)
     {
-        Debug.Log($"{logMessageName}: Signal On Screen Message.");
+        Debug.Log($"SignalOnScreenMessageFromPrefab: {logMessageName}: Signal On Screen Message.");
 
         //If the message object reference is null then create it from the prefab
         if(messageObjectReference == null)
@@ -1421,13 +1401,12 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{logMessageName}: Could not find message object or message component.");
+            Debug.LogWarning($"SignalOnScreenMessageFromPrefab: {logMessageName}: Could not find message object or message component.");
         }
     }
-
     public void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
     {
-        Debug.Log($"{logMessageName}: Signal On Screen Message.");
+        Debug.Log($"SignalOnScreenMessageFromReference: {logMessageName}: Signal On Screen Message.");
 
         //Find text component for on screen message
         TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
@@ -1439,7 +1418,7 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{logMessageName}: Could not find message object or message component.");
+            Debug.LogWarning($"SignalOnScreenMessageFromReference: {logMessageName}: Could not find message object or message component.");
         }
     }
     public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
@@ -1622,7 +1601,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log("RequestTrajectoryButtonMethod : You cannot request because transaction lock is active");
 
             //If the active robot is null signal On Screen Message
-            SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
+            // SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
+            string message = "WARNING: You are currently prevented from requesting because another active user is awaiting a Trajectory Result.";
+            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
             
             return;
         }
@@ -1631,7 +1612,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log("RequestTrajectoryButtonMethod : Active Robot is null");
          
             //If the active robot is null signal On Screen Message
-            SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
+            // SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
+            string message = "WARNING: Active Robot is currently null. An active robot must be set before visulizing robotic information.";
+            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref ActiveRobotIsNullWarningMessageObject, "ActiveRobotNullWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Active Robot is null.");
 
             return;
         }

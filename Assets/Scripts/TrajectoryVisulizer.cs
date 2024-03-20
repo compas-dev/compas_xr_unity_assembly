@@ -119,7 +119,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         else
         {
             Debug.Log($"SetActiveRobot: Robot {robotName} not found in the BuiltInRobotsParent.");
-            uiFunctionalities.SignalOnScreenMessageWithButton(uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage);
+
+            string message = "WARNING: Active Robot could not be found. Confirm with planner which Robot is in use, or load robot.";
+            uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage, "ActiveRobotCouldNotBeFoundWarningMessage", uiFunctionalities.MessagesParent, message, $"SetActiveRobot: Robot {robotName} could not be found");
         }
     }
 
@@ -217,12 +219,18 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
         else
         {
-            //If the warning message is not active, signal the warning message that the config structure does not match the URDF Structure.
-            if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject.activeSelf == false)
+            //If the warning message is null create it, if it is not null then just set it active to true. This helps from duplication and overlaying the same message.
+            if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject == null)
             {
                 string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
-                uiFunctionalities.SignalOnScreenMessageFromReference(ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, message, "SetRobotConfigfromDictWrapper");
+                uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, "ConfigDoesNotMatchURDFStructureWarningMessage", uiFunctionalities.MessagesParent, message, "SetRobotConfigfromDictWrapper: Config does not match URDF");
             }
+            else if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject.activeSelf == false)
+            {
+                string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
+                uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, "ConfigDoesNotMatchURDFStructureWarningMessage", uiFunctionalities.MessagesParent, message, "SetRobotConfigfromDictWrapper: Config does not match URDF");
+            }
+
             Debug.LogWarning($"SetRobotConfigfromDictWrapper: Config dict {config.Count} (Count) and LinkNames dict {urdfLinkNames.Count} (Count) for search do not match.");
         }
     }
