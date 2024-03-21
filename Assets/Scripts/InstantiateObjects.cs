@@ -1142,14 +1142,15 @@ namespace Instantiate
             //If the steps priority is not the same as the selected priority then color it grey
             if (StepPriority != SelectedPriority)
             {
-                Material[] materialsArray = new Material[2];
 
-                materialsArray[0] = OutlineMaterialTest;
-                materialsArray[1] = InactiveRobotMaterial;
-                //Color object material with the outline material
-                m_renderer.materials = materialsArray;
-                // m_renderer.material.ADD_SECOND MATERIAL HERE.
+                //Color the object with only outline material
+                m_renderer.material = OutlineMaterialTest;
 
+                //Color object material with the outline material and transparent material
+                // Material[] materialsArray = new Material[2];
+                // materialsArray[0] = OutlineMaterialTest;
+                // materialsArray[1] = InactiveRobotMaterial;
+                
                 // //Create a new color for the object based on its current color, and add a greyscale blend factor
                 // Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
 
