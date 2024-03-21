@@ -1744,7 +1744,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Error: Visulization Mode does not exist.");
         }
     }
-    public void ToggleID(Toggle toggle)
+    public void ToggleID(Toggle toggle) //TODO: THE LOCATION OF TAGS ADJUSTMENT NEEDS TO HAPPEN HERE. BUT IT WOULD BE A WEIRD BOOL.
     {
         Debug.Log("ID Toggle Pressed");
 
