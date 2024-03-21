@@ -564,13 +564,17 @@ namespace Instantiate
             Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, 0.13f, "y");
 
             //Define rotation for the gameObject.
-            Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
+            Quaternion rotationQuaternion = Quaternion.identity;
+            // Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
 
             //Set new arrow item
             GameObject newArrow = null;
 
             // Instantiate arrow at the offset position
             newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, namingBase+" Arrow", arrowOffset, rotationQuaternion, parentObject);
+
+            //Add billboard effect to the indicator
+            newArrow.AddComponent<HelpersExtensions.Billboard>();
 
             //Create 3D Text
             GameObject IndexTextContainer = Create3DTextAsGameObject(
@@ -1150,7 +1154,7 @@ namespace Instantiate
                 // Material[] materialsArray = new Material[2];
                 // materialsArray[0] = OutlineMaterialTest;
                 // materialsArray[1] = InactiveRobotMaterial;
-                
+
                 // //Create a new color for the object based on its current color, and add a greyscale blend factor
                 // Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
 

@@ -558,16 +558,20 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             }
             
             //If the Active Trajectory child count is greater the 0 then destroy children
-            if(trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
+            if(trajectoryVisulizer.ActiveTrajectoryParentObject != null && trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
             {
                 trajectoryVisulizer.DestroyActiveTrajectoryChildren();
             }
+            else
+            {
+                Debug.LogWarning("ApproveTrajectoryMessageReceivedHandler: ActiveTrajectoryParentObject is null or has no children.");
+            }
             //If the Active Robot is not active set it to active
-            if(!trajectoryVisulizer.ActiveRobot.activeSelf)
+            if(trajectoryVisulizer.ActiveRobot != null && !trajectoryVisulizer.ActiveRobot.activeSelf)
             {
                 trajectoryVisulizer.ActiveRobot.SetActive(true);
             }
-
+            
             //Reset ApprovalCount and UserCount This could be done inside of the PrimaryUser, but Also safe way of error catching
             serviceManager.ApprovalCount.Reset();
             serviceManager.UserCount.Reset();

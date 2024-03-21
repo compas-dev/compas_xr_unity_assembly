@@ -1546,6 +1546,8 @@ public class UIFunctionalities : MonoBehaviour
 
         }
     }
+
+    //TODO: Split up approval and rejecton vis & int?
     public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
@@ -1560,6 +1562,12 @@ public class UIFunctionalities : MonoBehaviour
         //Set Visability and Interactable of Execute Trajectory Button.
         ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
         ExecuteTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
+
+        //Set interactablity of reject button if the exacute trajectory is interactable.
+        if (executeTrajectoryInteractable)
+        {
+            RejectTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
+        }
 
         //Adjust interactibility of Robot toggle based on visibility of other services controls
         if ( trajectoryReviewVisibility || executeTrajectoryVisability)
@@ -1582,14 +1590,14 @@ public class UIFunctionalities : MonoBehaviour
             PreviousGeometryButtonObject.GetComponent<Button>().interactable = true;
         }
 
-        //Check transaction lock to see if someone else made a request and set my interactibility based on that.
-        if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
-        {
-            Debug.Log("Trajectory UI Controller: You cannot request because transaction lock is active");
+        // //Check transaction lock to see if someone else made a request and set my interactibility based on that.
+        // if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
+        // {
+        //     Debug.Log("Trajectory UI Controller: You cannot request because transaction lock is active");
 
-            //Set request interactibility of trajectory request button to false
-            RequestTrajectoryButtonObject.GetComponent<Button>().interactable = false;
-        }
+        //     //Set request interactibility of trajectory request button to false
+        //     RequestTrajectoryButtonObject.GetComponent<Button>().interactable = false;
+        // }
 
     }
     public void RequestTrajectoryButtonMethod()
@@ -1646,7 +1654,7 @@ public class UIFunctionalities : MonoBehaviour
     }
     public void RejectTrajectoryButtonMethod()
     {
-        Debug.Log($"Reject Trajectory Button Pressed: Rejecting Trajectory for Step {CurrentStep}");
+        Debug.Log($"RejectTrajectoryButtonMethod: Rejecting Trajectory for Step {CurrentStep}");
 
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
         mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
