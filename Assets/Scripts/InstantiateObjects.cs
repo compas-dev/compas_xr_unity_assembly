@@ -43,6 +43,7 @@ namespace Instantiate
         public Material SearchedObjectMaterial;
         public Material ActiveRobotMaterial;
         public Material InactiveRobotMaterial;
+        public Material OutlineMaterialTest;
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -102,6 +103,7 @@ namespace Instantiate
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
             ActiveRobotMaterial = GameObject.Find("Materials").FindObject("ActiveRobot").GetComponentInChildren<Renderer>().material;
             InactiveRobotMaterial = GameObject.Find("Materials").FindObject("InactiveRobot").GetComponentInChildren<Renderer>().material;
+            OutlineMaterialTest = GameObject.Find("Materials").FindObject("ToonShader").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
@@ -1140,11 +1142,19 @@ namespace Instantiate
             //If the steps priority is not the same as the selected priority then color it grey
             if (StepPriority != SelectedPriority)
             {
-                //Create a new color for the object based on its current color, and add a greyscale blend factor
-                Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
+                Material[] materialsArray = new Material[2];
 
-                //Set the object to the new color
-                m_renderer.material.color = objectAdjustedColor;
+                materialsArray[0] = OutlineMaterialTest;
+                materialsArray[1] = InactiveRobotMaterial;
+                //Color object material with the outline material
+                m_renderer.materials = materialsArray;
+                // m_renderer.material.ADD_SECOND MATERIAL HERE.
+
+                // //Create a new color for the object based on its current color, and add a greyscale blend factor
+                // Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
+
+                // //Set the object to the new color
+                // m_renderer.material.color = objectAdjustedColor;
             }
             else
             {
