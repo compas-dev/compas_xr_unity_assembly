@@ -79,6 +79,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject RobotToggleObject;
     public GameObject ObjectLengthsToggleObject;
     private GameObject ObjectLengthsUIPanelObjects;
+    private Vector3 ObjectLengthsUIPanelPosition;
     private TMP_Text ObjectLengthsText;
     private GameObject ObjectLengthsTags;
     public GameObject PriorityViewerToggleObject;
@@ -291,6 +292,7 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object Lengths Toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
         ObjectLengthsUIPanelObjects = CanvasObject.FindObject("ObjectLengthsPanel");
+        ObjectLengthsUIPanelPosition = ObjectLengthsUIPanelObjects.transform.localPosition;
         ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
 
@@ -1836,6 +1838,17 @@ public class UIFunctionalities : MonoBehaviour
         {    
             if (toggle.isOn)
             {             
+                //If the robot toggle is on move the position lower
+                if (RobotToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    Vector3 offsetPosition = new Vector3(ObjectLengthsUIPanelPosition.x, ObjectLengthsUIPanelPosition.y - 300, ObjectLengthsUIPanelPosition.z);
+                    ObjectLengthsUIPanelObjects.transform.localPosition = offsetPosition; 
+                }
+                else
+                {
+                    ObjectLengthsUIPanelObjects.transform.localPosition = ObjectLengthsUIPanelPosition;
+                }
+                
                 //Set Visibility of buttons
                 ObjectLengthsUIPanelObjects.SetActive(true);
                 ObjectLengthsTags.FindObject("P1Tag").SetActive(true);
