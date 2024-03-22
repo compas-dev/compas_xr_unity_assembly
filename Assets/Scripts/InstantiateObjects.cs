@@ -452,7 +452,7 @@ namespace Instantiate
                 return element;
             
         }      
-        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null)
+        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null, bool storePositionData=true)
         {
             // Create a new GameObject for the text
             GameObject textContainer = new GameObject(gameObjectName);
@@ -479,6 +479,13 @@ namespace Instantiate
             if (parentObject != null)
             {
                 textContainer.transform.SetParent(parentObject.transform);
+            }
+            
+            // Add Position data class on the object
+            if (storePositionData) //TODO: I THINK THIS NEEDS TO BE LOCAL POSITION.
+            {
+                HelpersExtensions.ObjectPositionInfo positionData = textContainer.AddComponent<HelpersExtensions.ObjectPositionInfo>();
+                positionData.StorePositionRotationScale(textContainer.transform.localPosition, textContainer.transform.localRotation, textContainer.transform.localScale);
             }
 
             // Set the visiblity based on the input
@@ -519,7 +526,7 @@ namespace Instantiate
                 TextAlignmentOptions.Center, Color.white, offsetPosition,
                 Quaternion.identity, true, false, gameObject);
         }
-        private void CreateBackgroundImageForText(ref GameObject inputImg, GameObject parentObject, float verticalOffset,string imgObjectName, bool isVisible=true, bool isBillboard=true)
+        private void CreateBackgroundImageForText(ref GameObject inputImg, GameObject parentObject, float verticalOffset,string imgObjectName, bool isVisible=true, bool isBillboard=true, bool storePositionData=true)
         {            
             //Find the element ID from the step associated with this geometry
             string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
@@ -537,6 +544,13 @@ namespace Instantiate
             if (isBillboard)
             {
                 HelpersExtensions.Billboard billboard = imgObject.AddComponent<HelpersExtensions.Billboard>();
+            }
+
+            // Add Position data class on the object
+            if (storePositionData) //TODO: I THINK THIS NEEDS TO BE LOCAL POSITION.
+            {
+                HelpersExtensions.ObjectPositionInfo positionData = imgObject.AddComponent<HelpersExtensions.ObjectPositionInfo>();
+                positionData.StorePositionRotationScale(imgObject.transform.localPosition, imgObject.transform.localRotation, imgObject.transform.localScale);
             }
 
             //set visibility on instantiation
@@ -1257,10 +1271,13 @@ namespace Instantiate
                     GameObject gameObject = GameObject.Find(entry.Key);
                     
                     //If the objects are not null color by priority function.
-                    if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
+                    if (gameObject != null)
                     {
-                        //Color based on priority
-                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
+                        if (entry.Key != UIFunctionalities.CurrentStep)
+                        {
+                            //Color based on priority
+                            ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
+                        }
                     }
                     else
                     {

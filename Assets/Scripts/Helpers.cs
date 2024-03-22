@@ -153,6 +153,28 @@ namespace Helpers
                 FaceObjectToCamera(transform);
             }
         }
+
+        //Class for storing the position, rotation and scale of an object
+        public class ObjectPositionInfo : MonoBehaviour
+        {
+            public Vector3 position;
+            public Quaternion rotation;
+            public Vector3 scale;
+
+            public ObjectPositionInfo(Vector3 position, Quaternion rotation, Vector3 scale)
+            {
+                this.position = position;
+                this.rotation = rotation;
+                this.scale = scale;
+            }
+
+            public void StorePositionRotationScale(Vector3 position, Quaternion rotation, Vector3 scale)
+            {
+                this.position = position;
+                this.rotation = rotation;
+                this.scale = scale;
+            }
+        }
     }   
 
 }

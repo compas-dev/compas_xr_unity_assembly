@@ -1752,7 +1752,7 @@ public class UIFunctionalities : MonoBehaviour
         {
             if(toggle.isOn)
             {
-                ARSpaceTextControler(true, "IdxText", "IdxImage");
+                ARSpaceTextControler(true, "IdxText", "IdxImage", PriorityViewerToggleObject.GetComponent<Toggle>().isOn, 0.155f); //bool verticlReposition, float distance
                 SetUIObjectColor(IDToggleObject, Yellow);
             }
             else
@@ -1766,9 +1766,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find ID Toggle or ID Toggle Object.");
         }
     }
-    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, string imageObjectBaseName = null)
+    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, string imageObjectBaseName = null, bool verticalReposition = false, float? verticalOffset = null)
     {
-        Debug.Log("AR Space Text Controler Pressed");
+        Debug.Log($"ARSpaceTextControler: Toggling Text Objects {textObjectBaseName}.");
 
         if (instantiateObjects != null && instantiateObjects.Elements != null)
         {
@@ -1782,13 +1782,41 @@ public class UIFunctionalities : MonoBehaviour
                     textChild.gameObject.SetActive(Visibility);
                 }
 
+                // If vertical reposition is true then reposition the text object
+                if (verticalReposition)
+                {
+                    Vector3 objectposition = textChild.transform.position;
+                    Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
+                    textChild.position = newPosition;
+                }
+                else
+                {
+                    //Set the position of the text object to the original position
+                    HelpersExtensions.ObjectPositionInfo instantiationPosition = textChild.GetComponent<HelpersExtensions.ObjectPositionInfo>();
+                    textChild.localPosition = instantiationPosition.position;
+                }
+
                 if(imageObjectBaseName != null)
                 {
                     // Toggle background Image Object
-                    Transform circleImageChild = child.Find(child.name + imageObjectBaseName);
-                    if (circleImageChild != null)
+                    Transform imageChild = child.Find(child.name + imageObjectBaseName);
+                    if (imageChild != null)
                     {
-                        circleImageChild.gameObject.SetActive(Visibility);
+                        imageChild.gameObject.SetActive(Visibility);
+                    }
+
+                    // If vertical reposition is true then reposition the text object
+                    if (verticalReposition)
+                    {
+                        Vector3 objectposition = imageChild.transform.position;
+                        Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
+                        imageChild.position = newPosition;
+                    }
+                    else
+                    {
+                        //Set the position of the text object to the original position
+                        HelpersExtensions.ObjectPositionInfo instantiationPosition = imageChild.GetComponent<HelpersExtensions.ObjectPositionInfo>();
+                        imageChild.localPosition = instantiationPosition.position;
                     }
                 }
             }
@@ -1948,7 +1976,7 @@ public class UIFunctionalities : MonoBehaviour
         if(toggle.isOn && PriorityViewerToggleObject != null)
         {
             //Turn on Priority Tags in 3D Space
-            ARSpaceTextControler(true, "PriorityText", "PriorityImage");
+            ARSpaceTextControler(true, "PriorityText", "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
 
             //Set visibility of 3D reference objects
             instantiateObjects.PriorityViewrLineObject.SetActive(true);
