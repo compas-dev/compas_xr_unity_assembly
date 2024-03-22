@@ -1547,7 +1547,7 @@ public class UIFunctionalities : MonoBehaviour
         }
     }
 
-    //TODO: Split up approval and rejecton vis & int?
+    //TODO: Split up approval and rejecton vis & int
     public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
@@ -1744,7 +1744,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Error: Visulization Mode does not exist.");
         }
     }
-    public void ToggleID(Toggle toggle) //TODO: THE LOCATION OF TAGS ADJUSTMENT NEEDS TO HAPPEN HERE. BUT IT WOULD BE A WEIRD BOOL.
+    public void ToggleID(Toggle toggle)
     {
         Debug.Log("ID Toggle Pressed");
 

@@ -43,7 +43,7 @@ namespace Instantiate
         public Material SearchedObjectMaterial;
         public Material ActiveRobotMaterial;
         public Material InactiveRobotMaterial;
-        public Material OutlineMaterialTest;
+        public Material OutlineMaterial;
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -103,7 +103,7 @@ namespace Instantiate
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
             ActiveRobotMaterial = GameObject.Find("Materials").FindObject("ActiveRobot").GetComponentInChildren<Renderer>().material;
             InactiveRobotMaterial = GameObject.Find("Materials").FindObject("InactiveRobot").GetComponentInChildren<Renderer>().material;
-            OutlineMaterialTest = GameObject.Find("Materials").FindObject("ToonShader").GetComponentInChildren<Renderer>().material;
+            OutlineMaterial = GameObject.Find("Materials").FindObject("OutlineMaterial").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
@@ -482,7 +482,7 @@ namespace Instantiate
             }
             
             // Add Position data class on the object
-            if (storePositionData) //TODO: I THINK THIS NEEDS TO BE LOCAL POSITION.
+            if (storePositionData)
             {
                 HelpersExtensions.ObjectPositionInfo positionData = textContainer.AddComponent<HelpersExtensions.ObjectPositionInfo>();
                 positionData.StorePositionRotationScale(textContainer.transform.localPosition, textContainer.transform.localRotation, textContainer.transform.localScale);
@@ -547,7 +547,7 @@ namespace Instantiate
             }
 
             // Add Position data class on the object
-            if (storePositionData) //TODO: I THINK THIS NEEDS TO BE LOCAL POSITION.
+            if (storePositionData)
             {
                 HelpersExtensions.ObjectPositionInfo positionData = imgObject.AddComponent<HelpersExtensions.ObjectPositionInfo>();
                 positionData.StorePositionRotationScale(imgObject.transform.localPosition, imgObject.transform.localRotation, imgObject.transform.localScale);
@@ -1162,18 +1162,8 @@ namespace Instantiate
             {
 
                 //Color the object with only outline material
-                m_renderer.material = OutlineMaterialTest;
+                m_renderer.material = OutlineMaterial;
 
-                //Color object material with the outline material and transparent material
-                // Material[] materialsArray = new Material[2];
-                // materialsArray[0] = OutlineMaterialTest;
-                // materialsArray[1] = InactiveRobotMaterial;
-
-                // //Create a new color for the object based on its current color, and add a greyscale blend factor
-                // Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
-
-                // //Set the object to the new color
-                // m_renderer.material.color = objectAdjustedColor;
             }
             else
             {

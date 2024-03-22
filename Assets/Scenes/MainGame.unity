@@ -42391,7 +42391,7 @@ GameObject:
   - component: {fileID: 1614277367}
   - component: {fileID: 1614277366}
   m_Layer: 0
-  m_Name: ToonShader
+  m_Name: OutlineMaterial
   m_TagString: object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
