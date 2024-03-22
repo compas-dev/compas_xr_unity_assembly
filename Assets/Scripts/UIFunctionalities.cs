@@ -95,7 +95,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject LoadFromROSToggleObject;
     private GameObject InfoPanelObject;
     public GameObject CommunicationToggleObject;
-    private GameObject OcclusionToggleObject;
+    // private GameObject OcclusionToggleObject;
     private GameObject CommunicationPanelObject;
     private GameObject LoadURDFFromROSPannelObject;
 
@@ -150,7 +150,8 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject temporaryObject; 
     private ARRaycastManager rayManager;
     public OperatingSystem currentOperatingSystem;
-    private AROcclusionManager occlusionManager;
+
+    // private AROcclusionManager occlusionManager;
 
     //On Screen Text
     public GameObject CurrentStepTextObject;
@@ -205,7 +206,7 @@ public class UIFunctionalities : MonoBehaviour
         currentOperatingSystem = OperatingSystemManager.GetCurrentOS();
 
         //Set occlusion manager based on the current operating system.
-        SetOcclusionFromOS(ref occlusionManager, currentOperatingSystem);
+        // SetOcclusionFromOS(ref occlusionManager, currentOperatingSystem);
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
@@ -320,7 +321,7 @@ public class UIFunctionalities : MonoBehaviour
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
         //Find Occlusion toggle objects should be found every time, but only turned on if the device is an iOS device
-        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref OcclusionToggleObject, "OcclusionToggle", ToggleAROcclusion);
+        // FindToggleandSetOnValueChangedAction(MenuButtonObject, ref OcclusionToggleObject, "OcclusionToggle", ToggleAROcclusion);
 
         //Find Panel Objects used for Info and communication
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
@@ -498,10 +499,10 @@ public class UIFunctionalities : MonoBehaviour
                 LoadFromROSToggleObject.SetActive(true);
 
                 //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
-                if(currentOperatingSystem == OperatingSystem.iOS)
-                {
-                    OcclusionToggleObject.SetActive(true);
-                }
+                // if(currentOperatingSystem == OperatingSystem.iOS)
+                // {
+                //     OcclusionToggleObject.SetActive(true);
+                // }
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, Yellow);
@@ -531,10 +532,10 @@ public class UIFunctionalities : MonoBehaviour
                 LoadFromROSToggleObject.SetActive(false);
 
                 //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
-                if(currentOperatingSystem == OperatingSystem.iOS)
-                {
-                    OcclusionToggleObject.SetActive(false);
-                }
+                // if(currentOperatingSystem == OperatingSystem.iOS)
+                // {
+                //     OcclusionToggleObject.SetActive(false);
+                // }
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -545,21 +546,22 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
     }
-    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
-    {
-        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
-        if(currentOperatingSystem == OperatingSystem.iOS)
-        {
-            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
-            occlusionManager.enabled = true;
 
-            Debug.Log("AROcclusion: will be activated because current platform is ios");
-        }
-        else
-        {
-            Debug.Log("AROcclusion: will not be activated because current system is not ios");
-        }
-    }
+    // public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    // {
+    //     Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
+    //     if(currentOperatingSystem == OperatingSystem.iOS)
+    //     {
+    //         occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+    //         occlusionManager.enabled = true;
+
+    //         Debug.Log("AROcclusion: will be activated because current platform is ios");
+    //     }
+    //     else
+    //     {
+    //         Debug.Log("AROcclusion: will not be activated because current system is not ios");
+    //     }
+    // }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void NextStepButton()
@@ -2376,34 +2378,35 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Communication Panel.");
         }
     }
-    public void ToggleAROcclusion(Toggle toggle)
-    {
-        if (OcclusionToggleObject != null && occlusionManager != null)
-        {
-            Debug.Log("Occlusion Toggle Pressed");
 
-            if (toggle.isOn)
-            { 
-                //Enable Occlusion
-                occlusionManager.enabled = true;            
+    // public void ToggleAROcclusion(Toggle toggle)
+    // {
+    //     if (OcclusionToggleObject != null && occlusionManager != null)
+    //     {
+    //         Debug.Log("Occlusion Toggle Pressed");
 
-                //Set color of the toggle
-                SetUIObjectColor(OcclusionToggleObject, Yellow);
-            }
-            else
-            {
-                //Disable Occlusion Manager
-                occlusionManager.enabled = false;
+    //         if (toggle.isOn)
+    //         { 
+    //             //Enable Occlusion
+    //             occlusionManager.enabled = true;            
 
-                //Set color of the toggle
-                SetUIObjectColor(OcclusionToggleObject, White);            
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Could not find Occlusion Toggle Object.");
-        }
-    }
+    //             //Set color of the toggle
+    //             SetUIObjectColor(OcclusionToggleObject, Yellow);
+    //         }
+    //         else
+    //         {
+    //             //Disable Occlusion Manager
+    //             occlusionManager.enabled = false;
+
+    //             //Set color of the toggle
+    //             SetUIObjectColor(OcclusionToggleObject, White);            
+    //         }
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning("Could not find Occlusion Toggle Object.");
+    //     }
+    // }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
     public void TouchSearchModeController(TouchMode modetype)
