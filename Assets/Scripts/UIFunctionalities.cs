@@ -167,6 +167,8 @@ public class UIFunctionalities : MonoBehaviour
     public string SearchedElement = "None";
     public string SearchedElementStepID;
     public string SelectedPriority = "None";
+    public bool IDTagIsOffset = false;
+    public bool PriorityTagIsOffset = false;
     
     void Start()
     {
@@ -1756,12 +1758,24 @@ public class UIFunctionalities : MonoBehaviour
         {
             if(toggle.isOn)
             {
-                ARSpaceTextControler(true, "IdxText", "IdxImage", PriorityViewerToggleObject.GetComponent<Toggle>().isOn, 0.155f); //bool verticlReposition, float distance
+                //Turn on the ID Tags
+                ARSpaceTextControler(true, "IdxText", ref IDTagIsOffset, "IdxImage", PriorityViewerToggleObject.GetComponent<Toggle>().isOn, 0.155f); //bool verticlReposition, float distance
+                
+                //Set color of toggle
                 SetUIObjectColor(IDToggleObject, Yellow);
             }
             else
             {
-                ARSpaceTextControler(false, "IdxText", "IdxImage");
+                //Turn of the ID Tags
+                ARSpaceTextControler(false, "IdxText", ref IDTagIsOffset, "IdxImage");
+
+                //If Priority viewer is on and the tag is offset then position the tag back to the priority tags back to original position
+                if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && PriorityTagIsOffset)
+                {
+                    ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage");
+                }
+
+                //Set color of toggle
                 SetUIObjectColor(IDToggleObject, White);
             }
         }
@@ -1770,7 +1784,7 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find ID Toggle or ID Toggle Object.");
         }
     }
-    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, string imageObjectBaseName = null, bool verticalReposition = false, float? verticalOffset = null)
+    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, ref bool tagIsOffset, string imageObjectBaseName = null, bool verticalReposition = false, float? verticalOffset = null)
     {
         Debug.Log($"ARSpaceTextControler: Toggling Text Objects {textObjectBaseName}.");
 
@@ -1815,12 +1829,14 @@ public class UIFunctionalities : MonoBehaviour
                         Vector3 objectposition = imageChild.transform.position;
                         Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
                         imageChild.position = newPosition;
+                        tagIsOffset = true;
                     }
                     else
                     {
                         //Set the position of the text object to the original position
                         HelpersExtensions.ObjectPositionInfo instantiationPosition = imageChild.GetComponent<HelpersExtensions.ObjectPositionInfo>();
                         imageChild.localPosition = instantiationPosition.position;
+                        tagIsOffset = false;
                     }
                 }
             }
@@ -1991,7 +2007,7 @@ public class UIFunctionalities : MonoBehaviour
         if(toggle.isOn && PriorityViewerToggleObject != null)
         {
             //Turn on Priority Tags in 3D Space
-            ARSpaceTextControler(true, "PriorityText", "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
+            ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
 
             //Set visibility of 3D reference objects
             instantiateObjects.PriorityViewrLineObject.SetActive(true);
@@ -2004,7 +2020,7 @@ public class UIFunctionalities : MonoBehaviour
             SelectedPriority = databaseManager.CurrentPriority;
 
             //Create the priority line
-            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority, ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
 
             // Color Elements Based on Priority
             instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
@@ -2037,7 +2053,13 @@ public class UIFunctionalities : MonoBehaviour
             SelectedPriority = "None";
 
             //Turn off Priority Tags
-            ARSpaceTextControler(false, "PriorityText", "PriorityImage");
+            ARSpaceTextControler(false, "PriorityText", ref PriorityTagIsOffset, "PriorityImage");
+
+            //If the ID tag is on and offset then return it to its origial position
+            if(IDToggleObject.GetComponent<Toggle>().isOn && IDTagIsOffset)
+            {
+                ARSpaceTextControler(true, "IdxText", ref IDTagIsOffset, "IdxImage");
+            }
 
             //Set visibility of onScreen Button Objects
             PriorityViewerObjectsGraphicsController(false);
