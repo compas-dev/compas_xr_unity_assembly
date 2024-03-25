@@ -1119,15 +1119,15 @@ namespace Instantiate
                 m_renderer.material = UnbuiltMaterial;
             }
         }
-        public void ColorHumanOrRobot (string placed_by, bool Built, GameObject gamobj)
+        public void ColorHumanOrRobot (string actor, bool builtStatus, GameObject gamobj)
         {
             
             //Get Object Renderer
             Renderer m_renderer= gamobj.GetComponentInChildren<Renderer>();
             
-            if (placed_by == "HUMAN")
+            if (actor == "HUMAN")
             {
-                if(Built)
+                if(builtStatus)
                 {
                     //Color For Built Human Objects
                     m_renderer.material = HumanBuiltMaterial;
@@ -1140,7 +1140,7 @@ namespace Instantiate
             }
             else
             {
-                if(Built)
+                if(builtStatus)
                 {
                     //Color For Built Robot Objects
                     m_renderer.material = RobotBuiltMaterial;
