@@ -38,7 +38,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject ElementSearchToggleObject;
 
     //todo: TEMPORARY OBJECTS
-    private GameObject ElementSearchToggleObject2;
+    public GameObject ElementSearchToggleObject2;
     private GameObject ElementSearch2Objects;
 
     //todo: TEMPORARY OBJECTS
