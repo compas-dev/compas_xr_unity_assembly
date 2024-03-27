@@ -36,6 +36,13 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
     private GameObject ElementSearchToggleObject;
+
+    //todo: TEMPORARY OBJECTS
+    private GameObject ElementSearchToggleObject2;
+    private GameObject ElementSearch2Objects;
+
+    //todo: TEMPORARY OBJECTS
+
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
     public GameObject NextGeometryButtonObject;
@@ -277,6 +284,11 @@ public class UIFunctionalities : MonoBehaviour
         //Find toggle for element search
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ElementSearchToggleObject, "ElementSearchToggle", ToggleElementSearch);
 
+        //TODO: TEMPORARY OBJECTS
+        //Find toggle for element search
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ElementSearchToggleObject2, "ElementSearchToggle2", ToggleElementSearch2);
+        ElementSearch2Objects = CanvasObject.FindObject("ScrollSearch");
+
         //Find Element Search Button & Objects
         ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
         ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();
@@ -463,6 +475,9 @@ public class UIFunctionalities : MonoBehaviour
                 IDToggleObject.SetActive(true);
                 PriorityViewerToggleObject.SetActive(true);
                 ElementSearchToggleObject.SetActive(true);
+                
+                //TODO: TEMPORARY OBJECTS
+                ElementSearchToggleObject2.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
@@ -478,6 +493,9 @@ public class UIFunctionalities : MonoBehaviour
                 IDToggleObject.SetActive(false);
                 PriorityViewerToggleObject.SetActive(false);
                 ElementSearchToggleObject.SetActive(false);
+
+                //TODO: TEMPORARY OBJECTS
+                ElementSearchToggleObject2.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -501,6 +519,7 @@ public class UIFunctionalities : MonoBehaviour
                 CommunicationToggleObject.SetActive(true);
                 EditorToggleObject.SetActive(true);
                 LoadFromROSToggleObject.SetActive(true);
+
 
                 //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
                 // if(currentOperatingSystem == OperatingSystem.iOS)
@@ -744,6 +763,27 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
     }  
+
+    public void ToggleElementSearch2(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {             
+            //Set Visibility of buttons
+            ElementSearch2Objects.SetActive(true);
+            
+            //Set color of toggle
+            SetUIObjectColor(ElementSearchToggleObject2, Yellow);
+
+        }
+        else
+        {
+            //Set Visibility of buttons
+            ElementSearch2Objects.SetActive(false);
+
+            //Set color of toggle
+            SetUIObjectColor(ElementSearchToggleObject2, White);
+        }
+    }
     public void SearchElementButton()
     {
         //Search for step button clicked
