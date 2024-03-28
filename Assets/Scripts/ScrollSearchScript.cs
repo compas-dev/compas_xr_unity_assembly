@@ -53,7 +53,7 @@ public class ScrollSearchScript : MonoBehaviour
 
     // Update is called once per frame
     //TODO: Convert to method.
-    //TODO: MOVE TO UIFUNCTIONALITIES
+    //TODO: MOVE TO UIFUNCTIONALITIES?
     void Update()
     {
         if (ScrollSearchObjects.activeSelf)
@@ -150,7 +150,6 @@ public class ScrollSearchScript : MonoBehaviour
 
         container.anchoredPosition = newPosition;
     }
-
     public void ScrollSearchController(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells, ref GameObject parentSearchObject)
     {
         if (closestCellIndex != selectedCellIndex)
@@ -194,7 +193,7 @@ public class ScrollSearchScript : MonoBehaviour
             //if the search Object is not null then color it, but if it is null then display a warning message
             if (newObjectToColor != null)
             {
-                Debug.Log($"ScrollSearchController: Coloring Object {selectedCellStepIndex} by search color.");
+                Debug.Log($"ScrollSearchController: Coloring Object {selectedCellStepIndex} by searched color.");
                 instantiateObjects.ColorObjectbyInputMaterial(newObjectToColor, instantiateObjects.SearchedObjectMaterial);
             }
             else
@@ -204,7 +203,6 @@ public class ScrollSearchScript : MonoBehaviour
             }
         }
     }
-
     public string GetTextItemFromGameObject(GameObject gameObject)
     {
         return gameObject.GetComponentInChildren<TMP_Text>().text;
@@ -214,7 +212,6 @@ public class ScrollSearchScript : MonoBehaviour
         Debug.Log("Start Drag");
         dragging = true;
     }
-
     public void EndDrag()
     {
         Debug.Log("End Drag");
