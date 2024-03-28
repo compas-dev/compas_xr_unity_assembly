@@ -763,7 +763,6 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
     }  
-
     public void ToggleElementSearch2(Toggle toggle)
     {
         if (toggle.isOn)
@@ -835,7 +834,6 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             string message = $"WARNING: The item {ElementSearchInputField.text} could not be found. Please retype information and try search again.";
-            // SignalOnScreenMessageFromReference(ref SearchItemNotFoundWarningMessageObject, message, "Search Object Not Found");
             SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", MessagesParent, message, "SearchElementButton: Could not find searched item.");
         }     
     }
@@ -1593,7 +1591,7 @@ public class UIFunctionalities : MonoBehaviour
         }
     }
 
-    //TODO: Split up approval and rejecton vis & int
+    //TODO: Split up approval and rejecton vis & int (maybe lol)
     public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.

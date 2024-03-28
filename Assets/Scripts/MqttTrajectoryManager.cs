@@ -349,7 +349,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
 
                     string message = "WARNING: Trajectory Response did not match expectations. Returning to Request Service.";
                     UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject, "TrajectoryResponseIncorrectWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Message Structure incorrect.");
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
+                    //TODO: MAKE SURE THIS WORKS.
+                    // UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
 
                     //Set Primary user back to false
                     serviceManager.PrimaryUser = false;

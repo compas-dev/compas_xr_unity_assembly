@@ -1102,7 +1102,15 @@ namespace Instantiate
                     break;
             }
         }
-        public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
+        public void ColorObjectbyInputMaterial(GameObject gamobj, Material material)
+        {
+            //Get Object Renderer
+            Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
+                      
+            //Color object by input material
+            m_renderer.material = material; 
+        }
+        public void ColorBuiltOrUnbuilt(bool built, GameObject gamobj)
         {
             //Get Object Renderer
             Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
@@ -1119,7 +1127,7 @@ namespace Instantiate
                 m_renderer.material = UnbuiltMaterial;
             }
         }
-        public void ColorHumanOrRobot (string actor, bool builtStatus, GameObject gamobj)
+        public void ColorHumanOrRobot(string actor, bool builtStatus, GameObject gamobj)
         {
             
             //Get Object Renderer
