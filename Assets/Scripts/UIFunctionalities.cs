@@ -190,10 +190,9 @@ public class UIFunctionalities : MonoBehaviour
         TouchSearchControler();
     }
 
-    /////////////////////////////////////////// UI Control ////////////////////////////////////////////////////
+    /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
     private void OnAwakeInitilization()
     {
-        /////////////////////////////////////////// Initial Elements ////////////////////////////////////////////
         //Find Other Scripts
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
@@ -220,9 +219,15 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
-
-        /////////////////////////////////////////// Primary UI Buttons ////////////////////////////////////////////
        
+        //Set up UI Objects and buttons on start
+        SetPrimaryUIItemsOnStart();
+        SetVisulizerMenuItemsOnStart();
+        SetMenuItemsOnStart();
+        SetCommunicationItemsOnStart();
+    }
+    private void SetPrimaryUIItemsOnStart()
+    {
         //Find Next Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(ConstantUIPanelObjects, ref NextGeometryButtonObject, "Next_Geometry", NextStepButton);
 
@@ -269,9 +274,9 @@ public class UIFunctionalities : MonoBehaviour
         //OnScreen Messages with custom acknowledgement events.
         ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("Prefabs").FindObject("ActiveRobotUpdatedFromPlannerMessage");
         TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("Prefabs").FindObject("TrajectoryReviewRequestReceivedMessage");
-        
-        /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
-
+    }
+    private void SetVisulizerMenuItemsOnStart()
+    {
         //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(VisibilityMenuObject, ref PreviewBuilderButtonObject, "Preview_Builder", ChangeVisualizationMode);
 
@@ -305,9 +310,9 @@ public class UIFunctionalities : MonoBehaviour
         ObjectLengthsUIPanelPosition = ObjectLengthsUIPanelObjects.transform.localPosition;
         ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
-
-        /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
-        
+    }
+    private void SetMenuItemsOnStart()
+    {
         //Find Info Toggle, and Add Listener for OnValueChanged method
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref LoadFromROSToggleObject, "LoadURDFFromROSButton", ToggleLoadFromROS);
 
@@ -346,10 +351,9 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Background Images for Toggles
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
-
-        /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
-        //TODO: Split by section headings... For Finding things... each method gets a heading.... ALSO LOOK AT OTHER ERRORS WRITTEN.
-
+    }
+    private void SetCommunicationItemsOnStart()
+    {
         //Find Pannel Objects used for connecting to a different MQTT broker
         MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();
         MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();
@@ -455,6 +459,23 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log(Text);
     }
+    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    {
+        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
+        if(currentOperatingSystem == OperatingSystem.iOS)
+        {
+            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+            occlusionManager.enabled = true;
+
+            Debug.Log("AROcclusion: will be activated because current platform is ios");
+        }
+        else
+        {
+            Debug.Log("AROcclusion: will not be activated because current system is not ios");
+        }
+    }
+
+    /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void ToggleVisibilityMenu(Toggle toggle)
     {
         if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDToggleObject != null && PriorityViewerToggleObject != null)
@@ -545,23 +566,6 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
     }
-    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
-    {
-        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
-        if(currentOperatingSystem == OperatingSystem.iOS)
-        {
-            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
-            occlusionManager.enabled = true;
-
-            Debug.Log("AROcclusion: will be activated because current platform is ios");
-        }
-        else
-        {
-            Debug.Log("AROcclusion: will not be activated because current system is not ios");
-        }
-    }
-
-    /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void NextStepButton()
     {
         //Press Next Element Button
