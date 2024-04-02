@@ -35,8 +35,19 @@ public class ScrollSearchScript : MonoBehaviour
     private int? selectedCellIndex = null;
     public string selectedCellStepIndex;
     
-    // Start is called before the first frame update
     void Start()
+    {
+        //Find initial objects
+        OnStartInitilization();
+    }
+
+    void Update()
+    {
+        //Create Scroll Search Objects based on the active state
+        ScrollSearchManager(ScrollSearchObjects.activeSelf);
+    }
+    
+    private void OnStartInitilization()
     {
         //Get the database manager
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
@@ -44,19 +55,15 @@ public class ScrollSearchScript : MonoBehaviour
         uiFunctionalites = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
         Elements = GameObject.Find("Elements");
 
+        //Find OnScreen Objects
         GameObject Canvas = GameObject.Find("Canvas");
         ScrollSearchObjects = Canvas.FindObject("ScrollSearch");
         cellPrefab = ScrollSearchObjects.FindObject("CellPrefab");
         cellsParent = ScrollSearchObjects.FindObject("Container");
-
     }
-
-    // Update is called once per frame
-    //TODO: Convert to method.
-    //TODO: MOVE TO UIFUNCTIONALITIES?
-    void Update()
+    public void ScrollSearchManager(bool activeState)
     {
-        if (ScrollSearchObjects.activeSelf)
+        if (activeState)
         {
             //create cells from prefab
             if (cells.Count != databaseManager.BuildingPlanDataItem.steps.Count)
@@ -92,7 +99,7 @@ public class ScrollSearchScript : MonoBehaviour
                     LerpToCell(closestCellIndex * - cellSpacing);
 
                     //Search for the step
-                    ScrollSearchController(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells, ref cellsParent);
+                    ScrollSearchObjectColorer(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells, ref cellsParent);
                 }
             }
         }
@@ -107,7 +114,6 @@ public class ScrollSearchScript : MonoBehaviour
             cellDistances = new float[0];
         }
     }
-    
     void CreateCellsFromPrefab(ref GameObject prefabAsset, int cellSpacing, GameObject cellsParent, int cellCount)
     {
         if(prefabAsset == null)
@@ -142,7 +148,6 @@ public class ScrollSearchScript : MonoBehaviour
             cells.Add(cell);
         }
     }
-
     void LerpToCell(int position)
     {
         float newY = Mathf.Lerp(container.anchoredPosition.y, position, Time.deltaTime * 10f);
@@ -150,7 +155,7 @@ public class ScrollSearchScript : MonoBehaviour
 
         container.anchoredPosition = newPosition;
     }
-    public void ScrollSearchController(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells, ref GameObject parentSearchObject)
+    public void ScrollSearchObjectColorer(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells, ref GameObject parentSearchObject)
     {
         if (closestCellIndex != selectedCellIndex)
         {
