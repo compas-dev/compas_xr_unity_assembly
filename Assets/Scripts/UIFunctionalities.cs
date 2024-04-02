@@ -30,6 +30,7 @@ public class UIFunctionalities : MonoBehaviour
     public MqttTrajectoryManager mqttTrajectoryManager;
     public TrajectoryVisulizer trajectoryVisulizer;
     public RosConnectionManager rosConnectionManager;
+    public ScrollSearchManager scrollSearchManager;
     
     //Primary UI Objects
     private GameObject VisibilityMenuObject;
@@ -158,8 +159,8 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject temporaryObject; 
     private ARRaycastManager rayManager;
     public OperatingSystem currentOperatingSystem;
-
-    // private AROcclusionManager occlusionManager;
+    private AROcclusionManager occlusionManager;
+    private GameObject OcclusionToggleObject;
 
     //On Screen Text
     public GameObject CurrentStepTextObject;
@@ -185,6 +186,7 @@ public class UIFunctionalities : MonoBehaviour
 
     void Update()
     {
+        //Control Touch Search
         TouchSearchControler();
     }
 
@@ -199,6 +201,7 @@ public class UIFunctionalities : MonoBehaviour
         mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
         trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
         rosConnectionManager = GameObject.Find("RosManager").GetComponent<RosConnectionManager>();
+        scrollSearchManager = GameObject.Find("ScrollSearchManager").GetComponent<ScrollSearchManager>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -214,9 +217,6 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find and set current operating system
         currentOperatingSystem = OperatingSystemManager.GetCurrentOS();
-
-        //Set occlusion manager based on the current operating system.
-        // SetOcclusionFromOS(ref occlusionManager, currentOperatingSystem);
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
@@ -335,9 +335,6 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find communication toggle objects
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
-
-        //Find Occlusion toggle objects should be found every time, but only turned on if the device is an iOS device
-        // FindToggleandSetOnValueChangedAction(MenuButtonObject, ref OcclusionToggleObject, "OcclusionToggle", ToggleAROcclusion);
 
         //Find Panel Objects used for Info and communication
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
@@ -520,13 +517,6 @@ public class UIFunctionalities : MonoBehaviour
                 EditorToggleObject.SetActive(true);
                 LoadFromROSToggleObject.SetActive(true);
 
-
-                //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
-                // if(currentOperatingSystem == OperatingSystem.iOS)
-                // {
-                //     OcclusionToggleObject.SetActive(true);
-                // }
-
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, Yellow);
 
@@ -546,6 +536,7 @@ public class UIFunctionalities : MonoBehaviour
                 if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn){
                     LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
                 }
+
                 //Set Visibility of buttons
                 MenuBackground.SetActive(false);
                 InfoToggleObject.SetActive(false);
@@ -553,12 +544,6 @@ public class UIFunctionalities : MonoBehaviour
                 CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
                 LoadFromROSToggleObject.SetActive(false);
-
-                //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
-                // if(currentOperatingSystem == OperatingSystem.iOS)
-                // {
-                //     OcclusionToggleObject.SetActive(false);
-                // }
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -569,22 +554,21 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
     }
+    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    {
+        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
+        if(currentOperatingSystem == OperatingSystem.iOS)
+        {
+            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+            occlusionManager.enabled = true;
 
-    // public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
-    // {
-    //     Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
-    //     if(currentOperatingSystem == OperatingSystem.iOS)
-    //     {
-    //         occlusionManager = FindObjectOfType<AROcclusionManager>(true);
-    //         occlusionManager.enabled = true;
-
-    //         Debug.Log("AROcclusion: will be activated because current platform is ios");
-    //     }
-    //     else
-    //     {
-    //         Debug.Log("AROcclusion: will not be activated because current system is not ios");
-    //     }
-    // }
+            Debug.Log("AROcclusion: will be activated because current platform is ios");
+        }
+        else
+        {
+            Debug.Log("AROcclusion: will not be activated because current system is not ios");
+        }
+    }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void NextStepButton()
@@ -769,6 +753,18 @@ public class UIFunctionalities : MonoBehaviour
         {             
             //Set Visibility of buttons
             ElementSearch2Objects.SetActive(true);
+
+            //if Scroll search script is null then print warning
+            if(scrollSearchManager == null)
+            {
+                Debug.LogWarning("Scroll Search Manager is null.");
+            }
+            else
+            {
+                Debug.Log("Scroll Search Manager is not null.");
+                //Set up the scroll search manager
+                scrollSearchManager.cellsExist = true;
+            }
             
             //Set color of toggle
             SetUIObjectColor(ElementSearchToggleObject2, Yellow);
@@ -1591,7 +1587,7 @@ public class UIFunctionalities : MonoBehaviour
         }
     }
 
-    //TODO: Split up approval and rejecton vis & int (maybe lol)
+    //TODO: Split up approval and rejecton vis & interactibility
     public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
@@ -2451,35 +2447,34 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Communication Panel.");
         }
     }
+    public void ToggleAROcclusion(Toggle toggle)
+    {
+        if (OcclusionToggleObject != null && occlusionManager != null)
+        {
+            Debug.Log("Occlusion Toggle Pressed");
 
-    // public void ToggleAROcclusion(Toggle toggle)
-    // {
-    //     if (OcclusionToggleObject != null && occlusionManager != null)
-    //     {
-    //         Debug.Log("Occlusion Toggle Pressed");
+            if (toggle.isOn)
+            { 
+                //Enable Occlusion
+                occlusionManager.enabled = true;            
 
-    //         if (toggle.isOn)
-    //         { 
-    //             //Enable Occlusion
-    //             occlusionManager.enabled = true;            
+                //Set color of the toggle
+                SetUIObjectColor(OcclusionToggleObject, Yellow);
+            }
+            else
+            {
+                //Disable Occlusion Manager
+                occlusionManager.enabled = false;
 
-    //             //Set color of the toggle
-    //             SetUIObjectColor(OcclusionToggleObject, Yellow);
-    //         }
-    //         else
-    //         {
-    //             //Disable Occlusion Manager
-    //             occlusionManager.enabled = false;
-
-    //             //Set color of the toggle
-    //             SetUIObjectColor(OcclusionToggleObject, White);            
-    //         }
-    //     }
-    //     else
-    //     {
-    //         Debug.LogWarning("Could not find Occlusion Toggle Object.");
-    //     }
-    // }
+                //Set color of the toggle
+                SetUIObjectColor(OcclusionToggleObject, White);            
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Occlusion Toggle Object.");
+        }
+    }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////
     public void TouchSearchModeController(TouchMode modetype)

@@ -7165,7 +7165,7 @@ GameObject:
   - component: {fileID: 279596140}
   - component: {fileID: 279596139}
   m_Layer: 0
-  m_Name: ScrollSearchScriptTest
+  m_Name: ScrollSearchManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7186,21 +7186,15 @@ MonoBehaviour:
   databaseManager: {fileID: 0}
   instantiateObjects: {fileID: 0}
   uiFunctionalites: {fileID: 0}
-  cellPrefabAsset: {fileID: 0}
-  cellsParent: {fileID: 0}
   Elements: {fileID: 0}
   scrollablePanel: {fileID: 1135434392}
   container: {fileID: 1424865012}
-  cells:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  cellsParent: {fileID: 0}
+  cells: []
   center: {fileID: 1450561004}
   ScrollSearchObjects: {fileID: 0}
   cellPrefab: {fileID: 0}
+  cellsExist: 0
   cellDistances: []
   selectedCellStepIndex: 
 --- !u!4 &279596140
@@ -66394,6 +66388,7 @@ MonoBehaviour:
   mqttTrajectoryManager: {fileID: 0}
   trajectoryVisulizer: {fileID: 0}
   rosConnectionManager: {fileID: 0}
+  scrollSearchManager: {fileID: 0}
   ElementSearchToggleObject2: {fileID: 0}
   CanvasObject: {fileID: 0}
   ConstantUIPanelObjects: {fileID: 0}
