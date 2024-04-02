@@ -92,7 +92,7 @@ public class ScrollSearchManager : MonoBehaviour
                 LerpToCell(closestCellIndex * - cellSpacing);
 
                 //Search for the step
-                ScrollSearchObjectColor(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells, ref cellsParent);
+                ScrollSearchObjectColor(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells);
             }
         }
     }
@@ -182,7 +182,7 @@ public class ScrollSearchManager : MonoBehaviour
     }
 
     /////////////////////////////////////////////// Spatial Object Management /////////////////////////////////////////////////////
-    public void ScrollSearchObjectColor(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells, ref GameObject parentSearchObject)
+    public void ScrollSearchObjectColor(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells)
     {
         if (closestCellIndex != selectedCellIndex)
         {
