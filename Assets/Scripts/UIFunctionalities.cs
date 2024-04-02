@@ -2266,7 +2266,7 @@ public class UIFunctionalities : MonoBehaviour
     }
     private void ReloadApplication()
     {
-        Debug.Log("Reload Button Pressed");
+        Debug.Log("ReloadApplication: Reload Button Pressed");
         
         //Remove listners - This is important to not add multiple listners in the application
         databaseManager.RemoveListners();
@@ -2313,7 +2313,7 @@ public class UIFunctionalities : MonoBehaviour
         mqttTrajectoryManager.RemoveConnectionEventListners();
 
         //Fetch settings data again
-        databaseManager.FetchSettingsData(eventManager.settings_reference);
+        databaseManager.FetchSettingsData(eventManager.settings_reference); //TODO: Should I await this?
 
         //Disconnect from MQTT and reconnect after new application settings are received.
         mqttTrajectoryManager.DisconnectandReconnectAsyncRoutine();
@@ -2337,7 +2337,7 @@ public class UIFunctionalities : MonoBehaviour
                 EditorSelectedTextObject.SetActive(true);
 
                 //Apply color color based on build state
-                instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority);
+                // instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority); //TODO:THIS NEEDS TO GO.... LOOK IF I NEED THIS METHOD OR NOT.
                 // ColliderControler();
 
                 //Update mode so we know to search for touch input
@@ -2372,7 +2372,7 @@ public class UIFunctionalities : MonoBehaviour
                 }
                 else if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
-                    instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority); //TODO: WITH PV UPDATE THIS WOULD CHANGE.
+                    instantiateObjects.ApplyColorBasedOnPriority(SelectedPriority);
                 }
                 else
                 {
@@ -2548,17 +2548,12 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Touch touch = Input.GetTouch(0);
-            Debug.Log("TOUCH: Your touch sir :)" + Input.touchCount);
-            Debug.Log("TOUCH: Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
 
             if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
             {
                 List<ARRaycastHit> hits = new List<ARRaycastHit>();
-                Debug.Log ("TOUCH: YOU HITS SIR " + hits);
-                Debug.Log ("TOUCH: YOU HITS Count SIR " + hits.Count);
                 rayManager.Raycast(touch.position, hits);
 
-                //TODO: THE PROBLEM IS HERE... HITS IS ALWAYS 0
                 if (hits.Count > 0)
                 {
                     Ray ray = arCamera.ScreenPointToRay(touch.position);
@@ -2658,17 +2653,6 @@ public class UIFunctionalities : MonoBehaviour
             string activeGameObjectParentname = activeGameObject.transform.parent.name;
 
             Debug.Log($"Active Game Object Priority: {databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority}");
-
-            //If active game objects step priority is higher then current step priority then set builder button to inactive else its active
-            // if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
-            // {
-            //     Debug.Log("Priority is higher then current priority. Setting button to inactive.");
-            //     BuildStatusButtonObject.GetComponent<Button>().interactable = false;
-            // }
-            // else
-            // {
-            //     BuildStatusButtonObject.GetComponent<Button>().interactable = true;
-            // }
             
             //Color the object based on human or robot
             instantiateObjects.ColorHumanOrRobot(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.actor, databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.is_built, activeGameObject);

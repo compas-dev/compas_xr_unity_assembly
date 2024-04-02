@@ -1095,9 +1095,9 @@ namespace Instantiate
                     break;
                 case TouchMode.ElementEditSelection:
                     //Color the object if it is a lower priority then the current one.
-                    if (step.data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
+                    if (step.data.priority > Convert.ToInt16(databaseManager.CurrentPriority)) //TODO: THIS IS WHY THINGS ARE NOT WORKING NEEDS TO BE FIXED.
                     {    
-                        ColorObjectByLowerPriority(key, databaseManager.CurrentPriority, geometryObject);
+                        ColorObjectByLowerPriority(key, databaseManager.CurrentPriority, geometryObject); //TODO: THIS BECOMES COLOR BY PRIORITY.
                     }
                     break;
             }
@@ -1317,7 +1317,7 @@ namespace Instantiate
                 }
             }
         }
-        public void ApplyColorForHigherPriority(string CurrentPriority)
+        public void ApplyColorForHigherPriority(string CurrentPriority) //TODO: REMOVE THIS METHOD.
         {
             Debug.Log($"Applying color for touch : {CurrentPriority}.");
             if (databaseManager.BuildingPlanDataItem.steps != null)
