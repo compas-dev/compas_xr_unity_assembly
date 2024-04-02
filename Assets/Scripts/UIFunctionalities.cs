@@ -348,6 +348,7 @@ public class UIFunctionalities : MonoBehaviour
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
 
         /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
+        //TODO: Split by section headings... For Finding things... each method gets a heading.... ALSO LOOK AT OTHER ERRORS WRITTEN.
 
         //Find Pannel Objects used for connecting to a different MQTT broker
         MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();
