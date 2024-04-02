@@ -44,7 +44,8 @@ public class ScrollSearchManager : MonoBehaviour
         //Create Scroll Search Objects based on the active state
         ScrollSearchControler(ref cellsExist);
     }
-    
+
+    /////////////////////////////////////////////// Initilization and Control Methods ///////////////////////////////////////////////       
     private void OnStartInitilization()
     {
         //Get the database manager
@@ -95,6 +96,8 @@ public class ScrollSearchManager : MonoBehaviour
             }
         }
     }
+
+    /////////////////////////////////////////////// OnScreen Object Management /////////////////////////////////////////////////////   
     public void CreateCellsFromPrefab(ref GameObject prefabAsset, int cellSpacing, GameObject cellsParent, int cellCount, ref bool cellsExist)
     {
         if(prefabAsset == null)
@@ -132,7 +135,6 @@ public class ScrollSearchManager : MonoBehaviour
         //Change the reference bool
         cellsExist = true;
     }
-
     public void ResetCellSearch(ref bool cellsExist)
     {
         //Set bool to false
@@ -178,6 +180,8 @@ public class ScrollSearchManager : MonoBehaviour
 
         container.anchoredPosition = newPosition;
     }
+
+    /////////////////////////////////////////////// Spatial Object Management /////////////////////////////////////////////////////
     public void ScrollSearchObjectColor(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells, ref GameObject parentSearchObject)
     {
         if (closestCellIndex != selectedCellIndex)
@@ -235,6 +239,8 @@ public class ScrollSearchManager : MonoBehaviour
     {
         return gameObject.GetComponentInChildren<TMP_Text>().text;
     }
+
+    /////////////////////////////////////////////// Scrolling Object Event Methods  ////////////////////////////////////////////////
     public void StartDrag()
     {
         Debug.Log("Start Drag");
