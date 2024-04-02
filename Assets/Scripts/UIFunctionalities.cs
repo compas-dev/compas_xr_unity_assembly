@@ -690,132 +690,6 @@ public class UIFunctionalities : MonoBehaviour
         //Update Is Built Button
         IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
     }
-    public void ToggleElementSearch(Toggle toggle)
-    {
-        if (ElementSearchObjects != null && IsBuiltPanelObjects != null)
-        {    
-            if (toggle.isOn)
-            {             
-                //Set Visibility of buttons
-                IsBuiltPanelObjects.SetActive(false);
-                ElementSearchObjects.SetActive(true);
-                
-                //Set color of toggle
-                SetUIObjectColor(ElementSearchToggleObject, Yellow);
-
-            }
-            else
-            {
-                //If searched step is not null color it built or unbuilt
-                if(SearchedElement != null)
-                {
-                    GameObject searchedElement = Elements.FindObject(SearchedElement + " Geometry");
-
-                    if(searchedElement != null)
-                    {
-                        //TODO: ADD IF STATEMENT FOR IF IT IS CURRENT STEP or over arching color and colider controler.
-                        // instantiateObjects.ObjectColorandTouchEvaluater(mo) //TODO: DEPENDS ON SET UP OF PRIORITY VIEWER.
-                        //Color Previous one if it is not null
-                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID].data.is_built, searchedElement);
-                    }
-                }
-                
-                //Set Visibility of buttons
-                ElementSearchObjects.SetActive(false);
-                IsBuiltPanelObjects.SetActive(true);
-
-                //Set color of toggle
-                SetUIObjectColor(ElementSearchToggleObject, White);
-
-                //Update Is Built Button
-                Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
-                IsBuiltButtonGraphicsControler(currentStep.data.is_built, currentStep.data.priority);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
-        }  
-    }  
-    public void ToggleScrollSearch(Toggle toggle)
-    {
-        if (toggle.isOn)
-        {             
-            //Set Visibility of buttons
-            ScrollSearchObjects.SetActive(true);
-
-            //Create Cells for the Scroll Search
-            scrollSearchManager.CreateCellsFromPrefab(ref scrollSearchManager.cellPrefab, scrollSearchManager.cellSpacing, scrollSearchManager.cellsParent, databaseManager.BuildingPlanDataItem.steps.Count, ref scrollSearchManager.cellsExist);
-            
-            //Set color of toggle
-            SetUIObjectColor(ScrollSearchToggleObject, Yellow);
-        }
-        else
-        {
-            //Set Visibility of buttons
-            ScrollSearchObjects.SetActive(false);
-
-            //Reset all of the information in the cell search to off
-            scrollSearchManager.ResetCellSearch(ref scrollSearchManager.cellsExist);
-            
-            //Set color of toggle
-            SetUIObjectColor(ScrollSearchToggleObject, White);
-        }
-    }
-    public void SearchElementButton()
-    {
-        //Search for step button clicked
-        Debug.Log("Search for Step Button Pressed");
-
-        //GameObject that the search is looking for
-        GameObject UserSearchedElement = null;
-        
-        //If current step is not null and greater then Zero add subtract 1
-        if(ElementSearchInputField.text != null)
-        {
-            UserSearchedElement = Elements.FindObject(ElementSearchInputField.text + " Geometry");
-        }
-
-        //If the element was found color the previous object built or unbuilt and replace the variable
-        if(UserSearchedElement != null)
-        {
-            //Color Previous one if it is not null
-            if(SearchedElement != "None")
-            {
-                //Find Gameobject Associated with that step
-                GameObject previousElement = Elements.FindObject(SearchedElementStepID);
-                Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID];
-
-                if(previousElement != null)
-                {
-                    //Color based on current mode
-                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, SearchedElementStepID, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
-
-                    //if it is equal to current step color it human or robot
-                    if(SearchedElementStepID == CurrentStep)
-                    {
-                        instantiateObjects.ColorHumanOrRobot(PreviousStep.data.actor, PreviousStep.data.is_built, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
-                    }
-                }
-            }
-            
-            //Set Searched Step
-            SearchedElement = ElementSearchInputField.text;
-
-            //Color it by the searched object color
-            UserSearchedElement.GetComponent<MeshRenderer>().material = instantiateObjects.SearchedObjectMaterial;
-
-            //Find the parent name so I can set that as my searched element stepID
-            SearchedElementStepID = UserSearchedElement.transform.parent.name;
-            Debug.Log("Searched Element Step ID: " + SearchedElementStepID);
-
-        }
-        else
-        {
-            string message = $"WARNING: The item {ElementSearchInputField.text} could not be found. Please retype information and try search again.";
-            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", MessagesParent, message, "SearchElementButton: Could not find searched item.");
-        }     
-    }
     public void PreviousStepButton()
     {
         //Previous element button clicked
@@ -2177,6 +2051,132 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("SetPreviousPriorityGroup: Selected Priority is null.");
         }
+    }
+    public void ToggleElementSearch(Toggle toggle)
+    {
+        if (ElementSearchObjects != null && IsBuiltPanelObjects != null)
+        {    
+            if (toggle.isOn)
+            {             
+                //Set Visibility of buttons
+                IsBuiltPanelObjects.SetActive(false);
+                ElementSearchObjects.SetActive(true);
+                
+                //Set color of toggle
+                SetUIObjectColor(ElementSearchToggleObject, Yellow);
+
+            }
+            else
+            {
+                //If searched step is not null color it built or unbuilt
+                if(SearchedElement != null)
+                {
+                    GameObject searchedElement = Elements.FindObject(SearchedElement + " Geometry");
+
+                    if(searchedElement != null)
+                    {
+                        //TODO: ADD IF STATEMENT FOR IF IT IS CURRENT STEP or over arching color and colider controler.
+                        // instantiateObjects.ObjectColorandTouchEvaluater(mo) //TODO: DEPENDS ON SET UP OF PRIORITY VIEWER.
+                        //Color Previous one if it is not null
+                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID].data.is_built, searchedElement);
+                    }
+                }
+                
+                //Set Visibility of buttons
+                ElementSearchObjects.SetActive(false);
+                IsBuiltPanelObjects.SetActive(true);
+
+                //Set color of toggle
+                SetUIObjectColor(ElementSearchToggleObject, White);
+
+                //Update Is Built Button
+                Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
+                IsBuiltButtonGraphicsControler(currentStep.data.is_built, currentStep.data.priority);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
+        }  
+    }  
+    public void ToggleScrollSearch(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {             
+            //Set Visibility of buttons
+            ScrollSearchObjects.SetActive(true);
+
+            //Create Cells for the Scroll Search
+            scrollSearchManager.CreateCellsFromPrefab(ref scrollSearchManager.cellPrefab, scrollSearchManager.cellSpacing, scrollSearchManager.cellsParent, databaseManager.BuildingPlanDataItem.steps.Count, ref scrollSearchManager.cellsExist);
+            
+            //Set color of toggle
+            SetUIObjectColor(ScrollSearchToggleObject, Yellow);
+        }
+        else
+        {
+            //Set Visibility of buttons
+            ScrollSearchObjects.SetActive(false);
+
+            //Reset all of the information in the cell search to off
+            scrollSearchManager.ResetScrollSearch(ref scrollSearchManager.cellsExist);
+            
+            //Set color of toggle
+            SetUIObjectColor(ScrollSearchToggleObject, White);
+        }
+    }
+    public void SearchElementButton()
+    {
+        //Search for step button clicked
+        Debug.Log("Search for Step Button Pressed");
+
+        //GameObject that the search is looking for
+        GameObject UserSearchedElement = null;
+        
+        //If current step is not null and greater then Zero add subtract 1
+        if(ElementSearchInputField.text != null)
+        {
+            UserSearchedElement = Elements.FindObject(ElementSearchInputField.text + " Geometry");
+        }
+
+        //If the element was found color the previous object built or unbuilt and replace the variable
+        if(UserSearchedElement != null)
+        {
+            //Color Previous one if it is not null
+            if(SearchedElement != "None")
+            {
+                //Find Gameobject Associated with that step
+                GameObject previousElement = Elements.FindObject(SearchedElementStepID);
+                Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID];
+
+                if(previousElement != null)
+                {
+                    //Color based on current mode
+                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, SearchedElementStepID, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
+
+                    //if it is equal to current step color it human or robot
+                    if(SearchedElementStepID == CurrentStep)
+                    {
+                        instantiateObjects.ColorHumanOrRobot(PreviousStep.data.actor, PreviousStep.data.is_built, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
+                    }
+                }
+            }
+            
+            //Set Searched Step
+            SearchedElement = ElementSearchInputField.text;
+
+            //Color it by the searched object color
+            UserSearchedElement.GetComponent<MeshRenderer>().material = instantiateObjects.SearchedObjectMaterial;
+
+            //Find the parent name so I can set that as my searched element stepID
+            SearchedElementStepID = UserSearchedElement.transform.parent.name;
+            Debug.Log("Searched Element Step ID: " + SearchedElementStepID);
+
+        }
+        else
+        {
+            string message = $"WARNING: The item {ElementSearchInputField.text} could not be found. Please retype information and try search again.";
+            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", MessagesParent, message, "SearchElementButton: Could not find searched item.");
+        }     
     }
 
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////

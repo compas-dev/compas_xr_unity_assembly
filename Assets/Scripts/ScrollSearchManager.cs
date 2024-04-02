@@ -135,7 +135,7 @@ public class ScrollSearchManager : MonoBehaviour
         //Change the reference bool
         cellsExist = true;
     }
-    public void ResetCellSearch(ref bool cellsExist)
+    public void ResetScrollSearch(ref bool cellsExist)
     {
         //Set bool to false
         cellsExist = false;
