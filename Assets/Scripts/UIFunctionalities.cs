@@ -1569,8 +1569,6 @@ public class UIFunctionalities : MonoBehaviour
 
         }
     }
-
-    //TODO: Split up approval and rejecton vis & interactibility
     public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
