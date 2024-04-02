@@ -39,8 +39,8 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject ElementSearchToggleObject;
 
     //todo: TEMPORARY OBJECTS
-    public GameObject ElementSearchToggleObject2;
-    private GameObject ElementSearch2Objects;
+    public GameObject ScrollSearchToggleObject;
+    private GameObject ScrollSearchObjects;
 
     //todo: TEMPORARY OBJECTS
 
@@ -282,12 +282,8 @@ public class UIFunctionalities : MonoBehaviour
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "Robot_Button", ToggleRobot);
 
         //Find toggle for element search
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ElementSearchToggleObject, "ElementSearchToggle", ToggleElementSearch);
-
-        //TODO: TEMPORARY OBJECTS
-        //Find toggle for element search
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ElementSearchToggleObject2, "ElementSearchToggle2", ToggleElementSearch2);
-        ElementSearch2Objects = CanvasObject.FindObject("ScrollSearch");
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
+        ScrollSearchObjects = ScrollSearchToggleObject.FindObject("ScrollSearchObjects");
 
         //Find Element Search Button & Objects
         ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
@@ -471,10 +467,7 @@ public class UIFunctionalities : MonoBehaviour
                 ObjectLengthsToggleObject.SetActive(true);
                 IDToggleObject.SetActive(true);
                 PriorityViewerToggleObject.SetActive(true);
-                ElementSearchToggleObject.SetActive(true);
-                
-                //TODO: TEMPORARY OBJECTS
-                ElementSearchToggleObject2.SetActive(true);
+                ScrollSearchToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
@@ -489,10 +482,7 @@ public class UIFunctionalities : MonoBehaviour
                 ObjectLengthsToggleObject.SetActive(false);
                 IDToggleObject.SetActive(false);
                 PriorityViewerToggleObject.SetActive(false);
-                ElementSearchToggleObject.SetActive(false);
-
-                //TODO: TEMPORARY OBJECTS
-                ElementSearchToggleObject2.SetActive(false);
+                ScrollSearchToggleObject.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -747,36 +737,29 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
         }  
     }  
-    public void ToggleElementSearch2(Toggle toggle)
+    public void ToggleScrollSearch(Toggle toggle)
     {
         if (toggle.isOn)
         {             
             //Set Visibility of buttons
-            ElementSearch2Objects.SetActive(true);
+            ScrollSearchObjects.SetActive(true);
 
-            //if Scroll search script is null then print warning
-            if(scrollSearchManager == null)
-            {
-                Debug.LogWarning("Scroll Search Manager is null.");
-            }
-            else
-            {
-                Debug.Log("Scroll Search Manager is not null.");
-                //Set up the scroll search manager
-                scrollSearchManager.cellsExist = true;
-            }
+            //Create Cells for the Scroll Search
+            scrollSearchManager.CreateCellsFromPrefab(ref scrollSearchManager.cellPrefab, scrollSearchManager.cellSpacing, scrollSearchManager.cellsParent, databaseManager.BuildingPlanDataItem.steps.Count, ref scrollSearchManager.cellsExist);
             
             //Set color of toggle
-            SetUIObjectColor(ElementSearchToggleObject2, Yellow);
-
+            SetUIObjectColor(ScrollSearchToggleObject, Yellow);
         }
         else
         {
             //Set Visibility of buttons
-            ElementSearch2Objects.SetActive(false);
+            ScrollSearchObjects.SetActive(false);
 
+            //Reset all of the information in the cell search to off
+            scrollSearchManager.ResetCellSearch(ref scrollSearchManager.cellsExist);
+            
             //Set color of toggle
-            SetUIObjectColor(ElementSearchToggleObject2, White);
+            SetUIObjectColor(ScrollSearchToggleObject, White);
         }
     }
     public void SearchElementButton()

@@ -7196,6 +7196,7 @@ MonoBehaviour:
   cellPrefab: {fileID: 0}
   cellsExist: 0
   cellDistances: []
+  cellSpacing: -20
   selectedCellStepIndex: 
 --- !u!4 &279596140
 Transform:
@@ -20380,7 +20381,7 @@ GameObject:
   - component: {fileID: 811174818}
   - component: {fileID: 811174817}
   m_Layer: 5
-  m_Name: ElementSearchToggle2
+  m_Name: ScrollSearchToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20400,11 +20401,12 @@ RectTransform:
   m_Children:
   - {fileID: 1379942854}
   - {fileID: 1087547258}
+  - {fileID: 1812617075}
   m_Father: {fileID: 7178243882758253584}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 286.3}
+  m_AnchoredPosition: {x: 0, y: 58}
   m_SizeDelta: {x: 37, y: 37}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &811174817
@@ -49453,7 +49455,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1812617075}
   m_Layer: 5
-  m_Name: ScrollSearch
+  m_Name: ScrollSearchObjects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49468,7 +49470,7 @@ RectTransform:
   m_GameObject: {fileID: 1812617074}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1098537106}
@@ -49476,11 +49478,11 @@ RectTransform:
   - {fileID: 121700628}
   - {fileID: 979833092}
   - {fileID: 1135434392}
-  m_Father: {fileID: 316923129428089353}
+  m_Father: {fileID: 811174816}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -590, y: 414}
+  m_AnchoredPosition: {x: -51.50006, y: 2}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1813081060
@@ -58589,7 +58591,6 @@ RectTransform:
   - {fileID: 4715918610523117248}
   - {fileID: 7178243882758253584}
   - {fileID: 7288266109465037923}
-  - {fileID: 1812617075}
   - {fileID: 525893684270312857}
   - {fileID: 372836965}
   - {fileID: 3793966868836742290}
@@ -66389,7 +66390,7 @@ MonoBehaviour:
   trajectoryVisulizer: {fileID: 0}
   rosConnectionManager: {fileID: 0}
   scrollSearchManager: {fileID: 0}
-  ElementSearchToggleObject2: {fileID: 0}
+  ScrollSearchToggleObject: {fileID: 0}
   CanvasObject: {fileID: 0}
   ConstantUIPanelObjects: {fileID: 0}
   NextGeometryButtonObject: {fileID: 0}
@@ -75895,8 +75896,8 @@ RectTransform:
   - {fileID: 3479949876162822895}
   - {fileID: 7146310982290295414}
   - {fileID: 5145957744363497458}
-  - {fileID: 9091356120067231783}
   - {fileID: 811174816}
+  - {fileID: 9091356120067231783}
   m_Father: {fileID: 316923129428089353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
@@ -77100,7 +77101,7 @@ GameObject:
   - component: {fileID: 3490519059832803527}
   - component: {fileID: 3887944559354403210}
   m_Layer: 5
-  m_Name: ElementSearchToggle
+  m_Name: ElementSearchBulttonToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -28,7 +28,7 @@ public class ScrollSearchManager : MonoBehaviour
     public bool cellsExist = false;
     public float[] cellDistances;
     private bool dragging = false;
-    private int cellSpacing = -20;
+    public int cellSpacing = -20;
     private int closestCellIndex;
     private int? selectedCellIndex = null;
     public string selectedCellStepIndex;
@@ -55,64 +55,47 @@ public class ScrollSearchManager : MonoBehaviour
 
         //Find OnScreen Objects
         GameObject Canvas = GameObject.Find("Canvas");
-        ScrollSearchObjects = Canvas.FindObject("ScrollSearch");
+        GameObject VisiblityEditor = Canvas.FindObject("Visibility_Editor");
+        GameObject ScrollSearchToggle = VisiblityEditor.FindObject("ScrollSearchToggle");
+        ScrollSearchObjects = ScrollSearchToggle.FindObject("ScrollSearchObjects");
         cellPrefab = ScrollSearchObjects.FindObject("CellPrefab");
         cellsParent = ScrollSearchObjects.FindObject("Container");
     }
     public void ScrollSearchControler(ref bool cellsExist)
     {
+        //If cells exist loop through the cells and get the closest cell
         if (cellsExist)
         {
-            //create cells from prefab
-            if (cells.Count != databaseManager.BuildingPlanDataItem.steps.Count)
+            //Calculate the distance between the center and the cells
+            for (int i = 0; i < cells.Count; i++)
             {
-                CreateCellsFromPrefab(ref cellPrefab, cellSpacing, cellsParent, databaseManager.BuildingPlanDataItem.steps.Count);
+                cellDistances[i] = Mathf.Abs(center.transform.position.y - cells[i].transform.position.y);
             }
 
-            //Loop through the cells and get the closest cell
-            if (cells.Count == databaseManager.BuildingPlanDataItem.steps.Count)
+            //Get the minimum distance
+            float minDistance = Mathf.Min(cellDistances);
+
+            //Get the index of the closest cell
+            for (int a = 0; a < cells.Count; a++)
             {
-                //Calculate the distance between the center and the cells
-                for (int i = 0; i < cells.Count; i++)
+                if (minDistance == cellDistances[a])
                 {
-                    cellDistances[i] = Mathf.Abs(center.transform.position.y - cells[i].transform.position.y);
-                }
-
-                //Get the minimum distance
-                float minDistance = Mathf.Min(cellDistances);
-
-                //Get the index of the closest cell
-                for (int a = 0; a < cells.Count; a++)
-                {
-                    if (minDistance == cellDistances[a])
-                    {
-                        closestCellIndex = a;
-                    }
-                }
-
-                //If the dragging event has ended then lerp to the closest cell and color the item from the cell
-                if (!dragging)
-                {
-                    //Adjust pannel to the closest cell
-                    LerpToCell(closestCellIndex * - cellSpacing);
-
-                    //Search for the step
-                    ScrollSearchObjectColor(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells, ref cellsParent);
+                    closestCellIndex = a;
                 }
             }
-        }
-        else
-        {
-            foreach (GameObject cell in cells)
-            {
-                Destroy(cell);
-            }
 
-            cells.Clear();
-            cellDistances = new float[0];
+            //If the dragging event has ended then lerp to the closest cell and color the item from the cell
+            if (!dragging)
+            {
+                //Adjust pannel to the closest cell
+                LerpToCell(closestCellIndex * - cellSpacing);
+
+                //Search for the step
+                ScrollSearchObjectColor(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells, ref cellsParent);
+            }
         }
     }
-    public void CreateCellsFromPrefab(ref GameObject prefabAsset, int cellSpacing, GameObject cellsParent, int cellCount)
+    public void CreateCellsFromPrefab(ref GameObject prefabAsset, int cellSpacing, GameObject cellsParent, int cellCount, ref bool cellsExist)
     {
         if(prefabAsset == null)
         {
@@ -145,14 +128,46 @@ public class ScrollSearchManager : MonoBehaviour
 
             cells.Add(cell);
         }
+
+        //Change the reference bool
+        cellsExist = true;
     }
-    public void DestroyCells()
+
+    public void ResetCellSearch(ref bool cellsExist)
     {
+        //Set bool to false
+        cellsExist = false;
+
+        //Destroy all cells
+        DestroyCellInfo(ref cells, ref cellDistances);
+
+        //Color the last Selected Item based on the current application mode
+        if (selectedCellStepIndex != null)
+        {
+            Step step = databaseManager.BuildingPlanDataItem.steps[selectedCellStepIndex];
+            GameObject objectToColor = Elements.FindObject(selectedCellStepIndex).FindObject(step.data.element_ids[0] + " Geometry");
+
+            if (objectToColor != null)
+            {
+                instantiateObjects.ObjectColorandTouchEvaluater(
+                    instantiateObjects.visulizationController.VisulizationMode,
+                    instantiateObjects.visulizationController.TouchMode,
+                    step, selectedCellStepIndex, objectToColor);
+            }
+        }
+
+        //Reset the selected cell index
+        selectedCellIndex = null;
+    }
+    public void DestroyCellInfo(ref List<GameObject> cells, ref float[] cellDistances)
+    {
+        //Destroy all cells
         foreach (GameObject cell in cells)
         {
             Destroy(cell);
         }
 
+        //Clear the cells list and cell distances array
         cells.Clear();
         cellDistances = new float[0];
     }
