@@ -479,12 +479,12 @@ public class DatabaseManager : MonoBehaviour
             node.part != null &&
             node.part.frame != null)
         {
-            if (node.type_data == "4.Joint")
+            if (node.type_data == "5.Joint")
             {
                 Debug.Log("This is a timbers Joint and should be ignored");
                 return false;
             }
-            else if (node.type_data != "3.Frame")
+            else if (node.type_data != "4.Frame" || node.type_data != "3.Mesh")
             {
                 // Check if the required properties are present or have valid values
                 if (node.attributes != null &&
@@ -800,7 +800,7 @@ public class DatabaseManager : MonoBehaviour
         {
             case "compas.geometry/Cylinder":
                 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                //Set node type_data
                 node.type_data = "0.Cylinder";
                 
                 // Accessing different parts of json data to make common attributes dictionary
@@ -815,7 +815,7 @@ public class DatabaseManager : MonoBehaviour
 
             case "compas.geometry/Box":
                 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                //Set node type_data
                 node.type_data = "1.Box";
 
                 // Accessing different parts of json data to make common attributes dictionary
@@ -831,33 +831,33 @@ public class DatabaseManager : MonoBehaviour
             
             case "compas.datastructures/Mesh":
 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
-                node.type_data = "2.ObjFile";
+                //Set node type_data
+                node.type_data = "3.Mesh"; //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
 
-                /* TODO: OBJ FILE OPTIONS
-                 I think we need a clearer plan for handling OBJ files.
-                 I think I should make a generic component for them on the python side that takes a list of frames & a list of (breps or meshs)
-                 This componenet should either converts it to a mesh assembly or a frame assembly and Export the proper obj files.
-                */
+                // Set Node Length width height to 0 because it does not contain definitions for this information.
+                node.attributes.length = 0.00f;
+                node.attributes.width = 0.00f;
+                node.attributes.height = 0.00f;
+
                 Debug.Log("This is a Mesh assembly");
                 break;
 
             case "compas.geometry/Frame":
                 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
-                node.type_data = "3.Frame";
+                //Set node type_data //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
+                node.type_data = "4.Frame";
 
-                /* TODO: OBJ FILE OPTIONS
-                 I think we need a clearer plan for handling OBJ files.
-                 I think I should make a generic component for them on the python side that takes a list of frames & a list of (breps or meshs)
-                 This componenet should either converts it to a mesh assembly or a frame assembly and Export the proper obj files.
-                */
+                // Set Node Length width height to 0 because it does not contain definitions for this information.
+                node.attributes.length = 0.00f;
+                node.attributes.width = 0.00f;
+                node.attributes.height = 0.00f;
+
                 Debug.Log("This is a frame assembly");
                 break;
 
             case "compas_timber.parts/Beam":
 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                //Set node type_data
                 node.type_data = "2.ObjFile";
 
                 // Accessing different parts of json data to make common attributes dictionary
@@ -874,11 +874,10 @@ public class DatabaseManager : MonoBehaviour
 
             case string connectionType when connectionType.StartsWith("compas_timber.connections"):
         
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
-                node.type_data = "4.Joint";
+                //Set node type_data
+                node.type_data = "5.Joint";
 
-                // This actually serves as a great oppertunity to split off for joints and use the information.
-                //......
+                // Do not update attributes because this is not interactable.
 
                 Debug.Log("This is a timbers connection");
                 break;
