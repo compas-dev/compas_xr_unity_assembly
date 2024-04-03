@@ -125,16 +125,6 @@ namespace Instantiate
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
             visulizationController.TouchMode = TouchMode.None;
         }
-        public void placeElements(List<Step> DataItems) 
-        {
-            int i = 0;
-            foreach (Step step in DataItems)
-                {
-                    placeElement(i.ToString(), step);
-                    i++;
-                }
-
-        }
         public void placeElement(string Key, Step step)
         {
             Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
@@ -210,49 +200,6 @@ namespace Instantiate
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                 UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
             }
-        }
-        public void placeElementAssembly(string Key, Node node)
-        {
-            Debug.Log($"Placing element {node.type_id}");
-
-            //get position
-            Vector3 positionData = getPosition(node.part.frame.point);
-            
-            //get rotation
-            Rotation rotationData = getRotation(node.part.frame.xaxis, node.part.frame.yaxis);
-            
-            //Define Object Rotation
-            Quaternion rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
-
-            //instantiate a geometry at this position and rotation
-            GameObject geometry_object = gameobjectTypeSelectorAssembly(node);
-
-            if (geometry_object == null)
-            {
-                Debug.Log($"This key is null {node.type_id}");
-                return;
-            }
-
-            //Instantiate new gameObject from the existing selected gameobjects.
-            GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
-            
-            // Destroy Initial gameobject that is made.
-            if (geometry_object != null)
-            {
-                Destroy(geometry_object);
-            }
-
-            //Set parent and name
-            elementPrefab.transform.SetParent(Elements.transform, false);
-            
-            //Name the object after the node number
-            elementPrefab.name = node.type_id;
-
-            //Get the nested Object from the .Obj so we can adapt colors only the first object
-            GameObject child_object = elementPrefab.transform.GetChild(0).gameObject;
-
-            //Color it Built or Unbuilt
-            ColorBuiltOrUnbuilt(node.attributes.is_built, child_object);
         }
         public void placeElementsDict(Dictionary<string, Step> BuildingPlanDataDict)
         {
@@ -392,73 +339,6 @@ namespace Instantiate
                 return element;
             
         }
-        public GameObject gameobjectTypeSelectorAssembly(Node node)
-        {
-
-            if (node == null)
-            {
-                Debug.LogWarning("Node is null. Cannot determine GameObject type.");
-                return null;
-            }
-
-            GameObject element;
-
-            switch (node.type_data)
-                {
-                    //TODO:REVIEW THE SIZE AND SCALE OF THESE 
-                    case "0.Cylinder":
-                        //Define the Size of the Cylinder from the data values
-                        float cylinderRadius = node.attributes.width;
-                        float cylinderHeight = node.attributes.height;
-                        Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight, cylinderRadius*2);
-                        
-                        //Create and Scale Element
-                        element = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                        element.transform.localScale = cylindersize;
-                        break;
-
-                    case "1.Box":                    
-                        //Define the Size of the Cube from the data values
-                        Vector3 cubesize = new Vector3(node.attributes.width, node.attributes.height, node.attributes.length);
-                        
-                        //Create and Scale Element
-                        element = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        element.transform.localScale = cubesize;
-                        break;
-
-                    case "2.ObjFile":
-
-                        string basepath = Application.persistentDataPath;
-                        string folderpath = Path.Combine(basepath, "Object_Storage");
-                        string filepath = Path.Combine(folderpath, node.type_id+".obj");
-
-                        if (File.Exists(filepath))
-                        {
-                            element =  new OBJLoader().Load(filepath);
-                            
-                        }
-                        else
-                        {
-                            element = null;
-                            Debug.Log ("ObjPrefab is null");
-                        }
-                        
-                        break;
-
-                    case "3.Mesh":
-                        //TODO: CONFIRM FETCH OBJECT AS OBJ OR CREATE OBJECT FROM PROVIDED DATA.
-                        element = null;
-                        break;
-
-                    default:
-                        Debug.LogWarning($"No element type found for type node: {node.type_id} of type: {node.type_data}");
-                        return null;
-                }
-
-                Debug.Log($"Element: {node.type_id} type: {node.type_data}");
-                return element;
-            
-        }      
         public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null, bool storePositionData=true)
         {
             // Create a new GameObject for the text
@@ -1325,40 +1205,6 @@ namespace Instantiate
                 {
                     Debug.LogWarning($"Could not find object with key: {key}");
                 }
-            }
-        }
-        public Color AdjustColorByGreyscale(Color originalColor, float factor)
-        {
-            //If Color is not white (Built and Unbuilt Colors)
-            if (originalColor.r != 1.000f && originalColor.g != 1.000f && originalColor.b != 1.000f)
-            {
-                // Factor should be between 0 and 1, where 0 is unchanged and 1 is fully gray
-                factor = Mathf.Clamp01(factor);
-
-                // Convert the original color to grayscale
-                float grayscaleValue = originalColor.r * 0.3f + originalColor.g * 0.59f + originalColor.b * 0.11f;
-
-                // Blend the grayscale color with the original color based on the factor
-                float blendedR = originalColor.r * (1 - factor) + grayscaleValue * factor;
-                float blendedG = originalColor.g * (1 - factor) + grayscaleValue * factor;
-                float blendedB = originalColor.b * (1 - factor) + grayscaleValue * factor;
-
-                // Ensure color values are in the valid range (0 to 1)
-                blendedR = Mathf.Clamp01(blendedR);
-                blendedG = Mathf.Clamp01(blendedG);
-                blendedB = Mathf.Clamp01(blendedB);
-
-                // Create and return the new color
-                Color newColor = new Color(blendedR, blendedG, blendedB, originalColor.a);
-                
-                Debug.Log($"Original Color: {originalColor} New Color: {newColor}");
-                
-                return newColor;
-            }
-            else
-            {
-                Color newColor = new Color(originalColor.r * factor, originalColor.g * factor, originalColor.b * factor, originalColor.a);
-                return newColor;
             }
         }
     

@@ -357,19 +357,6 @@ public class DatabaseManager : MonoBehaviour
         //Push the data to firebase
         dbreference_buildingplan.SetRawJsonValueAsync(data);
     }
-    public void PushAllDataAssembly(string key)
-    {
-        //TODO: Add custom device_id to the assembly data structure.
-        //Find step that I changed in the building plan and add my custom device id.
-        // Node specificnode = AssemblyDataDict[key];
-        // specificnode.attributes.device_id = SystemInfo.deviceUniqueIdentifier;
-
-        //Searilize the data for push to firebase
-        string data = JsonConvert.SerializeObject(AssemblyDataDict);
-        
-        //Push the data to firebase
-        dbreference_buildingplan.SetRawJsonValueAsync(data);
-    }
     public void PushStringData(DatabaseReference db_ref, string data)
     {
         db_ref.SetRawJsonValueAsync(data);
