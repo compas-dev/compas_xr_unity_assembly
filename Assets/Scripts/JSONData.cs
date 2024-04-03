@@ -51,6 +51,24 @@ namespace JSON
             //Create a new instance of the class
             Frame frame = new Frame();
 
+            //TODO: TEST THIS METHOD.
+            // float[] point = DataParser.ConvertDatatoFloatArray(frameDataDict["point"]);
+            // float[] xaxis = DataParser.ConvertDatatoFloatArray(frameDataDict["xaxis"]);
+            // float[] yaxis = DataParser.ConvertDatatoFloatArray(frameDataDict["yaxis"]);
+
+            // if (point == null || xaxis == null || yaxis == null)
+            // {
+            //     // At least one of the arrays is null
+            //     Debug.LogError("One or more arrays is null.");
+            // }
+            // else
+            // {
+            //     // All arrays are not null, proceed with assignment
+            //     frame.point = point;
+            //     frame.xaxis = xaxis;
+            //     frame.yaxis = yaxis;
+            // }
+
             if (frameDataDict["point"] is List<object> && frameDataDict["xaxis"] is List<object> && frameDataDict["yaxis"] is List<object>)
             {
                 //Convert System.double items to float for use in instantiation
@@ -105,6 +123,44 @@ namespace JSON
                 { "xaxis", xaxis },
                 { "yaxis", yaxis }
             };
+        }
+    }
+
+    //Class holding methods to parse information from json data
+    [System.Serializable]
+    public static class DataParser
+    {
+        public static float[] ConvertDatatoFloatArray(object data)
+        {
+            if (data is List<object>)
+            {
+                List<object> dataList = data as List<object>;
+                return dataList.Select(Convert.ToSingle).ToArray();
+            }
+            else if (data is float[])
+            {
+                return (float[])data;
+            }
+            else if (data is List<System.Double>)
+            {
+                List<System.Double> doubleList = data as List<System.Double>;
+                return doubleList.Select(Convert.ToSingle).ToArray();
+            }
+            else if (data is System.Double[])
+            {
+                System.Double[] doubleArray = data as System.Double[];
+                return doubleArray.Select(Convert.ToSingle).ToArray();
+            }
+            else if (data is JArray)
+            {
+                JArray dataArray = data as JArray;
+                return dataArray.Select(token => (float)token).ToArray();
+            }
+            else
+            {
+                Debug.LogError("DataParser: Data is not a List, Array, or JArray.");
+                return null;
+            }
         }
     }
 
