@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ApplicationModeControler //TODO: Add Constructor to set default values.
+namespace ApplicationModeControler
 {
     //Control Visulization & Touch Modes
     public class ModeControler

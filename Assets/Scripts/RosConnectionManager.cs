@@ -28,7 +28,6 @@ public class RosConnectionManager : MonoBehaviour
         uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
 
     }
-
     public void ConnectAndWait()
     {
         RosSocket = ConnectToRos(protocol, RosBridgeServerUrl, OnConnected, OnClosed, Serializer);
@@ -36,7 +35,6 @@ public class RosConnectionManager : MonoBehaviour
         if (!IsConnected.WaitOne(SecondsTimeout * 1000))
             Debug.LogWarning("Failed to connect to RosBridge at: " + RosBridgeServerUrl);
     }
-
     public static RosSocket ConnectToRos(Protocol protocolType, string serverUrl, EventHandler onConnected = null, EventHandler onClosed = null, RosSocket.SerializerEnum serializer = RosSocket.SerializerEnum.Microsoft)
     {
         IProtocol protocol = ProtocolInitializer.GetProtocol(protocolType, serverUrl);
@@ -45,7 +43,6 @@ public class RosConnectionManager : MonoBehaviour
 
         return new RosSocket(protocol, serializer);
     }
-
     private void OnApplicationQuit()
     {
         if(RosSocket != null && IsConnectedToRos)
@@ -53,7 +50,6 @@ public class RosConnectionManager : MonoBehaviour
             RosSocket.Close();
         }
     }
-
     private void OnConnected(object sender, EventArgs e)
     {
         IsConnected.Set();
@@ -65,7 +61,6 @@ public class RosConnectionManager : MonoBehaviour
             uiFunctionalities.UpdateConnectionStatusText(uiFunctionalities.RosConnectionStatusObject, true);
         }
     }
-
     private void OnClosed(object sender, EventArgs e)
     {
         IsConnected.Reset();

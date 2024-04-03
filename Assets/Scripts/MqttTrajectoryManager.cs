@@ -320,24 +320,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
         }
     }
-    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY RESPONSE.
+    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)
     {
-
-        // Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-        // if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
-        // {
-        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID + 1)
-        //     {
-        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
-        //         return;
-        //     }
-        //     else
-        //     {
-        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-        //         serviceManager.IsDirty = false;
-        //     }
-        // }
-
         //Set last result message of the Service Manager
         serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
         
@@ -526,7 +510,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.LogWarning("MQTT: GetTrajectoryResult LastGetTrajectoryRequestMessage is null. A request must be made before this code works.");
         }
     }
-    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage) //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL?
+    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage)
     {
         //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
         if(serviceManager.IsDirtyApproval)

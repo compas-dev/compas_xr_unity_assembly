@@ -1058,7 +1058,6 @@ public class DatabaseManager : MonoBehaviour
                     Debug.Log($"The key '{key}' does not exist in the dictionary");
                     BuildingPlanDataItem.steps.Add(key, newValue);
 
-                    //TODO: Remove Temporary Building Plan Priority Tree Dictionary
                     //Check if the steps priority is one that I already have in the priority tree dictionary
                     if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
                     {
@@ -1073,7 +1072,6 @@ public class DatabaseManager : MonoBehaviour
                         PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
                         Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
                     }
-                    //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
@@ -1130,7 +1128,7 @@ public class DatabaseManager : MonoBehaviour
                     {    
                         if(IsValidStep(newValue))
                         {
-                            //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+
                             //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                             if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                             {
@@ -1162,7 +1160,6 @@ public class DatabaseManager : MonoBehaviour
                             {
                                 Debug.Log($"The priority of the step {key} did not change");
                             }
-                            //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                             //Add the new value to the Building plan dictionary
                             BuildingPlanDataItem.steps[key] = newValue;
@@ -1186,7 +1183,7 @@ public class DatabaseManager : MonoBehaviour
 
                     if(IsValidStep(newValue))
                     {
-                        //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+
                         //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                         if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                         {                            
@@ -1220,7 +1217,6 @@ public class DatabaseManager : MonoBehaviour
                         {
                             Debug.Log($"The priority of the step {key} did not change");
                         }
-                        //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                     }
                     else
@@ -1261,7 +1257,6 @@ public class DatabaseManager : MonoBehaviour
                 Step newValue = null;
                 Debug.Log("The key exists in the dictionary and is going to be removed");
                 
-                //TODO: Remove Temporary Building Plan Priority Tree Dictionary
                 //First check thee steps priorty Remove the steps key from the priority tree dictionary
                 PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
 
@@ -1270,7 +1265,6 @@ public class DatabaseManager : MonoBehaviour
                 {
                     PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                 }
-                //TODO: Remove Temporary Building Plan Priority Tree Dictionary
                 
                 //Remove the step from the building plan dictionary
                 BuildingPlanDataItem.steps.Remove(key);
