@@ -31,6 +31,7 @@ namespace Instantiate
         //Other Sript Objects
         public DatabaseManager databaseManager;
         public UIFunctionalities UIFunctionalities;
+        public ScrollSearchManager scrollSearchManager;
 
         //Object Materials
         public Material BuiltMaterial;
@@ -86,6 +87,12 @@ namespace Instantiate
             //Find Additional Scripts.
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+            scrollSearchManager = GameObject.Find("ScrollSearchManager").GetComponent<ScrollSearchManager>();
+
+            if (scrollSearchManager == null)
+            {
+                Debug.LogWarning("ScrollSearchManager is null");
+            }
 
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
@@ -1179,7 +1186,7 @@ namespace Instantiate
                 ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, gamobj.FindObject(elementID + " Geometry"));
             }
         }
-        public void ApplyColorBasedOnBuildState() //TODO:DOUBLE CHECK THIS FUNCTION... for some reason it gets stuck if I am looking for the object name+ " Geometry" ALSO ADD SCROLL SEARCH
+        public void ApplyColorBasedOnBuildState()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
             {
@@ -1198,11 +1205,18 @@ namespace Instantiate
                             //Color based on Priority
                             ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
                         }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                        }
                     }
                 }
             }
         }
-        public void ApplyColorBasedOnActor() //TODO:DOUBLE CHECK THIS FUNCTION... for some reason it gets stuck if I am looking for the object name+ " Geometry" ALSO ADD SCROLL SEARCH
+        public void ApplyColorBasedOnActor()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
             {
@@ -1220,6 +1234,13 @@ namespace Instantiate
                         {
                             //Color based on priority
                             ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
                         }
                     }
                 }
