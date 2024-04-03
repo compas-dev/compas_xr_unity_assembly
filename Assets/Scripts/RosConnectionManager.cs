@@ -3,9 +3,13 @@ using System.Threading;
 using RosSharp.RosBridgeClient.Protocols;
 using UnityEngine;
 using RosSharp.RosBridgeClient;
+using UnityEngine.UI;
 
 public class RosConnectionManager : MonoBehaviour
 {
+    //Other scripts
+    private UIFunctionalities uiFunctionalities;
+
     public int SecondsTimeout = 10;
 
     public RosSocket RosSocket { get; private set; }
@@ -19,7 +23,10 @@ public class RosConnectionManager : MonoBehaviour
     public virtual void Awake()
     {
         IsConnected = new ManualResetEvent(false);
-        //     new Thread(ConnectAndWait).Start();
+        
+        //Find UIFunctionalities Script
+        uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+
     }
 
     public void ConnectAndWait()
@@ -51,11 +58,23 @@ public class RosConnectionManager : MonoBehaviour
     {
         IsConnected.Set();
         Debug.Log("Connected to RosBridge: " + RosBridgeServerUrl);
+
+        //Set UI Object Color to green & connected if the communication toggle is on.
+        if (uiFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
+        {
+            uiFunctionalities.UpdateConnectionStatusText(uiFunctionalities.RosConnectionStatusObject, true);
+        }
     }
 
     private void OnClosed(object sender, EventArgs e)
     {
         IsConnected.Reset();
         Debug.Log("Disconnected from RosBridge: " + RosBridgeServerUrl);
+
+        //Set UI Object Color to red and disconnected if the communication toggle is on.
+        if (uiFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
+        {
+            uiFunctionalities.UpdateConnectionStatusText(uiFunctionalities.RosConnectionStatusObject, false);
+        }
     }
 }

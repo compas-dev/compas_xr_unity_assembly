@@ -100,18 +100,23 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         base.OnConnected();
         Debug.Log("MQTT: ON CONNECTED INTERNAL METHOD");
 
-        //Set UI Object Color to green if the communication toggle is on.
+        //Set UI Object Color to green & connected if the communication toggle is on.
         if (UIFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
         {
             UIFunctionalities.SetUIObjectColor(UIFunctionalities.MqttConnectButtonObject, Color.green);
+            UIFunctionalities.UpdateConnectionStatusText(UIFunctionalities.MqttConnectionStatusObject, true);
         }
     }
     protected override void OnDisconnected()
     {
         base.OnDisconnected();
         Debug.Log("MQTT: ON DISCONNECTED INTERNAL METHOD.");
-        //I dont think we need the is connected bool.
-        // isConnected=false;
+
+        //Set UI Object Connection Status
+        if (UIFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
+        {
+            UIFunctionalities.UpdateConnectionStatusText(UIFunctionalities.MqttConnectionStatusObject, false);
+        }
 
     }
     protected override void OnConnectionLost()

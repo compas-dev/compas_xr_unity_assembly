@@ -123,11 +123,13 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_InputField MqttBrokerInputField;
     private TMP_InputField MqttPortInputField;
     private GameObject MqttUpdateConnectionMessage;
+    public GameObject MqttConnectionStatusObject;
     public GameObject MqttConnectButtonObject;
     public GameObject RosConnectButtonObject;
     private TMP_InputField RosHostInputField;
     private TMP_InputField RosPortInputField;
     private GameObject RosUpdateConnectionMessage;
+    public GameObject RosConnectionStatusObject;
 
     //Trajectory Review UI Controls
     public GameObject ReviewTrajectoryObjects;
@@ -352,14 +354,24 @@ public class UIFunctionalities : MonoBehaviour
         MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();
         MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();
         MqttUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
+        MqttConnectionStatusObject = CommunicationPanelObject.FindObject("MqttConnectionStatusObject");
         FindButtonandSetOnClickAction(CommunicationPanelObject, ref MqttConnectButtonObject, "MqttConnectButton", UpdateMqttConnectionFromUserInputs);
 
         //Find Pannel Objects used for connecting to a different ROS host
         RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
         RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
         RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsROSReconnectMessage");
+        RosConnectionStatusObject = CommunicationPanelObject.FindObject("ROSConnectionStatusObject");
         FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", UpdateRosConnectionFromUserInputs);
 
+        if(MqttConnectionStatusObject == null)
+        {
+            Debug.LogWarning("MqttConnectionStatusObject is null");
+        }
+        if(RosConnectionStatusObject == null)
+        {
+            Debug.LogWarning("MqttConnectionStatusObject is null");
+        }
         //Find Control Objects and set up events
         GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
         ReviewTrajectoryObjects = TrajectoryControlObjects.FindObject("ReviewTrajectoryControls");
@@ -398,6 +410,7 @@ public class UIFunctionalities : MonoBehaviour
         {
             RobotSelectionDropdown.options = robotOptions;
         }
+
         //Find Object, Execute button and add event listner for on click method
         FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
     }
@@ -1352,6 +1365,28 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Communication Buttons //////////////////////////////////////////////
+    public void UpdateConnectionStatusText(GameObject connectionStatusObject, bool connectionStatus)
+    {
+        //Find the text component in the children
+        TMP_Text connectionStatusText = connectionStatusObject.FindObject("StatusText").GetComponent<TMP_Text>();
+        
+        if(RosConnectionStatusObject == null)
+        {
+            Debug.LogWarning("ConnectionStatusText is null for " + connectionStatusObject.name);
+        }
+
+        //If connected set the text and color
+        if(connectionStatus)
+        {
+            connectionStatusText.text = "CONNECTED";
+            connectionStatusText.color = Color.green;
+        }
+        else
+        {
+            connectionStatusText.text = "DISCONNECTED";
+            connectionStatusText.color = Color.red;
+        }
+    }
     public void UpdateMqttConnectionFromUserInputs()
     {
         //Set UI Color
@@ -2133,6 +2168,11 @@ public class UIFunctionalities : MonoBehaviour
 
                 //Set Visibility of Information panel
                 CommunicationPanelObject.SetActive(true);
+
+                //Update Connection Status Objects
+                UpdateConnectionStatusText(MqttConnectionStatusObject, mqttTrajectoryManager.mqttClientConnected);
+                UpdateConnectionStatusText(RosConnectionStatusObject, rosConnectionManager.IsConnectedToRos);
+
 
                 //Set color of toggle
                 SetUIObjectColor(CommunicationToggleObject, Yellow);
