@@ -156,6 +156,12 @@ public class ScrollSearchManager : MonoBehaviour
                     instantiateObjects.visulizationController.TouchMode,
                     step, selectedCellStepIndex, objectToColor);
             }
+
+            //If Priority Viewer toggle is on then color the add additional color based on priority
+            if (uiFunctionalites.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+            {
+                instantiateObjects.ColorObjectByPriority(uiFunctionalites.SelectedPriority, step.data.priority.ToString(), selectedCellStepIndex, objectToColor);
+            }
         }
 
         //Reset the selected cell index
@@ -205,6 +211,12 @@ public class ScrollSearchManager : MonoBehaviour
                         instantiateObjects.visulizationController.VisulizationMode,
                         instantiateObjects.visulizationController.TouchMode,
                         step, selectedCellStepIndex, objectToColor);
+
+                    //If Priority Viewer toggle is on then color the add additional color based on priority
+                    if (uiFunctionalites.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        instantiateObjects.ColorObjectByPriority(uiFunctionalites.SelectedPriority, step.data.priority.ToString(), selectedCellStepIndex, objectToColor);
+                    }
                 }
                 else
                 {

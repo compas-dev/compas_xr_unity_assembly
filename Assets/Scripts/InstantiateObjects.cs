@@ -1094,11 +1094,7 @@ namespace Instantiate
                     //Do nothing
                     break;
                 case TouchMode.ElementEditSelection:
-                    //Color the object if it is a lower priority then the current one.
-                    if (step.data.priority > Convert.ToInt16(databaseManager.CurrentPriority)) //TODO: THIS IS WHY THINGS ARE NOT WORKING NEEDS TO BE FIXED.
-                    {    
-                        ColorObjectByLowerPriority(key, databaseManager.CurrentPriority, geometryObject); //TODO: THIS BECOMES COLOR BY PRIORITY.
-                    }
+                    //Do nothing because we currently don't need any additional control
                     break;
             }
         }
@@ -1183,39 +1179,7 @@ namespace Instantiate
                 ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, gamobj.FindObject(elementID + " Geometry"));
             }
         }
-        public void ColorObjectByLowerPriority(string key, string currentPriority, GameObject gameObject)
-        {
-            //Get Object Renderer
-            Renderer m_renderer= gameObject.GetComponentInChildren<Renderer>();
-
-            //Step for the for key
-            Step step = databaseManager.BuildingPlanDataItem.steps[key];
-
-            if(currentPriority != null)
-            {
-                //Color based if it is lower then current priority
-                if (step.data.priority > Convert.ToInt16(currentPriority))
-                {
-                    //If the steps priority is not the same as the selected priority then color it grey
-                    Debug.Log($"ColorObjectByLowerPriority: Coloring object {gameObject.name} grey");
-
-                    //Create a new color for the object based on its current color, and add a greyscale blend factor
-                    Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
-
-                    //Set the object to the new color
-                    m_renderer.material.color = objectAdjustedColor;
-                }
-                else
-                {
-                    Debug.Log($"ColorObjectByLowerPriority: Gameobject {key} is of a lower priority then current step.");
-                }
-            }
-            else
-            {
-                Debug.Log("ColorObjectByLowerPriority: Current Priority is null.");
-            }
-        }
-        public void ApplyColorBasedOnBuildState()
+        public void ApplyColorBasedOnBuildState() //TODO:DOUBLE CHECK THIS FUNCTION... for some reason it gets stuck if I am looking for the object name+ " Geometry" ALSO ADD SCROLL SEARCH
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
             {
@@ -1237,7 +1201,7 @@ namespace Instantiate
                 }
             }
         }
-        public void ApplyColorBasedOnActor()
+        public void ApplyColorBasedOnActor() //TODO:DOUBLE CHECK THIS FUNCTION... for some reason it gets stuck if I am looking for the object name+ " Geometry" ALSO ADD SCROLL SEARCH
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
             {
@@ -1314,28 +1278,6 @@ namespace Instantiate
                 else
                 {
                     Debug.LogWarning($"Could not find object with key: {key}");
-                }
-            }
-        }
-        public void ApplyColorForHigherPriority(string CurrentPriority) //TODO: REMOVE THIS METHOD.
-        {
-            Debug.Log($"Applying color for touch : {CurrentPriority}.");
-            if (databaseManager.BuildingPlanDataItem.steps != null)
-            {
-                foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
-                {
-                    GameObject gameObject = GameObject.Find(entry.Key);
-                    
-                    //If the objects are not null color by priority function.
-                    if (gameObject != null)
-                    {
-                        //Color object if it is of a higher priority then the current priority
-                        ColorObjectByLowerPriority(entry.Key, CurrentPriority, gameObject);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Could not find object with key: {entry.Key}");
-                    }
                 }
             }
         }
