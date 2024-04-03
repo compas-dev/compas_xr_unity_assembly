@@ -82,7 +82,7 @@ public class UIFunctionalities : MonoBehaviour
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
-    private GameObject PreviewBuilderButtonObject;
+    private GameObject PreviewActorToggleObject;
     public GameObject IDToggleObject;
     public GameObject RobotToggleObject;
     public GameObject ObjectLengthsToggleObject;
@@ -278,13 +278,14 @@ public class UIFunctionalities : MonoBehaviour
     private void SetVisulizerMenuItemsOnStart()
     {
         //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
-        FindButtonandSetOnClickAction(VisibilityMenuObject, ref PreviewBuilderButtonObject, "Preview_Builder", ChangeVisualizationMode);
+        // FindButtonandSetOnClickAction(VisibilityMenuObject, ref PreviewBuilderButtonObject, "Preview_Builder", ChangeVisualizationMode);
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PreviewActorToggleObject, "PreviewActorToggle", TogglePreviewActor);
 
         //Find IDToggle Object, Button, and Add Listener for OnClick method
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID);
 
         //Find Robot toggle and Objects
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "Robot_Button", ToggleRobot);
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "RobotToggle", ToggleRobot);
 
         //Find toggle for element search
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
@@ -478,13 +479,13 @@ public class UIFunctionalities : MonoBehaviour
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void ToggleVisibilityMenu(Toggle toggle)
     {
-        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDToggleObject != null && PriorityViewerToggleObject != null)
+        if (VisualzierBackground != null && PreviewActorToggleObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDToggleObject != null && PriorityViewerToggleObject != null)
         {    
             if (toggle.isOn)
             {             
                 //Set Visibility of buttons
                 VisualzierBackground.SetActive(true);
-                PreviewBuilderButtonObject.SetActive(true);
+                PreviewActorToggleObject.SetActive(true);
                 RobotToggleObject.SetActive(true);
                 ObjectLengthsToggleObject.SetActive(true);
                 IDToggleObject.SetActive(true);
@@ -499,7 +500,7 @@ public class UIFunctionalities : MonoBehaviour
             {
                 //Set Visibility of buttons
                 VisualzierBackground.SetActive(false);
-                PreviewBuilderButtonObject.SetActive(false);
+                PreviewActorToggleObject.SetActive(false);
                 RobotToggleObject.SetActive(false);
                 ObjectLengthsToggleObject.SetActive(false);
                 IDToggleObject.SetActive(false);
@@ -1613,36 +1614,58 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
-    public void ChangeVisualizationMode()
+    public void TogglePreviewActor(Toggle toggle)
     {
-        Debug.Log("Builder View Button Pressed");
+        Debug.Log("TogglePreviewActor: Preview Builder Toggle Pressed");
 
-        // Check the current mode and toggle it
-        if (instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.ActorView)
+        if(toggle.isOn)
         {
-            // If current mode is BuiltUnbuilt, switch to ActorView
+            //Turn on the Preview Builder
             instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.ActorView;
-         
+            
+            //Apply color to the objects based on actor
             instantiateObjects.ApplyColorBasedOnActor();
-
-            // Color the button if it is on
-            SetUIObjectColor(PreviewBuilderButtonObject, Yellow);
-
-        }
-        else if(instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.BuiltUnbuilt)
-        {
-            // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
-            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
-
-            instantiateObjects.ApplyColorBasedOnBuildState();
-
-            // Color the button if it is on
-            SetUIObjectColor(PreviewBuilderButtonObject, White);
+            
+            //Color the button if it is on
+            SetUIObjectColor(PreviewActorToggleObject, Yellow);
         }
         else
         {
-            Debug.LogWarning("Error: Visulization Mode does not exist.");
+            //Turn off the Preview Builder
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+
+            //Apply color to the objects based on actor
+            instantiateObjects.ApplyColorBasedOnBuildState();
+
+            //Color the button if it is off
+            SetUIObjectColor(PreviewActorToggleObject, White);
         }
+        // // Check the current mode and toggle it
+        // if (instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.ActorView)
+        // {
+        //     // If current mode is BuiltUnbuilt, switch to ActorView
+        //     instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.ActorView;
+         
+
+
+        //     // Color the button if it is on
+        //     SetUIObjectColor(PreviewBuilderButtonObject, Yellow);
+
+        // }
+        // else if(instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.BuiltUnbuilt)
+        // {
+        //     // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
+        //     instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+
+        //     instantiateObjects.ApplyColorBasedOnBuildState();
+
+        //     // Color the button if it is on
+        //     SetUIObjectColor(PreviewBuilderButtonObject, White);
+        // }
+        // else
+        // {
+        //     Debug.LogWarning("Error: Visulization Mode does not exist.");
+        // }
     }
     public void ToggleID(Toggle toggle)
     {
