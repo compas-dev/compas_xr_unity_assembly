@@ -1186,16 +1186,17 @@ namespace Instantiate
                 foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
                 {
                     GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
 
-                    if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, geometryObject);
 
                         //Check if Priority Viewer is on and color based on priority also if it is.
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on Priority
-                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
                         }
                     }
                 }
@@ -1208,16 +1209,17 @@ namespace Instantiate
                 foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                 {
                     GameObject gameObject = GameObject.Find(entry.Key);
-                    
-                    if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
+
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, geometryObject);
 
                         //Check if Priority Viewer is on and color based on priority if it is.
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on priority
-                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
                         }
                     }
                 }
