@@ -325,11 +325,6 @@ namespace Instantiate
                         
                         break;
 
-                    // case "3.Mesh":
-                    //     //TODO: CONFIRM FETCH OBJECT AS OBJ OR CREATE OBJECT FROM PROVIDED DATA.
-                    //     element = null;
-                    //     break;
-
                     default:
                         Debug.LogWarning($"No element type found for type {step.data.geometry}");
                         return null;
