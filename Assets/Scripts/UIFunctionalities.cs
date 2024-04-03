@@ -364,14 +364,6 @@ public class UIFunctionalities : MonoBehaviour
         RosConnectionStatusObject = CommunicationPanelObject.FindObject("ROSConnectionStatusObject");
         FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", UpdateRosConnectionFromUserInputs);
 
-        if(MqttConnectionStatusObject == null)
-        {
-            Debug.LogWarning("MqttConnectionStatusObject is null");
-        }
-        if(RosConnectionStatusObject == null)
-        {
-            Debug.LogWarning("MqttConnectionStatusObject is null");
-        }
         //Find Control Objects and set up events
         GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
         ReviewTrajectoryObjects = TrajectoryControlObjects.FindObject("ReviewTrajectoryControls");
