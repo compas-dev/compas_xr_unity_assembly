@@ -1254,14 +1254,22 @@ namespace Instantiate
                 foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                 {
                     GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
                     
                     //If the objects are not null color by priority function.
-                    if (gameObject != null)
+                    if (gameObject != null && geometryObject != null)
                     {
                         if (entry.Key != UIFunctionalities.CurrentStep)
                         {
                             //Color based on priority
                             ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
                         }
                     }
                     else
@@ -1280,8 +1288,9 @@ namespace Instantiate
             foreach (string key in priorityList)
             {
                 GameObject gameObject = GameObject.Find(key);
+                GameObject geometryObject = gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0] + " Geometry");
 
-                if (gameObject != null)
+                if (gameObject != null && geometryObject != null)
                 {
                     if (key != UIFunctionalities.CurrentStep)
                     {
@@ -1289,12 +1298,26 @@ namespace Instantiate
                         {
                             //Color the object based on current app settings
                             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[key], key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+
+                            //Check if the scroll Search is on and color selected cell if it is
+                            if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && key == scrollSearchManager.selectedCellStepIndex)
+                            {
+                                //Color based on search
+                                ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                            }
                         }
                         else
                         {
                             //Color the object based on the priority group
                             Debug.Log("SetPriority" + selectedPriorityGroup + "Priority of selected item: " + databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString() + " Key: " + key + " GameObject: " + gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]) + " PriorityGroup: ");
                             ColorObjectByPriority(newPriorityGroup, databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString(), key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+                        
+                            //Check if the scroll Search is on and color selected cell if it is
+                            if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && key == scrollSearchManager.selectedCellStepIndex)
+                            {
+                                //Color based on search
+                                ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                            }
                         }
                     }
                 }
