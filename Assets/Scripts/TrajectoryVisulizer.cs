@@ -87,13 +87,13 @@ public class TrajectoryVisulizer : MonoBehaviour
                 Destroy(ActiveTrajectoryParentObject);
             }
             
-            //Instantiate a new robot object in the ActiveRobotObjectsParent //TODO: CHECK THIS.
+            //Instantiate a new robot object in the ActiveRobotObjectsParent
             GameObject temporaryRobot = Instantiate(selectedRobot, ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
 
             //If extra rotation is needed then rotate the URDF.
             if(yRotation)
             {
-                temporaryRobot.transform.Rotate(0, 90, 0); //TODO: CHECK THIS.
+                temporaryRobot.transform.Rotate(0, 90, 0);
             }
 
             //Create the active robot parent object and Active trajectory 
