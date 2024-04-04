@@ -213,20 +213,11 @@ public class UIFunctionalities : MonoBehaviour
     //MAS METHODS
     public void FetchDataButtonMethod()
     {
+        Debug.Log("FetchDataButtonMethod: Fetch Data Button Pressed");
 
-        if(databaseManager == null)
-        {
-            Debug.Log("Database Manager is null.");
-        }
-        
-        if(databaseManager.dbreferenceMyFramesData == null)
-        {
-            Debug.Log("Database Manager dbreferenceMyFramesData is null.");
-        }
         //Call the Database Manager Method and Reference to fetch the data
         databaseManager.FetchRealTimeDatabaseData(databaseManager.dbreferenceMyFramesData);
 
-        Debug.Log("Fetch Data Button Pressed now.");
     }
     
     //TODO: Write a method that we can link to a button for publishing to the firebase
@@ -242,6 +233,8 @@ public class UIFunctionalities : MonoBehaviour
     //TODO: Write a method that will reset everything (destroy game objects, and clear the dictionary)
     public void ResetDataButtonMethod()
     {
+        Debug.Log("ResetDataButtonMethod: Reset Data Button Pressed");
+
         //Call the Database Manager Method and Reference to reset the data
         databaseManager.MyFramesDataDict.Clear();
 
@@ -256,17 +249,12 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.Log("ToggleObjectMovement: Objects should be moving now.");
 
-            if(instantiateObjects == null)
-            {
-                Debug.Log("Instantiate Objects is null.");
-            }
-
             //Call Method from instantiateObjects to start moving objects
             instantiateObjects.MoveAllChildrenByVector(instantiateObjects.RuntimeObjectStorageObject);
         }
         else
         {
-            Debug.Log("Object Movement is now off.");
+            Debug.Log("ToggleObjectMovement: Object Movement is now off.");
         }
     }
 
