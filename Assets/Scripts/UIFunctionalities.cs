@@ -24,7 +24,6 @@ using UnityEngine.Events;
 public class UIFunctionalities : MonoBehaviour
 {
     //Other Scripts for inuse objects
-    public DatabaseManager databaseManager;
     public InstantiateObjects instantiateObjects;
     public Eventmanager eventManager;
     public MqttTrajectoryManager mqttTrajectoryManager;
@@ -179,20 +178,61 @@ public class UIFunctionalities : MonoBehaviour
     public string SelectedPriority = "None";
     public bool IDTagIsOffset = false;
     public bool PriorityTagIsOffset = false;
+
+    //MAS INTRO ITEMS
+
+    // Other Scripts
+    public DatabaseManager databaseManager;
+
+    // UI Objects
+    // public Button FetchDataButton; // ONLY If not linking VIA UNITY INSPECTOR
+    // public Button PublishDataButton; // ONLY If not linking VIA UNITY INSPECTOR
+
     
     void Start()
     {
-        //Find Initial Objects and other sctipts
-        OnAwakeInitilization();
+        //TODO: MASIntro: 0. Find Other Script References
+        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+
+        if(databaseManager == null)
+        {
+            Debug.LogError("Database Manager is null.");
+        }
+
     }
 
     void Update()
     {
         //Control Touch Search
-        TouchSearchControler();
+        // TouchSearchControler();
     }
 
     /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
+
+    //MAS METHODS
+    public void FetchDataButtonMethod()
+    {
+
+        if(databaseManager == null)
+        {
+            Debug.Log("Database Manager is null.");
+        }
+        
+        if(databaseManager.dbreferenceMyFramesData == null)
+        {
+            Debug.Log("Database Manager dbreferenceMyFramesData is null.");
+        }
+        //Call the Database Manager Method and Reference to fetch the data
+        databaseManager.FetchRealTimeDatabaseData(databaseManager.dbreferenceMyFramesData);
+
+        Debug.Log("Fetch Data Button Pressed now.");
+    }
+    
+    public void PublishDataButtonMethod()
+    {
+
+    }
+
     private void OnAwakeInitilization()
     {
         //Find Other Scripts

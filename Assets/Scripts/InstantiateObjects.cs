@@ -75,13 +75,126 @@ namespace Instantiate
             public Vector3 z;
         }
 
-        public void Awake()
-        {
-            //Initilization Method for finding objects and materials
-            OnAwakeInitilization();
-        }
+        // public void Awake()
+        // {
+        //     //Initilization Method for finding objects and materials
+        //     OnAwakeInitilization();
+        // }
+
+        //MAS Modifiers
+        public GameObject RuntimeObjectStorageObject;
+        public GameObject PrefabObject;
         
     /////////////////////////////// INSTANTIATE OBJECTS //////////////////////////////////////////
+    
+        //MAS Methods
+        
+        //TODO: Write a method to iterate through the dictionary and place an element for each one
+        public void PlacePrefabsfromFrameDict(Dictionary<string, Frame> MyFrameDictionary, GameObject prefabObject, GameObject ParentObject)
+        {
+            //Check if the frame dictionary is null
+            if (MyFrameDictionary != null)
+            {
+                Debug.Log($"PlaceElementsFrameDict: Number of key-value pairs in the dictionary = {MyFrameDictionary.Count}");
+                
+                //loop through the dictionary and print out the key
+                foreach (KeyValuePair<string, Frame> entry in MyFrameDictionary)
+                {
+                    if (entry.Value != null)
+                    {
+                        //Call method to place the prefab from the frame data
+                        InstantiatePrefabFromFrameData(entry.Key, entry.Value, prefabObject, RuntimeObjectStorageObject);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("PlacePrefabfromFrameDict: The value is null");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning("PlacePrefabfromFrameDict: The dictionary is null");
+            }
+        }
+
+        //TODO: Write a method to place one element from the provided frame information.
+        public void InstantiatePrefabFromFrameData(string Key, Frame frame, GameObject prefabObject, GameObject ParentObject)
+        {
+            Debug.Log($"InstantiatePrefabFromFrameData: Instantiating prefab at {Key}");
+
+            //get position
+            Vector3 positionData = getPosition(frame.point);
+            
+            //get rotation
+            Rotation rotationData = getRotation(frame.xaxis, frame.yaxis);
+            
+            //Define Object Rotation
+            Quaternion rotationQuaternion = FromUnityRotation(rotationData);
+
+            //instantiate a geometry at this position and rotation
+            // GameObject geometry_object = gameobjectTypeSelector(step);
+
+            // if (geometry_object == null)
+            // {
+            //     Debug.Log($"This key:{step.data.element_ids[0]} from Step: {Key} is null");
+            //     return;
+            // }
+
+            //Instantiate new gameObject from the existing selected gameobjects.
+            GameObject elementPrefab = Instantiate(prefabObject, positionData, rotationQuaternion);
+            
+            // Destroy Initial gameobject that is made.
+            // if (geometry_object != null)
+            // {
+            //     Destroy(geometry_object);
+            // }
+
+            //Set parent and name
+            elementPrefab.transform.SetParent(ParentObject.transform, false);
+            
+            //Name the object afte the step number... might be better to get the step_id in the building plan from Chen.
+            elementPrefab.name = Key;
+
+            //Get the nested gameobject from the .Obj so we can adapt colors only the first object
+            // GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
+            
+            //Create 3D Index Text
+            // CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
+            // CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
+
+            //Create Priority Text
+            // CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.15f, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
+            // CreateBackgroundImageForText(ref PriorityImage, elementPrefab, 0.15f, $"{elementPrefab.name}PriorityImage", false);
+
+            // //Case Switches to evaluate color and touch modes.
+            // ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, geometryObject);
+            
+            // //Check if the visulization tags mode is on
+            // if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
+            // {
+            //     //Set tag and Image visibility if the mode is on
+            //     elementPrefab.FindObject(elementPrefab.name + "IdxText").gameObject.SetActive(true);
+            //     elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
+            // }
+
+            // //If Priority Viewer toggle is on then color the add additional color based on priority:
+            // if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+            // {
+            //     ColorObjectByPriority(UIFunctionalities.SelectedPriority, step.data.priority.ToString(), Key, geometryObject);
+
+            //     //Set tag and Image visibility if the mode is on
+            //     elementPrefab.FindObject(elementPrefab.name + "PriorityText").gameObject.SetActive(true);
+            //     elementPrefab.FindObject(elementPrefab.name + "PriorityImage").gameObject.SetActive(true);
+            // }
+
+            // //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
+            // if (Key == UIFunctionalities.CurrentStep)
+            // {
+            //     ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
+            //     UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
+            // }
+        }
+    
         private void OnAwakeInitilization()
         {
             //Find Additional Scripts.

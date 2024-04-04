@@ -9,12 +9,8 @@ using Firebase.Database;
 
 public class CheckFirebase : MonoBehaviour
 {
-    //1. Define a delegate
-    public delegate void FirebaseInitializedEventHandler(object source, EventArgs args);
 
-    //2. Define an event based on that delegate
-    public event FirebaseInitializedEventHandler FirebaseInitialized;
-
+    //Check connection to the firebase in the start method to determine if the connection is successful & established
     public void Start()
     {
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
@@ -24,18 +20,11 @@ public class CheckFirebase : MonoBehaviour
                 Debug.LogError(message: $"Failed to initialize Firebase with {task.Exception}");
                 return;
             }
-
-            OnFirebaseInitialized();
-            Debug.Log("Invoked");
+            else if (task.IsCompleted)
+            {
+                Debug.Log("Firebase Successfully Initilized :)");
+            }
         });
     }
-
-    protected virtual void OnFirebaseInitialized()
-    {
-        if(FirebaseInitialized != null)
-        {
-            FirebaseInitialized(this, EventArgs.Empty);
-        }
-    } 
 
 }

@@ -52,7 +52,7 @@ public class ApplicationSettingsEventArgs : EventArgs
 
 public class DatabaseManager : MonoBehaviour
 {
-    // Firebase database references
+
     public DatabaseReference dbreference_assembly;
     public DatabaseReference dbreference_buildingplan;
 
@@ -113,15 +113,148 @@ public class DatabaseManager : MonoBehaviour
     //In script use objects.
     public bool objectOrientation;
     public string TempDatabaseLastBuiltStep;
-
     public string CurrentPriority = null;
+
+    //MAS Class Modifiers
+
+    // Firebase database references
+    //TODO: 1. Set Database Reference
+    public DatabaseReference dbreferenceMyFramesData;
+
+    //TODO: Create Dictionary to store frames.
+    public Dictionary<string, Frame> MyFramesDataDict { get; private set; } = new Dictionary<string, Frame>();
+
+    //TODO: Store the InstantiateObjects script
+    public InstantiateObjects instantiateObjects;
 
     void Awake()
     {
-        OnAwakeInitilization();
+        //TODO: 1. Set Database Reference
+        dbreferenceMyFramesData = FirebaseDatabase.DefaultInstance.GetReference("MyFramesData");
+
+        //TODO: Find Other Scripts
+        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+
+        if (instantiateObjects == null)
+        {
+            Debug.LogError("InstantiateObjects script not found");
+        }
     }
 
 /////////////////////// FETCH AND PUSH DATA /////////////////////////////////
+
+    //MAS METHODS
+
+    //TODO: Write a method to fetch data from the Firebase Realtime Database
+    public async Task FetchRealTimeDatabaseData(DatabaseReference dbreference)
+    {
+        //Fetch data task initiation
+        await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
+        {
+            //Check task status
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Error fetching data from Firebase");
+                return;
+            }
+
+            if (task.IsCompleted)
+            {
+                //Get the data snapshot from the DataSnapshot
+                DataSnapshot snapshot = task.Result;
+                
+                Debug.Log("Data Fetched from Firebase: " + JsonConvert.SerializeObject(snapshot.GetRawJsonValue()));
+                
+                //Deserilize the frame data from the snapshot
+                DeserilizeFrameData(snapshot, MyFramesDataDict);
+
+            }
+        });
+    }
+
+    //Example of a custom action for more flexibiliiy in what to do with the data.
+    public async Task FetchRealTimeDatabaseDataCustomAction(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
+    {
+        await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Error fetching data from Firebase");
+                return;
+            }
+
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+                if (customAction != null)
+                {
+                    customAction(snapshot);
+                }
+            }
+        });
+    }
+
+    //TODO: Write a method to push deserilize from the database.
+    private void DeserilizeFrameData(DataSnapshot snapshot, Dictionary<string, Frame> frameDict)
+    {
+        //Clear current Dictionary if it contains information
+        frameDict.Clear();
+
+        //Desearialize individual data items from the snapshots
+        foreach (DataSnapshot childSnapshot in snapshot.Children)
+        {
+            Debug.Log("Snapshot Children Count" + snapshot.ChildrenCount);
+            //Get the key and value of the snapshot
+            string key = childSnapshot.Key;
+
+            //Get the json data from the snapshot
+            var json_data = childSnapshot.GetValue(true);
+
+            //Create a new instance of the class Frame
+            Frame frame = FrameDeserilizer(json_data);
+            
+            //Add Frame to the dictionary
+            frameDict[key] = frame; 
+        }
+        
+        //Call the instantiation method from the InstantiateObjects script
+        instantiateObjects.PlacePrefabsfromFrameDict(frameDict, instantiateObjects.PrefabObject, instantiateObjects.RuntimeObjectStorageObject);
+
+        Debug.Log("DeserilizeFrameData: Number of Frames Stored In the Dictionary = " + frameDict.Count);
+    }
+
+    public Frame FrameDeserilizer(object frameData)
+    {
+        Debug.Log("Here: 0");
+        //Cast jsondata to a dictionary
+        Dictionary<string, object> frameDataDict = frameData as Dictionary<string, object>;
+
+        Debug.Log("Here: 1");
+        //Create a new instance of the class
+        Frame frame = new Frame();
+
+        Debug.Log("Here: 2");
+        //Cast values to list Object so they can be converted to float arrays
+        List<object> pointslist = frameDataDict["point"] as List<object>;
+        List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
+        List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+        
+        Debug.Log("Here: 3");
+
+        if (pointslist != null && xaxislist != null && yaxislist != null)
+        {
+            frame.point = pointslist.Select(Convert.ToSingle).ToArray();
+            frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
+            frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+        }
+        else
+        {
+            Debug.LogError("FrameDeserilizer: One of the Frame lists is null");
+        }
+ 
+        return frame;
+    }
+
     private void OnAwakeInitilization()
     {
         //Set Persistence: Disables storing information on the device for when there is no internet connection.
@@ -363,6 +496,8 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
+
+
     private void DeserializeSettingsData(DataSnapshot snapshot)
     {
         CleanObjectStorageFolder();
@@ -1526,12 +1661,12 @@ public class DatabaseManager : MonoBehaviour
     }
 
     // Event Handeling to take care of App Clean up. When the GameObject is destroyed it cleans up everything.     
-    protected virtual void OnDestroy()
-    {
-        //Remove my name from the UserCurrentStep list
-        dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
+    // protected virtual void OnDestroy()
+    // {
+    //     //Remove my name from the UserCurrentStep list
+    //     dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
         
-        //Remove Listners
-        RemoveListners();
-    }
+    //     //Remove Listners
+    //     RemoveListners();
+    // }
 }

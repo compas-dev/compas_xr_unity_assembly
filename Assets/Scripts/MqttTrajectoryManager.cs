@@ -65,14 +65,14 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     }
     public void OnDestroy()
     {
-        //Unsubscribe from Compas XR Topics
-        UnsubscribeFromCompasXRTopics();
+        // //Unsubscribe from Compas XR Topics
+        // UnsubscribeFromCompasXRTopics();
 
-        //Remove event listners
-        RemoveConnectionEventListners();
+        // //Remove event listners
+        // RemoveConnectionEventListners();
 
         //Disconnect from MQTT
-        Disconnect();
+        // Disconnect();
     }
     
     //////////////////////////////////////////// General Methods ////////////////////////////////////////////

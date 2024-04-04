@@ -41,7 +41,7 @@ public class Eventmanager : MonoBehaviour
         TrajectoryVisulizer trajectoryVisulizer = TrajectoryVisulizer.GetComponent<TrajectoryVisulizer>();
         
         //Initilize Connection to Firebase and Fetch Settings Data
-        checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
+        // checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
 
         //Fetch data from realtime database
         databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
