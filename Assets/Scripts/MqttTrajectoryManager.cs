@@ -38,9 +38,16 @@ public class MqttTrajectoryManager : M2MqttUnityClient
 
     private List<string> eventMessages = new List<string>();
 
+    //Compas XR Topics Class
+    public CompasXRTopics compasXRTopics;
 
-    //MAS Modifiers
-    public string TopicToSubscribe;
+    //Compas XR Service Manager
+    public ServiceManager serviceManager = new ServiceManager();
+
+    //Other Scripts
+    public UIFunctionalities UIFunctionalities;
+    public DatabaseManager databaseManager;
+    public TrajectoryVisulizer trajectoryVisulizer;
 
     protected override void Start()
     {
@@ -58,13 +65,13 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     }
     public void OnDestroy()
     {
-        // //Unsubscribe from Compas XR Topics
-        // UnsubscribeFromCompasXRTopics();
+        //Unsubscribe from Compas XR Topics
+        UnsubscribeFromCompasXRTopics();
 
-        // //Remove event listners
-        // RemoveConnectionEventListners();
+        //Remove event listners
+        RemoveConnectionEventListners();
 
-        // Disconnect from MQTT
+        //Disconnect from MQTT
         Disconnect();
     }
     
@@ -794,4 +801,3 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     }
 
 }
-
