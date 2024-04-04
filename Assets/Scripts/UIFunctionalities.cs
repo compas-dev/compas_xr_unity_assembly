@@ -232,63 +232,8 @@ public class UIFunctionalities : MonoBehaviour
     //TODO: Write a method that we can link to a button for publishing to the firebase
     public void PublishDataButtonMethod()
     {
-        Dictionary<string, Frame> temporaryFrameDict = new Dictionary<string, Frame>();
-
-        foreach (KeyValuePair<string, Frame> frame in databaseManager.MyFramesDataDict)
-        {
-            
-            GameObject frameObject = instantiateObjects.RuntimeObjectStorageObject.FindObject(frame.Key);
-
-            Debug.Log($"Frame Key: {frame.Key}");
-            Debug.Log($"GameObject Name: {frameObject.name}");
-
-            if(frameObject != null)
-            {
-                //set position
-                float[] objectPositionInfo = new float[] {frameObject.transform.position.x, frameObject.transform.position.y, frameObject.transform.position.z};
-                Vector3 positionData = instantiateObjects.setPosition(objectPositionInfo);
-                Debug.Log("objectPositionInfo" + JsonConvert.SerializeObject(objectPositionInfo));
-
-                Vector3 testZ = transform.TransformDirection(frameObject.transform.forward);
-                Vector3 testX = transform.TransformDirection(frameObject.transform.right);
-
-                //set rotation
-                float[] objectZAxisInfo = new float[] {testZ.x, testZ.y, testZ.z};
-                float[] objectXAxisInfo = new float[] {testX.x, testX.y, testX.z};
-                Debug.Log("objectZAxisInfo" + JsonConvert.SerializeObject(objectZAxisInfo));
-                Debug.Log("objectXAxisInfo" + JsonConvert.SerializeObject(objectXAxisInfo));
-                InstantiateObjects.Rotation rotationData = instantiateObjects.setRotation(objectXAxisInfo, objectZAxisInfo); //TODO: THIS NEEDS TO BE Z Axis
-            
-                //convert from LH to RH
-                InstantiateObjects.Rotation convertedRotationData = instantiateObjects.LhToRh(rotationData.x, rotationData.z);
-                // Debug.Log("convertedRotationData" + JsonConvert.SerializeObject(convertedRotationData));
-
-                //Construct a new frame object
-                Frame newFrame = new Frame();
-                
-                float[] pointDataConverted = new float[] {positionData.x, positionData.y, positionData.z};
-                newFrame.point = pointDataConverted;
-                Debug.Log("pointDataConverted" + JsonConvert.SerializeObject(pointDataConverted));
-
-                float[] xaxisDataConverted = new float[] {convertedRotationData.x.x, convertedRotationData.x.y, convertedRotationData.x.z};
-                newFrame.xaxis = xaxisDataConverted;
-                Debug.Log("xaxisDataConverted" + JsonConvert.SerializeObject(xaxisDataConverted));
-
-                float[] yaxisDataConverted = new float[] {convertedRotationData.y.x, convertedRotationData.y.y, convertedRotationData.y.z};
-                newFrame.yaxis = yaxisDataConverted;
-                Debug.Log("yaxisDataConverted" + JsonConvert.SerializeObject(yaxisDataConverted));
-
-
-                //Update the frame object in the dictionary
-                temporaryFrameDict[frame.Key] = newFrame;
-            }
-            else
-            {
-                Debug.Log("Frame Object is null.");
-            }
-        }
-
-        Debug.Log("JsonConvert.SerializeObject(temporaryFrameDict): " + JsonConvert.SerializeObject(temporaryFrameDict));
+        //Utilize instantiate Objects method to create a rhino compatible dictionary for objects
+        Dictionary<string, Frame> temporaryFrameDict = instantiateObjects.ConvertParentChildrenToRhinoFrameData(instantiateObjects.RuntimeObjectStorageObject, databaseManager.MyFramesDataDict);
 
         //Call the Database Manager Method and Reference to publish the data
         databaseManager.PushStringData(databaseManager.dbreferenceMyFramesData, JsonConvert.SerializeObject(temporaryFrameDict));

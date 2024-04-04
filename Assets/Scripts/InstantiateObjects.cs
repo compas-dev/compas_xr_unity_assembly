@@ -171,6 +171,7 @@ namespace Instantiate
             Vector3 newPosition = gameObject.transform.position + vectorToMoveBy * distanceToMove;
             gameObject.transform.position = newPosition;
         }
+
         private void OnAwakeInitilization()
         {
             //Find Additional Scripts.
@@ -834,6 +835,8 @@ namespace Instantiate
         }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
+
+        //Methods for position and rotation conversions from rhino to unity
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
             //Set Unity Rotation
@@ -900,40 +903,6 @@ namespace Instantiate
 
             return rotationLh;
         }
-
-        //TODO: Small TEST THIS WOULD BE SO COOL.
-        public Vector3 setPosition(float[] pointlist)
-        {
-            Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
-            return position;
-        }
-        public Rotation setRotation(float[] x_vecdata, float [] z_vecdata)
-        {
-            Vector3 x_vec_left = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
-            Vector3 z_vec_left  = new Vector3(z_vecdata[0], z_vecdata[1], z_vecdata[2]);
-            
-            Rotation rotationLH;
-            
-            rotationLH.x = x_vec_left;
-            //This is never used just needed to satisfy struct code structure.
-            rotationLH.y = Vector3.zero;
-            rotationLH.z = z_vec_left;
-            
-            return rotationLH;
-        } 
-        public Rotation LhToRh(Vector3 x_vec_left, Vector3 z_vec_left)
-        {        
-            Vector3 x_vec = new Vector3(x_vec_left[0], x_vec_left[2], x_vec_left[1]);
-            Vector3 y_vec = new Vector3(z_vec_left[0], z_vec_left[2], z_vec_left[1]);
-            Vector3 z_vec = Vector3.Cross(y_vec, x_vec); //TODO: DOES THIS NEED TO BE FLIPPED?
-
-            Rotation rotationRh;
-            rotationRh.x = x_vec;
-            rotationRh.z = z_vec;
-            rotationRh.y = y_vec;
-
-            return rotationRh;
-        }
         public Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
         {
             Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
@@ -982,6 +951,106 @@ namespace Instantiate
             ZXrotation.z = z_vec;
 
             return ZXrotation;
+        }
+
+        //Methods for position and rotation conversions from unity to rhino //TODO: I think this needs local position and some sort of local rotation. To accomodate for the Localizatoin
+        
+        public Dictionary<string, Frame> ConvertParentChildrenToRhinoFrameData(GameObject parentObject, Dictionary<string, Frame> frameDict)
+        {
+            //Create a new dictionary to store the rhino frame data
+            Dictionary<string, Frame> rhinoFrameDict = new Dictionary<string, Frame>();
+
+            //Loop through the dictionary and find the gameObject associated with the key
+            foreach (KeyValuePair<string, Frame> entry in frameDict)
+            {
+                //Find the gameObject associated with the key
+                GameObject gameObject = parentObject.FindObject(entry.Key);
+
+                if (gameObject != null)
+                {
+                    //Convert GameObject information to Float Arrays
+                    Frame frame = ConvertGameObjectToRhinoFrameData(gameObject);
+
+                    //Add the frame to the dictionary
+                    rhinoFrameDict.Add(entry.Key, frame);
+                }
+                else
+                {
+                    Debug.LogWarning($"ConvertParentChildrenToRhinoFrameData: GameObject with key {entry.Key} not found.");
+                }
+            }
+
+            return rhinoFrameDict;
+        }
+        public Frame ConvertGameObjectToRhinoFrameData(GameObject gameObject)
+        {
+            //Convert GameObject information to Float Arrays
+            (float[] pointData, float[] xaxisData, float[] yaxisData) = FromUnityToRhinoConversion(gameObject);
+
+            //Construct a new frame object
+            Frame frame = new Frame();
+            frame.point = pointData;
+            frame.xaxis = xaxisData;
+            frame.yaxis = yaxisData;
+
+            return frame;
+        }
+        public (float[], float[], float[]) FromUnityToRhinoConversion(GameObject gameObject)
+        {
+            //Convert position
+            float[] position = setPosition(gameObject);
+
+            //Convert rotation
+            Rotation rotation = setRotation(gameObject);
+
+            //Convert to Rhino Rotation
+            (float[] x_vecdata, float[] y_vecdata) = LhToRh(rotation.x, rotation.z);
+
+            return (position, x_vecdata, y_vecdata);
+        }
+        public float[] setPosition(GameObject gameObject)
+        {
+            //Get the position of the object and convert to float array
+            Vector3 objectPosition = gameObject.transform.position;
+            float [] objectPositionArray = new float[3] {objectPosition.x, objectPosition.y,  objectPosition.z};
+
+            //Convert to Vector3
+            float[] convertedPosition = new float [3] {objectPositionArray[0], objectPositionArray[2], objectPositionArray[1]};
+
+            return convertedPosition;
+        }
+        public Rotation setRotation(GameObject gameObject)
+        {
+            //Convert x and z vectors to world space
+            Vector3 objectWorldZ = transform.TransformDirection(gameObject.transform.forward);
+            Vector3 objectWorldX = transform.TransformDirection(gameObject.transform.right);
+
+            //Convert to float array
+            float[] x_vecdata = new float[3] {objectWorldX.x, objectWorldX.y, objectWorldX.z};
+            float[] z_vecdata = new float[3] {objectWorldZ.x, objectWorldZ.y, objectWorldZ.z};
+
+            Vector3 x_vec_left = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
+            Vector3 z_vec_left  = new Vector3(z_vecdata[0], z_vecdata[1], z_vecdata[2]);
+            
+            Rotation rotationLH;
+            
+            rotationLH.x = x_vec_left;
+            //This is never used just needed to satisfy struct code structure.
+            rotationLH.y = Vector3.zero;
+            rotationLH.z = z_vec_left;
+            
+            return rotationLH;
+        } 
+        public (float[], float[]) LhToRh(Vector3 x_vec_left, Vector3 z_vec_left)
+        {        
+            Vector3 x_vec = new Vector3(x_vec_left[0], x_vec_left[2], x_vec_left[1]);
+            Vector3 y_vec = new Vector3(z_vec_left[0], z_vec_left[2], z_vec_left[1]);
+            Vector3 z_vec = Vector3.Cross(y_vec, x_vec);
+
+            float[] x_vecdata = new float[3] {x_vec_left[0], x_vec_left[2], x_vec_left[1]};
+            float[] y_vecdata = new float[3] {z_vec_left[0], z_vec_left[2], z_vec_left[1]};
+
+            return (x_vecdata, y_vecdata);
         }
 
         //Methods for position and rotation of unity game objects
