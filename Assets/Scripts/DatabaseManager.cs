@@ -783,7 +783,7 @@ public class DatabaseManager : MonoBehaviour
 
         return node;
     }
-    private void GetAdditionalNodeAttributes(Node node, Dictionary<string, object> jsonDataDict)
+    private void GetAdditionalNodeAttributes(Node node, Dictionary<string, object> jsonDataDict) //TODO: REMOVE THIS
     {
         //Set Attributes Class Values for extra assembly processes
         node.attributes.is_built = (bool)jsonDataDict["is_built"];
