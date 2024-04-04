@@ -496,8 +496,6 @@ public class DatabaseManager : MonoBehaviour
     }
 
 /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
-
-
     private void DeserializeSettingsData(DataSnapshot snapshot)
     {
         CleanObjectStorageFolder();

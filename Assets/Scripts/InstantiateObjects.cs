@@ -131,70 +131,34 @@ namespace Instantiate
             //Define Object Rotation
             Quaternion rotationQuaternion = FromUnityRotation(rotationData);
 
-            //instantiate a geometry at this position and rotation
-            // GameObject geometry_object = gameobjectTypeSelector(step);
-
-            // if (geometry_object == null)
-            // {
-            //     Debug.Log($"This key:{step.data.element_ids[0]} from Step: {Key} is null");
-            //     return;
-            // }
-
             //Instantiate new gameObject from the existing selected gameobjects.
             GameObject elementPrefab = Instantiate(prefabObject, positionData, rotationQuaternion);
-            
-            // Destroy Initial gameobject that is made.
-            // if (geometry_object != null)
-            // {
-            //     Destroy(geometry_object);
-            // }
 
             //Set parent and name
             elementPrefab.transform.SetParent(ParentObject.transform, false);
             
             //Name the object afte the step number... might be better to get the step_id in the building plan from Chen.
             elementPrefab.name = Key;
-
-            //Get the nested gameobject from the .Obj so we can adapt colors only the first object
-            // GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
-            
-            //Create 3D Index Text
-            // CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
-            // CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
-
-            //Create Priority Text
-            // CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.15f, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
-            // CreateBackgroundImageForText(ref PriorityImage, elementPrefab, 0.15f, $"{elementPrefab.name}PriorityImage", false);
-
-            // //Case Switches to evaluate color and touch modes.
-            // ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, geometryObject);
-            
-            // //Check if the visulization tags mode is on
-            // if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
-            // {
-            //     //Set tag and Image visibility if the mode is on
-            //     elementPrefab.FindObject(elementPrefab.name + "IdxText").gameObject.SetActive(true);
-            //     elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
-            // }
-
-            // //If Priority Viewer toggle is on then color the add additional color based on priority:
-            // if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
-            // {
-            //     ColorObjectByPriority(UIFunctionalities.SelectedPriority, step.data.priority.ToString(), Key, geometryObject);
-
-            //     //Set tag and Image visibility if the mode is on
-            //     elementPrefab.FindObject(elementPrefab.name + "PriorityText").gameObject.SetActive(true);
-            //     elementPrefab.FindObject(elementPrefab.name + "PriorityImage").gameObject.SetActive(true);
-            // }
-
-            // //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
-            // if (Key == UIFunctionalities.CurrentStep)
-            // {
-            //     ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-            //     UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
-            // }
         }
     
+        //TODO: Write a method that will loop through all the children of the runtimeObject storage and move them by a vector
+        public void MoveAllChildrenByVector(GameObject parentObject)
+        {
+            if (parentObject.transform.childCount > 0)
+            {
+                foreach (Transform child in parentObject.transform)
+                {
+                    MoveObjectbyVector(child.gameObject, child.transform.up, 0.001f);
+                }
+            }
+        }
+        
+        //TODO: Write a method that will move an object by a vector
+        public void MoveObjectbyVector(GameObject gameObject, Vector3 vectorToMoveBy, float distanceToMove)
+        {
+            Vector3 newPosition = gameObject.transform.position + vectorToMoveBy * distanceToMove;
+            gameObject.transform.position = newPosition;
+        }
         private void OnAwakeInitilization()
         {
             //Find Additional Scripts.
@@ -923,7 +887,41 @@ namespace Instantiate
 
 
             return rotationLh;
+        }
+
+        //TODO: Small TEST THIS WOULD BE SO COOL.
+        public Vector3 setPosition(float[] pointlist)
+        {
+            Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
+            return position;
+        }
+        public Rotation setRotation(float[] x_vecdata, float [] z_vecdata)
+        {
+            Vector3 x_vec_left = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
+            Vector3 z_vec_left  = new Vector3(z_vecdata[0], z_vecdata[1], z_vecdata[2]);
+            
+            Rotation rotationLH;
+            
+            rotationLH.x = x_vec_left;
+            //This is never used just needed to satisfy struct code structure.
+            rotationLH.y = Vector3.zero;
+            rotationLH.z = z_vec_left;
+            
+            return rotationLH;
         } 
+        public Rotation LhToRh(Vector3 x_vec_left, Vector3 z_vec_left)
+        {        
+            Vector3 x_vec = new Vector3(x_vec_left[0], x_vec_left[2], x_vec_left[1]);
+            Vector3 y_vec = new Vector3(z_vec_left[0], z_vec_left[2], z_vec_left[1]);
+            Vector3 z_vec = Vector3.Cross(y_vec, x_vec); //TODO: DOES THIS NEED TO BE FLIPPED?
+
+            Rotation rotationRh;
+            rotationRh.x = x_vec;
+            rotationRh.z = z_vec;
+            rotationRh.y = y_vec;
+
+            return rotationRh;
+        }
         public Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
         {
             Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);

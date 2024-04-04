@@ -19,6 +19,7 @@ using MQTTDataCompasXR;
 using Unity.IO.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine.Events;
+using Google.MiniJSON;
 
 
 public class UIFunctionalities : MonoBehaviour
@@ -182,7 +183,9 @@ public class UIFunctionalities : MonoBehaviour
     //MAS INTRO ITEMS
 
     // Other Scripts
-    public DatabaseManager databaseManager;
+    public DatabaseManager databaseManager; //Example 1 of finding an object in the scene (searching)
+    public GameObject RuntimeObjectStorage; //Example 2 of linking an object in the scene to the script (via editor)
+    public Toggle ObjectMovementToggle;
 
     // UI Objects
     // public Button FetchDataButton; // ONLY If not linking VIA UNITY INSPECTOR
@@ -191,20 +194,18 @@ public class UIFunctionalities : MonoBehaviour
     
     void Start()
     {
-        //TODO: MASIntro: 0. Find Other Script References
-        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+        //TODO: MASIntro: 0. Find Other Script References 
+        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>(); //Example 1 of finding and setting a refrence to another object in the scene (searching)
+        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
 
-        if(databaseManager == null)
-        {
-            Debug.LogError("Database Manager is null.");
-        }
-
+        //TODO: On Start Find the toggle component on the canvas
+        ObjectMovementToggle = GameObject.Find("ObjectMovementToggle").GetComponent<Toggle>(); //Example of finding a specific component on an object
     }
 
     void Update()
     {
-        //Control Touch Search
-        // TouchSearchControler();
+        //TODO: Call the movement toggle in the update method
+        ToggleObjectMovement(ObjectMovementToggle);
     }
 
     /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
@@ -228,9 +229,90 @@ public class UIFunctionalities : MonoBehaviour
         Debug.Log("Fetch Data Button Pressed now.");
     }
     
+    //TODO: Write a method that we can link to a button for publishing to the firebase
     public void PublishDataButtonMethod()
     {
+        Dictionary<string, Frame> temporaryFrameDict = new Dictionary<string, Frame>();
 
+        foreach (KeyValuePair<string, Frame> frame in databaseManager.MyFramesDataDict)
+        {
+            
+            GameObject frameObject = instantiateObjects.RuntimeObjectStorageObject.FindObject(frame.Key);
+
+            Debug.Log($"Frame Key: {frame.Key}");
+            Debug.Log($"GameObject Name: {frameObject.name}");
+
+            if(frameObject != null)
+            {
+                //set position
+                float[] objectPositionInfo = new float[] {frameObject.transform.position.x, frameObject.transform.position.y, frameObject.transform.position.z};
+                Vector3 positionData = instantiateObjects.setPosition(objectPositionInfo);
+                Debug.Log("objectPositionInfo" + JsonConvert.SerializeObject(objectPositionInfo));
+
+                Vector3 testZ = transform.TransformDirection(frameObject.transform.forward);
+                Vector3 testX = transform.TransformDirection(frameObject.transform.right);
+
+                //set rotation
+                float[] objectZAxisInfo = new float[] {testZ.x, testZ.y, testZ.z};
+                float[] objectXAxisInfo = new float[] {testX.x, testX.y, testX.z};
+                Debug.Log("objectZAxisInfo" + JsonConvert.SerializeObject(objectZAxisInfo));
+                Debug.Log("objectXAxisInfo" + JsonConvert.SerializeObject(objectXAxisInfo));
+                InstantiateObjects.Rotation rotationData = instantiateObjects.setRotation(objectXAxisInfo, objectZAxisInfo); //TODO: THIS NEEDS TO BE Z Axis
+            
+                //convert from LH to RH
+                InstantiateObjects.Rotation convertedRotationData = instantiateObjects.LhToRh(rotationData.x, rotationData.z);
+                // Debug.Log("convertedRotationData" + JsonConvert.SerializeObject(convertedRotationData));
+
+                //Construct a new frame object
+                Frame newFrame = new Frame();
+                
+                float[] pointDataConverted = new float[] {positionData.x, positionData.y, positionData.z};
+                newFrame.point = pointDataConverted;
+                Debug.Log("pointDataConverted" + JsonConvert.SerializeObject(pointDataConverted));
+
+                float[] xaxisDataConverted = new float[] {convertedRotationData.x.x, convertedRotationData.x.y, convertedRotationData.x.z};
+                newFrame.xaxis = xaxisDataConverted;
+                Debug.Log("xaxisDataConverted" + JsonConvert.SerializeObject(xaxisDataConverted));
+
+                float[] yaxisDataConverted = new float[] {convertedRotationData.y.x, convertedRotationData.y.y, convertedRotationData.y.z};
+                newFrame.yaxis = yaxisDataConverted;
+                Debug.Log("yaxisDataConverted" + JsonConvert.SerializeObject(yaxisDataConverted));
+
+
+                //Update the frame object in the dictionary
+                temporaryFrameDict[frame.Key] = newFrame;
+            }
+            else
+            {
+                Debug.Log("Frame Object is null.");
+            }
+        }
+
+        Debug.Log("JsonConvert.SerializeObject(temporaryFrameDict): " + JsonConvert.SerializeObject(temporaryFrameDict));
+
+        //Call the Database Manager Method and Reference to publish the data
+        databaseManager.PushStringData(databaseManager.dbreferenceMyFramesData, JsonConvert.SerializeObject(temporaryFrameDict));
+    }
+
+    //TODO: Write a method that will toggle on and off movement for the objects (tip: design it for the update method)
+    public void ToggleObjectMovement(Toggle toggle)
+    {
+        if(toggle.isOn)
+        {
+            Debug.Log("ToggleObjectMovement: Objects should be moving now.");
+
+            if(instantiateObjects == null)
+            {
+                Debug.Log("Instantiate Objects is null.");
+            }
+
+            //Call Method from instantiateObjects to start moving objects
+            instantiateObjects.MoveAllChildrenByVector(instantiateObjects.RuntimeObjectStorageObject);
+        }
+        else
+        {
+            Debug.Log("Object Movement is now off.");
+        }
     }
 
     private void OnAwakeInitilization()
