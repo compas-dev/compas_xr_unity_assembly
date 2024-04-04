@@ -294,6 +294,16 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager.PushStringData(databaseManager.dbreferenceMyFramesData, JsonConvert.SerializeObject(temporaryFrameDict));
     }
 
+    //TODO: Write a method that will reset everything (destroy game objects, and clear the dictionary)
+    public void ResetDataButtonMethod()
+    {
+        //Call the Database Manager Method and Reference to reset the data
+        databaseManager.MyFramesDataDict.Clear();
+
+        //Destroy all child objects of the runtime object storage object
+        instantiateObjects.DestroyAllChildren(instantiateObjects.RuntimeObjectStorageObject);
+    }
+
     //TODO: Write a method that will toggle on and off movement for the objects (tip: design it for the update method)
     public void ToggleObjectMovement(Toggle toggle)
     {

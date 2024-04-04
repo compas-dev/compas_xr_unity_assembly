@@ -152,6 +152,18 @@ namespace Instantiate
                 }
             }
         }
+
+        //TODO: Write a method that will destroy all children inside of a parent object
+        public void DestroyAllChildren(GameObject parentObject)
+        {
+            if (parentObject.transform.childCount > 0)
+            {
+                foreach (Transform child in parentObject.transform)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+        }
         
         //TODO: Write a method that will move an object by a vector
         public void MoveObjectbyVector(GameObject gameObject, Vector3 vectorToMoveBy, float distanceToMove)
