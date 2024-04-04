@@ -7,7 +7,44 @@ using Newtonsoft.Json.Linq;
 
 namespace JSON
 {   
-    
+    //Class holding methods to parse information from json data
+    [System.Serializable]
+    public static class DataConverters
+    {
+        public static float[] ConvertDatatoFloatArray(object data)
+        {
+            if (data is List<object>)
+            {
+                List<object> dataList = data as List<object>;
+                return dataList.Select(Convert.ToSingle).ToArray();
+            }
+            else if (data is float[])
+            {
+                return (float[])data;
+            }
+            else if (data is List<System.Double>)
+            {
+                List<System.Double> doubleList = data as List<System.Double>;
+                return doubleList.Select(Convert.ToSingle).ToArray();
+            }
+            else if (data is System.Double[])
+            {
+                System.Double[] doubleArray = data as System.Double[];
+                return doubleArray.Select(Convert.ToSingle).ToArray();
+            }
+            else if (data is JArray)
+            {
+                JArray dataArray = data as JArray;
+                return dataArray.Select(token => (float)token).ToArray();
+            }
+            else
+            {
+                Debug.LogError("DataParser: Data is not a List, Array, or JArray.");
+                return null;
+            }
+        }
+    }
+
    /////////////Classes for Assembly Desearialization./////////////// 
     [System.Serializable]
     public class Node
@@ -52,66 +89,66 @@ namespace JSON
             Frame frame = new Frame();
 
             //TODO: TEST THIS METHOD.
-            // float[] point = DataParser.ConvertDatatoFloatArray(frameDataDict["point"]);
-            // float[] xaxis = DataParser.ConvertDatatoFloatArray(frameDataDict["xaxis"]);
-            // float[] yaxis = DataParser.ConvertDatatoFloatArray(frameDataDict["yaxis"]);
+            float[] point = DataConverters.ConvertDatatoFloatArray(frameDataDict["point"]);
+            float[] xaxis = DataConverters.ConvertDatatoFloatArray(frameDataDict["xaxis"]);
+            float[] yaxis = DataConverters.ConvertDatatoFloatArray(frameDataDict["yaxis"]);
 
-            // if (point == null || xaxis == null || yaxis == null)
-            // {
-            //     // At least one of the arrays is null
-            //     Debug.LogError("One or more arrays is null.");
-            // }
-            // else
-            // {
-            //     // All arrays are not null, proceed with assignment
-            //     frame.point = point;
-            //     frame.xaxis = xaxis;
-            //     frame.yaxis = yaxis;
-            // }
-
-            if (frameDataDict["point"] is List<object> && frameDataDict["xaxis"] is List<object> && frameDataDict["yaxis"] is List<object>)
+            if (point == null || xaxis == null || yaxis == null)
             {
-                //Convert System.double items to float for use in instantiation
-                List<object> pointslist = frameDataDict["point"] as List<object>;
-                List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
-                List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
-
-                if (pointslist != null && xaxislist != null && yaxislist != null)
-                {
-                    frame.point = pointslist.Select(Convert.ToSingle).ToArray();
-                    frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-                    frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
-                }
-                else
-                {
-                    Debug.LogError("One of the Frame lists is null");
-                }
-            }
-            else if(frameDataDict["point"] is float[] && frameDataDict["xaxis"] is float[] && frameDataDict["yaxis"] is float[]) //TODO: convert to static method for converting any type of anything to float lists.
-            {
-                frame.point = (float[])frameDataDict["point"];
-                frame.xaxis = (float[])frameDataDict["xaxis"];
-                frame.yaxis = (float[])frameDataDict["yaxis"];
-            }
-            else if(frameDataDict["point"] is JArray && frameDataDict["xaxis"] is JArray && frameDataDict["yaxis"] is JArray)
-            {
-                JArray pointsArray = frameDataDict["point"] as JArray;
-                JArray xaxisArray = frameDataDict["xaxis"] as JArray;
-                JArray yaxisArray = frameDataDict["yaxis"] as JArray;
-
-                // Convert JArrays to arrays of floats
-                float[] points = pointsArray.Select(token => (float)token).ToArray();
-                float[] xaxis = xaxisArray.Select(token => (float)token).ToArray();
-                float[] yaxis = yaxisArray.Select(token => (float)token).ToArray();
-
-                frame.point = points;
-                frame.xaxis = xaxis;
-                frame.yaxis = yaxis;
+                // At least one of the arrays is null
+                Debug.LogError("One or more arrays is null.");
             }
             else
             {
-                Debug.LogError("FrameParse: Frame Data is not a List, Array, or JArray.");
+                // All arrays are not null, proceed with assignment
+                frame.point = point;
+                frame.xaxis = xaxis;
+                frame.yaxis = yaxis;
             }
+
+            // if (frameDataDict["point"] is List<object> && frameDataDict["xaxis"] is List<object> && frameDataDict["yaxis"] is List<object>)
+            // {
+            //     //Convert System.double items to float for use in instantiation
+            //     List<object> pointslist = frameDataDict["point"] as List<object>;
+            //     List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
+            //     List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+
+            //     if (pointslist != null && xaxislist != null && yaxislist != null)
+            //     {
+            //         frame.point = pointslist.Select(Convert.ToSingle).ToArray();
+            //         frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
+            //         frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+            //     }
+            //     else
+            //     {
+            //         Debug.LogError("One of the Frame lists is null");
+            //     }
+            // }
+            // else if(frameDataDict["point"] is float[] && frameDataDict["xaxis"] is float[] && frameDataDict["yaxis"] is float[]) //TODO: convert to static method for converting any type of anything to float lists.
+            // {
+            //     frame.point = (float[])frameDataDict["point"];
+            //     frame.xaxis = (float[])frameDataDict["xaxis"];
+            //     frame.yaxis = (float[])frameDataDict["yaxis"];
+            // }
+            // else if(frameDataDict["point"] is JArray && frameDataDict["xaxis"] is JArray && frameDataDict["yaxis"] is JArray)
+            // {
+            //     JArray pointsArray = frameDataDict["point"] as JArray;
+            //     JArray xaxisArray = frameDataDict["xaxis"] as JArray;
+            //     JArray yaxisArray = frameDataDict["yaxis"] as JArray;
+
+            //     // Convert JArrays to arrays of floats
+            //     float[] points = pointsArray.Select(token => (float)token).ToArray();
+            //     float[] xaxis = xaxisArray.Select(token => (float)token).ToArray();
+            //     float[] yaxis = yaxisArray.Select(token => (float)token).ToArray();
+
+            //     frame.point = points;
+            //     frame.xaxis = xaxis;
+            //     frame.yaxis = yaxis;
+            // }
+            // else
+            // {
+            //     Debug.LogError("FrameParse: Frame Data is not a List, Array, or JArray.");
+            // }
             return frame;
         }
 
@@ -123,44 +160,6 @@ namespace JSON
                 { "xaxis", xaxis },
                 { "yaxis", yaxis }
             };
-        }
-    }
-
-    //Class holding methods to parse information from json data
-    [System.Serializable]
-    public static class DataParser
-    {
-        public static float[] ConvertDatatoFloatArray(object data)
-        {
-            if (data is List<object>)
-            {
-                List<object> dataList = data as List<object>;
-                return dataList.Select(Convert.ToSingle).ToArray();
-            }
-            else if (data is float[])
-            {
-                return (float[])data;
-            }
-            else if (data is List<System.Double>)
-            {
-                List<System.Double> doubleList = data as List<System.Double>;
-                return doubleList.Select(Convert.ToSingle).ToArray();
-            }
-            else if (data is System.Double[])
-            {
-                System.Double[] doubleArray = data as System.Double[];
-                return doubleArray.Select(Convert.ToSingle).ToArray();
-            }
-            else if (data is JArray)
-            {
-                JArray dataArray = data as JArray;
-                return dataArray.Select(token => (float)token).ToArray();
-            }
-            else
-            {
-                Debug.LogError("DataParser: Data is not a List, Array, or JArray.");
-                return null;
-            }
         }
     }
 
