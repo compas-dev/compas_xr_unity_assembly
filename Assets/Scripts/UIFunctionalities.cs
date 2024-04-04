@@ -25,165 +25,166 @@ using Google.MiniJSON;
 public class UIFunctionalities : MonoBehaviour
 {
     //Other Scripts for inuse objects
-    public InstantiateObjects instantiateObjects;
-    public Eventmanager eventManager;
-    // public MqttTrajectoryManager mqttTrajectoryManager;
-    public TrajectoryVisulizer trajectoryVisulizer;
-    public RosConnectionManager rosConnectionManager;
-    public ScrollSearchManager scrollSearchManager;
+    // public Eventmanager eventManager;
+    // // public MqttTrajectoryManager mqttTrajectoryManager;
+    // public TrajectoryVisulizer trajectoryVisulizer;
+    // // public RosConnectionManager rosConnectionManager;
+    // public ScrollSearchManager scrollSearchManager;
     
-    //Primary UI Objects
-    private GameObject VisibilityMenuObject;
-    private GameObject MenuButtonObject;
-    private GameObject EditorToggleObject;
-    private GameObject ElementSearchToggleObject;
+    // //Primary UI Objects
+    // private GameObject VisibilityMenuObject;
+    // private GameObject MenuButtonObject;
+    // private GameObject EditorToggleObject;
+    // private GameObject ElementSearchToggleObject;
 
-    //todo: TEMPORARY OBJECTS
-    public GameObject ScrollSearchToggleObject;
-    private GameObject ScrollSearchObjects;
+    // //todo: TEMPORARY OBJECTS
+    // public GameObject ScrollSearchToggleObject;
+    // private GameObject ScrollSearchObjects;
 
-    //todo: TEMPORARY OBJECTS
+    // //todo: TEMPORARY OBJECTS
 
-    public GameObject CanvasObject;
-    public GameObject ConstantUIPanelObjects;
-    public GameObject NextGeometryButtonObject;
-    public GameObject PreviousGeometryButtonObject;
-    public GameObject PreviewGeometrySliderObject;
-    public Slider PreviewGeometrySlider;
-    public GameObject IsBuiltPanelObjects;
-    public GameObject IsBuiltButtonObject;
-    public GameObject IsbuiltButtonImage;
-    public GameObject IsbuiltPriorityLockedImage;
-    // private TMP_InputField ElementSearchInputField;
-    // private GameObject ElementSearchObjects;
-    private GameObject SearchElementButtonObject;
+    // public GameObject CanvasObject;
+    // public GameObject ConstantUIPanelObjects;
+    // public GameObject NextGeometryButtonObject;
+    // public GameObject PreviousGeometryButtonObject;
+    // public GameObject PreviewGeometrySliderObject;
+    // public Slider PreviewGeometrySlider;
+    // public GameObject IsBuiltPanelObjects;
+    // public GameObject IsBuiltButtonObject;
+    // public GameObject IsbuiltButtonImage;
+    // public GameObject IsbuiltPriorityLockedImage;
+    // // private TMP_InputField ElementSearchInputField;
+    // // private GameObject ElementSearchObjects;
+    // private GameObject SearchElementButtonObject;
 
-    //On Screen Messages
-    public GameObject MessagesParent;
-    public GameObject OnScreenErrorMessagePrefab;
-    public GameObject OnScreenInfoMessagePrefab;
-    private GameObject PriorityIncompleteWarningMessageObject;
-    private GameObject PriorityIncorrectWarningMessageObject;
-    private GameObject PriorityCompleteMessageObject;
-    public GameObject MQTTFailedToConnectMessageObject;
-    public GameObject MQTTConnectionLostMessageObject;
-    public GameObject ErrorFetchingDownloadUriMessageObject;
-    public GameObject ErrorDownloadingObjectMessageObject;
-    public GameObject TrajectoryReviewRequestMessageObject;
-    public GameObject TrajectoryCancledMessage;
-    public GameObject SearchItemNotFoundWarningMessageObject;
-    public GameObject ActiveRobotIsNullWarningMessageObject;
-    public GameObject TransactionLockActiveWarningMessageObject;
-    public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
-    public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
-    public GameObject TrajectoryResponseIncorrectWarningMessageObject;
-    public GameObject ConfigDoesNotMatchURDFStructureWarningMessageObject;
-    public GameObject TrajectoryNullWarningMessageObject;
+    // //On Screen Messages
+    // public GameObject MessagesParent;
+    // public GameObject OnScreenErrorMessagePrefab;
+    // public GameObject OnScreenInfoMessagePrefab;
+    // private GameObject PriorityIncompleteWarningMessageObject;
+    // private GameObject PriorityIncorrectWarningMessageObject;
+    // private GameObject PriorityCompleteMessageObject;
+    // public GameObject MQTTFailedToConnectMessageObject;
+    // public GameObject MQTTConnectionLostMessageObject;
+    // public GameObject ErrorFetchingDownloadUriMessageObject;
+    // public GameObject ErrorDownloadingObjectMessageObject;
+    // public GameObject TrajectoryReviewRequestMessageObject;
+    // public GameObject TrajectoryCancledMessage;
+    // public GameObject SearchItemNotFoundWarningMessageObject;
+    // public GameObject ActiveRobotIsNullWarningMessageObject;
+    // public GameObject TransactionLockActiveWarningMessageObject;
+    // public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
+    // public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
+    // public GameObject TrajectoryResponseIncorrectWarningMessageObject;
+    // public GameObject ConfigDoesNotMatchURDFStructureWarningMessageObject;
+    // public GameObject TrajectoryNullWarningMessageObject;
 
-    //Visualizer Menu Objects
-    private GameObject VisualzierBackground;
-    private GameObject PreviewActorToggleObject;
-    public GameObject IDToggleObject;
-    public GameObject RobotToggleObject;
-    public GameObject ObjectLengthsToggleObject;
-    private GameObject ObjectLengthsUIPanelObjects;
-    private Vector3 ObjectLengthsUIPanelPosition;
-    private TMP_Text ObjectLengthsText;
-    private GameObject ObjectLengthsTags;
-    public GameObject PriorityViewerToggleObject;
-    public GameObject NextPriorityButtonObject;
-    public GameObject PreviousPriorityButtonObject;
-    public GameObject PriorityViewerBackground;
-    public GameObject SelectedPriorityTextObject;
-    public TMP_Text SelectedPriorityText;
+    // //Visualizer Menu Objects
+    // private GameObject VisualzierBackground;
+    // private GameObject PreviewActorToggleObject;
+    // public GameObject IDToggleObject;
+    // public GameObject RobotToggleObject;
+    // public GameObject ObjectLengthsToggleObject;
+    // private GameObject ObjectLengthsUIPanelObjects;
+    // private Vector3 ObjectLengthsUIPanelPosition;
+    // private TMP_Text ObjectLengthsText;
+    // private GameObject ObjectLengthsTags;
+    // public GameObject PriorityViewerToggleObject;
+    // public GameObject NextPriorityButtonObject;
+    // public GameObject PreviousPriorityButtonObject;
+    // public GameObject PriorityViewerBackground;
+    // public GameObject SelectedPriorityTextObject;
+    // public TMP_Text SelectedPriorityText;
 
-    //Menu Toggle Button Objects
-    private GameObject MenuBackground;
-    private GameObject ReloadButtonObject;
-    private GameObject InfoToggleObject;
-    private GameObject LoadFromROSToggleObject;
-    private GameObject InfoPanelObject;
-    public GameObject CommunicationToggleObject;
+    // //Menu Toggle Button Objects
+    // private GameObject MenuBackground;
+    // private GameObject ReloadButtonObject;
+    // private GameObject InfoToggleObject;
+    // private GameObject LoadFromROSToggleObject;
+    // private GameObject InfoPanelObject;
+    // public GameObject CommunicationToggleObject;
+    // // private GameObject OcclusionToggleObject;
+    // private GameObject CommunicationPanelObject;
+    // private GameObject LoadURDFFromROSPannelObject;
+
+    // //Load URDF from ROS Objects
+    // private TMP_InputField LoadURDFRosHostInputField;
+    // private TMP_InputField LoadURDFRosPortInputField;
+    // public GameObject LoadURDFRosConnectButtonObject;
+    // public GameObject URDFReadButtonObject;
+
+    // //Editor Toggle Objects
+    // private GameObject EditorBackground;
+    // private GameObject BuilderEditorButtonObject;
+    // private GameObject BuildStatusButtonObject;
+    
+    // //Communication Specific Objects
+    // private TMP_InputField MqttBrokerInputField;
+    // private TMP_InputField MqttPortInputField;
+    // private GameObject MqttUpdateConnectionMessage;
+    // public GameObject MqttConnectionStatusObject;
+    // public GameObject MqttConnectButtonObject;
+    // public GameObject RosConnectButtonObject;
+    // private TMP_InputField RosHostInputField;
+    // private TMP_InputField RosPortInputField;
+    // private GameObject RosUpdateConnectionMessage;
+    // public GameObject RosConnectionStatusObject;
+
+    // //Trajectory Review UI Controls
+    // public GameObject ReviewTrajectoryObjects;
+    // public GameObject RequestTrajectoryButtonObject;
+    // public GameObject ApproveTrajectoryButtonObject;
+    // public GameObject RejectTrajectoryButtonObject;
+    // public GameObject TrajectoryReviewSliderObject;
+    // public Slider TrajectoryReviewSlider;
+    // public GameObject ExecuteTrajectoryButtonObject;
+    // public GameObject RobotSelectionControlObjects;
+    // public GameObject RobotSelectionDropdownObject;
+    // public TMP_Dropdown RobotSelectionDropdown;
+    // public GameObject SetActiveRobotToggleObject;
+
+    // //Object Colors
+    // private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
+    // private Color White = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+    // private Color TranspWhite = new Color(1.0f, 1.0f, 1.0f, 0.4f);
+    // private Color TranspGrey = new Color(0.7843137f, 0.7843137f, 0.7843137f, 0.4f);
+
+    // //Parent Objects for gameObjects
+    // public GameObject Elements;
+    // public GameObject QRMarkers;
+    // public GameObject UserObjects;
+
+    // //AR Camera and Touch GameObjects & Occlusion Objects
+    // public Camera arCamera;
+    // private GameObject activeGameObject;
+    // private GameObject temporaryObject; 
+    // private ARRaycastManager rayManager;
+    // public OperatingSystem currentOperatingSystem;
+    // private AROcclusionManager occlusionManager;
     // private GameObject OcclusionToggleObject;
-    private GameObject CommunicationPanelObject;
-    private GameObject LoadURDFFromROSPannelObject;
 
-    //Load URDF from ROS Objects
-    private TMP_InputField LoadURDFRosHostInputField;
-    private TMP_InputField LoadURDFRosPortInputField;
-    public GameObject LoadURDFRosConnectButtonObject;
-    public GameObject URDFReadButtonObject;
+    // //On Screen Text
+    // public GameObject CurrentStepTextObject;
+    // public GameObject EditorSelectedTextObject;
+    // public TMP_Text CurrentStepText;
+    // public TMP_Text LastBuiltIndexText;
+    // public TMP_Text CurrentPriorityText;
+    // public TMP_Text EditorSelectedText;
 
-    //Editor Toggle Objects
-    private GameObject EditorBackground;
-    private GameObject BuilderEditorButtonObject;
-    private GameObject BuildStatusButtonObject;
-    
-    //Communication Specific Objects
-    private TMP_InputField MqttBrokerInputField;
-    private TMP_InputField MqttPortInputField;
-    private GameObject MqttUpdateConnectionMessage;
-    public GameObject MqttConnectionStatusObject;
-    public GameObject MqttConnectButtonObject;
-    public GameObject RosConnectButtonObject;
-    private TMP_InputField RosHostInputField;
-    private TMP_InputField RosPortInputField;
-    private GameObject RosUpdateConnectionMessage;
-    public GameObject RosConnectionStatusObject;
-
-    //Trajectory Review UI Controls
-    public GameObject ReviewTrajectoryObjects;
-    public GameObject RequestTrajectoryButtonObject;
-    public GameObject ApproveTrajectoryButtonObject;
-    public GameObject RejectTrajectoryButtonObject;
-    public GameObject TrajectoryReviewSliderObject;
-    public Slider TrajectoryReviewSlider;
-    public GameObject ExecuteTrajectoryButtonObject;
-    public GameObject RobotSelectionControlObjects;
-    public GameObject RobotSelectionDropdownObject;
-    public TMP_Dropdown RobotSelectionDropdown;
-    public GameObject SetActiveRobotToggleObject;
-
-    //Object Colors
-    private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
-    private Color White = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-    private Color TranspWhite = new Color(1.0f, 1.0f, 1.0f, 0.4f);
-    private Color TranspGrey = new Color(0.7843137f, 0.7843137f, 0.7843137f, 0.4f);
-
-    //Parent Objects for gameObjects
-    public GameObject Elements;
-    public GameObject QRMarkers;
-    public GameObject UserObjects;
-
-    //AR Camera and Touch GameObjects & Occlusion Objects
-    public Camera arCamera;
-    private GameObject activeGameObject;
-    private GameObject temporaryObject; 
-    private ARRaycastManager rayManager;
-    public OperatingSystem currentOperatingSystem;
-    private AROcclusionManager occlusionManager;
-    private GameObject OcclusionToggleObject;
-
-    //On Screen Text
-    public GameObject CurrentStepTextObject;
-    public GameObject EditorSelectedTextObject;
-    public TMP_Text CurrentStepText;
-    public TMP_Text LastBuiltIndexText;
-    public TMP_Text CurrentPriorityText;
-    public TMP_Text EditorSelectedText;
-
-    //In script use variables
-    public string CurrentStep = null;
-    // public string SearchedElement = "None";
-    public string SearchedElementStepID;
-    public string SelectedPriority = "None";
-    public bool IDTagIsOffset = false;
-    public bool PriorityTagIsOffset = false;
+    // //In script use variables
+    // public string CurrentStep = null;
+    // // public string SearchedElement = "None";
+    // public string SearchedElementStepID;
+    // public string SelectedPriority = "None";
+    // public bool IDTagIsOffset = false;
+    // public bool PriorityTagIsOffset = false;
 
     //MAS INTRO ITEMS
 
     // Other Scripts
     public DatabaseManager databaseManager; //Example 1 of finding an object in the scene (searching)
+    public InstantiateObjects instantiateObjects;
+
     public GameObject RuntimeObjectStorage; //Example 2 of linking an object in the scene to the script (via editor)
     public Toggle ObjectMovementToggle;
 

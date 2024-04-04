@@ -28,44 +28,44 @@ namespace Instantiate
     public class InstantiateObjects : MonoBehaviour
     {
         
-        //Other Sript Objects
-        public DatabaseManager databaseManager;
-        public UIFunctionalities UIFunctionalities;
-        public ScrollSearchManager scrollSearchManager;
+        // //Other Sript Objects
+        // public DatabaseManager databaseManager;
+        // public UIFunctionalities UIFunctionalities;
+        // public ScrollSearchManager scrollSearchManager;
 
         //Object Materials
-        public Material BuiltMaterial;
-        public Material UnbuiltMaterial;
-        public Material HumanBuiltMaterial;
-        public Material HumanUnbuiltMaterial;
-        public Material RobotBuiltMaterial;
-        public Material RobotUnbuiltMaterial;
-        public Material LockedObjectMaterial;
-        public Material SearchedObjectMaterial;
-        public Material ActiveRobotMaterial;
-        public Material InactiveRobotMaterial;
-        public Material OutlineMaterial;
+        // public Material BuiltMaterial;
+        // public Material UnbuiltMaterial;
+        // public Material HumanBuiltMaterial;
+        // public Material HumanUnbuiltMaterial;
+        // public Material RobotBuiltMaterial;
+        // public Material RobotUnbuiltMaterial;
+        // public Material LockedObjectMaterial;
+        // public Material SearchedObjectMaterial;
+        // public Material ActiveRobotMaterial;
+        // public Material InactiveRobotMaterial;
+        // public Material OutlineMaterial;
 
-        //Parent Objects
-        public GameObject QRMarkers; 
-        public GameObject Elements;
-        public GameObject ActiveUserObjects;
+        // //Parent Objects
+        // public GameObject QRMarkers; 
+        // public GameObject Elements;
+        // public GameObject ActiveUserObjects;
 
         //Events
-        public delegate void InitialElementsPlaced(object source, EventArgs e);
-        public event InitialElementsPlaced PlacedInitialElements;
+        // public delegate void InitialElementsPlaced(object source, EventArgs e);
+        // public event InitialElementsPlaced PlacedInitialElements;
 
-        //Make Initial Visulization controler
-        public ModeControler visulizationController = new ModeControler();
+        // //Make Initial Visulization controler
+        // public ModeControler visulizationController = new ModeControler();
 
-        //Private in script use objects
-        private GameObject IdxImage;
-        private GameObject PriorityImage;
-        public GameObject MyUserIndacator;
-        private GameObject OtherUserIndacator;
-        public GameObject ObjectLengthsTags;
-        public GameObject PriorityViewrLineObject;
-        public GameObject PriorityViewerPointsObject;
+        // //Private in script use objects
+        // private GameObject IdxImage;
+        // private GameObject PriorityImage;
+        // public GameObject MyUserIndacator;
+        // private GameObject OtherUserIndacator;
+        // public GameObject ObjectLengthsTags;
+        // public GameObject PriorityViewrLineObject;
+        // public GameObject PriorityViewerPointsObject;
 
         //Struct for storing Rotation Values
         public struct Rotation
