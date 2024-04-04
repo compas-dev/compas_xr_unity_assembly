@@ -741,7 +741,6 @@ public class DatabaseManager : MonoBehaviour
         Node node = new Node();
         node.part = new Part();
         node.attributes = new Attributes();
-        node.part.frame = new Frame();
 
         //Set node type_id
         node.type_id = key;
@@ -759,37 +758,10 @@ public class DatabaseManager : MonoBehaviour
             PartDesctiptionSelector(node, dataDict);
         }
 
-        //Convert System.double items to float for use in instantiation
-        List<object> pointslist = frameDataDict["point"] as List<object>;
-        List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
-        List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
-
-        if (pointslist != null && xaxislist != null && yaxislist != null)
-        {
-            node.part.frame.point = pointslist.Select(Convert.ToSingle).ToArray();
-            node.part.frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-            node.part.frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
-        }
-        else
-        {
-            Debug.Log("One of the Frame lists is null");
-        }
-
-        //If additional Attributes bool then get additional attributes
-        if (additionalAttributes)
-        {
-            GetAdditionalNodeAttributes(node, jsonDataDict);
-        }
+        //Parse frame from class method
+        node.part.frame = Frame.Parse(frameDataDict);
 
         return node;
-    }
-    private void GetAdditionalNodeAttributes(Node node, Dictionary<string, object> jsonDataDict)
-    {
-        //Set Attributes Class Values for extra assembly processes
-        node.attributes.is_built = (bool)jsonDataDict["is_built"];
-        node.attributes.is_planned =  (bool)jsonDataDict["is_planned"];
-        node.attributes.placed_by = (string)jsonDataDict["placed_by"];
-       
     }
     private void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict)
     {
