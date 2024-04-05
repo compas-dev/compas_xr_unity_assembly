@@ -159,7 +159,7 @@ namespace Instantiate
             //Set parent and name
             elementPrefab.transform.SetParent(Elements.transform, false);
             
-            //Name the object afte the step number... might be better to get the step_id in the building plan from Chen.
+            //Name the object afte the step number.
             elementPrefab.name = Key;
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object

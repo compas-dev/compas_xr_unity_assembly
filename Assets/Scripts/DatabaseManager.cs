@@ -158,7 +158,7 @@ public class DatabaseManager : MonoBehaviour
         dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data");
         dbreference_steps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
         dbreference_LastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
-        dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames").Child("graph").Child("node");
+        dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference("QRFrames").Child("graph").Child("node");
         dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrentStep");
 
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
@@ -799,24 +799,25 @@ public class DatabaseManager : MonoBehaviour
                 node.attributes.length = xsize;
                 node.attributes.width = ysize;
                 node.attributes.height = zsize;
+                Debug.Log("DtypeGeometryDesctiptionSelector: This is a Box assembly");
                 break;
             
             case "compas.datastructures/Mesh":
 
                 //Set node type_data
-                node.type_data = "3.Mesh"; //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
+                node.type_data = "3.Mesh";
 
                 // Set Node Length width height to 0 because it does not contain definitions for this information.
                 node.attributes.length = 0.00f;
                 node.attributes.width = 0.00f;
                 node.attributes.height = 0.00f;
 
-                Debug.Log("This is a Mesh assembly");
+                Debug.Log("DtypeGeometryDesctiptionSelector: This is a Mesh assembly");
                 break;
 
             case "compas.geometry/Frame":
                 
-                //Set node type_data //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
+                //Set node type_data
                 node.type_data = "4.Frame";
 
                 // Set Node Length width height to 0 because it does not contain definitions for this information.
@@ -824,7 +825,7 @@ public class DatabaseManager : MonoBehaviour
                 node.attributes.width = 0.00f;
                 node.attributes.height = 0.00f;
 
-                Debug.Log("This is a frame assembly");
+                Debug.Log("DtypeGeometryDesctiptionSelector: This is a frame assembly");
                 break;
 
             case "compas_timber.parts/Beam":
@@ -842,6 +843,7 @@ public class DatabaseManager : MonoBehaviour
                 node.attributes.width = objWidth;
                 node.attributes.height = objHeight;
 
+                Debug.Log("DtypeGeometryDesctiptionSelector: This is a timbers beam");
                 break;
 
             case string connectionType when connectionType.StartsWith("compas_timber.connections"):
@@ -851,7 +853,7 @@ public class DatabaseManager : MonoBehaviour
 
                 // Do not update attributes because this is not interactable.
 
-                Debug.Log("This is a timbers connection");
+                Debug.Log("DtypeGeometryDesctiptionSelector: This is a timbers connection");
                 break;
 
 
@@ -959,6 +961,11 @@ public class DatabaseManager : MonoBehaviour
     {        
         Debug.Log("Adding Listners");
         
+        //Add listner for QRFrames
+        dbreference_qrcodes.ChildAdded += OnQRCodeDataChanged;
+        dbreference_qrcodes.ChildChanged += OnQRCodeDataChanged;
+        dbreference_qrcodes.ChildRemoved += OnQRCodeDataChanged;
+
         //Add listners for building plan steps
         dbreference_steps.ChildAdded += OnStepsChildAdded;
         dbreference_steps.ChildChanged += OnStepsChildChanged;
@@ -981,6 +988,11 @@ public class DatabaseManager : MonoBehaviour
     {        
         Debug.Log("Removing the listeners");
 
+        //Add listner for QRFrames
+        dbreference_qrcodes.ChildAdded += OnQRCodeDataChanged;
+        dbreference_qrcodes.ChildChanged += OnQRCodeDataChanged;
+        dbreference_qrcodes.ChildRemoved += OnQRCodeDataChanged;
+
         //Remove listners for building plan steps
         dbreference_steps.ChildAdded += OnStepsChildAdded;
         dbreference_steps.ChildChanged += OnStepsChildChanged;
@@ -1000,6 +1012,25 @@ public class DatabaseManager : MonoBehaviour
         dbreference_project.ChildRemoved += OnProjectInfoChangedUpdate;
     }
 
+    // Event handler for QRCode child changes
+    public async void OnQRCodeDataChanged(object sender, Firebase.Database.ChildChangedEventArgs args) 
+    {
+        if (args.DatabaseError != null)
+        {
+            Debug.LogError(args.DatabaseError.Message);
+            return;
+        }
+
+        var key = args.Snapshot.Key;
+        var childSnapshot = args.Snapshot.GetValue(true);
+        Debug.Log($"QRCodeDataChanged: Fetching New information");
+        
+        if (childSnapshot != null)
+        {
+            //If the qrcodes changed then fetch new qrcode data
+            await FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+        }
+    }
     // Event handler for BuildingPlan child changes
     public void OnStepsChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args) 
     {
@@ -1466,13 +1497,6 @@ public class DatabaseManager : MonoBehaviour
                 
                 //If the assembly changed then fetch new assembly data
                 await FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
-            }
-            else if(key == "QRFrames")
-            {
-                Debug.Log("Project Changed: QRFrames Changed");
-
-                //If the qrcodes changed then fetch new qrcode data
-                await FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             }
             else if(key == "beams")
             {
