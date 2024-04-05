@@ -20,6 +20,9 @@ namespace ApplicationModeControler
     {
         BuiltUnbuilt = 0,
         ActorView = 1,
+
+        //TODO: MAS: 7. Add new enum for sequence color
+        SequenceColor = 2,
     }
     
     //Enum to addapt to various touch modes            

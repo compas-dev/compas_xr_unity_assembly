@@ -49,8 +49,8 @@ namespace Instantiate
         //TODO: MAS: 2.Store Material for coloring objects based on sequence
         public Material SequenceMaterial;
 
-        //TODO: MAS: 6. Create a dictionary to store the colors by step key when the sequence mode is on
-        public Dictionary<string, Color> sequenceColorStorageDictionary = new Dictionary<string, Color>();
+        //TODO: MAS: 6. Create a dictionary to store the materials by step key when the sequence mode is on
+        public Dictionary<string, Material> sequenceMaterialStorageDictionary = new Dictionary<string, Material>();
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -965,7 +965,7 @@ namespace Instantiate
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
-            switch (visulizationController.VisulizationMode)
+            switch (visualizationMode)
             {
                 case VisulizationMode.BuiltUnbuilt:
                     ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
@@ -973,10 +973,15 @@ namespace Instantiate
                 case VisulizationMode.ActorView:
                     ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                     break;
+                
+                //TODO: 7. Add sequence color visulization mode to the enum for coloring.
+                case VisulizationMode.SequenceColor:
+                    ColorObjectbyInputMaterial(geometryObject, sequenceMaterialStorageDictionary[key]);
+                    break;
             }
 
             //Set Touch mode based on Touch Mode
-            switch (visulizationController.TouchMode)
+            switch (touchMode)
             {
                 case TouchMode.None:
                     //Do nothing
@@ -1084,6 +1089,37 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on Priority
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                        }
+                    }
+                }
+            }
+        }
+        public void ApplyColorBasedOnAppModes()
+        {
+            if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
+                {
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
+
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    {
+                        //Color based on visulization mode
+                        ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, entry.Value, entry.Key, geometryObject);
+
+                        //Check if Priority Viewer is on and color based on priority if it is.
+                        if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //Color based on priority
                             ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
                         }
 
@@ -1210,12 +1246,12 @@ namespace Instantiate
         }
     
         //TODO: MAS: 6. Write Method to color based on sequence withinputs of start key, material, and Class Member Dictionary of Dictionary<string, <Color> colorStorageDictionary
-        public void ApplyColorBasedOnSequence(string startKey, Material coloringMaterial, ref Dictionary<string, Color> colorStorageDictionary)
+        public void ApplyColorBasedOnSequence(string startKey, Material coloringMaterial, ref Dictionary<string, Material> materialStorageDictionary)
         {
             Debug.Log("ApplyColorBasedOnSequence: Applying Color to objects based on sequence.");
 
             //Create a new color storage dictionary
-            colorStorageDictionary = new Dictionary<string, Color>();
+            materialStorageDictionary = new Dictionary<string, Material>();
 
             //Set the min and max key values and transparency min max values
             int minKey = Convert.ToInt16(startKey);
@@ -1237,7 +1273,7 @@ namespace Instantiate
                 GameObject gameObject = GameObject.Find(keyString).FindObject(step.data.element_ids[0] + " Geometry");
 
                 //Set a temporary material to the input material
-                Material tempMaterial = coloringMaterial;
+                Material tempMaterial = Instantiate(coloringMaterial);
 
                 //Remap the key to a transparency value that can be assigned to the temporary material
                 float transperencyValueRemapped = HelpersExtensions.Remap(keyInt, minKey, maxKey, transparencyMax, transparencyMin);
@@ -1248,14 +1284,32 @@ namespace Instantiate
                 //If the gameObject and Material are not null then set the material to the gameObject using ColorObjectbyInputMaterial
                 if (gameObject != null && tempMaterial != null)
                 {
-                    ColorObjectbyInputMaterial(gameObject, tempMaterial);
-
                     //Store the color in the color storage dictionary with the key.
-                    colorStorageDictionary.Add(keyString, tempMaterial.color);
+                    materialStorageDictionary.Add(keyString, tempMaterial);
+
+                    //If the key is not equal to the current step then color the object
+                    if(keyString != UIFunctionalities.CurrentStep)
+                    {
+                        //If the scroll search is on and the key is
+                        if(!UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //Color the object based on the sequence
+                            ColorObjectbyInputMaterial(gameObject, tempMaterial);
+                        }
+                        else
+                        {
+                            //If the scroll search is on and the key is not the selected cell then color the object
+                            if(keyString != scrollSearchManager.selectedCellStepIndex)
+                            {
+                                //Color the object based on the search
+                                ColorObjectbyInputMaterial(gameObject, tempMaterial);
+                            }
+                        }
+                    }
                 }
                 else
                 {
-                    Debug.LogWarning($"Could not find object with key: {keyString}");
+                    Debug.LogWarning($"ApplyColorBasedOnSequence: Could not find object with key: {keyString}");
                 }
             }
         }

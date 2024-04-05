@@ -41,7 +41,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject ScrollSearchObjects;
 
     //TODO: MAS: 4. Create Class Member Variable to store Sequence Color Toggle
-    private GameObject SequenceColorToggleObject;
+    public GameObject SequenceColorToggleObject;
 
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
@@ -1604,6 +1604,12 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn)
         {
+            //TODO: MAS: 8. Turn off color by sequence if the toggle is on
+            if(SequenceColorToggleObject.GetComponent<Toggle>().isOn)
+            {
+                SequenceColorToggleObject.GetComponent<Toggle>().isOn = false;
+            }
+
             //Turn on the Preview Builder
             instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.ActorView;
             
@@ -1905,20 +1911,8 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
-            
             //Color Elements by visulization mode
-            if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.ActorView)
-            {
-                instantiateObjects.ApplyColorBasedOnActor();
-            }
-            else if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.BuiltUnbuilt)
-            {
-                instantiateObjects.ApplyColorBasedOnBuildState();
-            }
-            else
-            {
-                Debug.LogWarning("Could not find Visulization Mode.");
-            }
+            instantiateObjects.ApplyColorBasedOnAppModes();
 
             //Set visibility of reference objects
             instantiateObjects.PriorityViewrLineObject.SetActive(false);
@@ -2071,8 +2065,17 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.Log("ToggleSequenceColor: Sequence Color Toggle is On");
 
+            //TODO: MAS: 7. Update visuilzation mode to SequenceColor
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.SequenceColor;
+
+            //TODO: MAS: 8. Turn off the actor toggle if it is on
+            if(PreviewActorToggleObject.GetComponent<Toggle>().isOn)
+            {
+                PreviewActorToggleObject.GetComponent<Toggle>().isOn = false;
+            }
+
             //Color Elements Based on Sequence
-            instantiateObjects.ApplyColorBasedOnSequence("0", instantiateObjects.SequenceMaterial, ref instantiateObjects.sequenceColorStorageDictionary);
+            instantiateObjects.ApplyColorBasedOnSequence(databaseManager.BuildingPlanDataItem.LastBuiltIndex, instantiateObjects.SequenceMaterial, ref instantiateObjects.sequenceMaterialStorageDictionary);
             
             //Set color of toggle
             SetUIObjectColor(SequenceColorToggleObject, Yellow);
@@ -2081,7 +2084,11 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.Log("ToggleSequenceColor: Sequence Color Toggle is Off");
 
+            //TODO: MAS: 7. Update visulization mode to BuiltUnbuilt
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+
             //Color elements based on other toggles.
+            instantiateObjects.ApplyColorBasedOnAppModes(); //TODO: THIS WORKS CYCLE BACK TO MAIN.
             
             //Set color of toggle
             SetUIObjectColor(SequenceColorToggleObject, White);
@@ -2242,10 +2249,6 @@ public class UIFunctionalities : MonoBehaviour
                 CurrentStepTextObject.SetActive(false);
                 EditorSelectedTextObject.SetActive(true);
 
-                //Apply color color based on build state
-                // instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority); //TODO:THIS NEEDS TO GO.... LOOK IF I NEED THIS METHOD OR NOT.
-                // ColliderControler();
-
                 //Update mode so we know to search for touch input
                 TouchSearchModeController(TouchMode.ElementEditSelection);
                 
@@ -2268,22 +2271,7 @@ public class UIFunctionalities : MonoBehaviour
                 TouchSearchModeController(TouchMode.None);
 
                 //Color Elements by visulization mode
-                if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.ActorView)
-                {
-                    instantiateObjects.ApplyColorBasedOnActor();
-                }
-                else if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.BuiltUnbuilt)
-                {
-                    instantiateObjects.ApplyColorBasedOnBuildState();
-                }
-                else if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
-                {
-                    instantiateObjects.ApplyColorBasedOnPriority(SelectedPriority);
-                }
-                else
-                {
-                    Debug.LogWarning("Could not find Visulization Mode.");
-                }
+                instantiateObjects.ApplyColorBasedOnAppModes();
 
                 //Set color of toggle
                 SetUIObjectColor(EditorToggleObject, White);
