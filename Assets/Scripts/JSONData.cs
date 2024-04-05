@@ -28,6 +28,15 @@ namespace JSON
                 List<System.Double> doubleList = data as List<System.Double>;
                 return doubleList.Select(Convert.ToSingle).ToArray();
             }
+            else if (data is System.Single[])
+            {
+                return new float[] { (float)data };
+            }
+            else if (data is List<System.Single>)
+            {
+                List<System.Single> singleList = data as List<System.Single>;
+                return singleList.Select(Convert.ToSingle).ToArray();
+            }
             else if (data is System.Double[])
             {
                 System.Double[] doubleArray = data as System.Double[];
@@ -40,11 +49,12 @@ namespace JSON
             }
             else
             {
-                Debug.LogError("DataParser: Data is not a List, Array, or JArray.");
+                Debug.LogError("DataParser: Data is not a List<Object>, List<System.Double>, System.Double Array, System.Single Array, List<System.Single>,  float Array, or JArray.");
                 return null;
             }
         }
     } 
+    
 
    /////////////Classes for Assembly Desearialization./////////////// 
     [System.Serializable]
