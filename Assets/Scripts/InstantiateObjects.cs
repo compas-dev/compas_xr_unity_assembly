@@ -46,6 +46,12 @@ namespace Instantiate
         public Material InactiveRobotMaterial;
         public Material OutlineMaterial;
 
+        //TODO: MAS: 2.Store Material for coloring objects based on sequence
+        public Material SequenceMaterial;
+
+        //TODO: MAS: 6. Create a dictionary to store the colors by step key when the sequence mode is on
+        public Dictionary<string, Color> sequenceColorStorageDictionary = new Dictionary<string, Color>();
+
         //Parent Objects
         public GameObject QRMarkers; 
         public GameObject Elements;
@@ -111,7 +117,10 @@ namespace Instantiate
             ActiveRobotMaterial = GameObject.Find("Materials").FindObject("ActiveRobot").GetComponentInChildren<Renderer>().material;
             InactiveRobotMaterial = GameObject.Find("Materials").FindObject("InactiveRobot").GetComponentInChildren<Renderer>().material;
             OutlineMaterial = GameObject.Find("Materials").FindObject("OutlineMaterial").GetComponentInChildren<Renderer>().material;
-            
+
+            //TODO: MAS: 2.Find Material for Coloring objects based on sequence using find object
+            SequenceMaterial = GameObject.Find("Materials").FindObject("SequenceMaterial").GetComponentInChildren<Renderer>().material;
+
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
             PriorityImage = GameObject.Find("ImageTagTemplates").FindObject("Triangle");
@@ -121,9 +130,6 @@ namespace Instantiate
             PriorityViewrLineObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerLine");
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
-            //Set Initial Visulization Modes
-            visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
-            visulizationController.TouchMode = TouchMode.None;
         }
         public void placeElement(string Key, Step step)
         {
@@ -1203,6 +1209,56 @@ namespace Instantiate
             }
         }
     
+        //TODO: MAS: 6. Write Method to color based on sequence withinputs of start key, material, and Class Member Dictionary of Dictionary<string, <Color> colorStorageDictionary
+        public void ApplyColorBasedOnSequence(string startKey, Material coloringMaterial, ref Dictionary<string, Color> colorStorageDictionary)
+        {
+            Debug.Log("ApplyColorBasedOnSequence: Applying Color to objects based on sequence.");
+
+            //Create a new color storage dictionary
+            colorStorageDictionary = new Dictionary<string, Color>();
+
+            //Set the min and max key values and transparency min max values
+            int minKey = Convert.ToInt16(startKey);
+            int maxKey = databaseManager.BuildingPlanDataItem.steps.Count - 1;
+            float transparencyMax = 1.00f; //Color Transparency Min == 1
+            float transparencyMin = 0.00f; // Color Transparency Max == 0
+
+            //Loop through the sequence of keys    
+            for (int i = minKey; i <= maxKey; i++)
+            {    
+                //Convert int to string to find the step in the dictionary
+                string keyString = i.ToString();
+                int keyInt = i;
+
+                //Get the step from the dictionary
+                Step step = databaseManager.BuildingPlanDataItem.steps[keyString];
+
+                //Find gameObject with renderer associated with that step
+                GameObject gameObject = GameObject.Find(keyString).FindObject(step.data.element_ids[0] + " Geometry");
+
+                //Set a temporary material to the input material
+                Material tempMaterial = coloringMaterial;
+
+                //Remap the key to a transparency value that can be assigned to the temporary material
+                float transperencyValueRemapped = HelpersExtensions.Remap(keyInt, minKey, maxKey, transparencyMax, transparencyMin);
+
+                //Set the transparency value of the temporary material
+                tempMaterial.color = new Color(tempMaterial.color.r, tempMaterial.color.g, tempMaterial.color.b, transperencyValueRemapped);
+
+                //If the gameObject and Material are not null then set the material to the gameObject using ColorObjectbyInputMaterial
+                if (gameObject != null && tempMaterial != null)
+                {
+                    ColorObjectbyInputMaterial(gameObject, tempMaterial);
+
+                    //Store the color in the color storage dictionary with the key.
+                    colorStorageDictionary.Add(keyString, tempMaterial.color);
+                }
+                else
+                {
+                    Debug.LogWarning($"Could not find object with key: {keyString}");
+                }
+            }
+        }
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, BuildingPlanDataDictEventArgs e)
         {

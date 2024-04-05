@@ -37,12 +37,11 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
     private GameObject ElementSearchToggleObject;
-
-    //todo: TEMPORARY OBJECTS
     public GameObject ScrollSearchToggleObject;
     private GameObject ScrollSearchObjects;
 
-    //todo: TEMPORARY OBJECTS
+    //TODO: MAS: 4. Create Class Member Variable to store Sequence Color Toggle
+    private GameObject SequenceColorToggleObject;
 
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
@@ -280,6 +279,9 @@ public class UIFunctionalities : MonoBehaviour
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
         ScrollSearchObjects = ScrollSearchToggleObject.FindObject("ScrollSearchObjects");
 
+        //TODO: MAS: 4. Find Sequence Color Toggle OnAwake and associated GameObjects
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref SequenceColorToggleObject, "SequenceColorToggle", ToggleSequenceColor);
+
         //Find Robot toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
         PriorityViewerBackground = PriorityViewerToggleObject.FindObject("BackgroundPriorityViewer");
@@ -467,6 +469,9 @@ public class UIFunctionalities : MonoBehaviour
                 PriorityViewerToggleObject.SetActive(true);
                 ScrollSearchToggleObject.SetActive(true);
 
+                //TODO: MAS: 5. Set Sequence Color Toggle to Active when VisibilityMenuToggle is on
+                SequenceColorToggleObject.SetActive(true);
+
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
 
@@ -481,6 +486,9 @@ public class UIFunctionalities : MonoBehaviour
                 IDToggleObject.SetActive(false);
                 PriorityViewerToggleObject.SetActive(false);
                 ScrollSearchToggleObject.SetActive(false);
+
+                //TODO: MAS: 5. Set Sequence Color Toggle to inactive when VisibilityMenuToggle is off
+                SequenceColorToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -2053,6 +2061,30 @@ public class UIFunctionalities : MonoBehaviour
             
             //Set color of toggle
             SetUIObjectColor(ScrollSearchToggleObject, White);
+        }
+    }
+
+    //TODO: MAS: 4. Create basic method to print message when the toggle is on, and Color the Toggle Image (Use SetUIObjectColor method).
+    public void ToggleSequenceColor(Toggle toggle)
+    {
+        if(toggle.isOn)
+        {
+            Debug.Log("ToggleSequenceColor: Sequence Color Toggle is On");
+
+            //Color Elements Based on Sequence
+            instantiateObjects.ApplyColorBasedOnSequence("0", instantiateObjects.SequenceMaterial, ref instantiateObjects.sequenceColorStorageDictionary);
+            
+            //Set color of toggle
+            SetUIObjectColor(SequenceColorToggleObject, Yellow);
+        }
+        else
+        {
+            Debug.Log("ToggleSequenceColor: Sequence Color Toggle is Off");
+
+            //Color elements based on other toggles.
+            
+            //Set color of toggle
+            SetUIObjectColor(SequenceColorToggleObject, White);
         }
     }
 

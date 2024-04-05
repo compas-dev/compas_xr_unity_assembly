@@ -7,6 +7,12 @@ namespace ApplicationModeControler
     {
         public VisulizationMode VisulizationMode { get; set; }
         public TouchMode TouchMode { get; set; }
+
+        public ModeControler()
+        {
+            VisulizationMode = VisulizationMode.BuiltUnbuilt;
+            TouchMode = TouchMode.None;
+        }
     }
 
     //Enum to addapt to various coloring modes
@@ -21,7 +27,7 @@ namespace ApplicationModeControler
     {
         None = 0,
         ElementEditSelection = 1,
-        // JointSelection = 2,
+
     }
 
 
