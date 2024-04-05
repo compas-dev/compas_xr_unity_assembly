@@ -526,7 +526,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Reset
+  m_text: Reset Scene
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -651,7 +651,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &664389695
 Transform:
   m_ObjectHideFlags: 0
@@ -757,7 +757,7 @@ GameObject:
   - component: {fileID: 1404344592}
   - component: {fileID: 1404344591}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: MyPrefabObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2172,10 +2172,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16876f30301bd8a468acea3ddc71f225, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UIFunctionalities: {fileID: 0}
-  objectOrientation: 0
-  TempDatabaseLastBuiltStep: 
-  CurrentPriority: 
   instantiateObjects: {fileID: 0}
 --- !u!4 &1449256865444929179
 Transform:
@@ -2655,84 +2651,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61eeb85533cede741b136c48d2e53f6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  instantiateObjects: {fileID: 0}
-  eventManager: {fileID: 0}
-  mqttTrajectoryManager: {fileID: 0}
-  trajectoryVisulizer: {fileID: 0}
-  rosConnectionManager: {fileID: 0}
-  scrollSearchManager: {fileID: 0}
-  ScrollSearchToggleObject: {fileID: 0}
-  CanvasObject: {fileID: 0}
-  ConstantUIPanelObjects: {fileID: 0}
-  NextGeometryButtonObject: {fileID: 0}
-  PreviousGeometryButtonObject: {fileID: 0}
-  PreviewGeometrySliderObject: {fileID: 0}
-  PreviewGeometrySlider: {fileID: 0}
-  IsBuiltPanelObjects: {fileID: 0}
-  IsBuiltButtonObject: {fileID: 0}
-  IsbuiltButtonImage: {fileID: 0}
-  IsbuiltPriorityLockedImage: {fileID: 0}
-  MessagesParent: {fileID: 0}
-  OnScreenErrorMessagePrefab: {fileID: 0}
-  OnScreenInfoMessagePrefab: {fileID: 0}
-  MQTTFailedToConnectMessageObject: {fileID: 0}
-  MQTTConnectionLostMessageObject: {fileID: 0}
-  ErrorFetchingDownloadUriMessageObject: {fileID: 0}
-  ErrorDownloadingObjectMessageObject: {fileID: 0}
-  TrajectoryReviewRequestMessageObject: {fileID: 0}
-  TrajectoryCancledMessage: {fileID: 0}
-  SearchItemNotFoundWarningMessageObject: {fileID: 0}
-  ActiveRobotIsNullWarningMessageObject: {fileID: 0}
-  TransactionLockActiveWarningMessageObject: {fileID: 0}
-  ActiveRobotCouldNotBeFoundWarningMessage: {fileID: 0}
-  ActiveRobotUpdatedFromPlannerMessageObject: {fileID: 0}
-  TrajectoryResponseIncorrectWarningMessageObject: {fileID: 0}
-  ConfigDoesNotMatchURDFStructureWarningMessageObject: {fileID: 0}
-  TrajectoryNullWarningMessageObject: {fileID: 0}
-  IDToggleObject: {fileID: 0}
-  RobotToggleObject: {fileID: 0}
-  ObjectLengthsToggleObject: {fileID: 0}
-  PriorityViewerToggleObject: {fileID: 0}
-  NextPriorityButtonObject: {fileID: 0}
-  PreviousPriorityButtonObject: {fileID: 0}
-  PriorityViewerBackground: {fileID: 0}
-  SelectedPriorityTextObject: {fileID: 0}
-  SelectedPriorityText: {fileID: 0}
-  CommunicationToggleObject: {fileID: 0}
-  LoadURDFRosConnectButtonObject: {fileID: 0}
-  URDFReadButtonObject: {fileID: 0}
-  MqttConnectionStatusObject: {fileID: 0}
-  MqttConnectButtonObject: {fileID: 0}
-  RosConnectButtonObject: {fileID: 0}
-  RosConnectionStatusObject: {fileID: 0}
-  ReviewTrajectoryObjects: {fileID: 0}
-  RequestTrajectoryButtonObject: {fileID: 0}
-  ApproveTrajectoryButtonObject: {fileID: 0}
-  RejectTrajectoryButtonObject: {fileID: 0}
-  TrajectoryReviewSliderObject: {fileID: 0}
-  TrajectoryReviewSlider: {fileID: 0}
-  ExecuteTrajectoryButtonObject: {fileID: 0}
-  RobotSelectionControlObjects: {fileID: 0}
-  RobotSelectionDropdownObject: {fileID: 0}
-  RobotSelectionDropdown: {fileID: 0}
-  SetActiveRobotToggleObject: {fileID: 0}
-  Elements: {fileID: 0}
-  QRMarkers: {fileID: 0}
-  UserObjects: {fileID: 0}
-  arCamera: {fileID: 0}
-  currentOperatingSystem: 0
-  CurrentStepTextObject: {fileID: 0}
-  EditorSelectedTextObject: {fileID: 0}
-  CurrentStepText: {fileID: 0}
-  LastBuiltIndexText: {fileID: 0}
-  CurrentPriorityText: {fileID: 0}
-  EditorSelectedText: {fileID: 0}
-  CurrentStep: 
-  SearchedElementStepID: 
-  SelectedPriority: None
-  IDTagIsOffset: 0
-  PriorityTagIsOffset: 0
   databaseManager: {fileID: 0}
+  instantiateObjects: {fileID: 0}
   RuntimeObjectStorage: {fileID: 0}
   ObjectMovementToggle: {fileID: 0}
 --- !u!33 &3519674823844002733
@@ -2783,9 +2703,8 @@ MonoBehaviour:
   mqttPassword: 
   mqttClientConnected: 0
   controllerName: MQTT Trajectory Controller
-  UIFunctionalities: {fileID: 0}
-  databaseManager: {fileID: 0}
-  trajectoryVisulizer: {fileID: 0}
+  topicToSubscribe: MyCustomTopicToSubscribeName
+  topicToPublish: MyCustomTopicToPublishName
 --- !u!114 &3556666583983150755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3183,27 +3102,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b972f3121498f24eb51bac94d1803e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  databaseManager: {fileID: 0}
-  UIFunctionalities: {fileID: 0}
-  scrollSearchManager: {fileID: 0}
-  BuiltMaterial: {fileID: 0}
-  UnbuiltMaterial: {fileID: 0}
-  HumanBuiltMaterial: {fileID: 0}
-  HumanUnbuiltMaterial: {fileID: 0}
-  RobotBuiltMaterial: {fileID: 0}
-  RobotUnbuiltMaterial: {fileID: 0}
-  LockedObjectMaterial: {fileID: 0}
-  SearchedObjectMaterial: {fileID: 0}
-  ActiveRobotMaterial: {fileID: 0}
-  InactiveRobotMaterial: {fileID: 0}
-  OutlineMaterial: {fileID: 0}
-  QRMarkers: {fileID: 0}
-  Elements: {fileID: 0}
-  ActiveUserObjects: {fileID: 0}
-  MyUserIndacator: {fileID: 0}
-  ObjectLengthsTags: {fileID: 0}
-  PriorityViewrLineObject: {fileID: 0}
-  PriorityViewerPointsObject: {fileID: 0}
   RuntimeObjectStorageObject: {fileID: 618236263}
   PrefabObject: {fileID: 1404344590}
 --- !u!114 &5565001587891749203

@@ -9,7 +9,6 @@ using Firebase.Database;
 
 public class CheckFirebase : MonoBehaviour
 {
-
     //Check connection to the firebase in the start method to determine if the connection is successful & established
     public void Start()
     {

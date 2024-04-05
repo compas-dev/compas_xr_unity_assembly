@@ -1,63 +1,61 @@
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using Firebase.Database;
 using Firebase.Extensions;
-using UnityEngine.EventSystems;
-using UnityEngine.Events;
 using JSON;
-using ApplicationInfo;
-using Firebase;
-using Firebase.Storage;
-using Firebase.Auth;
-using System.IO;
-using UnityEngine.Networking;
 using System.Linq;
-using System.Linq.Expressions;
-using Unity.VisualScripting;
 using Instantiate;
-using Google.MiniJSON;
-using Helpers;
-using UnityEngine.InputSystem;
 
+//Notes: The entirity of the file is structured as a class that inherits from MonoBehaviour (Unity's base class for scripts)
+//Notes: Script is used for managing databaseRefrences, pushing, pulling, and Storing of data from the database.
 
 public class DatabaseManager : MonoBehaviour
 {
+    //Notes: Class Member Variables, used to store data and references ex. public DatabaseReference dbreferenceMyFramesData;
+    //Notes: The public keyword is named an access modifier, it determines how Member variables, methods, and classes can be accessed from other classes.
 
-    //MAS Class Modifiers
-
-    // Firebase database references
-    //TODO: 1. Set Database Reference
+    //TODO: MAS: Set Database Reference
     public DatabaseReference dbreferenceMyFramesData;
 
-    //TODO: Create Dictionary to store frames.
+    //TODO: MAS: Create Dictionary to store frames.
     public Dictionary<string, Frame> MyFramesDataDict { get; private set; } = new Dictionary<string, Frame>();
 
-    //TODO: Store the InstantiateObjects script
+    //TODO: MAS: Store the InstantiateObjects script
     public InstantiateObjects instantiateObjects;
 
+    //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
+    /*
+        Notes: Awake is called when the script instance is being loaded. This occurs before any Start methods are called.
+        Notes: Start is called on the frame when a script is enabled just before any of the Update methods are called the first time.
+        Notes: Update is called every frame, if the MonoBehaviour is enabled.
+        Notes: OnDestroy is called when the MonoBehaviour will be destroyed.
+        Notes: OnEnable is called when the object becomes enabled and active.
+    */
     void Awake()
     {
-        //TODO: 1. Set Database Reference
-        dbreferenceMyFramesData = FirebaseDatabase.DefaultInstance.GetReference("MyFramesData");
-
-        //TODO: Find Other Scripts
-        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
-
-        if (instantiateObjects == null)
-        {
-            Debug.LogError("InstantiateObjects script not found");
-        }
+        //TODO: MAS: Call OnAwakeInitilization Method
+        OnAwakeInitilization();
     }
 
-/////////////////////// FETCH AND PUSH DATA /////////////////////////////////
+    ////////////////// General Structureing and Organization ////////////////////
 
-    //MAS METHODS
+    //TODO:  MAS: Write a method that will run on awake to do file set up.
+    public void OnAwakeInitilization()
+    {
+        //TODO: MAS: Set Database Reference
+        dbreferenceMyFramesData = FirebaseDatabase.DefaultInstance.GetReference("MyFramesData");
 
-    //TODO: Write a method to fetch data from the Firebase Realtime Database
+        //TODO: MAS: Find Other Scripts
+        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+
+    }
+
+    /////////////////////// FETCH AND PUSH DATA /////////////////////////////////
+
+    //TODO: MAS: Write a method to fetch data from the Firebase Realtime Database
     public async Task FetchRealTimeDatabaseData(DatabaseReference dbreference)
     {
         //Fetch data task initiation
@@ -84,7 +82,7 @@ public class DatabaseManager : MonoBehaviour
         });
     }
 
-    //Example of a custom action for more flexibiliiy in what to do with the data.
+    //Notes: Example of a custom action for more flexibiliiy in what to do with the data.
     public async Task FetchRealTimeDatabaseDataCustomAction(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
@@ -106,7 +104,7 @@ public class DatabaseManager : MonoBehaviour
         });
     }
 
-    //TODO: Write a method to push deserilize from the database.
+    //TODO:  MAS: Write a method to push deserilize from the database.
     private void DeserilizeFrameData(DataSnapshot snapshot, Dictionary<string, Frame> frameDict)
     {
         //Clear current Dictionary if it contains information
@@ -134,6 +132,10 @@ public class DatabaseManager : MonoBehaviour
 
         Debug.Log("DeserilizeFrameData: Number of Frames Stored In the Dictionary = " + frameDict.Count);
     }
+
+    /////////////////////// PROCESS DATA /////////////////////////////////
+
+    //TODO: MAS: Write a custom method that will deserilize the frame data from the snapshot.
     public Frame FrameDeserilizer(object frameData) //TODO: JOSEPH: MAYBE USE PARSE METHOD INSTEAD OF THIS JUST TO PLAY IT SAFE.
     {
         //Cast jsondata to a dictionary
@@ -161,7 +163,7 @@ public class DatabaseManager : MonoBehaviour
         return frame;
     }
 
-    //TODO: Write a method to push data to the Firebase Realtime Database
+    //TODO: MAS: Write a method to push data to the Firebase Realtime Database
     public void PushStringData(DatabaseReference db_ref, string data)
     {
         db_ref.SetRawJsonValueAsync(data);

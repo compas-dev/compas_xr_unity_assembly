@@ -1,73 +1,24 @@
-using System;
-using System.IO;
-using System.Collections;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using Newtonsoft.Json;
-using Firebase.Database;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
-using UnityEngine.EventSystems;
-using ApplicationInfo;
 using JSON;
 using Helpers;
-using Dummiesman;
-using TMPro;
-using ApplicationModeControler;
-using UnityEngine.Events;
-using UnityEngine.Analytics;
-using UnityEngine.InputSystem;
-using System.Xml.Linq;
 
+//Notes: The entirity of the file is structured as a class that inherits from MonoBehaviour (Unity's base class for scripts)
+//Notes: Script is used for instantiating and controling Objects, position, rotation, and color.
 
-//scripts to initiate all geometries in the scene
 namespace Instantiate
 {
     public class InstantiateObjects : MonoBehaviour
     {
-        
-        // //Other Sript Objects
-        // public DatabaseManager databaseManager;
-        // public UIFunctionalities UIFunctionalities;
-        // public ScrollSearchManager scrollSearchManager;
+        //Notes: Class Member Variables, used to store data and references ex. public DatabaseReference dbreferenceMyFramesData;
+        //Notes: The public keyword is named an access modifier, it determines how Member variables, methods, and classes can be accessed from other classes.
 
-        //Object Materials
-        // public Material BuiltMaterial;
-        // public Material UnbuiltMaterial;
-        // public Material HumanBuiltMaterial;
-        // public Material HumanUnbuiltMaterial;
-        // public Material RobotBuiltMaterial;
-        // public Material RobotUnbuiltMaterial;
-        // public Material LockedObjectMaterial;
-        // public Material SearchedObjectMaterial;
-        // public Material ActiveRobotMaterial;
-        // public Material InactiveRobotMaterial;
-        // public Material OutlineMaterial;
-
-        // //Parent Objects
-        // public GameObject QRMarkers; 
-        // public GameObject Elements;
-        // public GameObject ActiveUserObjects;
-
-        //Events
-        // public delegate void InitialElementsPlaced(object source, EventArgs e);
-        // public event InitialElementsPlaced PlacedInitialElements;
-
-        // //Make Initial Visulization controler
-        // public ModeControler visulizationController = new ModeControler();
-
-        // //Private in script use objects
-        // private GameObject IdxImage;
-        // private GameObject PriorityImage;
-        // public GameObject MyUserIndacator;
-        // private GameObject OtherUserIndacator;
-        // public GameObject ObjectLengthsTags;
-        // public GameObject PriorityViewrLineObject;
-        // public GameObject PriorityViewerPointsObject;
-
-        //Struct for storing Rotation Values
+        //Notes: Given: Struct for storing Rotation Values...
+        /*
+            - A struct (short for "structure") is a composite data type in programming that groups together variables of different data types. 
+            - It allows for the creation of custom data structures encapsulating related data. 
+            - Structs are typically lightweight and efficient, commonly used for small, self-contained data representations.
+        */
         public struct Rotation
         {
             public Vector3 x;
@@ -75,21 +26,42 @@ namespace Instantiate
             public Vector3 z;
         }
 
-        // public void Awake()
-        // {
-        //     //Initilization Method for finding objects and materials
-        //     OnAwakeInitilization();
-        // }
-
-        //MAS Modifiers
+        //TODO: MAS: Refrence to parent Object named "RuntimeObjectStorage"    
         public GameObject RuntimeObjectStorageObject;
+
+        //TODO: MAS: Refrence to Prefab Object named "MyPrefabObject"
         public GameObject PrefabObject;
+
+        //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
+        /*
+            Notes: Awake is called when the script instance is being loaded. This occurs before any Start methods are called.
+            Notes: Start is called on the frame when a script is enabled just before any of the Update methods are called the first time.
+            Notes: Update is called every frame, if the MonoBehaviour is enabled.
+            Notes: OnDestroy is called when the MonoBehaviour will be destroyed.
+            Notes: OnEnable is called when the object becomes enabled and active.
+        */
+        void Awake()
+        {
+            //TODO: MAS: Call OnAwakeInitilization Method
+            OnAwakeInitilization();
+        }
         
-    /////////////////////////////// INSTANTIATE OBJECTS //////////////////////////////////////////
+    /////////////////////////////// Initilization and Set up Actions //////////////////////////////
     
-        //MAS Methods
+        //TODO: MAS: Write a method to find Initial Objects on Awake.
+        public void OnAwakeInitilization()
+        {
+            //TODO: MAS: Find the runtime object storage object
+            RuntimeObjectStorageObject = GameObject.Find("RuntimeObjectStorage");
+
+            //TODO: MAS: Find the prefab object
+            PrefabObject = GameObject.Find("MyPrefabObject");
+
+        }
+
+    /////////////////////////////// INSTANTIATE OBJECTS //////////////////////////////////////////
         
-        //TODO: Write a method to iterate through the dictionary and place an element for each one
+        //TODO: MAS: Write a method to iterate through the dictionary and place an element for each one
         public void PlacePrefabsfromFrameDict(Dictionary<string, Frame> MyFrameDictionary, GameObject prefabObject, GameObject ParentObject)
         {
             //Check if the frame dictionary is null
@@ -117,10 +89,17 @@ namespace Instantiate
             }
         }
 
-        //TODO: Write a method to place one element from the provided frame information.
+        //TODO: MAS: Write a method to place one element from the provided frame information.
         public void InstantiatePrefabFromFrameData(string Key, Frame frame, GameObject prefabObject, GameObject ParentObject)
         {
             Debug.Log($"InstantiatePrefabFromFrameData: Instantiating prefab at {Key}");
+
+            //Checking if any of the objects are null
+            if(prefabObject == null || ParentObject == null || frame == null || Key == null)
+            {
+                Debug.LogError("InstantiatePrefabFromFrameData: One of your inputs is null");
+                return;
+            }
 
             //get position
             Vector3 positionData = getPosition(frame.point);
@@ -141,7 +120,7 @@ namespace Instantiate
             elementPrefab.name = Key;
         }
     
-        //TODO: Write a method that will loop through all the children of the runtimeObject storage and move them by a vector
+        //TODO: MAS: Write a method that will loop through all the children of the runtimeObject storage and move them by a vector
         public void MoveAllChildrenByVector(GameObject parentObject)
         {
             if (parentObject.transform.childCount > 0)
@@ -153,7 +132,7 @@ namespace Instantiate
             }
         }
 
-        //TODO: Write a method that will destroy all children inside of a parent object
+        //TODO: MAS: Write a method that will destroy all children inside of a parent object
         public void DestroyAllChildren(GameObject parentObject)
         {
             if (parentObject.transform.childCount > 0)
@@ -165,14 +144,14 @@ namespace Instantiate
             }
         }
         
-        //TODO: Write a method that will move an object by a vector
+        //TODO: MAS: Write a method that will move an object by a vector
         public void MoveObjectbyVector(GameObject gameObject, Vector3 vectorToMoveBy, float distanceToMove)
         {
             Vector3 newPosition = gameObject.transform.position + vectorToMoveBy * distanceToMove;
             gameObject.transform.position = newPosition;
         }
 
-        //TODO: Write a method that will color an object by an input material
+        //TODO: MAS: Write a method that will color an object by an input material
         public void ColorObjectbyInputMaterial(GameObject gamobj, Material material)
         {
             //Get Object Renderer
@@ -184,7 +163,9 @@ namespace Instantiate
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
 
-        //Methods for position and rotation conversions from rhino to unity
+        //Notes: Given: All methods in this section are used to convert position and rotation data from Unity to Rhino and vice versa...
+
+        //Notes: Methods for position and rotation conversions from rhino to unity
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
             //Set Unity Rotation
@@ -257,7 +238,7 @@ namespace Instantiate
             return rotation;
         }
 
-        //Methods for obj imort correction.
+        //Notes: Methods for obj imort correction.
         public Rotation ZRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3
@@ -301,7 +282,7 @@ namespace Instantiate
             return ZXrotation;
         }
 
-        //Methods for position and rotation conversions from unity to rhino //TODO: I think this needs local position and some sort of local rotation. To accomodate for the Localizatoin
+        //Notes: Methods for position and rotation conversions from unity to rhino
         public Dictionary<string, Frame> ConvertParentChildrenToRhinoFrameData(GameObject parentObject, Dictionary<string, Frame> frameDict)
         {
             //Create a new dictionary to store the rhino frame data

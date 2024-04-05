@@ -1,63 +1,66 @@
-using System.Collections;
 using System.Collections.Generic;
-using Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 using Instantiate;
 using JSON;
 using Newtonsoft.Json;
-using System;
-using System.Linq;
-using TMPro;
-using System.Xml.Linq;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.EventSystems;
-using UnityEngine.XR.ARSubsystems;
-using System.Globalization;
-using ApplicationModeControler;
-using MQTTDataCompasXR;
-using Unity.IO.LowLevel.Unsafe;
-using Unity.VisualScripting;
-using UnityEngine.Events;
-using Google.MiniJSON;
 
+//Notes: The entirity of the file is structured as a class that inherits from MonoBehaviour (Unity's base class for scripts)
+//Notes: Script is used for connecting onScreen events User Interaction with results or actions.
 
 public class UIFunctionalities : MonoBehaviour
 {
 
-    //MAS INTRO ITEMS
+    //Notes: Class Member Variables, used to store data and references ex. public DatabaseReference dbreferenceMyFramesData;
+    //Notes: The public keyword is named an access modifier, it determines how Member variables, methods, and classes can be accessed from other classes.
 
-    // Other Scripts
-    public DatabaseManager databaseManager; //Example 1 of finding an object in the scene (searching)
+    //TODO: MAS: Create a reference to the DatabaseManager script
+    public DatabaseManager databaseManager; //Notes: Example 1 of finding an object in the scene (searching)
+
+    //TODO: MAS: Create a reference to the InstantiateObjects script
     public InstantiateObjects instantiateObjects;
 
-    public GameObject RuntimeObjectStorage; //Example 2 of linking an object in the scene to the script (via editor)
+    //TODO: MAS: Create a reference to the GameObject that will store the runtime objects
+    public GameObject RuntimeObjectStorage; //Notes: Example 2 of linking an object in the scene to the script (via editor)
+
+    //TODO: MAS: Create a reference to the Toggle Component on the Canvas
     public Toggle ObjectMovementToggle;
 
-    // UI Objects
-    // public Button FetchDataButton; // ONLY If not linking VIA UNITY INSPECTOR
-    // public Button PublishDataButton; // ONLY If not linking VIA UNITY INSPECTOR
-
-    
+    //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
+    /*
+        Notes: Awake is called when the script instance is being loaded. This occurs before any Start methods are called.
+        Notes: Start is called on the frame when a script is enabled just before any of the Update methods are called the first time.
+        Notes: Update is called every frame, if the MonoBehaviour is enabled.
+        Notes: OnDestroy is called when the MonoBehaviour will be destroyed.
+        Notes: OnEnable is called when the object becomes enabled and active.
+    */
     void Start()
     {
-        //TODO: MASIntro: 0. Find Other Script References 
-        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>(); //Example 1 of finding and setting a refrence to another object in the scene (searching)
-        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
-
-        //TODO: On Start Find the toggle component on the canvas
-        ObjectMovementToggle = GameObject.Find("ObjectMovementToggle").GetComponent<Toggle>(); //Example of finding a specific component on an object
+        //TODO: MAS: Call the OnStartInitilization Method
+        OnStartInitilization();
     }
-
     void Update()
     {
-        //TODO: Call the movement toggle in the update method
+        //TODO: MAS: Call the movement toggle in the update method
         ToggleObjectMovement(ObjectMovementToggle);
     }
 
-    /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
+    /////////////////////////////// Initilization and Set up Actions //////////////////////////////
+
+    private void OnStartInitilization()
+    {
+        //TODO: MAS: Find Other Script References 
+        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>(); //Notes: Example 1 of finding and setting a refrence to another object in the scene (searching)
+        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+
+        //TODO: MAS: On Start Find the toggle component on the canvas
+        ObjectMovementToggle = GameObject.Find("ObjectMovementToggle").GetComponent<Toggle>(); //Notes: Example of finding a specific component on an object
+    }
+
+    /////////////////////////////////// UI Button and Toggle Actions /////////////////////////////
 
     //MAS METHODS
+    //TODO: MAS: Write a method that we can link to a button for publishing to the firebase
     public void FetchDataButtonMethod()
     {
         Debug.Log("FetchDataButtonMethod: Fetch Data Button Pressed");
@@ -67,7 +70,7 @@ public class UIFunctionalities : MonoBehaviour
 
     }
     
-    //TODO: Write a method that we can link to a button for publishing to the firebase
+    //TODO: MAS: Write a method that we can link to a button for publishing to the firebase
     public void PublishDataButtonMethod()
     {
         //Utilize instantiate Objects method to create a rhino compatible dictionary for objects
@@ -77,7 +80,7 @@ public class UIFunctionalities : MonoBehaviour
         databaseManager.PushStringData(databaseManager.dbreferenceMyFramesData, JsonConvert.SerializeObject(temporaryFrameDict));
     }
 
-    //TODO: Write a method that will reset everything (destroy game objects, and clear the dictionary)
+    //TODO: MAS: Write a method that will reset everything (destroy game objects, and clear the dictionary)
     public void ResetDataButtonMethod()
     {
         Debug.Log("ResetDataButtonMethod: Reset Data Button Pressed");
@@ -89,7 +92,7 @@ public class UIFunctionalities : MonoBehaviour
         instantiateObjects.DestroyAllChildren(instantiateObjects.RuntimeObjectStorageObject);
     }
 
-    //TODO: Write a method that will toggle on and off movement for the objects (tip: design it for the update method)
+    //TODO: MAS: Write a method that will toggle on and off movement for the objects (tip: design it for the update method)
     public void ToggleObjectMovement(Toggle toggle)
     {
         if(toggle.isOn)
