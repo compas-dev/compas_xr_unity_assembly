@@ -488,7 +488,7 @@ public class UIFunctionalities : MonoBehaviour
                 ScrollSearchToggleObject.SetActive(false);
 
                 //TODO: MAS: 5. Set Sequence Color Toggle to inactive when VisibilityMenuToggle is off
-                SequenceColorToggleObject.SetActive(true);
+                SequenceColorToggleObject.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -2065,14 +2065,14 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.Log("ToggleSequenceColor: Sequence Color Toggle is On");
 
-            //TODO: MAS: 7. Update visuilzation mode to SequenceColor
-            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.SequenceColor;
-
             //TODO: MAS: 8. Turn off the actor toggle if it is on
             if(PreviewActorToggleObject.GetComponent<Toggle>().isOn)
             {
                 PreviewActorToggleObject.GetComponent<Toggle>().isOn = false;
             }
+
+            //TODO: MAS: 7. Update visuilzation mode to SequenceColor
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.SequenceColor;
 
             //Color Elements Based on Sequence
             instantiateObjects.ApplyColorBasedOnSequence(databaseManager.BuildingPlanDataItem.LastBuiltIndex, instantiateObjects.SequenceMaterial, ref instantiateObjects.sequenceMaterialStorageDictionary);
