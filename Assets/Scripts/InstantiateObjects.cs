@@ -26,11 +26,11 @@ namespace Instantiate
             public Vector3 z;
         }
 
-        //TODO: MAS: Refrence to parent Object named "RuntimeObjectStorage"    
-        public GameObject RuntimeObjectStorageObject;
+        //TODO: MAS: 4. To store parent object that contains our children    
+        //....
 
-        //TODO: MAS: Refrence to Prefab Object named "MyPrefabObject"
-        public GameObject PrefabObject;
+        //TODO: MAS: 4. Create Reference to my prefab object
+        //....
 
         //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
         /*
@@ -42,54 +42,66 @@ namespace Instantiate
         */
         void Awake()
         {
-            //TODO: MAS: Call OnAwakeInitilization Method
+            //Method called as a wrapper for all conditions that have to happen in the awake.
             OnAwakeInitilization();
         }
         
     /////////////////////////////// Initilization and Set up Actions //////////////////////////////
     
-        //TODO: MAS: Write a method to find Initial Objects on Awake.
         public void OnAwakeInitilization()
         {
-            //TODO: MAS: Find the runtime object storage object
-            RuntimeObjectStorageObject = GameObject.Find("RuntimeObjectStorage");
+            //TODO: MAS: 4. Find the runtime object storage object
+            //....
 
-            //TODO: MAS: Find the prefab object
-            PrefabObject = GameObject.Find("MyPrefabObject");
+            //TODO: MAS: 4. Find the prefab object
+            //...
 
         }
 
-    /////////////////////////////// INSTANTIATE OBJECTS //////////////////////////////////////////
+    /////////////////////////////// Multiple Object Methods ///////////////////////////////////////
         
-        //TODO: MAS: Write a method to iterate through the dictionary and place an element for each one
+        //TODO: MAS: 5. Write logic to iterate through the dictionary and place an element for each object in our dictionary.
         public void PlacePrefabsfromFrameDict(Dictionary<string, Frame> MyFrameDictionary, GameObject prefabObject, GameObject ParentObject)
         {
             //Check if the frame dictionary is null
             if (MyFrameDictionary != null)
             {
-                Debug.Log($"PlaceElementsFrameDict: Number of key-value pairs in the dictionary = {MyFrameDictionary.Count}");
                 
-                //loop through the dictionary and print out the key
-                foreach (KeyValuePair<string, Frame> entry in MyFrameDictionary)
-                {
-                    if (entry.Value != null)
-                    {
-                        //Call method to place the prefab from the frame data
-                        InstantiatePrefabFromFrameData(entry.Key, entry.Value, prefabObject, RuntimeObjectStorageObject);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("PlacePrefabfromFrameDict: The value is null");
-                    }
-                }
+                //loop through the dictionary and place the prefab
+
+                    //Check if the value is != null.
+
             }
             else
             {
-                Debug.LogWarning("PlacePrefabfromFrameDict: The dictionary is null");
+                //GIVE ME A WARNING.
+            }
+        }
+        public void MoveAllChildrenByVector(GameObject parentObject)
+        {
+            //Write an if condition to check if the parent object has children
+            if (parentObject.transform.childCount > 0)
+            {
+                //Write A for loop to iterate through all of the children in the parent object.
+                foreach (Transform child in parentObject.transform)
+                {
+                    //Call the method to move the object by a vector.
+                    MoveObjectbyVector(child.gameObject, child.transform.up, 0.001f);
+                }
             }
         }
 
-        //TODO: MAS: Write a method to place one element from the provided frame information.
+        //TODO: MAS: 7. Write logic for a method that will destroy all children inside of a parent object
+        public void DestroyAllChildren(GameObject parentObject)
+        {
+            //Write an if condition to check if the parent object has children
+
+                //Write A for loop to iterate through all of the children in the parent object.
+
+                    //call a method to destroy the game object (Hint: use the Destroy method from Unity's API)
+        }
+
+    /////////////////////////////// Single GameObject Methods ////////////////////////////////////////
         public void InstantiatePrefabFromFrameData(string Key, Frame frame, GameObject prefabObject, GameObject ParentObject)
         {
             Debug.Log($"InstantiatePrefabFromFrameData: Instantiating prefab at {Key}");
@@ -118,47 +130,20 @@ namespace Instantiate
             
             //Name the object afte the step number... might be better to get the step_id in the building plan from Chen.
             elementPrefab.name = Key;
-        }
-    
-        //TODO: MAS: Write a method that will loop through all the children of the runtimeObject storage and move them by a vector
-        public void MoveAllChildrenByVector(GameObject parentObject)
-        {
-            if (parentObject.transform.childCount > 0)
-            {
-                foreach (Transform child in parentObject.transform)
-                {
-                    MoveObjectbyVector(child.gameObject, child.transform.up, 0.001f);
-                }
-            }
-        }
-
-        //TODO: MAS: Write a method that will destroy all children inside of a parent object
-        public void DestroyAllChildren(GameObject parentObject)
-        {
-            if (parentObject.transform.childCount > 0)
-            {
-                foreach (Transform child in parentObject.transform)
-                {
-                    Destroy(child.gameObject);
-                }
-            }
-        }
-        
-        //TODO: MAS: Write a method that will move an object by a vector
+        }          
         public void MoveObjectbyVector(GameObject gameObject, Vector3 vectorToMoveBy, float distanceToMove)
         {
             Vector3 newPosition = gameObject.transform.position + vectorToMoveBy * distanceToMove;
             gameObject.transform.position = newPosition;
         }
 
-        //TODO: MAS: Write a method that will color an object by an input material
+        //TODO: MAS: (IF We Have time) Write a method that will color an object by an input material
         public void ColorObjectbyInputMaterial(GameObject gamobj, Material material)
         {
-            //Get Object Renderer
-            Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
+            //Get the MeshRenderer component from the game object
                       
-            //Color object by input material
-            m_renderer.material = material; 
+            //Assign the MeshRenderer the material
+
         }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////

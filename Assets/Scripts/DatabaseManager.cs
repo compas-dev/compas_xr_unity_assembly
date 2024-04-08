@@ -17,14 +17,14 @@ public class DatabaseManager : MonoBehaviour
     //Notes: Class Member Variables, used to store data and references ex. public DatabaseReference dbreferenceMyFramesData;
     //Notes: The public keyword is named an access modifier, it determines how Member variables, methods, and classes can be accessed from other classes.
 
-    //TODO: MAS: Set Database Reference
-    public DatabaseReference dbreferenceMyFramesData;
+    //TODO: MAS: 1. Set Class Member Variables to store the database reference...
+    //....
 
-    //TODO: MAS: Create Dictionary to store frames.
-    public Dictionary<string, Frame> MyFramesDataDict { get; private set; } = new Dictionary<string, Frame>();
+    //TODO: MAS: 3. Set Class Member Variables to store the dictionary...
+    //....
 
-    //TODO: MAS: Store the InstantiateObjects script
-    public InstantiateObjects instantiateObjects;
+    //TODO: MAS: Create Class Member Varible to store the instantiate objects script
+    //...
 
     //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
     /*
@@ -45,17 +45,18 @@ public class DatabaseManager : MonoBehaviour
     //TODO:  MAS: Write a method that will run on awake to do file set up.
     public void OnAwakeInitilization()
     {
-        //TODO: MAS: Set Database Reference
-        dbreferenceMyFramesData = FirebaseDatabase.DefaultInstance.GetReference("MyFramesData");
+        //TODO: MAS: 1. Set Database Reference
+        //...
 
-        //TODO: MAS: Find Other Scripts
-        instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+        //TODO: MAS: 5. Find Other Scripts
+        //...
 
     }
 
     /////////////////////// FETCH AND PUSH DATA /////////////////////////////////
 
-    //TODO: MAS: Write a method to fetch data from the Firebase Realtime Database
+    //Notes: Method to fetch data from the Firebase Realtime Database
+    //TODO: MAS: 3. Deserilize the frame data from the snapshot
     public async Task FetchRealTimeDatabaseData(DatabaseReference dbreference)
     {
         //Fetch data task initiation
@@ -73,38 +74,15 @@ public class DatabaseManager : MonoBehaviour
                 //Get the data snapshot from the DataSnapshot
                 DataSnapshot snapshot = task.Result;
                 
-                Debug.Log("Data Fetched from Firebase: " + JsonConvert.SerializeObject(snapshot.GetRawJsonValue()));
-                
-                //Deserilize the frame data from the snapshot
-                DeserilizeFrameData(snapshot, MyFramesDataDict);
+                //Print Out the snapshot
+
+                //.... Use Internal Method
 
             }
         });
     }
 
-    //Notes: Example of a custom action for more flexibiliiy in what to do with the data.
-    public async Task FetchRealTimeDatabaseDataCustomAction(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
-    {
-        await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
-        {
-            if (task.IsFaulted)
-            {
-                Debug.LogError("Error fetching data from Firebase");
-                return;
-            }
-
-            if (task.IsCompleted)
-            {
-                DataSnapshot snapshot = task.Result;
-                if (customAction != null)
-                {
-                    customAction(snapshot);
-                }
-            }
-        });
-    }
-
-    //TODO:  MAS: Write a method to push deserilize from the database.
+    //Notes: A method for deserilizing data from the database.
     private void DeserilizeFrameData(DataSnapshot snapshot, Dictionary<string, Frame> frameDict)
     {
         //Clear current Dictionary if it contains information
@@ -127,33 +105,27 @@ public class DatabaseManager : MonoBehaviour
             frameDict[key] = frame; 
         }
         
-        //Call the instantiation method from the InstantiateObjects script
-        instantiateObjects.PlacePrefabsfromFrameDict(frameDict, instantiateObjects.PrefabObject, instantiateObjects.RuntimeObjectStorageObject);
+        //TODO: MAS: 5. Call the instantiation method from the InstantiateObjects script
+        //......
 
         Debug.Log("DeserilizeFrameData: Number of Frames Stored In the Dictionary = " + frameDict.Count);
     }
 
     /////////////////////// PROCESS DATA /////////////////////////////////
 
-    //TODO: MAS: Write a custom method that will deserilize the frame data from the snapshot.
-    public Frame FrameDeserilizer(object frameData) //TODO: JOSEPH: MAYBE USE PARSE METHOD INSTEAD OF THIS JUST TO PLAY IT SAFE.
+    //Method that will deserilize the frame data from the snapshot.
+    public Frame FrameDeserilizer(object frameData)
     {
         //Cast jsondata to a dictionary
         Dictionary<string, object> frameDataDict = frameData as Dictionary<string, object>;
 
         //Create a new instance of the class
-        Frame frame = new Frame();
+        Frame frame = Frame.Parse(frameDataDict);
 
-        //Cast values to list Object so they can be converted to float arrays
-        List<object> pointslist = frameDataDict["point"] as List<object>;
-        List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
-        List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
-        
-        if (pointslist != null && xaxislist != null && yaxislist != null)
+        //Check if the frame is not null
+        if (frame != null)
         {
-            frame.point = pointslist.Select(Convert.ToSingle).ToArray();
-            frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-            frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+            Debug.Log("FrameDeserilizer: Frame Deserilized");
         }
         else
         {
@@ -163,7 +135,7 @@ public class DatabaseManager : MonoBehaviour
         return frame;
     }
 
-    //TODO: MAS: Write a method to push data to the Firebase Realtime Database
+    //Method to push string data to the database.
     public void PushStringData(DatabaseReference db_ref, string data)
     {
         db_ref.SetRawJsonValueAsync(data);
