@@ -27,10 +27,10 @@ namespace Instantiate
         }
 
         //TODO: MAS: 4. To store parent object that contains our children    
-        //....
+        public GameObject MyRuntimeParentStorageObject;
 
         //TODO: MAS: 4. Create Reference to my prefab object
-        //....
+        public GameObject MyPrefabObject;
 
         //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
         /*
@@ -51,11 +51,19 @@ namespace Instantiate
         public void OnAwakeInitilization()
         {
             //TODO: MAS: 4. Find the runtime object storage object
-            //....
+            MyRuntimeParentStorageObject = GameObject.Find("MyRunTimeObjectStorage");
 
             //TODO: MAS: 4. Find the prefab object
-            //...
+            MyPrefabObject = GameObject.Find("MyPrefabObject");
 
+            if(MyRuntimeParentStorageObject != null || MyPrefabObject != null)
+            {
+                Debug.Log("Objects are not null");
+            }
+            else
+            {
+                Debug.LogWarning("An Object is null");
+            }
         }
 
     /////////////////////////////// Multiple Object Methods ///////////////////////////////////////
@@ -68,13 +76,17 @@ namespace Instantiate
             {
                 
                 //loop through the dictionary and place the prefab
-
-                    //Check if the value is != null.
+                foreach(KeyValuePair<string, Frame> frame in MyFrameDictionary)
+                {
+                    //Instantiate prefab object
+                    InstantiatePrefabFromFrameData(frame.Key, frame.Value, prefabObject, ParentObject);
+                }
 
             }
             else
             {
                 //GIVE ME A WARNING.
+                Debug.LogWarning("My Frame Dictionary is null");
             }
         }
         public void MoveAllChildrenByVector(GameObject parentObject)

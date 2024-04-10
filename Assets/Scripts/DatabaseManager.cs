@@ -17,14 +17,14 @@ public class DatabaseManager : MonoBehaviour
     //Notes: Class Member Variables, used to store data and references ex. public DatabaseReference dbreferenceMyFramesData;
     //Notes: The public keyword is named an access modifier, it determines how Member variables, methods, and classes can be accessed from other classes.
 
-    //TODO: MAS: 1. Set Class Member Variables to store the database reference...
-    //....
+    // MAS: 1. Set Class Member Variables to store the database reference...
+    public DatabaseReference MyFramesReference;
 
     //TODO: MAS: 3. Set Class Member Variables to store the dictionary...
-    //....
+    public Dictionary<string, Frame> MyFramesDictionary = new Dictionary<string, Frame>();
 
     //TODO: MAS: Create Class Member Varible to store the instantiate objects script
-    //...
+    public InstantiateObjects instantiateObjects;
 
     //Notes: Built in Unity methods (methods that come from the inheritance of the MonoBehaviour class)
     /*
@@ -45,11 +45,11 @@ public class DatabaseManager : MonoBehaviour
     //TODO:  MAS: Write a method that will run on awake to do file set up.
     public void OnAwakeInitilization()
     {
-        //TODO: MAS: 1. Set Database Reference
-        //...
+        // MAS: 1. Set Database Reference
+        MyFramesReference = FirebaseDatabase.DefaultInstance.GetReference("MyFramesData");
 
         //TODO: MAS: 5. Find Other Scripts
-        //...
+        instantiateObjects = GameObject.Find("InstantiateObjects").GetComponent<InstantiateObjects>();
 
     }
 
@@ -75,9 +75,10 @@ public class DatabaseManager : MonoBehaviour
                 DataSnapshot snapshot = task.Result;
                 
                 //Print Out the snapshot
+                Debug.Log($"My Snapshot: {snapshot}");
 
-                //.... Use Internal Method
-
+                //Use the Deserlize Frame Method
+                DeserilizeFrameData(snapshot, MyFramesDictionary);
             }
         });
     }
@@ -86,7 +87,10 @@ public class DatabaseManager : MonoBehaviour
     private void DeserilizeFrameData(DataSnapshot snapshot, Dictionary<string, Frame> frameDict)
     {
         //Clear current Dictionary if it contains information
-        frameDict.Clear();
+        if(frameDict.Count > 0)
+        {
+            frameDict.Clear();
+        }
 
         //Desearialize individual data items from the snapshots
         foreach (DataSnapshot childSnapshot in snapshot.Children)
@@ -103,10 +107,12 @@ public class DatabaseManager : MonoBehaviour
             
             //Add Frame to the dictionary
             frameDict[key] = frame; 
+
+            Debug.Log($"DeserilizeFrameData: Frame {key} added to My Frames Dictionary");
         }
         
         //TODO: MAS: 5. Call the instantiation method from the InstantiateObjects script
-        //......
+        instantiateObjects.PlacePrefabsfromFrameDict(frameDict, instantiateObjects.MyPrefabObject, instantiateObjects.MyRuntimeParentStorageObject);
 
         Debug.Log("DeserilizeFrameData: Number of Frames Stored In the Dictionary = " + frameDict.Count);
     }

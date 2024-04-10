@@ -15,12 +15,12 @@ public class UIFunctionalities : MonoBehaviour
     //Notes: Class Member Variables, used to store data and references ex. public DatabaseReference dbreferenceMyFramesData;
     //Notes: The public keyword is named an access modifier, it determines how Member variables, methods, and classes can be accessed from other classes.
 
-    //TODO: MAS: Create references to store other scripts
-    //......
+    //MAS: Create references to store other scripts
+    public DatabaseManager databaseManager;
 
 
     //TODO: MAS: 2. Create a reference to store the Fetch Data button object
-    //......
+    public GameObject fetchDataButtonObject;
 
     //TODO: MAS: 6. Create a reference to store the Move Objects Toggle object
     //......
@@ -54,20 +54,20 @@ public class UIFunctionalities : MonoBehaviour
 
     private void OnStartInitilization()
     {
-        //TODO: MAS: Find Other Script References....
-        //...
+        //MAS: Find Other Script References....
+        databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
 
 
-        //TODO: MAS: 2.Fetch Data Button Set up....
+        //MAS: 2.Fetch Data Button Set up....
 
         //Find the game object that the button is associated with in the scene
-        //....
+        fetchDataButtonObject = GameObject.Find("FetchDataButton");
 
         //Get the button component from the game object
-        //....
+        Button fetchDataButton = fetchDataButtonObject.GetComponent<Button>();
         
         //Add an onClick event listner to the button
-        //....
+        fetchDataButton.onClick.AddListener(FetchDataButtonMethod);
 
 
 
@@ -107,13 +107,13 @@ public class UIFunctionalities : MonoBehaviour
 
     /////////////////////////////////// UI Button and Toggle Actions /////////////////////////////
 
-    //TODO: MAS: 2.Write a method that we can link to a button for publishing to the firebase
-    public void FetchDataButtonMethod()
+    //MAS: 2. Write a method that we can link to a button for publishing to the firebase
+    public async void FetchDataButtonMethod()
     {
         Debug.Log("FetchDataButtonMethod: Fetch Data Button Pressed");
 
         //Call the Database Manager Method and Reference to fetch the data
-
+        await databaseManager.FetchRealTimeDatabaseData(databaseManager.MyFramesReference);
     }
     
     //TODO: MAS: 6. Write a method that will toggle on and off movement for the objects (tip: design it for the update method)
