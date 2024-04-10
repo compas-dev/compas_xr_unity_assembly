@@ -40,8 +40,8 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ScrollSearchToggleObject;
     private GameObject ScrollSearchObjects;
 
-    //TODO: MAS: 4. Create Class Member Variable to store Sequence Color Toggle
-    public GameObject SequenceColorToggleObject;
+    //TODO: MAS: 2. Create Class Member Variable to store Sequence Color Toggle
+    //....
 
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
@@ -279,8 +279,8 @@ public class UIFunctionalities : MonoBehaviour
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
         ScrollSearchObjects = ScrollSearchToggleObject.FindObject("ScrollSearchObjects");
 
-        //TODO: MAS: 4. Find Sequence Color Toggle OnAwake and associated GameObjects
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref SequenceColorToggleObject, "SequenceColorToggle", ToggleSequenceColor);
+        //TODO: MAS: 2. Find Sequence Color Toggle OnAwake and associated GameObjects Use FindToggleandSetOnValueChangedAction
+        //.....
 
         //Find Robot toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
@@ -469,8 +469,8 @@ public class UIFunctionalities : MonoBehaviour
                 PriorityViewerToggleObject.SetActive(true);
                 ScrollSearchToggleObject.SetActive(true);
 
-                //TODO: MAS: 5. Set Sequence Color Toggle to Active when VisibilityMenuToggle is on
-                SequenceColorToggleObject.SetActive(true);
+                //TODO: MAS: 3. Set Sequence Color Toggle to Active when VisibilityMenuToggle is on
+                //Find the object and turn it on....
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
@@ -488,7 +488,7 @@ public class UIFunctionalities : MonoBehaviour
                 ScrollSearchToggleObject.SetActive(false);
 
                 //TODO: MAS: 5. Set Sequence Color Toggle to inactive when VisibilityMenuToggle is off
-                SequenceColorToggleObject.SetActive(false);
+                //Find the object and turn it off....
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -1604,11 +1604,8 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn)
         {
-            //TODO: MAS: 8. Turn off color by sequence if the toggle is on
-            if(SequenceColorToggleObject.GetComponent<Toggle>().isOn)
-            {
-                SequenceColorToggleObject.GetComponent<Toggle>().isOn = false;
-            }
+            //TODO: MAS: 6. Turn off color by sequence if the toggle is on
+            //...
 
             //Turn on the Preview Builder
             instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.ActorView;
@@ -2058,40 +2055,37 @@ public class UIFunctionalities : MonoBehaviour
         }
     }
 
-    //TODO: MAS: 4. Create basic method to print message when the toggle is on, and Color the Toggle Image (Use SetUIObjectColor method).
+    //TODO: MAS: 2. Create basic method to print message when the toggle is on, and Color the Toggle Image (Use SetUIObjectColor method).
     public void ToggleSequenceColor(Toggle toggle)
     {
         if(toggle.isOn)
         {
             Debug.Log("ToggleSequenceColor: Sequence Color Toggle is On");
 
-            //TODO: MAS: 8. Turn off the actor toggle if it is on
-            if(PreviewActorToggleObject.GetComponent<Toggle>().isOn)
-            {
-                PreviewActorToggleObject.GetComponent<Toggle>().isOn = false;
-            }
+            //TODO: MAS: 6. Turn off the actor toggle if it is on
+            // if the toggle is on.... turn it off
 
-            //TODO: MAS: 7. Update visuilzation mode to SequenceColor
-            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.SequenceColor;
+            //TODO: MAS: 5. Update visuilzation mode to SequenceColor
+            //.... set visulization mode
 
             //Color Elements Based on Sequence
-            instantiateObjects.ApplyColorBasedOnSequence(databaseManager.BuildingPlanDataItem.LastBuiltIndex, instantiateObjects.SequenceMaterial, ref instantiateObjects.sequenceMaterialStorageDictionary);
-            
+            //... Call method to apply color....
+
             //Set color of toggle
-            SetUIObjectColor(SequenceColorToggleObject, Yellow);
+            //... Set the color of the toggle.
         }
         else
         {
             Debug.Log("ToggleSequenceColor: Sequence Color Toggle is Off");
 
-            //TODO: MAS: 7. Update visulization mode to BuiltUnbuilt
-            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+            //TODO: MAS: 5. Update visulization mode to BuiltUnbuilt
+            //....
 
             //Color elements based on other toggles.
-            instantiateObjects.ApplyColorBasedOnAppModes(); //TODO: THIS WORKS CYCLE BACK TO MAIN.
+            //.... change the color of the elements
             
             //Set color of toggle
-            SetUIObjectColor(SequenceColorToggleObject, White);
+            //... Set the color of the toggle again.
         }
     }
 
