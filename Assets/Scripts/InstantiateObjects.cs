@@ -107,10 +107,15 @@ namespace Instantiate
         public void DestroyAllChildren(GameObject parentObject)
         {
             //Write an if condition to check if the parent object has children
-
+            if(parentObject.transform.childCount > 0)
+            {
                 //Write A for loop to iterate through all of the children in the parent object.
-
+                foreach(Transform child in parentObject.transform)
+                {
                     //call a method to destroy the game object (Hint: use the Destroy method from Unity's API)
+                    Destroy(child.gameObject);
+                }
+            }
         }
 
     /////////////////////////////// Single GameObject Methods ////////////////////////////////////////
