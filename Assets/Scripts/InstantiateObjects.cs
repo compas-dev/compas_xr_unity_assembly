@@ -47,10 +47,10 @@ namespace Instantiate
         public Material OutlineMaterial;
 
         //TODO: MAS: 1.Store Material for coloring objects based on sequence
-        //....
+        public Material SequenceColorMaterial;
 
         //TODO: MAS: 4. Create a dictionary to store the materials by step key when the sequence mode is on
-        // Create Material Dictionary....
+        public Dictionary<string, Material> SequenceColorMaterialStorageDictionary = new Dictionary<string, Material>();
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -119,7 +119,7 @@ namespace Instantiate
             OutlineMaterial = GameObject.Find("Materials").FindObject("OutlineMaterial").GetComponentInChildren<Renderer>().material;
 
             //TODO: MAS: 1. Find Material for Coloring objects based on sequence using find object
-            //.... Find the Material
+            SequenceColorMaterial = GameObject.Find("Materials").FindObject("SequenceColor").GetComponentInChildren<Renderer>().material;
 
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
@@ -976,9 +976,10 @@ namespace Instantiate
                 
 
                 //TODO: 7. Add sequence color visulization mode to the enum for coloring.
-                
+                case VisulizationMode.SequenceColor:
                     //Color By Sequence Material
-                    
+                    ColorObjectbyInputMaterial(geometryObject, SequenceColorMaterialStorageDictionary[key]);
+                    break;                   
                 
             }
 
@@ -1253,48 +1254,81 @@ namespace Instantiate
             Debug.Log("ApplyColorBasedOnSequence: Applying Color to objects based on sequence.");
 
             //A material == to a new material storage dictionary
+            materialStorageDictionary = new Dictionary<string, Material>();
 
             //Set the min and max key values and transparency min max values
 
             //Min key value==the start key...
-            
+            int minKey = Convert.ToInt16(startKey);
+
             //Max key == the last index...
-            
+            int maxKey = databaseManager.BuildingPlanDataItem.steps.Count - 1;
+
             //Transparency Max == the max value that I can set for transparency...
-            
+            float transparencyMax = 1.000f;
+
             //Transparency Min == the min value that I can set for transparency...
-            
+            float transparencyMin = 0.000f;
+
             //Loop through the sequence of keys    
-                
+            for (int i = minKey; i <= maxKey; i++)
+            {    
                 //Convert int to string to find the step in the dictionary
-                
+                string key = i.ToString();
+
                 //make local variable for int (i)
+                int intKey = i;
 
                 //Find the step from the dictionary
-                
+                Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
                 //Find gameObject with renderer associated with that step
+                GameObject element = Elements.FindObject(step.data.element_ids[0] + " Geometry");
 
                 //Instantiate a temporary material from the input material
+                Material tempMaterial = Instantiate(coloringMaterial);
 
                 //Remap the key to a transparency value that can be assigned to the temporary material
+                float transparencyRemapped = HelpersExtensions.Remap(intKey, minKey, maxKey, transparencyMax, transparencyMin);
 
                 //Create a new color from the input materials color and assign the new transparency value.
+                Color tempColor = new Color(coloringMaterial.color.r, coloringMaterial.color.g, coloringMaterial.color.b, transparencyRemapped);
+
+                //Assign my temporary material my new color :)
+                tempMaterial.color = tempColor;
 
                 //If the gameObject and Material are not null then set the material to the gameObject using ColorObjectbyInputMaterial
-
+                if(element != null && tempMaterial != null)
+                {
                     //Store the material in the material storage dictionary with the key.
+                    materialStorageDictionary.Add(key, tempMaterial);
 
                     //If the key is not equal to the current step then color the object
-
+                    if(key != UIFunctionalities.CurrentStep)
+                    {
                         //If the scroll search is not on then color all of the objects by the input material
-
+                        if(!UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn)
+                        {
                             //Color the object based on the sequence
-
+                            ColorObjectbyInputMaterial(element, tempMaterial);
+                        }
+                        else
+                        {
                             //If the scroll search is on and the key is not the selected cell then color the object
-
-                                //Color the object based on the search
-    
+                            if(key != scrollSearchManager.selectedCellStepIndex)
+                            {                        
+                                //Color the object based on the sequence
+                                ColorObjectbyInputMaterial(element, tempMaterial);
+                            }
+                        }
+                    }
+                }
                 //else debug.Log printing the color of the objects
+                else
+                {
+                    Debug.LogWarning("ApplyColorBasedOnSequence: Your object or material is null");
+                }
+            }
         }
     
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
