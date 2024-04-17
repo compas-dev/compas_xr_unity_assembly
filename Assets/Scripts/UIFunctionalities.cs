@@ -36,14 +36,6 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject VisibilityMenuObject;
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
-    private GameObject ElementSearchToggleObject;
-
-    //todo: TEMPORARY OBJECTS
-    public GameObject ScrollSearchToggleObject;
-    private GameObject ScrollSearchObjects;
-
-    //todo: TEMPORARY OBJECTS
-
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
     public GameObject NextGeometryButtonObject;
@@ -54,9 +46,6 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject IsBuiltButtonObject;
     public GameObject IsbuiltButtonImage;
     public GameObject IsbuiltPriorityLockedImage;
-    // private TMP_InputField ElementSearchInputField;
-    // private GameObject ElementSearchObjects;
-    private GameObject SearchElementButtonObject;
 
     //On Screen Messages
     public GameObject MessagesParent;
@@ -90,6 +79,8 @@ public class UIFunctionalities : MonoBehaviour
     private Vector3 ObjectLengthsUIPanelPosition;
     private TMP_Text ObjectLengthsText;
     private GameObject ObjectLengthsTags;
+    public GameObject ScrollSearchToggleObject;
+    private GameObject ScrollSearchObjects;
     public GameObject PriorityViewerToggleObject;
     public GameObject NextPriorityButtonObject;
     public GameObject PreviousPriorityButtonObject;
@@ -104,7 +95,6 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject LoadFromROSToggleObject;
     private GameObject InfoPanelObject;
     public GameObject CommunicationToggleObject;
-    // private GameObject OcclusionToggleObject;
     private GameObject CommunicationPanelObject;
     private GameObject LoadURDFFromROSPannelObject;
 
@@ -750,22 +740,6 @@ public class UIFunctionalities : MonoBehaviour
     {
         if (IsBuiltPanelObjects.activeSelf)
         {
-            // //Check if current priority is null
-            // if(databaseManager.CurrentPriority != null)
-            // {    
-            //     //Set priority locked image based on priority comparison
-            //     if(stepPriority > Convert.ToInt16(databaseManager.CurrentPriority))
-            //     {
-            //         IsbuiltPriorityLockedImage.SetActive(true);
-            //         IsBuiltButtonObject.GetComponent<Image>().color = TranspWhite;
-            //     }
-            //     else
-            //     {
-            //         IsbuiltPriorityLockedImage.SetActive(false);
-            //         IsBuiltButtonObject.GetComponent<Image>().color = TranspGrey;
-            //     }
-            // }
-
             //Set is built button graphis based on build status
             if (builtStatus)
             {
@@ -1510,15 +1484,6 @@ public class UIFunctionalities : MonoBehaviour
             NextGeometryButtonObject.GetComponent<Button>().interactable = true;
             PreviousGeometryButtonObject.GetComponent<Button>().interactable = true;
         }
-
-        // //Check transaction lock to see if someone else made a request and set my interactibility based on that.
-        // if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
-        // {
-        //     Debug.Log("Trajectory UI Controller: You cannot request because transaction lock is active");
-
-        //     //Set request interactibility of trajectory request button to false
-        //     RequestTrajectoryButtonObject.GetComponent<Button>().interactable = false;
-        // }
 
     }
     public void RequestTrajectoryButtonMethod()

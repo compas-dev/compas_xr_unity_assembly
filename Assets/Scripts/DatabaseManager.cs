@@ -55,10 +55,8 @@ public class DatabaseManager : MonoBehaviour
     // Firebase database references
     public DatabaseReference dbreference_assembly;
     public DatabaseReference dbreference_buildingplan;
-
     public DatabaseReference dbreference_steps;
     public DatabaseReference dbreference_LastBuiltIndex;
-
     public DatabaseReference dbreference_qrcodes;
     public DatabaseReference dbrefernece_usersCurrentSteps;
     public StorageReference storageReference;
@@ -727,7 +725,7 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
-    public Node NodeDeserializer(string key, object jsondata, bool additionalAttributes = false)
+    public Node NodeDeserializer(string key, object jsondata)
     {
         //Generic Dictionary for deserialization     
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;

@@ -121,9 +121,6 @@ namespace Instantiate
             PriorityViewrLineObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerLine");
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
-            //Set Initial Visulization Modes
-            visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
-            visulizationController.TouchMode = TouchMode.None;
         }
         public void placeElement(string Key, Step step)
         {
@@ -136,7 +133,21 @@ namespace Instantiate
             Rotation rotationData = getRotation(step.data.location.xaxis, step.data.location.yaxis);
             
             //Define Object Rotation
-            Quaternion rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
+            Quaternion rotationQuaternion;
+            if(step.data.geometry == "2.ObjFile")
+            {
+                rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
+            }
+            else
+            {
+                rotationQuaternion = FromUnityRotation(rotationData);
+            }
+
+            //If the quaternion is null raise an error
+            if(rotationQuaternion == null)
+            {
+                Debug.LogError("placeElement: Cannot assign object rotation because it is null");
+            }
 
             //instantiate a geometry at this position and rotation
             GameObject geometry_object = gameobjectTypeSelector(step);
@@ -461,7 +472,6 @@ namespace Instantiate
 
             //Define rotation for the gameObject.
             Quaternion rotationQuaternion = Quaternion.identity;
-            // Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
 
             //Set new arrow item
             GameObject newArrow = null;
