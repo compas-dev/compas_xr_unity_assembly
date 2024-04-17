@@ -1,29 +1,15 @@
 using System;
 using System.IO;
-using System.Collections;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Newtonsoft.Json;
-using Firebase.Database;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
-using UnityEngine.EventSystems;
-using ApplicationInfo;
 using JSON;
 using Helpers;
 using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
 using CompasXR.Core;
-using UnityEngine.Events;
-using UnityEngine.Analytics;
-using UnityEngine.InputSystem;
-using System.Xml.Linq;
 
-
-//scripts to initiate all geometries in the scene
 namespace Instantiate
 {
     public class InstantiateObjects : MonoBehaviour

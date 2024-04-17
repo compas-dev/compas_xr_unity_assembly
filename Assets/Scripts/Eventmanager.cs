@@ -1,13 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
 using Firebase.Database;
-using JSON;
-using Firebase.Auth;
-using TMPro;
 using Instantiate;
 using CompasXR.Core;
 
