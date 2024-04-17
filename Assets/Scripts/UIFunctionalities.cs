@@ -509,7 +509,6 @@ public class UIFunctionalities : MonoBehaviour
                 ReloadButtonObject.SetActive(true);
                 CommunicationToggleObject.SetActive(true);
                 EditorToggleObject.SetActive(true);
-                // LoadFromROSToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, Yellow);
@@ -527,9 +526,6 @@ public class UIFunctionalities : MonoBehaviour
                 if(CommunicationToggleObject.GetComponent<Toggle>().isOn){
                     CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
                 }
-                // if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn){
-                //     LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
-                // }
 
                 //Set Visibility of buttons
                 MenuBackground.SetActive(false);
@@ -537,7 +533,6 @@ public class UIFunctionalities : MonoBehaviour
                 ReloadButtonObject.SetActive(false);
                 CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
-                // LoadFromROSToggleObject.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -2072,10 +2067,6 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
                 }
-                // else if (LoadFromROSToggleObject.GetComponent<Toggle>().isOn)
-                // {
-                //     LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
-                // }
                 
                 //Set Visibility of Information panel
                 InfoPanelObject.SetActive(true);
@@ -2111,10 +2102,6 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     InfoToggleObject.GetComponent<Toggle>().isOn = false;
                 }
-                // else if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn)
-                // {
-                //     LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
-                // }
 
                 //Set Visibility of Information panel
                 CommunicationPanelObject.SetActive(true);
@@ -2268,47 +2255,6 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Editor Menu.");
         }  
     }
-
-    // public void ToggleLoadFromROS(Toggle toggle)
-    // {
-    //    if(LoadURDFFromROSPannelObject != null)
-    //     {
-    //         Debug.Log("Load URDF From ROS Toggle Pressed");
-
-    //         if (toggle.isOn)
-    //         {             
-    //             //Check if info toggle is on and if it is turn it off
-    //             if(InfoToggleObject.GetComponent<Toggle>().isOn)
-    //             {
-    //                 InfoToggleObject.GetComponent<Toggle>().isOn = false;
-    //             }
-    //             else if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
-    //             {
-    //                 CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
-    //             }
-    //             //Set Visibility of Information panel
-    //             LoadURDFFromROSPannelObject.SetActive(true);
-
-    //             //Set color of toggle
-    //             SetUIObjectColor(LoadFromROSToggleObject, Yellow);
-
-    //         }
-    //         else
-    //         {
-    //             //TODO: TURN OFF IMAGES.
-
-    //             //Set Visibility of Information panel
-    //             LoadURDFFromROSPannelObject.SetActive(false);
-
-    //             //Set color of toggle
-    //             SetUIObjectColor(LoadFromROSToggleObject, White);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         Debug.LogWarning("Could not find Communication Panel.");
-    //     }
-    // }
     public void ToggleAROcclusion(Toggle toggle)
     {
         if (OcclusionToggleObject != null && occlusionManager != null)
