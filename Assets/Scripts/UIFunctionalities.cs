@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Helpers;
 using UnityEngine;
@@ -9,15 +8,10 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using TMPro;
-using System.Xml.Linq;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.EventSystems;
-using UnityEngine.XR.ARSubsystems;
-using System.Globalization;
 using ApplicationModeControler;
 using MQTTDataCompasXR;
-using Unity.IO.LowLevel.Unsafe;
-using Unity.VisualScripting;
 using UnityEngine.Events;
 using CompasXR.Core;
 
