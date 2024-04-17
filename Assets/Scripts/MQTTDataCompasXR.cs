@@ -65,8 +65,8 @@ namespace MQTTDataCompasXR
         public Publishers(string projectName)
         {
             getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
-            approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}"; //THIS is published to once the request trajectory button is pressed.
-            approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}"; //This is published by everyone once a request message is received.
+            approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";
+            approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}";
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
             sendTrajectoryTopic = $"compas_xr/send_trajectory/{projectName}";
         }
@@ -87,7 +87,7 @@ namespace MQTTDataCompasXR
         //Constructer for subscribers that takes an input project name
         public Subscribers(string projectName)
         {
-            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}"; //LISTENS TO GET APPLY REQUEST TRANSACTION LOCK WHEN THE REQUEST DOES NOT COME FROM ME.
+            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
             getTrajectoryResultTopic = $"compas_xr/get_trajectory_result/{projectName}";
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
             approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";

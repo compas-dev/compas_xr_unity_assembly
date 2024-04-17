@@ -14,6 +14,7 @@ using ApplicationModeControler;
 using MQTTDataCompasXR;
 using UnityEngine.Events;
 using CompasXR.Core;
+using CompasXR.StaticTesting;
 
 
 public class UIFunctionalities : MonoBehaviour
@@ -176,6 +177,22 @@ public class UIFunctionalities : MonoBehaviour
         //Control Touch Search
         TouchSearchControler();
     }
+
+    //TODO: REMOVE RANDOM TESTING METHODS.
+    public void PrintRandomIntFromNamespace()
+    {
+        // Debug.Log("Printing random int from Class Member Variable" + nameSpaceTestingMono.Instance.RandomMonoInt);
+
+        // nameSpaceTestingMono.Instance.methodAccessTesting();
+
+        // nameSpaceTestingMono.Instance.methodAccessStaticMonoTesting();
+
+        Debug.Log("Printing random int from Static Class Member Variable " + nameSpaceTestingStatic.RandomStaticInt);
+
+        nameSpaceTestingStatic.methodAccessTestingStatic();
+    }
+
+    //TODO: REMOVE RANDOM TESTING METHODS.
 
     /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
     private void OnAwakeInitilization()

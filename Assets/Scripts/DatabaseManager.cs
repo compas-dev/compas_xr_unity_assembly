@@ -127,7 +127,6 @@ namespace CompasXR.Core
                 if (task.IsFaulted)
                 {
                     Debug.LogError("Error fetching data from Firebase");
-                    print("Error Fetching Settings Data");
                     return;
                 }
 
@@ -455,7 +454,7 @@ namespace CompasXR.Core
             else
             {
                 Directory.CreateDirectory(folderpath);
-                print($"Created Directory for Object Storage @ {folderpath}");
+                Debug.Log($"Created Directory for Object Storage @ {folderpath}");
             }
 
         }
