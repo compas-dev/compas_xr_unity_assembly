@@ -1,13 +1,7 @@
 using UnityEngine;
-using UnityEngine.UI;
 using Firebase;
 using Firebase.Extensions;
 using UnityEngine.SceneManagement;
-using UnityEngine.Events;
-using TMPro;
-using System.Collections;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
 
 
 public class FirebaseInitializer : MonoBehaviour

@@ -6,22 +6,12 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Firebase.Database;
 using Firebase.Extensions;
-using UnityEngine.EventSystems;
-using UnityEngine.Events;
 using JSON;
 using ApplicationInfo;
-using Firebase;
 using Firebase.Storage;
-using Firebase.Auth;
 using System.IO;
 using UnityEngine.Networking;
 using System.Linq;
-using System.Linq.Expressions;
-using Unity.VisualScripting;
-using Instantiate;
-using Google.MiniJSON;
-using Helpers;
-using UnityEngine.InputSystem;
 
 namespace CompasXR.Core
 {

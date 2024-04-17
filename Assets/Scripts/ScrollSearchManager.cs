@@ -62,6 +62,7 @@ public class ScrollSearchManager : MonoBehaviour
         ScrollSearchObjects = ScrollSearchToggle.FindObject("ScrollSearchObjects");
         cellPrefab = ScrollSearchObjects.FindObject("CellPrefab");
         cellsParent = ScrollSearchObjects.FindObject("Container");
+
     }
     public void ScrollSearchControler(ref bool cellsExist)
     {
