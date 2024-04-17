@@ -16,6 +16,7 @@ using Helpers;
 using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
+using CompasXR.Core;
 using UnityEngine.Events;
 using UnityEngine.Analytics;
 using UnityEngine.InputSystem;
@@ -27,7 +28,6 @@ namespace Instantiate
 {
     public class InstantiateObjects : MonoBehaviour
     {
-        
         //Other Sript Objects
         public DatabaseManager databaseManager;
         public UIFunctionalities UIFunctionalities;

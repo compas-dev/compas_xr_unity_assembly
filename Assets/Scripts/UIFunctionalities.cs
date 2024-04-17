@@ -19,6 +19,7 @@ using MQTTDataCompasXR;
 using Unity.IO.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine.Events;
+using CompasXR.Core;
 
 
 public class UIFunctionalities : MonoBehaviour

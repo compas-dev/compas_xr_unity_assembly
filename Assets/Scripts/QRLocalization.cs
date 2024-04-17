@@ -7,6 +7,7 @@ using Vuforia;
 using Instantiate;
 using UnityEngine.UI;
 using Helpers;
+using CompasXR.Core;
 
 public class QRLocalization : MonoBehaviour
 {

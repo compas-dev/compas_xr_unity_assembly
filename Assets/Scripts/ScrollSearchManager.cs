@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using Instantiate;
 using JSON;
+using CompasXR.Core;
 
 public class ScrollSearchManager : MonoBehaviour
 {

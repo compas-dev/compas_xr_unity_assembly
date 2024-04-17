@@ -9,6 +9,7 @@ using JSON;
 using Firebase.Auth;
 using TMPro;
 using Instantiate;
+using CompasXR.Core;
 
 public class Eventmanager : MonoBehaviour
 {
