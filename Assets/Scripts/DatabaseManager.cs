@@ -118,7 +118,6 @@ namespace CompasXR.Core
 
             //Find UI Functionalities
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
-
         }
         public async void FetchSettingsData(DatabaseReference settings_reference)
         {
