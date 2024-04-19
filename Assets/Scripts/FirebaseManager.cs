@@ -5,50 +5,54 @@ using TMPro;
 using System;
 using CompasXR.Systems;
 
-public sealed class FirebaseManager
+
+namespace CompasXR.Database.FirebaseManagment
 {
-    private static FirebaseManager instance = null;
-    private static readonly object padlock = new object();
-
-    public string appId;
-    public string apiKey;
-    public string databaseUrl;
-    public string storageBucket;
-    public string projectId;
-
-    FirebaseManager() 
+    public sealed class FirebaseManager
     {
-      apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
-      databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
-      storageBucket = "test-project-94f41.appspot.com";
-      projectId = "test-project-94f41";
+        private static FirebaseManager instance = null;
+        private static readonly object padlock = new object();
 
-      CompasXR.Systems.OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
-      switch (currentOS)
-      {
-        case CompasXR.Systems.OperatingSystem.iOS:
-        appId = "1:116159730378:ios:a99ce204d214df3c0b5a33";
-        break;
-        case CompasXR.Systems.OperatingSystem.Android: 
-        appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
-        break;
-        default:
-        appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
-        break;
-        }
-    }
+        public string appId;
+        public string apiKey;
+        public string databaseUrl;
+        public string storageBucket;
+        public string projectId;
 
-    public static FirebaseManager Instance
-    {
-        get
+        FirebaseManager() 
         {
-            lock (padlock)
+        apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
+        databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
+        storageBucket = "test-project-94f41.appspot.com";
+        projectId = "test-project-94f41";
+
+        CompasXR.Systems.OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
+        switch (currentOS)
+        {
+            case CompasXR.Systems.OperatingSystem.iOS:
+            appId = "1:116159730378:ios:a99ce204d214df3c0b5a33";
+            break;
+            case CompasXR.Systems.OperatingSystem.Android: 
+            appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+            break;
+            default:
+            appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+            break;
+            }
+        }
+
+        public static FirebaseManager Instance
+        {
+            get
             {
-                if (instance == null)
+                lock (padlock)
                 {
-                    instance = new FirebaseManager();
+                    if (instance == null)
+                    {
+                        instance = new FirebaseManager();
+                    }
+                    return instance;
                 }
-                return instance;
             }
         }
     }

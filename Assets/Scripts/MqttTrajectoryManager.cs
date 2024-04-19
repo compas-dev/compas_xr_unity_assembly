@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using CompasXR.Core;
 using CompasXR.UI;
+using CompasXR.Robots;
 
 public class MqttTrajectoryManager : M2MqttUnityClient
 {

@@ -13,6 +13,7 @@ using System.Linq;
 using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.AppSettings;
+using CompasXR.Database.FirebaseManagment;
 
 namespace CompasXR.Core
 {

@@ -14,6 +14,7 @@ using CompasXR.Systems;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
 using CompasXR.AppSettings;
+using CompasXR.Robots;
 
 namespace CompasXR.UI
 {
