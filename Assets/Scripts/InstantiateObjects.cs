@@ -3,12 +3,12 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Helpers;
 using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
 using CompasXR.UI;
 using CompasXR.Core.Data;
+using CompasXR.Core.Extentions;
 
 namespace CompasXR.Core
 {

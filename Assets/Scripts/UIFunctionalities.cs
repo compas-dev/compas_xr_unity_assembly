@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 using Newtonsoft.Json;
@@ -14,6 +13,7 @@ using UnityEngine.Events;
 using CompasXR.Core;
 using CompasXR.Systems;
 using CompasXR.Core.Data;
+using CompasXR.Core.Extentions;
 
 namespace CompasXR.UI
 {

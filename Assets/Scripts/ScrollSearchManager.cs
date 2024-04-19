@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Helpers;
 using UnityEngine.UI;
 using TMPro;
 using CompasXR.Core;
 using CompasXR.Core.Data;
+using CompasXR.Core.Extentions;
 
 namespace CompasXR.UI
 {

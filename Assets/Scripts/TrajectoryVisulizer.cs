@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MQTTDataCompasXR;
-using Helpers;
 using RosSharp.RosBridgeClient;
 using Newtonsoft.Json;
 using Unity.VisualScripting;
@@ -11,6 +10,7 @@ using RosSharp.Urdf;
 using CompasXR.Core;
 using CompasXR.UI;
 using CompasXR.Core.Data;
+using CompasXR.Core.Extentions;
 
 public class TrajectoryVisulizer : MonoBehaviour
 {

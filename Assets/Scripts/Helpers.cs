@@ -14,7 +14,7 @@ using UnityEngine.InputSystem;
 using CompasXR.Core.Data;
 
 
-namespace Helpers
+namespace CompasXR.Core.Extentions
 {
     public static class HelpersExtensions
     { 

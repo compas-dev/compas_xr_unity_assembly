@@ -4,9 +4,9 @@ using Unity.Mathematics;
 using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
-using Helpers;
 using CompasXR.UI;
 using CompasXR.Core.Data;
+using CompasXR.Core.Extentions;
 
 namespace CompasXR.Core
 {

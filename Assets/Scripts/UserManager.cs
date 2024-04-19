@@ -5,7 +5,7 @@ using Firebase.Database;
 using Firebase.Extensions;
 using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
-using Helpers; // Added namespace for scene management
+using CompasXR.Core.Extentions;
 
 public class UserManager : MonoBehaviour
 {
