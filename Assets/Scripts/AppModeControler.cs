@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ApplicationModeControler
+namespace CompasXR.AppSettings
 {
     //Control Visulization & Touch Modes
     public class ModeControler

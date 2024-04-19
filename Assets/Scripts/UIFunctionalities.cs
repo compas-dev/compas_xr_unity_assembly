@@ -7,13 +7,13 @@ using System.Linq;
 using TMPro;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.EventSystems;
-using ApplicationModeControler;
 using MQTTDataCompasXR;
 using UnityEngine.Events;
 using CompasXR.Core;
 using CompasXR.Systems;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
+using CompasXR.AppSettings;
 
 namespace CompasXR.UI
 {

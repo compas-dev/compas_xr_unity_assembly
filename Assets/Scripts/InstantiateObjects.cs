@@ -5,10 +5,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using Dummiesman;
 using TMPro;
-using ApplicationModeControler;
 using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
+using CompasXR.AppSettings;
 
 namespace CompasXR.Core
 {

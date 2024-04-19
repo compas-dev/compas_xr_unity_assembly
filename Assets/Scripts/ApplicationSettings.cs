@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using UnityEngine;
     
-    namespace ApplicationInfo
+    namespace CompasXR.AppSettings
     {
         [System.Serializable]
         public class ApplicationSettings

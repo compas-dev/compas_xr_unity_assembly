@@ -6,13 +6,13 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Firebase.Database;
 using Firebase.Extensions;
-using ApplicationInfo;
 using Firebase.Storage;
 using System.IO;
 using UnityEngine.Networking;
 using System.Linq;
 using CompasXR.UI;
 using CompasXR.Core.Data;
+using CompasXR.AppSettings;
 
 namespace CompasXR.Core
 {
