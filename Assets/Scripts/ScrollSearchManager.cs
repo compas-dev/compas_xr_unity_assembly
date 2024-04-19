@@ -4,7 +4,7 @@ using Helpers;
 using UnityEngine.UI;
 using TMPro;
 using CompasXR.Core;
-using JSON;
+using CompasXR.Core.Data;
 
 namespace CompasXR.UI
 {

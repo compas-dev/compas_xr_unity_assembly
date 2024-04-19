@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Helpers;
 using UnityEngine;
 using UnityEngine.UI;
-using JSON;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
@@ -14,6 +13,7 @@ using MQTTDataCompasXR;
 using UnityEngine.Events;
 using CompasXR.Core;
 using CompasXR.Systems;
+using CompasXR.Core.Data;
 
 namespace CompasXR.UI
 {

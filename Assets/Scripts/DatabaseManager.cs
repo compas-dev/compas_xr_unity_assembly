@@ -6,13 +6,13 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Firebase.Database;
 using Firebase.Extensions;
-using JSON;
 using ApplicationInfo;
 using Firebase.Storage;
 using System.IO;
 using UnityEngine.Networking;
 using System.Linq;
 using CompasXR.UI;
+using CompasXR.Core.Data;
 
 namespace CompasXR.Core
 {
@@ -868,7 +868,7 @@ namespace CompasXR.Core
 
             //Create class instances of node elements
             Step step = new Step();
-            step.data = new Data();
+            step.data = new CompasXR.Core.Data.Data();
             step.data.location = new Frame();
 
             //Set values for base node class to keep data structure consistent

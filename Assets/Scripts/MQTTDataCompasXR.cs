@@ -8,8 +8,8 @@ using RosSharp.RosBridgeClient.MessageTypes.Rosapi;
 using Unity.VisualScripting.AssemblyQualifiedNameParser;
 using Newtonsoft.Json;
 using MQTTDataCompasXR;
-using JSON;
 using RosSharp.Urdf;
+using CompasXR.Core.Data;
 
 namespace MQTTDataCompasXR
 {

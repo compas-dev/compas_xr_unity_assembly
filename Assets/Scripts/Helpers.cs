@@ -8,10 +8,10 @@ using Firebase.Database;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using UnityEngine.EventSystems;
-using JSON;
 using UnityEngine.Events;
 using System.Linq;
 using UnityEngine.InputSystem;
+using CompasXR.Core.Data;
 
 
 namespace Helpers

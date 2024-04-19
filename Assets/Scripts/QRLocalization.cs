@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using JSON;
 using Unity.Mathematics;
 using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
 using Helpers;
 using CompasXR.UI;
+using CompasXR.Core.Data;
 
 namespace CompasXR.Core
 {

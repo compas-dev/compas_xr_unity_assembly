@@ -26,16 +26,6 @@ namespace CompasXR.Systems
             Debug.Log("Operating System: iOS");
             return OperatingSystem.iOS;
 
-            // #elif UNITY_STANDALONE_WIN
-            // Debug.Log("Operating System: Windows");
-            // return OperatingSystem.Windows;
-            // #elif UNITY_STANDALONE_OSX
-            // Debug.Log("Operating System: MacOS");
-            // return OperatingSystem.MacOS;
-            // #elif UNITY_STANDALONE_LINUX
-            // Debug.Log("Operating System: Linux");
-            // return OperatingSystem.Linux;
-
             #else
             Debug.Log("Operating System: Unknown");
             return OperatingSystem.Unknown; 

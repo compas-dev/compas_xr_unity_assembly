@@ -5,7 +5,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace JSON
+namespace CompasXR.Core.Data
 {   
    ///////////// Class for Handeling Data conversion Inconsistencies /////////////// 
 
