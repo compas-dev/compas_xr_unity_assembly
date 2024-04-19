@@ -11,7 +11,7 @@ using ApplicationModeControler;
 using CompasXR.Core;
 using CompasXR.UI;
 
-namespace Instantiate
+namespace CompasXR.Core
 {
     public class InstantiateObjects : MonoBehaviour
     {
@@ -743,7 +743,7 @@ namespace Instantiate
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
     
-    //TODO: Move these transformation things to a true static class and start the class library process...
+    //TODO: Move these transformation things to a true static class and start the class library conversion process...
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
             //Set Unity Rotation

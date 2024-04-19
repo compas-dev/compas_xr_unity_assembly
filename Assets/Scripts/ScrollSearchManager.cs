@@ -3,9 +3,8 @@ using UnityEngine;
 using Helpers;
 using UnityEngine.UI;
 using TMPro;
-using Instantiate;
-using JSON;
 using CompasXR.Core;
+using JSON;
 
 namespace CompasXR.UI
 {

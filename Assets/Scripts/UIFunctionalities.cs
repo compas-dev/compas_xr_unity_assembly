@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Helpers;
 using UnityEngine;
 using UnityEngine.UI;
-using Instantiate;
 using JSON;
 using Newtonsoft.Json;
 using System;
@@ -16,8 +15,6 @@ using UnityEngine.Events;
 using CompasXR.Core;
 using CompasXR.Systems;
 using CompasXR.UI;
-// using CompasXR.StaticTesting;
-
 
 public class UIFunctionalities : MonoBehaviour
 {
