@@ -76,10 +76,10 @@ public class QRLocalization : MonoBehaviour
                     }
                     
                     //Fetch position data from the dictionary
-                    Vector3 position_data = instantiateObjects.getPosition(QRCodeDataDict[key].part.frame.point);
+                    Vector3 position_data = instantiateObjects.GetPosition(QRCodeDataDict[key].part.frame.point);
 
                     //Fetch rotation data from the dictionary
-                    InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                    InstantiateObjects.Rotation rotationData = instantiateObjects.GetRotation(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                     
                     //Convert Firebase rotation data to Quaternion rotation. Additionally
                     Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);

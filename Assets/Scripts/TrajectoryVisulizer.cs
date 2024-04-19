@@ -311,10 +311,10 @@ public class TrajectoryVisulizer : MonoBehaviour
         Debug.Log($"SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
 
         //Fetch position data from the dictionary
-        Vector3 positionData = instantiateObjects.getPosition(robotBaseFrame.point);
+        Vector3 positionData = instantiateObjects.GetPosition(robotBaseFrame.point);
 
         //Fetch rotation data from the dictionary
-        InstantiateObjects.Rotation rotationData = instantiateObjects.getRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+        InstantiateObjects.Rotation rotationData = instantiateObjects.GetRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
         
         //Convert Firebase rotation data to Quaternion rotation. Additionally
         Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);

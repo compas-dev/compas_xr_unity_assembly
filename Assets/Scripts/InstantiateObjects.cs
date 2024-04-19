@@ -9,6 +9,7 @@ using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
 using CompasXR.Core;
+using CompasXR.UI;
 
 namespace Instantiate
 {
@@ -113,10 +114,10 @@ namespace Instantiate
             Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
 
             //get position
-            Vector3 positionData = getPosition(step.data.location.point);
+            Vector3 positionData = GetPosition(step.data.location.point);
             
             //get rotation
-            Rotation rotationData = getRotation(step.data.location.xaxis, step.data.location.yaxis);
+            Rotation rotationData = GetRotation(step.data.location.xaxis, step.data.location.yaxis);
             
             //Define Object Rotation
             Quaternion rotationQuaternion;
@@ -741,10 +742,12 @@ namespace Instantiate
         }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
+    
+    //TODO: Move these transformation things to a true static class and start the class library process...
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
             //Set Unity Rotation
-            Rotation rotationLh = rhToLh(rotation.x , rotation.y);
+            Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
 
             Rotation Zrotation = ZRotation(rotationLh);
 
@@ -767,19 +770,19 @@ namespace Instantiate
         public Quaternion FromUnityRotation(Rotation rotation)
         {   
             //Right hand to left hand conversion
-            Rotation rotationLh = rhToLh(rotation.x , rotation.y);
+            Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
 
             //Set Unity Rotation
             Quaternion rotationQuaternion = GetQuaternion(rotationLh.y, rotationLh.z);
 
             return rotationQuaternion;
         } 
-        public Vector3 getPosition(float[] pointlist)
+        public Vector3 GetPosition(float[] pointlist)
         {
             Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
             return position;
         }
-        public Rotation getRotation(float[] x_vecdata, float [] y_vecdata)
+        public Rotation GetRotation(float[] x_vecdata, float [] y_vecdata)
         {
             Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
             Vector3 y_vec_right  = new Vector3(y_vecdata[0], y_vecdata[1], y_vecdata[2]);
@@ -793,7 +796,7 @@ namespace Instantiate
             
             return rotationRH;
         } 
-        public Rotation rhToLh(Vector3 x_vec_right, Vector3 y_vec_right)
+        public Rotation RightHandToLeftHand(Vector3 x_vec_right, Vector3 y_vec_right)
         {        
             Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
             Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
@@ -923,10 +926,10 @@ namespace Instantiate
         public Quaternion GetQuaternionFromStepKey(string key)
         {
             //Calculate Right Hand Rotation
-            Rotation rotationrh = getRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
+            Rotation rotationrh = GetRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
             
             //Convert to Left Hand Rotation
-            Rotation rotationlh = rhToLh(rotationrh.x , rotationrh.y);
+            Rotation rotationlh = RightHandToLeftHand(rotationrh.x , rotationrh.y);
             
             //GetQuaterion from Left Hand Rotation
             Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);

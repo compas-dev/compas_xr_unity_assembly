@@ -14,6 +14,8 @@ using ApplicationModeControler;
 using MQTTDataCompasXR;
 using UnityEngine.Events;
 using CompasXR.Core;
+using CompasXR.Systems;
+using CompasXR.UI;
 // using CompasXR.StaticTesting;
 
 
@@ -27,7 +29,7 @@ public class UIFunctionalities : MonoBehaviour
     public TrajectoryVisulizer trajectoryVisulizer;
     public RosConnectionManager rosConnectionManager;
     public ScrollSearchManager scrollSearchManager;
-    
+
     //Primary UI Objects
     private GameObject VisibilityMenuObject;
     private GameObject MenuButtonObject;
@@ -138,7 +140,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject activeGameObject;
     private GameObject temporaryObject; 
     private ARRaycastManager rayManager;
-    public OperatingSystem currentOperatingSystem;
+    public CompasXR.Systems.OperatingSystem currentOperatingSystem;
     private AROcclusionManager occlusionManager;
     private GameObject OcclusionToggleObject;
 
@@ -441,10 +443,10 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log(Text);
     }
-    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, CompasXR.Systems.OperatingSystem currentOperatingSystem)
     {
         Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
-        if(currentOperatingSystem == OperatingSystem.iOS)
+        if(currentOperatingSystem == CompasXR.Systems.OperatingSystem.iOS)
         {
             occlusionManager = FindObjectOfType<AROcclusionManager>(true);
             occlusionManager.enabled = true;

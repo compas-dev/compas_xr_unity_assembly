@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System;
+using CompasXR.Systems;
 
 public sealed class FirebaseManager
 {
@@ -22,13 +23,13 @@ public sealed class FirebaseManager
       storageBucket = "test-project-94f41.appspot.com";
       projectId = "test-project-94f41";
 
-      OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
+      CompasXR.Systems.OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
       switch (currentOS)
       {
-        case OperatingSystem.iOS:
+        case CompasXR.Systems.OperatingSystem.iOS:
         appId = "1:116159730378:ios:a99ce204d214df3c0b5a33";
         break;
-        case OperatingSystem.Android: 
+        case CompasXR.Systems.OperatingSystem.Android: 
         appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
         break;
         default:
