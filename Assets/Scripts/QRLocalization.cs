@@ -6,6 +6,7 @@ using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
 using Helpers;
+using CompasXR.UI;
 
 namespace CompasXR.Core
 {

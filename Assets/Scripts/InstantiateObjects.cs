@@ -8,7 +8,6 @@ using Helpers;
 using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
-using CompasXR.Core;
 using CompasXR.UI;
 
 namespace CompasXR.Core

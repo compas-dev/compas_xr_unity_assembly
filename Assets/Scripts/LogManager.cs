@@ -2,80 +2,78 @@ using System;
 using System.IO;
 using UnityEngine;
 
-public class LogManager : MonoBehaviour
+namespace CompasXR.Systems
 {
-    private string logDirectoryPath;
-    private string logFilePath;
-
-    void Awake()
+    public class LogManager : MonoBehaviour
     {
-        //Make the GameObject persistent across scene changes
-        DontDestroyOnLoad(gameObject);
+        private string logDirectoryPath;
+        private string logFilePath;
 
-        //Create the directory path reference
-        string persistentDataPath = Application.persistentDataPath;
-        logDirectoryPath = Path.Combine(persistentDataPath, "CompasXRLogStorage");
-
-        //Create the file path reference
-        string dateString = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        logFilePath = Path.Combine(logDirectoryPath, $"{dateString}_{SystemInfo.deviceUniqueIdentifier}_log.txt");
-
-        Debug.Log($"Log file path: {logFilePath}"); 
-
-        //Manage the log directory
-        ManageLogDirectory(logDirectoryPath);
-
-        //Subscribe to the log message event
-        Application.logMessageReceived += HandleLogMessage;
-    }
-
-    void Update()
-    {
-        
-    }
-
-    public void ManageLogDirectory(string directoryPath)
-    {
-
-        //Create the directory if it doesn't exist
-        if (!Directory.Exists(logDirectoryPath))
+        void Awake()
         {
-            Directory.CreateDirectory(logDirectoryPath);
+            //Make the GameObject persistent across scene changes
+            DontDestroyOnLoad(gameObject);
+
+            //Create the directory path reference
+            string persistentDataPath = Application.persistentDataPath;
+            logDirectoryPath = Path.Combine(persistentDataPath, "CompasXRLogStorage");
+
+            //Create the file path reference
+            string dateString = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            logFilePath = Path.Combine(logDirectoryPath, $"{dateString}_{SystemInfo.deviceUniqueIdentifier}_log.txt");
+
+            Debug.Log($"Log file path: {logFilePath}"); 
+
+            //Manage the log directory
+            ManageLogDirectory(logDirectoryPath);
+
+            //Subscribe to the log message event
+            Application.logMessageReceived += HandleLogMessage;
         }
 
-        //Get the list of files in the directory
-        string [] files = Directory.GetFiles(directoryPath);
-
-        //If the number of files in the directory is greater than or equal to 50, delete all the files
-        if(files.Length >= 50)
+        public void ManageLogDirectory(string directoryPath)
         {
-            foreach (string file in files)
+
+            //Create the directory if it doesn't exist
+            if (!Directory.Exists(logDirectoryPath))
             {
-                File.Delete(file);
+                Directory.CreateDirectory(logDirectoryPath);
+            }
+
+            //Get the list of files in the directory
+            string [] files = Directory.GetFiles(directoryPath);
+
+            //If the number of files in the directory is greater than or equal to 50, delete all the files
+            if(files.Length >= 50)
+            {
+                foreach (string file in files)
+                {
+                    File.Delete(file);
+                }
             }
         }
-    }
 
 
-    private void HandleLogMessage(string logString, string stackTrace, LogType type)
-    {
-        //Get the active Scene name to know what scene is currnetly running
-        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-
-        //Write the log message to the file with the current time, SceneName, type, and stack trace
-        using (StreamWriter writer = new StreamWriter(logFilePath, true))
+        private void HandleLogMessage(string logString, string stackTrace, LogType type)
         {
-            writer.WriteLine($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]: {sceneName}: {type}: {logString}");
-            writer.WriteLine(stackTrace);
-            writer.WriteLine();
+            //Get the active Scene name to know what scene is currnetly running
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+            //Write the log message to the file with the current time, SceneName, type, and stack trace
+            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            {
+                writer.WriteLine($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]: {sceneName}: {type}: {logString}");
+                writer.WriteLine(stackTrace);
+                writer.WriteLine();
+            }
         }
-    }
 
-    private void OnDestroy()
-    {
-        //Unsubscribe from the log message event
-        Application.logMessageReceived -= HandleLogMessage;
+        private void OnDestroy()
+        {
+            //Unsubscribe from the log message event
+            Application.logMessageReceived -= HandleLogMessage;
 
-        Debug.Log($"OnDestroy: LogManager saved log file to {logFilePath}");    
+            Debug.Log($"OnDestroy: LogManager saved log file to {logFilePath}");    
+        }
     }
 }

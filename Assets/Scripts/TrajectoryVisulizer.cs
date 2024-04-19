@@ -10,6 +10,7 @@ using Unity.VisualScripting;
 using Vuforia;
 using RosSharp.Urdf;
 using CompasXR.Core;
+using CompasXR.UI;
 
 public class TrajectoryVisulizer : MonoBehaviour
 {

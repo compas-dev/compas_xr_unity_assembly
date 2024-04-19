@@ -13,6 +13,7 @@ using UnityEngine.UI;
 using System.Threading.Tasks;
 using System.Threading;
 using CompasXR.Core;
+using CompasXR.UI;
 
 public class MqttTrajectoryManager : M2MqttUnityClient
 {
