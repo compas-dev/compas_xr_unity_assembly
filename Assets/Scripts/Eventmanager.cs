@@ -8,14 +8,19 @@ namespace CompasXR.Core
 {
     public class EventManager : MonoBehaviour
     {
-        public GameObject Databasemanager;
-        public GameObject Instantiateobjects;
-        public GameObject Checkfirebase;
-        public GameObject QRLocalization;
-        public GameObject MqttTrajectoryReceiver;
-        public GameObject TrajectoryVisualizer;
-        public DatabaseReference settings_reference;
-        DatabaseManager databaseManager;
+        //GameObjects for Script Storage
+        public GameObject databaseManagerObject;
+        public GameObject instantiateObjectsObject;
+        public GameObject checkFirebaseObject;
+        public GameObject qrLocalizationObject;
+        public GameObject mqttTrajectoryReceiverObject;
+        public GameObject trajectoryVisualizerObject;
+
+        //Database Reference
+        public DatabaseReference dbReferenceSettings;
+
+        //Other Script Components
+        public DatabaseManager databaseManager;
 
         void Awake()
         {            
@@ -26,15 +31,15 @@ namespace CompasXR.Core
             FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
             
             //Get Reference for the correct application settings. To dynamically connect to different RTDB and Storage.
-            settings_reference =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
+            dbReferenceSettings =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
             
             //Add script components to objects in the scene
-            databaseManager = Databasemanager.AddComponent<DatabaseManager>();  
-            InstantiateObjects instantiateObjects = Instantiateobjects.AddComponent<InstantiateObjects>();
-            CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
-            QRLocalization qrLocalization = QRLocalization.GetComponent<QRLocalization>();
-            MqttTrajectoryManager mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryManager>();
-            TrajectoryVisualizer trajectoryVisualizer = TrajectoryVisualizer.GetComponent<TrajectoryVisualizer>();
+            databaseManager = databaseManagerObject.AddComponent<DatabaseManager>();  
+            InstantiateObjects instantiateObjects = instantiateObjectsObject.AddComponent<InstantiateObjects>();
+            CheckFirebase checkFirebase = checkFirebaseObject.AddComponent<CheckFirebase>();
+            QRLocalization qrLocalization = qrLocalizationObject.GetComponent<QRLocalization>();
+            MqttTrajectoryManager mqttTrajectoryReceiver = mqttTrajectoryReceiverObject.GetComponent<MqttTrajectoryManager>();
+            TrajectoryVisualizer trajectoryVisualizer = trajectoryVisualizerObject.GetComponent<TrajectoryVisualizer>();
             
             //Initilize Connection to Firebase and Fetch Settings Data
             checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
@@ -63,7 +68,7 @@ namespace CompasXR.Core
         public void DBInitializedFetchSettings(object sender, EventArgs e)
         {
             Debug.Log("Database Initilized: Safe to Fetch Settings Data.");
-            databaseManager.FetchSettingsData(settings_reference);
+            databaseManager.FetchSettingsData(dbReferenceSettings);
         }  
 
     }

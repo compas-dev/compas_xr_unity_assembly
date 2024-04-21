@@ -69436,12 +69436,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ed7a593a6365964d9ce5730200515a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Databasemanager: {fileID: 1411309946840247928}
-  Instantiateobjects: {fileID: 2044200973043364147}
-  Checkfirebase: {fileID: 1077438725447714118}
-  QRLocalization: {fileID: 8767998526698590026}
-  MqttTrajectoryReceiver: {fileID: 3555920155599777618}
-  TrajectoryVisualizer: {fileID: 3286733832950485788}
+  databaseManagerObject: {fileID: 1411309946840247928}
+  instantiateObjectsObject: {fileID: 2044200973043364147}
+  checkFirebaseObject: {fileID: 1077438725447714118}
+  qrLocalizationObject: {fileID: 8767998526698590026}
+  mqttTrajectoryReceiverObject: {fileID: 3555920155599777618}
+  trajectoryVisualizerObject: {fileID: 3286733832950485788}
+  databaseManager: {fileID: 0}
 --- !u!4 &5813617637826940773
 Transform:
   m_ObjectHideFlags: 0

@@ -2185,7 +2185,7 @@ namespace CompasXR.UI
             mqttTrajectoryManager.RemoveConnectionEventListners();
 
             //Fetch settings data again
-            databaseManager.FetchSettingsData(eventManager.settings_reference); //TODO: Should I await this?
+            databaseManager.FetchSettingsData(eventManager.dbReferenceSettings); //TODO: Should I await this?
 
             //Disconnect from MQTT and reconnect after new application settings are received.
             mqttTrajectoryManager.DisconnectandReconnectAsyncRoutine();
