@@ -57,6 +57,7 @@ namespace CompasXR.UI
         public GameObject ErrorDownloadingObjectMessageObject;
         public GameObject TrajectoryReviewRequestMessageObject;
         public GameObject TrajectoryCancledMessage;
+        public GameObject TrajectoryRequestTimeoutMessage;
         public GameObject SearchItemNotFoundWarningMessageObject;
         public GameObject ActiveRobotIsNullWarningMessageObject;
         public GameObject TransactionLockActiveWarningMessageObject;
@@ -1467,7 +1468,6 @@ namespace CompasXR.UI
                 Debug.Log("RequestTrajectoryButtonMethod : You cannot request because transaction lock is active");
 
                 //If the active robot is null signal On Screen Message
-                // SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
                 string message = "WARNING: You are currently prevented from requesting because another active user is awaiting a Trajectory Result.";
                 SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
                 
@@ -1478,7 +1478,6 @@ namespace CompasXR.UI
                 Debug.Log("RequestTrajectoryButtonMethod : Active Robot is null");
             
                 //If the active robot is null signal On Screen Message
-                // SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
                 string message = "WARNING: Active Robot is currently null. An active robot must be set before visulizing robotic information.";
                 SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref ActiveRobotIsNullWarningMessageObject, "ActiveRobotNullWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Active Robot is null.");
 
@@ -1492,8 +1491,6 @@ namespace CompasXR.UI
                 //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
                 mqttTrajectoryManager.serviceManager.PrimaryUser = true;
                 mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
-
-                //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.... THIS IS A BIT DIFFICULT BECAUSE I CANNOT PROVIDE CANCELATION LIKE OTHER MESSAGE.
 
                 //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
                 TrajectoryServicesUIControler(true, false, false, false, false, false);

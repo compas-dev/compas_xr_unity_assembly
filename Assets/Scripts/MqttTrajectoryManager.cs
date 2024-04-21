@@ -3,11 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using M2MqttUnity;
-using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
-using TMPro;
 using Newtonsoft.Json;
-using System.Security.Claims;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 using System.Threading;
@@ -310,6 +307,10 @@ namespace CompasXR.Robots
             //Set last request message of the Service Manager
             serviceManager.LastGetTrajectoryRequestMessage = getTrajectoryRequestmessage;
 
+            //TODO: START A TIME OUT FOR THE REQUESTER TO WAIT FOR THE RESULT. THIS WILL BE CANCELED IF THE RESULT IS RECEIVED.
+            serviceManager.GetTrajectoryRequestTimeOutCancelationToken = new CancellationTokenSource();
+            _= TrajectoryRequestTimeOut(getTrajectoryRequestmessage.ElementID, 10f, serviceManager.GetTrajectoryRequestTimeOutCancelationToken.Token);
+
             //Check the device ID to see if it is mine, and if it is not apply Get Trajectory Request Transaction lock.
             if (getTrajectoryRequestmessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
             {
@@ -317,7 +318,6 @@ namespace CompasXR.Robots
 
                 //Set Service Manager Transaction lock
                 serviceManager.TrajectoryRequestTransactionLock = true;
-
             }
             else
             {
@@ -326,6 +326,25 @@ namespace CompasXR.Robots
         }
         private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)
         {
+            //Check if the message is dirty and should be ignored
+            if(serviceManager.IsDirtyTrajectoryRequest)
+            {
+                //Check if this is the dirty message that should be ignored, and return if it is...
+                if(serviceManager.IsDirtyGetTrajectoryRequestHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID &&
+                serviceManager.IsDirtyGetTrajectoryRequestHeader.SequenceID + 1 == getTrajectoryResultmessage.Header.SequenceID)
+                {
+                    Debug.Log("MQTT: GetTrajectoryResult: This Message is dirty & Should be Ignored.");
+                    return;
+                }
+            }
+
+            //Cancel the time out for the GetTrajectoryRequest
+            if(serviceManager.GetTrajectoryRequestTimeOutCancelationToken != null)
+            {
+                Debug.Log("GetTrajectoryResultReceivedMessageHandler: The request time out should be cancled, because the result was received.");
+                serviceManager.GetTrajectoryRequestTimeOutCancelationToken.Cancel();
+            }
+
             //Set last result message of the Service Manager
             serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
             
@@ -370,7 +389,7 @@ namespace CompasXR.Robots
                         return;
                     }
                 }
-                //The message is the same as the last request messsage
+                //The message is as expected from same as the last request messsage
                 else
                 {    
                     
@@ -783,7 +802,58 @@ namespace CompasXR.Robots
                 Debug.Log("MQTT: TrajectoryApprovalTimeout: Task was cancled before the time out duration meaning everything proved to be successful or was purposfully cancled.");
             }
         }
+        async Task TrajectoryRequestTimeOut(string elementID, float timeDurationSeconds, CancellationToken cancellationToken)
+        {
+            Debug.Log($"MQTT: TrajectoryRequestTimeOut: Started with a duration of {timeDurationSeconds} seconds.");
+            
+            //Time out controled by try and except block in order to catch the TaskCanceledException on completed
+            try
+            {
+                //Wait for the time duration
+                await Task.Delay(TimeSpan.FromSeconds(timeDurationSeconds), cancellationToken);
 
+                //Throwing away if the cancelation is called.
+                cancellationToken.ThrowIfCancellationRequested();
+
+                //If I am the Primary User
+                if (serviceManager.PrimaryUser)
+                {
+                    //Set Primary user back to false && Current Service to None
+                    serviceManager.PrimaryUser = false;
+                    serviceManager.currentService = ServiceManager.CurrentService.None;
+
+                    //Reset ApprovalCount and UserCount
+                    serviceManager.ApprovalCount.Reset();
+                    serviceManager.UserCount.Reset();
+
+                    //Signal On Screen Message for Trajectory Approval Timeout
+                    string message = "WARNING : Current Trajectory Request has timed out. Returning to Request Trajectory Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryRequestTimeoutMessage, "TrajectoryRequestTimeoutMessage", UIFunctionalities.MessagesParent, message, "TrajectoryRequestTimeoutMessage: Trajectory Request Cancled by Timeout.");
+
+                    //Set visibility and interactibility of Request Trajectory Button
+                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+
+                }
+                else
+                {
+                    Debug.Log("MQTT: TrajectoryRequestTimeOut: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
+
+                    //Set Service Manager Transaction lock
+                    serviceManager.TrajectoryRequestTransactionLock = false;
+
+                }
+
+                //Set is dirty to true and store the message header for comparison
+                serviceManager.IsDirtyTrajectoryRequest = true;
+                serviceManager.IsDirtyGetTrajectoryRequestHeader = serviceManager.LastGetTrajectoryRequestMessage.Header;
+
+            }
+
+            catch (TaskCanceledException)
+            {
+                Debug.Log("MQTT: TrajectoryRequestTimeOut: Task was cancled before the time out duration");
+            }
+        }
         //////////////////////////////////////////// Event Handlers ////////////////////////////////////////////
         public void AddConnectionEventListners()
         {
