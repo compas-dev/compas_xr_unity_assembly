@@ -46,14 +46,14 @@ namespace CompasXR.Core
     public class DatabaseManager : MonoBehaviour
     {
         // Firebase database references
-        public DatabaseReference dbreference_assembly;
-        public DatabaseReference dbreference_buildingplan;
-        public DatabaseReference dbreference_steps;
-        public DatabaseReference dbreference_LastBuiltIndex;
-        public DatabaseReference dbreference_qrcodes;
-        public DatabaseReference dbrefernece_usersCurrentSteps;
-        public StorageReference storageReference;
-        public DatabaseReference dbreference_project;
+        public DatabaseReference dbReferenceAssembly;
+        public DatabaseReference dbReferenceBuildingPlan;
+        public DatabaseReference dbReferenceSteps;
+        public DatabaseReference dbReferenceLastBuiltIndex;
+        public DatabaseReference dbReferenceQRCodes;
+        public DatabaseReference dbReferenceUsersCurrentSteps;
+        public StorageReference dbRefrenceStorageDirectory;
+        public DatabaseReference dbRefrenceProject;
 
 
         // Data structures to store nodes and steps
@@ -142,25 +142,25 @@ namespace CompasXR.Core
         public async void FetchData(object source, ApplicationSettingsEventArgs e)
         {
             //Create DB References
-            dbreference_project = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname);
-            dbreference_assembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
-            dbreference_buildingplan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data");
-            dbreference_steps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
-            dbreference_LastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
-            dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames").Child("graph").Child("node");
-            dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrentStep");
+            dbRefrenceProject = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname);
+            dbReferenceAssembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
+            dbReferenceBuildingPlan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data");
+            dbReferenceSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
+            dbReferenceLastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
+            dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames").Child("graph").Child("node");
+            dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrentStep");
 
             //If there is nothing to download Storage=="None" then trigger Objects Secured event
             if (e.Settings.storagename == "None")
             {
                 //Fetch QR Data no event trigger
-                FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 
                 //Fetch Assembly Data no event trigger
-                FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
+                FetchRTDData(dbReferenceAssembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
 
                 //Fetch Building plan data with event trigger
-                FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
+                FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
 
             }
             
@@ -171,8 +171,8 @@ namespace CompasXR.Core
                 objectOrientation = e.Settings.objorientation;
                 
                 //Storage Reference from data fetched
-                storageReference = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storagename);
-                string basepath = storageReference.Path;
+                dbRefrenceStorageDirectory = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storagename);
+                string basepath = dbRefrenceStorageDirectory.Path;
                 string path = basepath.Substring(1);
                 Debug.Log($"Path for download on FB Storage: {path}");
 
@@ -190,13 +190,13 @@ namespace CompasXR.Core
             await FetchAndDownloadFilesFromStorage(files);
 
             //Fetch QR Data with "TrackingDict" event trigger
-            FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+            FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
-            FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
+            FetchRTDData(dbReferenceAssembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
             
             //Fetch Building plan data with "BuildingPlandataDict" event trigger
-            FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
+            FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
         }
         async Task<List<FileMetadata>> GetFilesInFolder(string path)
         {
@@ -344,7 +344,7 @@ namespace CompasXR.Core
             string data = JsonConvert.SerializeObject(BuildingPlanDataItem);
             
             //Push the data to firebase
-            dbreference_buildingplan.SetRawJsonValueAsync(data);
+            dbReferenceBuildingPlan.SetRawJsonValueAsync(data);
         }
         public void PushStringData(DatabaseReference db_ref, string data)
         {
@@ -949,44 +949,44 @@ namespace CompasXR.Core
             Debug.Log("Adding Listners");
             
             //Add listners for building plan steps
-            dbreference_steps.ChildAdded += OnStepsChildAdded;
-            dbreference_steps.ChildChanged += OnStepsChildChanged;
-            dbreference_steps.ChildRemoved += OnStepsChildRemoved;
+            dbReferenceSteps.ChildAdded += OnStepsChildAdded;
+            dbReferenceSteps.ChildChanged += OnStepsChildChanged;
+            dbReferenceSteps.ChildRemoved += OnStepsChildRemoved;
             
             //Add Listners for Users Current Step
-            dbrefernece_usersCurrentSteps.ChildAdded += OnUserChildAdded; 
-            dbrefernece_usersCurrentSteps.ChildChanged += OnUserChildChanged;
-            dbrefernece_usersCurrentSteps.ChildRemoved += OnUserChildRemoved;
+            dbReferenceUsersCurrentSteps.ChildAdded += OnUserChildAdded; 
+            dbReferenceUsersCurrentSteps.ChildChanged += OnUserChildChanged;
+            dbReferenceUsersCurrentSteps.ChildRemoved += OnUserChildRemoved;
 
             //Add Listner for building plan last built index
-            dbreference_LastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
+            dbReferenceLastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
 
             //Add Listners to the Overall project to list for data changes in assembly, qrcodes, and additional Info.
-            dbreference_project.ChildAdded += OnProjectInfoChangedUpdate;
-            dbreference_project.ChildChanged += OnProjectInfoChangedUpdate;
-            dbreference_project.ChildRemoved += OnProjectInfoChangedUpdate;
+            dbRefrenceProject.ChildAdded += OnProjectInfoChangedUpdate;
+            dbRefrenceProject.ChildChanged += OnProjectInfoChangedUpdate;
+            dbRefrenceProject.ChildRemoved += OnProjectInfoChangedUpdate;
         }
         public void RemoveListners()
         {        
             Debug.Log("Removing the listeners");
 
             //Remove listners for building plan steps
-            dbreference_steps.ChildAdded += OnStepsChildAdded;
-            dbreference_steps.ChildChanged += OnStepsChildChanged;
-            dbreference_steps.ChildRemoved += OnStepsChildRemoved;
+            dbReferenceSteps.ChildAdded += OnStepsChildAdded;
+            dbReferenceSteps.ChildChanged += OnStepsChildChanged;
+            dbReferenceSteps.ChildRemoved += OnStepsChildRemoved;
             
             //Remove Listners for Users Current Step
-            dbrefernece_usersCurrentSteps.ChildAdded += OnUserChildAdded; 
-            dbrefernece_usersCurrentSteps.ChildChanged += OnUserChildChanged;
-            dbrefernece_usersCurrentSteps.ChildRemoved += OnUserChildRemoved;
+            dbReferenceUsersCurrentSteps.ChildAdded += OnUserChildAdded; 
+            dbReferenceUsersCurrentSteps.ChildChanged += OnUserChildChanged;
+            dbReferenceUsersCurrentSteps.ChildRemoved += OnUserChildRemoved;
 
             //Remove Listner for building plan last built index
-            dbreference_LastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
+            dbReferenceLastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
 
             //Remove Listners to the Overall project to list for data changes in assembly, qrcodes, and additional Info.
-            dbreference_project.ChildAdded += OnProjectInfoChangedUpdate;
-            dbreference_project.ChildChanged += OnProjectInfoChangedUpdate;
-            dbreference_project.ChildRemoved += OnProjectInfoChangedUpdate;
+            dbRefrenceProject.ChildAdded += OnProjectInfoChangedUpdate;
+            dbRefrenceProject.ChildChanged += OnProjectInfoChangedUpdate;
+            dbRefrenceProject.ChildRemoved += OnProjectInfoChangedUpdate;
         }
 
         // Event handler for BuildingPlan child changes
@@ -1256,7 +1256,7 @@ namespace CompasXR.Core
             //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
             TempDatabaseLastBuiltStep = null;
             
-            await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
+            await FetchRTDData(dbReferenceLastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
         
             if (TempDatabaseLastBuiltStep != null)
             {
@@ -1454,14 +1454,14 @@ namespace CompasXR.Core
                     Debug.Log("Project Changed: Assembly Changed");
                     
                     //If the assembly changed then fetch new assembly data
-                    await FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
+                    await FetchRTDData(dbReferenceAssembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
                 }
                 else if(key == "QRFrames")
                 {
                     Debug.Log("Project Changed: QRFrames Changed");
 
                     //If the qrcodes changed then fetch new qrcode data
-                    await FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                    await FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 }
                 else if(key == "beams")
                 {
@@ -1518,7 +1518,7 @@ namespace CompasXR.Core
         protected virtual void OnDestroy()
         {
             //Remove my name from the UserCurrentStep list
-            dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
+            dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
             
             //Remove Listners
             RemoveListners();

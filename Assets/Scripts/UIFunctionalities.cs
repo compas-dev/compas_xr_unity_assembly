@@ -153,7 +153,6 @@ namespace CompasXR.UI
 
         //In script use variables
         public string CurrentStep = null;
-        // public string SearchedElement = "None";
         public string SearchedElementStepID;
         public string SelectedPriority = "None";
         public bool IDTagIsOffset = false;
@@ -170,22 +169,6 @@ namespace CompasXR.UI
             //Control Touch Search
             TouchSearchControler();
         }
-
-        //TODO: REMOVE RANDOM TESTING METHODS.
-        public void PrintRandomIntFromNamespace()
-        {
-            // Debug.Log("Printing random int from Class Member Variable" + nameSpaceTestingMono.Instance.RandomMonoInt);
-
-            // nameSpaceTestingMono.Instance.methodAccessTesting();
-
-            // nameSpaceTestingMono.Instance.methodAccessStaticMonoTesting();
-
-            // Debug.Log("Printing random int from Static Class Member Variable " + nameSpaceTestingStatic.RandomStaticInt);
-
-            // nameSpaceTestingStatic.methodAccessTestingStatic();
-        }
-
-        //TODO: REMOVE RANDOM TESTING METHODS.
 
         /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
         private void OnAwakeInitilization()
@@ -438,7 +421,7 @@ namespace CompasXR.UI
                 Debug.LogError($"Slider Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
             }
         }
-        public void print_string_on_click(string Text)
+        public void PrintStringOnClick(string Text)
         {
             Debug.Log(Text);
         }
@@ -629,7 +612,7 @@ namespace CompasXR.UI
             databaseManager.UserCurrentStepDict[SystemInfo.deviceUniqueIdentifier] = userCurrentInfo;
 
             //Push Current key to the firebase
-            databaseManager.PushStringData(databaseManager.dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
+            databaseManager.PushStringData(databaseManager.dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
 
             //Update Lengths if Object Lengths Toggle is on
             if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
@@ -1520,7 +1503,6 @@ namespace CompasXR.UI
         {
             Debug.Log($"Approve Trajectory Button Pressed: Approving Trajectory for Step {CurrentStep}");
             
-            //TODO: Put this here to prevent accidentally setting it if the message is too fast.
             //Make the approval and disapproval button not interactable to prevent sending multiple approvals and disapprovals.
             TrajectoryServicesUIControler(false, false, true, false, false, false);
             
@@ -1777,6 +1759,13 @@ namespace CompasXR.UI
 
             if(toggle.isOn && RequestTrajectoryButtonObject != null)
             {
+                //If the Object Lenghts Toggle is on move the position lower
+                if (ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    Vector3 offsetPosition = new Vector3(ObjectLengthsUIPanelPosition.x, ObjectLengthsUIPanelPosition.y - 300, ObjectLengthsUIPanelPosition.z);
+                    ObjectLengthsUIPanelObjects.transform.localPosition = offsetPosition; 
+                }
+
                 //Set Visibility of Request Trajectory Button
                 if(trajectoryVisualizer.ActiveRobot && CurrentStep != null)
                 {
@@ -1825,7 +1814,7 @@ namespace CompasXR.UI
                     {
                         trajectoryVisualizer.ActiveRobot.SetActive(false);
                     }
-                    else if(trajectoryVisualizer.ActiveTrajectoryParentObject.activeSelf) //TODO: SHOULD THIS DESTROY?
+                    else if(trajectoryVisualizer.ActiveTrajectoryParentObject.activeSelf)
                     {
                         trajectoryVisualizer.ActiveTrajectoryParentObject.SetActive(false);
                     }
