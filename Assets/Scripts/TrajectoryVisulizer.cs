@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MQTTDataCompasXR;
 using RosSharp.RosBridgeClient;
 using Newtonsoft.Json;
 using Unity.VisualScripting;
@@ -281,9 +280,9 @@ namespace CompasXR.Robots
             int configCount = config.Count;
 
             //Find the parent object for holding trajectory Objects
-            for (int i = 0; i < configCount; i++) //TODO: LOOP THROUGH THE JOINTS OF THE URDF BY NAME.
+            for (int i = 0; i < configCount; i++)
             {
-                GameObject joint = robotToConfigure.FindObject(jointNames[i]); //TODO: FIND OBJECT WITH A SPECIFIC JOINT NAME FROM THIS URDF.
+                GameObject joint = robotToConfigure.FindObject(jointNames[i]);
 
                 if (joint)
                 {
@@ -492,153 +491,6 @@ namespace CompasXR.Robots
                 Debug.Log($"FindMeshRenderers: No MeshRenderer found in URDF on GameObject {currentTransform.gameObject.name}");
             }
 
-        }
-        public List<string> AddJointNamesList(string robotName, List<string> jointNames)
-        {
-            switch(robotName)
-            {
-                case "UR3": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    Debug.Log("AddJointNamesList: UR3");
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
-
-                    break;
-                }
-                case "UR5":
-                {
-                    //Add specific joint names for the UR5 robot
-                    Debug.Log("AddJointNamesList: UR5");
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
-
-                    break;
-                }
-                case "UR10e": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    Debug.Log("AddJointNamesList: UR10e");
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
-
-                    break;
-                }
-                case "UR20": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    Debug.Log("AddJointNamesList: UR20");
-                    jointNames.Add("shoulder_link");
-                    jointNames.Add("upper_arm_link");
-                    jointNames.Add("forearm_link");
-                    jointNames.Add("wrist_1_link");
-                    jointNames.Add("wrist_2_link");
-                    jointNames.Add("wrist_3_link");
-
-                    break;
-                }
-                case "ETHZurichRFL": //TODO: CHECK JOINT NAMES
-                {
-                    //Add specific joint names for the UR5 robot
-                    Debug.Log("AddJointNamesList: ETHZurichRFL");
-                    // jointNames.Add("bridge1");
-                    // jointNames.Add("bridge2");
-                    // jointNames.Add("robot11_xy_cart");
-                    // jointNames.Add("robot12_xy_cart");
-                    // jointNames.Add("robot11_base");
-                    // jointNames.Add("robot11_link_1");
-                    // jointNames.Add("robot11_link_2");
-                    // jointNames.Add("robot11_link_3");
-                    // jointNames.Add("robot11_link_4");
-                    // jointNames.Add("robot11_link_5");
-                    // jointNames.Add("robot11_link_6");
-                    // jointNames.Add("robot12_base");
-                    // jointNames.Add("robot12_link_1");
-                    // jointNames.Add("robot12_link_2");
-                    // jointNames.Add("robot12_link_3");
-                    // jointNames.Add("robot12_link_4");
-                    // jointNames.Add("robot12_link_5");
-                    // jointNames.Add("robot12_link_6");
-                    // jointNames.Add("robot21_xy_cart");
-                    // jointNames.Add("robot22_xy_cart");
-                    // jointNames.Add("robot21_base");
-                    // jointNames.Add("robot21_link_1");
-                    // jointNames.Add("robot21_link_2");
-                    // jointNames.Add("robot21_link_3");
-                    // jointNames.Add("robot21_link_4");
-                    // jointNames.Add("robot21_link_5");
-                    // jointNames.Add("robot21_link_6");
-                    // jointNames.Add("robot22_base");
-                    // jointNames.Add("robot22_link_1");
-                    // jointNames.Add("robot22_link_2");
-                    // jointNames.Add("robot22_link_3");
-                    // jointNames.Add("robot22_link_4");
-                    // jointNames.Add("robot22_link_5");
-                    // jointNames.Add("robot22_link_6");
-                    jointNames.Add("robot22_link_1");
-                    jointNames.Add("robot22_link_2");
-                    jointNames.Add("robot22_link_3");
-                    jointNames.Add("bridge1");
-                    jointNames.Add("robot11_xy_cart");
-                    jointNames.Add("robot12_xy_cart");
-                    jointNames.Add("robot12_link_4");
-                    jointNames.Add("robot12_link_5");
-                    jointNames.Add("robot12_link_6");
-                    jointNames.Add("robot12_link_1");
-                    jointNames.Add("robot12_link_2");
-                    jointNames.Add("robot12_link_3");
-                    jointNames.Add("robot21_base");
-                    jointNames.Add("robot22_base");
-                    jointNames.Add("bridge2");
-                    jointNames.Add("robot11_base");
-                    jointNames.Add("robot12_base");            
-                    jointNames.Add("robot21_link_6");
-                    jointNames.Add("robot21_link_5");
-                    jointNames.Add("robot21_link_4");
-                    jointNames.Add("robot21_link_3");
-                    jointNames.Add("robot21_link_2");
-                    jointNames.Add("robot21_link_1");
-                    jointNames.Add("robot21_xy_cart");
-                    jointNames.Add("robot22_xy_cart");
-                    jointNames.Add("robot22_link_4");
-                    jointNames.Add("robot22_link_5");
-                    jointNames.Add("robot22_link_6");
-                    jointNames.Add("robot11_link_6");
-                    jointNames.Add("robot11_link_5");
-                    jointNames.Add("robot11_link_4");
-                    jointNames.Add("robot11_link_3");
-                    jointNames.Add("robot11_link_2");
-                    jointNames.Add("robot11_link_1");
-
-                    
-                    break;
-                }
-                case "abbGofa":
-                {
-                    //Add specific joint names for the abbGofa robot
-                    Debug.Log("AddJointNamesList: abbGofa");
-                    jointNames.Add("link_1");
-                    jointNames.Add("link_2");
-                    jointNames.Add("link_3");
-                    jointNames.Add("link_4");
-                    jointNames.Add("link_5");
-                    jointNames.Add("link_6");
-                    break;
-                }
-            }      
-            return jointNames;  
         }
 
     }

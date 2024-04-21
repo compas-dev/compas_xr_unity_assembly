@@ -7,11 +7,11 @@ using System.Security.Cryptography.X509Certificates;
 using RosSharp.RosBridgeClient.MessageTypes.Rosapi;
 using Unity.VisualScripting.AssemblyQualifiedNameParser;
 using Newtonsoft.Json;
-using MQTTDataCompasXR;
 using RosSharp.Urdf;
 using CompasXR.Core.Data;
 
-namespace MQTTDataCompasXR
+
+namespace CompasXR.Robots.MqttData
 {
     /*
         WARNING: These classes define standard message formats for Compas XR MQTT communication.
