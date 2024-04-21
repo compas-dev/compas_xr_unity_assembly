@@ -51,7 +51,7 @@ namespace CompasXR.Robots
         //Other Scripts
         public UIFunctionalities UIFunctionalities;
         public DatabaseManager databaseManager;
-        public TrajectoryVisulizer trajectoryVisulizer;
+        public TrajectoryVisualizer trajectoryVisualizer;
 
         protected override void Start()
         {
@@ -88,7 +88,7 @@ namespace CompasXR.Robots
                 //Find UI Functionalities
                 UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
                 databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
-                trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
+                trajectoryVisualizer = GameObject.Find("TrajectoryVisualizer").GetComponent<TrajectoryVisualizer>();
             }
 
             //Connect to MQTT Broker on start with default settings.
@@ -411,13 +411,13 @@ namespace CompasXR.Robots
                                 getTrajectoryResultmessage.ElementID,
                                 getTrajectoryResultmessage.RobotName,
                                 serviceManager.ActiveRobotName,
-                                () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                                () => trajectoryVisualizer.VisualizeRobotTrajectory(
                                     getTrajectoryResultmessage.Trajectory,
-                                    trajectoryVisulizer.URDFLinkNames,
+                                    trajectoryVisualizer.URDFLinkNames,
                                     getTrajectoryResultmessage.RobotBaseFrame,
                                     getTrajectoryResultmessage.TrajectoryID,
-                                    trajectoryVisulizer.ActiveRobot,
-                                    trajectoryVisulizer.ActiveTrajectoryParentObject,
+                                    trajectoryVisualizer.ActiveRobot,
+                                    trajectoryVisualizer.ActiveTrajectoryParentObject,
                                     true));
 
                             //Set curent trajectory of the Service Manager
@@ -466,13 +466,13 @@ namespace CompasXR.Robots
                                     getTrajectoryResultmessage.ElementID,
                                     getTrajectoryResultmessage.RobotName,
                                     serviceManager.ActiveRobotName,
-                                    () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                                    () => trajectoryVisualizer.VisualizeRobotTrajectory(
                                         getTrajectoryResultmessage.Trajectory,
-                                        trajectoryVisulizer.URDFLinkNames,
+                                        trajectoryVisualizer.URDFLinkNames,
                                         getTrajectoryResultmessage.RobotBaseFrame,
                                         getTrajectoryResultmessage.TrajectoryID,
-                                        trajectoryVisulizer.ActiveRobot,
-                                        trajectoryVisulizer.ActiveTrajectoryParentObject,
+                                        trajectoryVisualizer.ActiveRobot,
+                                        trajectoryVisualizer.ActiveTrajectoryParentObject,
                                         true));
                                 
                                 Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is not the same as the active robot name signaling on screen control.");
@@ -480,7 +480,7 @@ namespace CompasXR.Robots
                             }
                             else
                             {
-                                trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectoryParentObject, true);
+                                trajectoryVisualizer.VisualizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisualizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisualizer.ActiveRobot, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
                                 Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
                             }
                             
@@ -552,18 +552,18 @@ namespace CompasXR.Robots
                 }
                 
                 //If the Active Trajectory child count is greater the 0 then destroy children
-                if(trajectoryVisulizer.ActiveTrajectoryParentObject != null && trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
+                if(trajectoryVisualizer.ActiveTrajectoryParentObject != null && trajectoryVisualizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                 {
-                    trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+                    trajectoryVisualizer.DestroyActiveTrajectoryChildren();
                 }
                 else
                 {
                     Debug.LogWarning("ApproveTrajectoryMessageReceivedHandler: ActiveTrajectoryParentObject is null or has no children.");
                 }
                 //If the Active Robot is not active set it to active
-                if(trajectoryVisulizer.ActiveRobot != null && !trajectoryVisulizer.ActiveRobot.activeSelf)
+                if(trajectoryVisualizer.ActiveRobot != null && !trajectoryVisualizer.ActiveRobot.activeSelf)
                 {
-                    trajectoryVisulizer.ActiveRobot.SetActive(true);
+                    trajectoryVisualizer.ActiveRobot.SetActive(true);
                 }
                 
                 //Reset ApprovalCount and UserCount This could be done inside of the PrimaryUser, but Also safe way of error catching
@@ -664,14 +664,14 @@ namespace CompasXR.Robots
                     serviceManager.currentService = ServiceManager.CurrentService.None;
                                 
                     //If the Active Trajectory child count is greater the 0 then destroy children
-                    if(trajectoryVisulizer.ActiveTrajectoryParentObject != null && trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
+                    if(trajectoryVisualizer.ActiveTrajectoryParentObject != null && trajectoryVisualizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                     {
-                        trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+                        trajectoryVisualizer.DestroyActiveTrajectoryChildren();
                     }
                     //If the Active Robot is not active set it to active
-                    if(trajectoryVisulizer.ActiveRobot != null && !trajectoryVisulizer.ActiveRobot.activeSelf)
+                    if(trajectoryVisualizer.ActiveRobot != null && !trajectoryVisualizer.ActiveRobot.activeSelf)
                     {
-                        trajectoryVisulizer.ActiveRobot.SetActive(true);
+                        trajectoryVisualizer.ActiveRobot.SetActive(true);
                     }
 
                     //Signal OnScreen message for Trajectory Approval Canceled

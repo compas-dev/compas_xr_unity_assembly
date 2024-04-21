@@ -25,7 +25,7 @@ namespace CompasXR.UI
         public InstantiateObjects instantiateObjects;
         public Eventmanager eventManager;
         public MqttTrajectoryManager mqttTrajectoryManager;
-        public TrajectoryVisulizer trajectoryVisulizer;
+        public TrajectoryVisualizer trajectoryVisualizer;
         public RosConnectionManager rosConnectionManager;
         public ScrollSearchManager scrollSearchManager;
 
@@ -195,7 +195,7 @@ namespace CompasXR.UI
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
             eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
             mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
-            trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
+            trajectoryVisualizer = GameObject.Find("TrajectoryVisualizer").GetComponent<TrajectoryVisualizer>();
             rosConnectionManager = GameObject.Find("RosManager").GetComponent<RosConnectionManager>();
             scrollSearchManager = GameObject.Find("ScrollSearchManager").GetComponent<ScrollSearchManager>();
 
@@ -219,7 +219,7 @@ namespace CompasXR.UI
         
             //Set up UI Objects and buttons on start
             SetPrimaryUIItemsOnStart();
-            SetVisulizerMenuItemsOnStart();
+            SetVisualizerMenuItemsOnStart();
             SetMenuItemsOnStart();
             SetCommunicationItemsOnStart();
         }
@@ -272,7 +272,7 @@ namespace CompasXR.UI
             ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("Prefabs").FindObject("ActiveRobotUpdatedFromPlannerMessage");
             TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("Prefabs").FindObject("TrajectoryReviewRequestReceivedMessage");
         }
-        private void SetVisulizerMenuItemsOnStart()
+        private void SetVisualizerMenuItemsOnStart()
         {
             //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
             FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PreviewActorToggleObject, "PreviewActorToggle", TogglePreviewActor);
@@ -371,7 +371,7 @@ namespace CompasXR.UI
             RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
             RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
             RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> robotOptions = SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisulizer.RobotURDFList);
+            List<TMP_Dropdown.OptionData> robotOptions = SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisualizer.RobotURDFList);
             RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
             if(RobotSelectionControlObjects == null)
             {
@@ -644,21 +644,21 @@ namespace CompasXR.UI
                 SetRoboticUIElementsFromKey(CurrentStep);
 
                 //If the current robot is not null then set visibility
-                if(trajectoryVisulizer.ActiveRobot != null)
+                if(trajectoryVisualizer.ActiveRobot != null)
                 {
                     if(step.data.actor == "ROBOT")
                     {
-                        trajectoryVisulizer.ActiveRobot.SetActive(true);
-                        trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
+                        trajectoryVisualizer.ActiveRobot.SetActive(true);
+                        trajectoryVisualizer.ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
                     }
                     else
                     {
-                        trajectoryVisulizer.ActiveRobot.SetActive(false);
+                        trajectoryVisualizer.ActiveRobot.SetActive(false);
                     }
                     //If the Active Trajectory child count is greater the 0 then destroy children
-                    if(trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
+                    if(trajectoryVisualizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                     {
-                        trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+                        trajectoryVisualizer.DestroyActiveTrajectoryChildren();
                     }
                 }
                 else
@@ -1043,7 +1043,7 @@ namespace CompasXR.UI
                 }
 
                 //Set Active Robot
-                trajectoryVisulizer.SetActiveRobotFromDropdown(robotName, true, visibility);
+                trajectoryVisualizer.SetActiveRobotFromDropdown(robotName, true, visibility);
 
                 //Turn on the check mark image on
                 SetActiveRobotToggleObject.FindObject("Image").SetActive(true);
@@ -1053,9 +1053,9 @@ namespace CompasXR.UI
                 Debug.Log("SettingActiveRobotButtonMethod: Destroying Current Active Robot");
 
                 //If the active robot is not null destroy it.
-                if(trajectoryVisulizer.ActiveRobotObjects.transform.childCount > 0)
+                if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
                 {
-                    trajectoryVisulizer.DestroyActiveRobotObjects();
+                    trajectoryVisualizer.DestroyActiveRobotObjects();
                 }
 
                 //Change My Active Robot to null for MQTT Service Manager
@@ -1490,7 +1490,7 @@ namespace CompasXR.UI
                 
                 return;
             }
-            else if (trajectoryVisulizer.ActiveRobot == null)
+            else if (trajectoryVisualizer.ActiveRobot == null)
             {
                 Debug.Log("RequestTrajectoryButtonMethod : Active Robot is null");
             
@@ -1557,7 +1557,7 @@ namespace CompasXR.UI
                     Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
 
                     //Color Static Robot Image based on SliderRemapedValue
-                    trajectoryVisulizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisulizer.previousSliderValue);
+                    trajectoryVisualizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisualizer.previousSliderValue);
                 }
                 else
                 {
@@ -1778,9 +1778,9 @@ namespace CompasXR.UI
             if(toggle.isOn && RequestTrajectoryButtonObject != null)
             {
                 //Set Visibility of Request Trajectory Button
-                if(trajectoryVisulizer.ActiveRobot && CurrentStep != null)
+                if(trajectoryVisualizer.ActiveRobot && CurrentStep != null)
                 {
-                    trajectoryVisulizer.ActiveRobot.SetActive(true);
+                    trajectoryVisualizer.ActiveRobot.SetActive(true);
                 }
                 else
                 {
@@ -1819,15 +1819,15 @@ namespace CompasXR.UI
                 SetActiveRobotToggleObject.SetActive(false);
                             
                 //Set Visibility of Robot.
-                if(trajectoryVisulizer.ActiveRobotObjects.transform.childCount > 0)
+                if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
                 {
-                    if(trajectoryVisulizer.ActiveRobot.activeSelf)
+                    if(trajectoryVisualizer.ActiveRobot.activeSelf)
                     {
-                        trajectoryVisulizer.ActiveRobot.SetActive(false);
+                        trajectoryVisualizer.ActiveRobot.SetActive(false);
                     }
-                    else if(trajectoryVisulizer.ActiveTrajectoryParentObject.activeSelf) //TODO: SHOULD THIS DESTROY?
+                    else if(trajectoryVisualizer.ActiveTrajectoryParentObject.activeSelf) //TODO: SHOULD THIS DESTROY?
                     {
-                        trajectoryVisulizer.ActiveTrajectoryParentObject.SetActive(false);
+                        trajectoryVisualizer.ActiveTrajectoryParentObject.SetActive(false);
                     }
                 }
 

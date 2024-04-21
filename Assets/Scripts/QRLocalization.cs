@@ -122,7 +122,6 @@ namespace CompasXR.Core
             }
 
         }
-
         private Vector3 TranslatedPosition(GameObject gobject, Vector3 position, Quaternion Individualrotation)
         {
             //Position determined by positioning the QR codes observed position and rotation and translating by position vector and the inverse of the QR rotation

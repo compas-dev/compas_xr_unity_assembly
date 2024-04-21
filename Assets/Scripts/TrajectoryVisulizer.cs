@@ -2,9 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RosSharp.RosBridgeClient;
-using Newtonsoft.Json;
-using Unity.VisualScripting;
-using Vuforia;
 using RosSharp.Urdf;
 using CompasXR.Core;
 using CompasXR.UI;
@@ -13,7 +10,7 @@ using CompasXR.Core.Extentions;
 
 namespace CompasXR.Robots
 {
-    public class TrajectoryVisulizer : MonoBehaviour
+    public class TrajectoryVisualizer : MonoBehaviour
     {
         //Other script objects
         private InstantiateObjects instantiateObjects;
@@ -38,12 +35,6 @@ namespace CompasXR.Robots
         void Start()
         {
             OnStartInitilization();
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            
         }
 
         ////////////////////////////////////////// Initilization & Selection //////////////////////////////////////////////////////
@@ -143,7 +134,7 @@ namespace CompasXR.Robots
                     GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                     temporaryRobot.name = $"Config {i}";
 
-                    //Visulize the robot configuration
+                    //Visualize the robot configuration
                     SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames); //TODO: CONVERT THIS TO A CUSTOM ACTION.
 
                     //Set temporary Robots parent to the ActiveRobot.
@@ -158,13 +149,13 @@ namespace CompasXR.Robots
             }
             else
             {
-                //TODO: THIS SHOULD BE AN ERROR MESSAGE INSTEAD.
-                Debug.Log("VisulizeRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
+                
+                Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
         }
-        public void VisulizeRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
+        public void VisualizeRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
         {
-            Debug.Log($"VisulizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
+            Debug.Log($"VisualizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             //If the child is not active for some reason, activate it.
             if(!ActiveRobot.transform.GetChild(0).gameObject.activeSelf)
             {
@@ -174,7 +165,7 @@ namespace CompasXR.Robots
             //Set active robot visibility to false and visualize the trajectory from the message
             ActiveRobot.SetActive(false);
 
-            //Visulize the robot trajectory
+            //Visualize the robot trajectory
             InstantiateRobotTrajectory(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);  
         }
         public void DestroyActiveRobotObjects()
@@ -223,12 +214,12 @@ namespace CompasXR.Robots
                 //If the warning message is null create it, if it is not null then just set it active to true. This helps from duplication and overlaying the same message.
                 if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject == null)
                 {
-                    string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
+                    string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visualized.";
                     uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, "ConfigDoesNotMatchURDFStructureWarningMessage", uiFunctionalities.MessagesParent, message, "SetRobotConfigfromDictWrapper: Config does not match URDF");
                 }
                 else if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject.activeSelf == false)
                 {
-                    string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
+                    string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visualized.";
                     uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, "ConfigDoesNotMatchURDFStructureWarningMessage", uiFunctionalities.MessagesParent, message, "SetRobotConfigfromDictWrapper: Config does not match URDF");
                 }
 
@@ -289,7 +280,7 @@ namespace CompasXR.Robots
                     //Get the jointStateWriter component from the joint.
                     JointStateWriter jointStateWriter = joint.GetComponent<JointStateWriter>();
                     UrdfJoint urdfJoint = joint.GetComponent<UrdfJoint>();
-                    Debug.Log($"VisulizeRobotConfig: URDF Joint of TYPE {urdfJoint.JointType} COMPONENT FOUND FOR NAME {urdfJoint.JointName} found in the robotToConfigure.");
+                    Debug.Log($"SetRobotConfigfromList: URDF Joint of TYPE {urdfJoint.JointType} COMPONENT FOUND FOR NAME {urdfJoint.JointName} found in the robotToConfigure.");
                     
                     //If the jointStateWriter is not found, add it to the joint.
                     if (!jointStateWriter)
@@ -302,7 +293,7 @@ namespace CompasXR.Robots
                 }  
                 else
                 {
-                    Debug.Log($"VisulizeRobotConfig: Joint {name} not found in the robotToConfigure.");
+                    Debug.Log($"SetRobotConfigfromList: Joint {name} not found in the robotToConfigure.");
                 }
             }
 

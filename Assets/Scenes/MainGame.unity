@@ -57055,7 +57055,7 @@ MonoBehaviour:
   controllerName: MQTT Trajectory Controller
   UIFunctionalities: {fileID: 0}
   databaseManager: {fileID: 0}
-  trajectoryVisulizer: {fileID: 0}
+  trajectoryVisualizer: {fileID: 0}
 --- !u!224 &801562648174556656
 RectTransform:
   m_ObjectHideFlags: 0
@@ -63456,7 +63456,7 @@ MonoBehaviour:
   instantiateObjects: {fileID: 0}
   eventManager: {fileID: 0}
   mqttTrajectoryManager: {fileID: 0}
-  trajectoryVisulizer: {fileID: 0}
+  trajectoryVisualizer: {fileID: 0}
   rosConnectionManager: {fileID: 0}
   scrollSearchManager: {fileID: 0}
   CanvasObject: {fileID: 0}
@@ -63753,7 +63753,7 @@ GameObject:
   - component: {fileID: 7260807374649176985}
   - component: {fileID: 8444407952730428365}
   m_Layer: 0
-  m_Name: TrajectoryVisulizer
+  m_Name: TrajectoryVisualizer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69441,7 +69441,7 @@ MonoBehaviour:
   Checkfirebase: {fileID: 1077438725447714118}
   QRLocalization: {fileID: 8767998526698590026}
   MqttTrajectoryReceiver: {fileID: 3555920155599777618}
-  TrajectoryVisulizer: {fileID: 3286733832950485788}
+  TrajectoryVisualizer: {fileID: 3286733832950485788}
 --- !u!4 &5813617637826940773
 Transform:
   m_ObjectHideFlags: 0

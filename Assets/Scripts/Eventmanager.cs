@@ -13,7 +13,7 @@ namespace CompasXR.Core
         public GameObject Checkfirebase;
         public GameObject QRLocalization;
         public GameObject MqttTrajectoryReceiver;
-        public GameObject TrajectoryVisulizer;
+        public GameObject TrajectoryVisualizer;
         public DatabaseReference settings_reference;
         DatabaseManager databaseManager;
 
@@ -34,7 +34,7 @@ namespace CompasXR.Core
             CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
             QRLocalization qrLocalization = QRLocalization.GetComponent<QRLocalization>();
             MqttTrajectoryManager mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryManager>();
-            TrajectoryVisulizer trajectoryVisulizer = TrajectoryVisulizer.GetComponent<TrajectoryVisulizer>();
+            TrajectoryVisualizer trajectoryVisualizer = TrajectoryVisualizer.GetComponent<TrajectoryVisualizer>();
             
             //Initilize Connection to Firebase and Fetch Settings Data
             checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
