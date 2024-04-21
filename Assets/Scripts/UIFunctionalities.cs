@@ -1587,8 +1587,8 @@ namespace CompasXR.UI
                 //Turn off the Preview Builder
                 instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
 
-                //Apply color to the objects based on actor
-                instantiateObjects.ApplyColorBasedOnBuildState();
+                //Apply Color Based on App Modes
+                instantiateObjects.ApplyColorBasedOnAppModes();
 
                 //Color the button if it is off
                 SetUIObjectColor(PreviewActorToggleObject, White);
@@ -1881,20 +1881,9 @@ namespace CompasXR.UI
             }
             else
             {
-                
+
                 //Color Elements by visulization mode
-                if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.ActorView)
-                {
-                    instantiateObjects.ApplyColorBasedOnActor();
-                }
-                else if(instantiateObjects.visulizationController.VisulizationMode == VisulizationMode.BuiltUnbuilt)
-                {
-                    instantiateObjects.ApplyColorBasedOnBuildState();
-                }
-                else
-                {
-                    Debug.LogWarning("Could not find Visulization Mode.");
-                }
+                instantiateObjects.ApplyColorBasedOnAppModes();
 
                 //Set visibility of reference objects
                 instantiateObjects.PriorityViewrLineObject.SetActive(false);
@@ -2524,9 +2513,7 @@ namespace CompasXR.UI
         }
         private void DestroyBoundingBoxFixElementColor()
         {
-
             //destroy the previous bounding box
-
             if (GameObject.Find("BoundingArea") != null)
             {
                 GameObject Box = GameObject.Find("BoundingArea");

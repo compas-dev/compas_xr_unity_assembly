@@ -957,7 +957,7 @@ namespace CompasXR.Core
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
-            switch (visulizationController.VisulizationMode)
+            switch (visualizationMode)
             {
                 case VisulizationMode.BuiltUnbuilt:
                     ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
@@ -968,7 +968,7 @@ namespace CompasXR.Core
             }
 
             //Set Touch mode based on Touch Mode
-            switch (visulizationController.TouchMode)
+            switch (touchMode)
             {
                 case TouchMode.None:
                     //Do nothing
@@ -1200,7 +1200,37 @@ namespace CompasXR.Core
                 }
             }
         }
-    
+        public void ApplyColorBasedOnAppModes()
+        {
+            if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
+                {
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
+
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    {
+                        //Color based on visulization mode
+                        ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, entry.Value, entry.Key, geometryObject);
+
+                        //Check if Priority Viewer is on and color based on priority if it is.
+                        if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //Color based on priority
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                        }
+                    }
+                }
+            }
+        }
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, BuildingPlanDataDictEventArgs e)
         {
