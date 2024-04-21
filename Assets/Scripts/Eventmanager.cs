@@ -6,7 +6,7 @@ using CompasXR.Robots;
 
 namespace CompasXR.Core
 {
-    public class Eventmanager : MonoBehaviour
+    public class EventManager : MonoBehaviour
     {
         public GameObject Databasemanager;
         public GameObject Instantiateobjects;

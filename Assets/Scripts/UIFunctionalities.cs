@@ -23,7 +23,7 @@ namespace CompasXR.UI
         //Other Scripts for inuse objects
         public DatabaseManager databaseManager;
         public InstantiateObjects instantiateObjects;
-        public Eventmanager eventManager;
+        public EventManager eventManager;
         public MqttTrajectoryManager mqttTrajectoryManager;
         public TrajectoryVisualizer trajectoryVisualizer;
         public RosConnectionManager rosConnectionManager;
@@ -193,7 +193,7 @@ namespace CompasXR.UI
             //Find Other Scripts
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
-            eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
+            eventManager = GameObject.Find("EventManager").GetComponent<EventManager>();
             mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
             trajectoryVisualizer = GameObject.Find("TrajectoryVisualizer").GetComponent<TrajectoryVisualizer>();
             rosConnectionManager = GameObject.Find("RosManager").GetComponent<RosConnectionManager>();
