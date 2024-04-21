@@ -307,9 +307,9 @@ namespace CompasXR.Robots
             //Set last request message of the Service Manager
             serviceManager.LastGetTrajectoryRequestMessage = getTrajectoryRequestmessage;
 
-            //TODO: START A TIME OUT FOR THE REQUESTER TO WAIT FOR THE RESULT. THIS WILL BE CANCELED IF THE RESULT IS RECEIVED.
+            //Timeout for the Get Trajectory request.
             serviceManager.GetTrajectoryRequestTimeOutCancelationToken = new CancellationTokenSource();
-            _= TrajectoryRequestTimeOut(getTrajectoryRequestmessage.ElementID, 10f, serviceManager.GetTrajectoryRequestTimeOutCancelationToken.Token);
+            _= TrajectoryRequestTimeOut(getTrajectoryRequestmessage.ElementID, 240f, serviceManager.GetTrajectoryRequestTimeOutCancelationToken.Token);
 
             //Check the device ID to see if it is mine, and if it is not apply Get Trajectory Request Transaction lock.
             if (getTrajectoryRequestmessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
@@ -400,7 +400,7 @@ namespace CompasXR.Robots
                         serviceManager.ApprovalTimeOutCancelationToken = new CancellationTokenSource();
                         
                         //Float duration dependent on if I am Primary user or not
-                        float duration = 120; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
+                        float duration = 10; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
                         if(!serviceManager.PrimaryUser)
                         {
                             duration = 240; //TODO: DURATION FOR NON PRIMARY USER WAITING FOR CONSENSUS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
@@ -533,20 +533,6 @@ namespace CompasXR.Robots
         }
         private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage)
         {
-            //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-            if(serviceManager.IsDirtyApproval)
-            {
-                if(serviceManager.IsDirtyApprovalHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID && trajectoryApprovalMessage.ApprovalStatus != 3)
-                {
-                    Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true and the message is the same as the dirty message. No action taken.");
-                    return;
-                }
-                else
-                {
-                    Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-                    serviceManager.IsDirtyApproval = false;
-                }
-            }
 
             //Approve trajectory approvalStatus rejction message received 
             if (trajectoryApprovalMessage.ApprovalStatus == 0)
@@ -667,7 +653,7 @@ namespace CompasXR.Robots
                 //Time out Cancelation Token: Cancel the time out because of consensus
                 if(serviceManager.ApprovalTimeOutCancelationToken != null)
                 {
-                    Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR TRAJECTORY CANCELATION FROM SOMEONE ELSE.");
+                    Debug.Log("ApproveTrajectoryMessageReceivedHandler: Canceling Trajectory Approval from Cancelation Message.");
                     serviceManager.ApprovalTimeOutCancelationToken.Cancel();
                 }
 
@@ -784,10 +770,6 @@ namespace CompasXR.Robots
 
                         //Set visibility and interactibility of Request Trajectory Button
                         UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
-
-                        //Set is dirty to true and store the message header for comparison
-                        serviceManager.IsDirtyApproval = true;
-                        serviceManager.IsDirtyApprovalHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
                     }
                 }
                 else
@@ -804,7 +786,7 @@ namespace CompasXR.Robots
         }
         async Task TrajectoryRequestTimeOut(string elementID, float timeDurationSeconds, CancellationToken cancellationToken)
         {
-            Debug.Log($"MQTT: TrajectoryRequestTimeOut: Started with a duration of {timeDurationSeconds} seconds.");
+            Debug.Log($"MQTT: TrajectoryRequestTimeOut: For element {elementID} Started with a duration of {timeDurationSeconds} seconds.");
             
             //Time out controled by try and except block in order to catch the TaskCanceledException on completed
             try
@@ -854,6 +836,7 @@ namespace CompasXR.Robots
                 Debug.Log("MQTT: TrajectoryRequestTimeOut: Task was cancled before the time out duration");
             }
         }
+
         //////////////////////////////////////////// Event Handlers ////////////////////////////////////////////
         public void AddConnectionEventListners()
         {
