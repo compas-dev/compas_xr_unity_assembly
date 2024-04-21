@@ -135,7 +135,7 @@ namespace CompasXR.Robots.MqttData
         public CancellationTokenSource GetTrajectoryRequestTimeOutCancelationToken { get; set; }
 
         //Is Dirty Bool used for the GetTrajectoryRequest
-        public bool IsDirtyTrajectoryRequest { get; set; }
+        public bool IsDirtyTrajectory { get; set; }
 
         //Is Dirty Header used for GetTrajectoryRequest time out
         public Header IsDirtyGetTrajectoryRequestHeader { get; set; }
@@ -151,7 +151,7 @@ namespace CompasXR.Robots.MqttData
             LastGetTrajectoryRequestMessage = null;
             LastGetTrajectoryResultMessage = null;
             IsDirtyGetTrajectoryRequestHeader = null;
-            IsDirtyTrajectoryRequest = false;            
+            IsDirtyTrajectory = false;            
             TrajectoryRequestTransactionLock = false;
         }
 

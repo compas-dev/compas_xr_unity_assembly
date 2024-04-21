@@ -327,7 +327,7 @@ namespace CompasXR.Robots
         private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)
         {
             //Check if the message is dirty and should be ignored
-            if(serviceManager.IsDirtyTrajectoryRequest)
+            if(serviceManager.IsDirtyTrajectory)
             {
                 //Check if this is the dirty message that should be ignored, and return if it is...
                 if(serviceManager.IsDirtyGetTrajectoryRequestHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID &&
@@ -826,7 +826,7 @@ namespace CompasXR.Robots
                 }
 
                 //Set is dirty to true and store the message header for comparison
-                serviceManager.IsDirtyTrajectoryRequest = true;
+                serviceManager.IsDirtyTrajectory = true;
                 serviceManager.IsDirtyGetTrajectoryRequestHeader = serviceManager.LastGetTrajectoryRequestMessage.Header;
 
             }
