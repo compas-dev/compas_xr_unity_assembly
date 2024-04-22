@@ -213,7 +213,7 @@ namespace CompasXR.Robots.MqttData
     [System.Serializable]
     public class SequenceCounter
     {
-        private static readonly int ROLLOVER_THRESHOLD = 1000000;
+        private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
 
@@ -254,7 +254,7 @@ namespace CompasXR.Robots.MqttData
     public class ResponseID
     {
         //Response Attributes.
-        private static readonly int ROLLOVER_THRESHOLD = 1000000;
+        private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
 
