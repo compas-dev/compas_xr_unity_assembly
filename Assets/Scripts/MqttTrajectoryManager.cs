@@ -155,7 +155,7 @@ namespace CompasXR.Robots
         public void SetCompasXRTopics(object source, ApplicationSettingsEventArgs e)
         {
             //Set Compas_XR Topics Information from the project name
-            compasXRTopics = new CompasXRTopics(e.Settings.parentname);
+            compasXRTopics = new CompasXRTopics(e.Settings.project_name);
         }
         private void SubscribeToTopic(string topicToSubscribe)
         {

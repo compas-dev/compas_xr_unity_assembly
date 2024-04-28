@@ -102,7 +102,7 @@ namespace CompasXR.Core
         public UIFunctionalities UIFunctionalities;
 
         //In script use objects.
-        public bool objectOrientation;
+        public bool z_remapped;
         public string TempDatabaseLastBuiltStep;
 
         public string CurrentPriority = null;
@@ -142,16 +142,16 @@ namespace CompasXR.Core
         public async void FetchData(object source, ApplicationSettingsEventArgs e)
         {
             //Create DB References
-            dbRefrenceProject = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname);
-            dbReferenceAssembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("assembly").Child("graph").Child("node");
-            dbReferenceBuildingPlan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data");
-            dbReferenceSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
-            dbReferenceLastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
-            dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames").Child("graph").Child("node");
-            dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrentStep");
+            dbRefrenceProject = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name);
+            dbReferenceAssembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("assembly").Child("graph").Child("node");
+            dbReferenceBuildingPlan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data");
+            dbReferenceSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data").Child("steps");
+            dbReferenceLastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data").Child("LastBuiltIndex");
+            dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("QRFrames").Child("graph").Child("node");
+            dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("UsersCurrentStep");
 
             //If there is nothing to download Storage=="None" then trigger Objects Secured event
-            if (e.Settings.storagename == "None")
+            if (e.Settings.storage_folder == "None")
             {
                 //Fetch QR Data no event trigger
                 FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
@@ -168,10 +168,10 @@ namespace CompasXR.Core
             else
             {
                 //Set Obj Orientation bool
-                objectOrientation = e.Settings.objorientation;
+                z_remapped = e.Settings.z_to_y_remap;
                 
                 //Storage Reference from data fetched
-                dbRefrenceStorageDirectory = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storagename);
+                dbRefrenceStorageDirectory = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storage_folder);
                 string basepath = dbRefrenceStorageDirectory.Path;
                 string path = basepath.Substring(1);
                 Debug.Log($"Path for download on FB Storage: {path}");

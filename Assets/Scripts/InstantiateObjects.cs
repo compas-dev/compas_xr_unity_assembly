@@ -122,7 +122,7 @@ namespace CompasXR.Core
             Quaternion rotationQuaternion;
             if(step.data.geometry == "2.ObjFile")
             {
-                rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
+                rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.z_remapped);
             }
             else
             {
@@ -743,7 +743,7 @@ namespace CompasXR.Core
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
     
     //TODO: Move these transformation things to a true static class and start the class library conversion process...
-        public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
+        public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool z_to_y_remapped)
         {   
             //Set Unity Rotation
             Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
@@ -752,7 +752,7 @@ namespace CompasXR.Core
 
             Rotation ObjectRotation;
 
-            if (objZ_up == true)
+            if (!z_to_y_remapped == true)
             {
                 ObjectRotation = XRotation(Zrotation);
             }
