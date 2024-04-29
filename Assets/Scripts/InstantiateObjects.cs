@@ -148,10 +148,10 @@ namespace CompasXR.Core
             GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
             
             // Destroy Initial gameobject that is made.
-            if (geometry_object != null)
-            {
-                Destroy(geometry_object);
-            }
+            // if (geometry_object != null)
+            // {
+            //     Destroy(geometry_object);
+            // }
 
             //Set parent and name
             elementPrefab.transform.SetParent(Elements.transform, false);
@@ -253,8 +253,7 @@ namespace CompasXR.Core
 
                         //Add a collider to the gameobject
                         BoxCollider cylinderCollider = cylinderObject.AddComponent<BoxCollider>();
-                        Vector3 cylinderSize = cylinderObject.GetComponent<MeshRenderer>().bounds.size;
-                        Vector3 cylinderColliderSize = new Vector3(cylinderSize.x*1.1f, cylinderSize.y*1.2f, cylinderSize.z*1.2f);
+                        Vector3 cylinderColliderSize = new Vector3(cylindersize.x*1.1f, cylindersize.y*1.2f, cylindersize.z*1.2f);
                         cylinderCollider.size = cylinderColliderSize;
 
                         //Set the cylinder as a child of the empty gameObject
@@ -269,7 +268,7 @@ namespace CompasXR.Core
                         element.transform.rotation = Quaternion.identity;
                         
                         //Define the Size of the Cube from the data values
-                        Vector3 cubesize = new Vector3(databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.length);
+                        Vector3 cubesize = new Vector3(databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.length, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width);
                         
                         //Create, Scale, & name Box object (Named by Assembly ID)
                         GameObject boxObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -278,8 +277,7 @@ namespace CompasXR.Core
 
                         //Add a collider to the gameobject
                         BoxCollider boxCollider = boxObject.AddComponent<BoxCollider>();
-                        Vector3 boxSize = boxObject.GetComponent<MeshRenderer>().bounds.size;
-                        Vector3 boxColliderSize = new Vector3(boxSize.x*1.1f, boxSize.y*1.2f, boxSize.z*1.2f);
+                        Vector3 boxColliderSize = new Vector3(cubesize.x*1.1f, cubesize.y*1.2f, cubesize.z*1.2f);
                         boxCollider.size = boxColliderSize;
 
                         //Set the cylinder as a child of the empty gameObject
