@@ -253,7 +253,7 @@ namespace CompasXR.Core
 
                         //Add a collider to the gameobject
                         BoxCollider cylinderCollider = cylinderObject.AddComponent<BoxCollider>();
-                        Vector3 cylinderColliderSize = new Vector3(cylindersize.x*1.1f, cylindersize.y*1.2f, cylindersize.z*1.2f);
+                        Vector3 cylinderColliderSize = new Vector3(cylinderCollider.size.x*1.1f, cylinderCollider.size.y*1.2f, cylinderCollider.size.z*1.2f);
                         cylinderCollider.size = cylinderColliderSize;
 
                         //Set the cylinder as a child of the empty gameObject
@@ -277,7 +277,7 @@ namespace CompasXR.Core
 
                         //Add a collider to the gameobject
                         BoxCollider boxCollider = boxObject.AddComponent<BoxCollider>();
-                        Vector3 boxColliderSize = new Vector3(cubesize.x*1.1f, cubesize.y*1.2f, cubesize.z*1.2f);
+                        Vector3 boxColliderSize = new Vector3(boxCollider.size.x*1.1f, boxCollider.size.y*1.2f, boxCollider.size.z*1.2f);
                         boxCollider.size = boxColliderSize;
 
                         //Set the cylinder as a child of the empty gameObject
