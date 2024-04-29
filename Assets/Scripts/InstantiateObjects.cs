@@ -148,10 +148,10 @@ namespace CompasXR.Core
             GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
             
             // Destroy Initial gameobject that is made.
-            // if (geometry_object != null)
-            // {
-            //     Destroy(geometry_object);
-            // }
+            if (geometry_object != null)
+            {
+                Destroy(geometry_object);
+            }
 
             //Set parent and name
             elementPrefab.transform.SetParent(Elements.transform, false);
