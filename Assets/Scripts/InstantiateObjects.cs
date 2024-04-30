@@ -740,7 +740,7 @@ namespace CompasXR.Core
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
     
     //TODO: Move these transformation things to a true static class and start the class library conversion process...
-        public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool z_to_y_remapped)
+        public static Quaternion FromRhinotoUnityRotation(Rotation rotation, bool z_to_y_remapped)
         {   
             //Set Unity Rotation
             Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
@@ -763,7 +763,7 @@ namespace CompasXR.Core
 
             return rotationQuaternion;
         } 
-        public Quaternion FromUnityRotation(Rotation rotation)
+        public static Quaternion FromUnityRotation(Rotation rotation)
         {   
             //Right hand to left hand conversion
             Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
@@ -773,12 +773,12 @@ namespace CompasXR.Core
 
             return rotationQuaternion;
         } 
-        public Vector3 GetPosition(float[] pointlist)
+        public static Vector3 GetPosition(float[] pointlist)
         {
             Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
             return position;
         }
-        public Rotation GetRotation(float[] x_vecdata, float [] y_vecdata)
+        public static Rotation GetRotation(float[] x_vecdata, float [] y_vecdata)
         {
             Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
             Vector3 y_vec_right  = new Vector3(y_vecdata[0], y_vecdata[1], y_vecdata[2]);
@@ -792,7 +792,7 @@ namespace CompasXR.Core
             
             return rotationRH;
         } 
-        public Rotation RightHandToLeftHand(Vector3 x_vec_right, Vector3 y_vec_right)
+        public static Rotation RightHandToLeftHand(Vector3 x_vec_right, Vector3 y_vec_right)
         {        
             Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
             Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
@@ -806,14 +806,14 @@ namespace CompasXR.Core
 
             return rotationLh;
         } 
-        public Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
+        public static Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
         {
             Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
             return rotation;
         }
 
         //Methods for obj imort correction.
-        public Rotation ZRotation(Rotation ObjectRotation)
+        public static Rotation ZRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3
             Vector3 x_vec = ObjectRotation.x;
@@ -834,7 +834,7 @@ namespace CompasXR.Core
 
             return ZXrotation;
         }
-        public Rotation XRotation(Rotation ObjectRotation)
+        public static Rotation XRotation(Rotation ObjectRotation)
         {
             //Deconstruct Rotation Struct into Vector3
             Vector3 x_vec = ObjectRotation.x;
