@@ -555,8 +555,6 @@ namespace CompasXR.Core
                 else if (task.IsCompleted)
                 {
                     DataSnapshot dataSnapshot = task.Result;
-
-                    // Raw JSON string of everything inside node
                     jsondata = dataSnapshot.GetRawJsonValue(); 
                     Debug.Log("all nodes" + jsondata);
                 }
