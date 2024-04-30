@@ -163,15 +163,11 @@ namespace CompasXR.Core
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
             
             //Create 3D Index Text
-            //TODO: THIS NEEDS TO BE ADJUSTED TO THE HEIGHT OF THE OBJECT AS FLOAT INPUT.
             CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
-            // CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
             CreateBackgroundImageForText(ref IdxImage, elementPrefab,  databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{elementPrefab.name}IdxImage", false);
 
             //Create Priority Text
-            //TODO: THIS NEEDS TO BE ADJUSTED TO THE HEIGHT OF THE OBJECT AS FLOAT INPUT.
             CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
-            // CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.15f, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
             CreateBackgroundImageForText(ref PriorityImage, elementPrefab, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{elementPrefab.name}PriorityImage", false);
 
             //Case Switches to evaluate color and touch modes.
@@ -238,7 +234,6 @@ namespace CompasXR.Core
 
             switch (step.data.geometry)
                 {
-                    //TODO:REVIEW THE SIZE AND SCALE OF THESE
                     case "0.Cylinder":
                         //Create Empty gameObject to store the cylinder (Named by Step Number)
                         element = new GameObject();
@@ -457,7 +452,6 @@ namespace CompasXR.Core
             
             Vector3 objectCenter = FindGameObjectCenter(geometryObject);
             Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, "y"); //TODO: THIS NEEDS TO BE HEIGHT OF OBJECT
-            // Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, 0.13f, "y"); //TODO: THIS NEEDS TO BE HEIGHT OF OBJECT
 
             //Define rotation for the gameObject.
             Quaternion rotationQuaternion = Quaternion.identity;
@@ -478,7 +472,7 @@ namespace CompasXR.Core
                 newArrow.transform.rotation, true, true, newArrow);
 
             //Offset the position of the text based on the user indicator object
-            OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y"); //TODO: THIS STAYS THE SAME.
+            OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y");
 
             //Set Active
             newArrow.SetActive(true);

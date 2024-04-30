@@ -550,18 +550,8 @@ namespace CompasXR.Robots.MqttData
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             var robotName = jsonObject["robot_name"].ToString();
-
-            //TODO: TRY AND CATCH FOR PARSING FRAME?
             var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
-            // Debug.Log("ROBOT BASE FRAME: " + JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
-            // var testingFrameParse = robotBaseFrameDict["data"];
-            // Debug.Log("ROBOT BASE FRAME DATA TEST TYPE: " + testingFrameParse.GetType());
-            // Debug.Log("ROBOT BASE FRAME DATA TEST: " + JsonConvert.SerializeObject(testingFrameParse));
-            // var robotBaseFrameDataDict = robotBaseFrameDict["data"] as Dictionary<string, object>;
             var robotBaseFrameDataDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(robotBaseFrameDict["data"]));
-            Debug.Log("ROBOT BASE FRAME DATA: " + JsonConvert.SerializeObject(robotBaseFrameDataDict));
-            Debug.Log("ROBOT BASE FRAME DATA TYPE: " + robotBaseFrameDataDict.GetType());
-            
             Frame robotBaseFrame = Frame.Parse(robotBaseFrameDataDict);
             if (robotBaseFrame == null)
             {
