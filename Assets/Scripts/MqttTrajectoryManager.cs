@@ -818,7 +818,7 @@ namespace CompasXR.Robots
                 }
                 else
                 {
-                    Debug.Log("MQTT: TrajectoryRequestTimeOut: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
+                    Debug.Log("MQTT: TrajectoryRequestTimeOut: Current Primary User has not received a trajectory result yet transaction lock removed.");
 
                     //Set Service Manager Transaction lock
                     serviceManager.TrajectoryRequestTransactionLock = false;
