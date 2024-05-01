@@ -157,7 +157,7 @@ namespace CompasXR.Robots
             //Set Compas_XR Topics Information from the project name
             compasXRTopics = new CompasXRTopics(e.Settings.project_name);
         }
-        private void SubscribeToTopic(string topicToSubscribe)
+        private void SubscribeToTopic(string topicToSubscribe) //TODO: Move to statics class
         {
             if (!string.IsNullOrEmpty(topicToSubscribe) && client != null)
             {
@@ -169,7 +169,7 @@ namespace CompasXR.Robots
                 Debug.LogError("MQTT: Topic to subscribe is empty or client is null.");
             }
         }
-        private void UnsubscribeFromTopic(string topicToUnsubscribe)
+        private void UnsubscribeFromTopic(string topicToUnsubscribe) //TODO: Move to statics class
         {
             if (!string.IsNullOrEmpty(topicToUnsubscribe) && client != null)
             {
@@ -181,7 +181,7 @@ namespace CompasXR.Robots
                 Debug.LogWarning("MQTT: Topic to unsubscribe is empty or client is null.");
             }
         }
-        public void PublishToTopic(string publishingTopic,  Dictionary<string, object> message)
+        public void PublishToTopic(string publishingTopic,  Dictionary<string, object> message) //TODO: Move to statics class
         {   
             if (client != null && client.IsConnected)
             {

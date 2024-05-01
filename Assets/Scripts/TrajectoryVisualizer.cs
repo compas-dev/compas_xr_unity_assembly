@@ -135,7 +135,7 @@ namespace CompasXR.Robots
                     temporaryRobot.name = $"Config {i}";
 
                     //Visualize the robot configuration
-                    SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames); //TODO: CONVERT THIS TO A CUSTOM ACTION.
+                    SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames); //TODO: CONVERT THIS TO A CUSTOM ACTION.... THIS WAY YOU CAN USE A LIST OR DICT.
 
                     //Set temporary Robots parent to the ActiveRobot.
                     temporaryRobot.transform.SetParent(parentObject.transform);
@@ -352,6 +352,7 @@ namespace CompasXR.Robots
             if (URDFRenderComponents.Count == 0)
             {
                 Debug.Log("ColorRobot: URDFRenderComponents list is empty. Searching through URDF for MeshRenderers.");
+
                 //Loop through all the children of the game object
                 foreach (Transform child in RobotParent.transform)
                 {

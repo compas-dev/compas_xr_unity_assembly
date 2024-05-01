@@ -198,7 +198,7 @@ namespace CompasXR.Core
             //Fetch Building plan data with "BuildingPlandataDict" event trigger
             FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
         }
-        async Task<List<FileMetadata>> GetFilesInFolder(string path)
+        async Task<List<FileMetadata>> GetFilesInFolder(string path) //TODO: Reconfigure path and move to static class?
         {
             //Building the storage url dynamically
             string storageBucket = FirebaseManager.Instance.storageBucket;
@@ -222,7 +222,7 @@ namespace CompasXR.Core
                 return responseData.items;
             }
         }
-        private async Task<List<FileMetadata>> GetDownloadUriFromFilesMedata(List<FileMetadata> filesMetadata)
+        private async Task<List<FileMetadata>> GetDownloadUriFromFilesMedata(List<FileMetadata> filesMetadata) //TODO: Move to a static class?
         {
             List<Task> fetchUriTasks = new List<Task>();
             
@@ -283,7 +283,7 @@ namespace CompasXR.Core
             //Await all download tasks are done before refreshing.
             await Task.WhenAll(downloadTasks);
         }
-        private async Task DownloadFile(string downloadUrl, string filePath)
+        private async Task DownloadFile(string downloadUrl, string filePath) //TODO: Move to a static class.
         {
             using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
             {
@@ -304,7 +304,7 @@ namespace CompasXR.Core
                 }
             }
         }
-        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
+        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null) //TODO: Move to a static class.
         {
             await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
             {
@@ -346,7 +346,7 @@ namespace CompasXR.Core
             //Push the data to firebase
             dbReferenceBuildingPlan.SetRawJsonValueAsync(data);
         }
-        public void PushStringData(DatabaseReference db_ref, string data)
+        public void PushStringData(DatabaseReference db_ref, string data) //TODO: Move to a static class.
         {
             db_ref.SetRawJsonValueAsync(data);
         }
@@ -374,7 +374,7 @@ namespace CompasXR.Core
         
             OnSettingsUpdate(applicationSettings);
         } 
-        private void DeserializeDataSnapshot(DataSnapshot snapshot, Dictionary<string, Node> dataDict)
+        private void DeserializeDataSnapshot(DataSnapshot snapshot, Dictionary<string, Node> dataDict) //TODO: Move to a static class? & Rename?
         {
             //Clear current Dictionary if it contains information
             dataDict.Clear();
@@ -468,7 +468,7 @@ namespace CompasXR.Core
                 Debug.Log($"CreateDirectory: Directory @ path {directoryPath} already exists.");
             }
         }
-        private bool IsValidNode(Node node)
+        private bool IsValidNode(Node node) //TODO: Move to a static class.
         {   
             // Basic validation: Check if the required properties are present or have valid values
             if (node != null &&
@@ -508,7 +508,7 @@ namespace CompasXR.Core
             Debug.Log($"node.type_id is: '{node.type_id}'");
             return false;
         }
-        private bool IsValidStep(Step step)
+        private bool IsValidStep(Step step) //TODO: Move to a static class.
         {
             // Basic validation: Check if the required properties are present or have valid values
             if (step != null &&
@@ -528,7 +528,7 @@ namespace CompasXR.Core
             Debug.Log($"node.key is: '{step.data.element_ids[0]}'");
             return false;
         }
-        private bool AreEqualSteps(Step step ,Step NewStep)
+        private bool AreEqualSteps(Step step ,Step NewStep) //TODO: Move to a static class.
         {
             // Basic validation: Check if two steps are equal
             if (step != null &&
@@ -552,7 +552,7 @@ namespace CompasXR.Core
             Debug.Log($"Steps with elementID : {step.data.element_ids[0]} and {NewStep.data.element_ids[0]} are not equal");
             return false;
         }
-        public string print_out_data(DatabaseReference dbreference_assembly)
+        public string print_out_data(DatabaseReference dbreference_assembly) //TODO: Move to a static class.
         {
             string jsondata = "";
             dbreference_assembly.GetValueAsync().ContinueWithOnMainThread(task =>
@@ -570,7 +570,7 @@ namespace CompasXR.Core
             });
             return jsondata;
         }
-        public void CheckPathExistance(string path)
+        public void CheckPathExistance(string path) //TODO: Move to a static class.
         {       
             // Replace backslashes with forward slashes
             path = path.Replace('\\', '/');
@@ -723,7 +723,7 @@ namespace CompasXR.Core
             Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
             return buidingPlanData;
         }
-        public Node NodeDeserializer(string key, object jsondata)
+        public Node NodeDeserializer(string key, object jsondata) //TODO: Move to a static class.
         {
             //Generic Dictionary for deserialization     
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
@@ -759,7 +759,7 @@ namespace CompasXR.Core
 
             return node;
         }
-        private void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict)
+        private void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict) //TODO: Move to a static class?
         {
             //Set node part dtype
             node.part.dtype = dtype;
@@ -856,7 +856,7 @@ namespace CompasXR.Core
                     break;
             }
         }
-        private void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
+        private void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict) //TODO: Move to a static class.
         {
             //Access nested Part information.
             Dictionary<string, object> attributesDict = jsonDataDict["attributes"] as Dictionary<string, object>;
@@ -870,7 +870,7 @@ namespace CompasXR.Core
             DtypeGeometryDesctiptionSelector(node, dtype, partdataDict);
 
         }
-        public Step StepDeserializer(object jsondata)
+        public Step StepDeserializer(object jsondata) //TODO: Move to a static class.
         {
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
 
@@ -934,7 +934,7 @@ namespace CompasXR.Core
 
             return step;
         }
-        public UserCurrentInfo UserInfoDeserilizer(object jsondata)
+        public UserCurrentInfo UserInfoDeserilizer(object jsondata) //TODO: Move to a static class.
         {
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
 
