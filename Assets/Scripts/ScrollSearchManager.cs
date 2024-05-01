@@ -245,7 +245,7 @@ namespace CompasXR.UI
                 else
                 {
                     string message = $"WARNING: The item {selectedCellStepIndex} could not be found. Please retype information and try search again.";
-                    uiFunctionalites.SignalOnScreenMessageFromPrefab(ref uiFunctionalites.OnScreenErrorMessagePrefab, ref uiFunctionalites.SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", uiFunctionalites.MessagesParent, message, "ScrollSearchController: Could not find searched item.");
+                    UserInterface.SignalOnScreenMessageFromPrefab(ref uiFunctionalites.OnScreenErrorMessagePrefab, ref uiFunctionalites.SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", uiFunctionalites.MessagesParent, message, "ScrollSearchController: Could not find searched item.");
                 }
             }
         }

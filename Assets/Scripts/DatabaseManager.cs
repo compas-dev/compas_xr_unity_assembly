@@ -238,7 +238,7 @@ namespace CompasXR.Core
                     {
                         //If there is an error when fetching an object signal and on screen message.
                         string message = $"ERROR: Application unable to fetch URL for {fileMetadata.name}. Please review the associated file and try again.";
-                        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorFetchingDownloadUriMessageObject, "ErrorFetchingDownloadUriMessage", UIFunctionalities.MessagesParent, message, "GetDownloadUriFromFilesMedata: Error Fetching Download URL");
+                        UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorFetchingDownloadUriMessageObject, "ErrorFetchingDownloadUriMessage", UIFunctionalities.MessagesParent, message, "GetDownloadUriFromFilesMedata: Error Fetching Download URL");
                         
                         Debug.LogError("Error fetching download URL from Firebase Storage");
                         return;
@@ -294,7 +294,7 @@ namespace CompasXR.Core
                 {
                     //If there is an error when downloading an object signal and on screen message.
                     string message = $"ERROR: Application failed download file for object {Path.GetFileName(filePath)}. Please review the associated file and try again.";
-                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
+                    UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
 
                     Debug.LogError("File download error: " + webRequest.error);
                 }
@@ -354,7 +354,12 @@ namespace CompasXR.Core
     /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
         private void DeserializeSettingsData(DataSnapshot snapshot)
         {
-            CleanObjectStorageFolder();
+            //Delete Objects from the storage directory path
+            string path = Application.persistentDataPath;
+            string storageFolderPath = Path.Combine(path, "Object_Storage");
+            DeleteObjectsFromDirectory(storageFolderPath);
+            CreateDirectory(storageFolderPath);
+
             string AppData = snapshot.GetRawJsonValue();
 
             if (!string.IsNullOrEmpty(AppData))
@@ -435,12 +440,9 @@ namespace CompasXR.Core
         }
 
     /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
-        private void CleanObjectStorageFolder()
+        private static void DeleteObjectsFromDirectory(string directoryPath) //TODO: Move to a static class.
         {
-            //Construct storage folder path
-            string path = Application.persistentDataPath;
-            string folderpath = Path.Combine(path, "Object_Storage");
-            folderpath = folderpath.Replace('\\', '/');
+            string folderpath = directoryPath.Replace('\\', '/');
 
             //If the folder exists delete all files in the folder. If not create the folder.
             if (Directory.Exists(folderpath))
@@ -448,16 +450,23 @@ namespace CompasXR.Core
                 System.IO.DirectoryInfo di = new DirectoryInfo(folderpath);
                 foreach (FileInfo file in di.GetFiles())
                 {
-                    Debug.Log("Deleted Files: " + file);
                     file.Delete();
                 }
+
+                Debug.Log($"DeleteObjectsFromDirectory: Deleted all files in the directory @ {folderpath}");
+            }
+        }
+        public void CreateDirectory(string directoryPath) //TODO: Move to a static class.
+        {
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+                Debug.Log($"CreateDirectory: Created Directory for Object Storage @ {directoryPath}");
             }
             else
             {
-                Directory.CreateDirectory(folderpath);
-                Debug.Log($"Created Directory for Object Storage @ {folderpath}");
+                Debug.Log($"CreateDirectory: Directory @ path {directoryPath} already exists.");
             }
-
         }
         private bool IsValidNode(Node node)
         {   

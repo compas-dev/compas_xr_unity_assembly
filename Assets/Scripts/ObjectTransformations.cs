@@ -3,7 +3,7 @@ using CompasXR.Core.Data;
 
 namespace CompasXR.Core
 {
-        public static class ObjectTransformations
+    public static class ObjectTransformations
     {
         //Struct for storing Rotation Values
         public struct Rotation
@@ -264,9 +264,5 @@ namespace CompasXR.Core
 
             return (x_vecdata, y_vecdata);
         }      
- 
     }
-
-
-
 }

@@ -210,25 +210,25 @@ namespace CompasXR.UI
         private void SetPrimaryUIItemsOnStart()
         {
             //Find Next Object, Button, and Add Listener for OnClick method
-            FindButtonandSetOnClickAction(ConstantUIPanelObjects, ref NextGeometryButtonObject, "Next_Geometry", NextStepButton);
+            UserInterface.FindButtonandSetOnClickAction(ConstantUIPanelObjects, ref NextGeometryButtonObject, "Next_Geometry", NextStepButton);
 
             //Find Previous Object, Button, and Add Listener for OnClick method
-            FindButtonandSetOnClickAction(ConstantUIPanelObjects, ref PreviousGeometryButtonObject, "Previous_Geometry", PreviousStepButton);
+            UserInterface.FindButtonandSetOnClickAction(ConstantUIPanelObjects, ref PreviousGeometryButtonObject, "Previous_Geometry", PreviousStepButton);
 
             //Find PreviewGeometry Object, Slider, and Add Listener for OnClick method
-            FindSliderandSetOnValueChangeAction(CanvasObject, ref PreviewGeometrySliderObject, ref PreviewGeometrySlider, "GeometrySlider", PreviewGeometrySliderSetVisibilty);
+            UserInterface.FindSliderandSetOnValueChangeAction(CanvasObject, ref PreviewGeometrySliderObject, ref PreviewGeometrySlider, "GeometrySlider", PreviewGeometrySliderSetVisibilty);
 
             //Find IsBuilt Object, Button, and Add Listener for OnClick method
             IsBuiltPanelObjects = ConstantUIPanelObjects.FindObject("IsBuiltPanel"); 
-            FindButtonandSetOnClickAction(IsBuiltPanelObjects, ref IsBuiltButtonObject, "IsBuiltButton", () => ModifyStepBuildStatus(CurrentStep));
+            UserInterface.FindButtonandSetOnClickAction(IsBuiltPanelObjects, ref IsBuiltButtonObject, "IsBuiltButton", () => ModifyStepBuildStatus(CurrentStep));
             IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
             IsbuiltPriorityLockedImage = IsBuiltButtonObject.FindObject("PriorityLockedImage");
 
             //Find toggles for menu & Add on value changed event
-            FindToggleandSetOnValueChangedAction(CanvasObject, ref MenuButtonObject, "Menu_Toggle", ToggleMenu);
+            UserInterface.FindToggleandSetOnValueChangedAction(CanvasObject, ref MenuButtonObject, "Menu_Toggle", ToggleMenu);
 
             //Find toggles for visibility menu and add on value changed event
-            FindToggleandSetOnValueChangedAction(CanvasObject, ref VisibilityMenuObject, "Visibility_Editor", ToggleVisibilityMenu);
+            UserInterface.FindToggleandSetOnValueChangedAction(CanvasObject, ref VisibilityMenuObject, "Visibility_Editor", ToggleVisibilityMenu);
 
             //Find Text Objects
             CurrentStepTextObject = GameObject.Find("Current_Index_Text");
@@ -259,28 +259,28 @@ namespace CompasXR.UI
         private void SetVisualizerMenuItemsOnStart()
         {
             //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
-            FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PreviewActorToggleObject, "PreviewActorToggle", TogglePreviewActor);
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PreviewActorToggleObject, "PreviewActorToggle", TogglePreviewActor);
 
             //Find IDToggle Object, Button, and Add Listener for OnClick method
-            FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID);
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID);
 
             //Find Robot toggle and Objects
-            FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "RobotToggle", ToggleRobot);
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "RobotToggle", ToggleRobot);
 
             //Find toggle for element search
-            FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
             ScrollSearchObjects = ScrollSearchToggleObject.FindObject("ScrollSearchObjects");
 
             //Find Robot toggle and Objects
-            FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
             PriorityViewerBackground = PriorityViewerToggleObject.FindObject("BackgroundPriorityViewer");
             SelectedPriorityTextObject = PriorityViewerToggleObject.FindObject("SelectedPriorityText");
             SelectedPriorityText = SelectedPriorityTextObject.GetComponent<TMP_Text>();
-            FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref NextPriorityButtonObject, "NextPriorityButton", SetNextPriorityGroup);
-            FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref PreviousPriorityButtonObject, "PreviousPriorityButton", SetPreviousPriorityGroup);
+            UserInterface.FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref NextPriorityButtonObject, "NextPriorityButton", SetNextPriorityGroup);
+            UserInterface.FindButtonandSetOnClickAction(PriorityViewerToggleObject, ref PreviousPriorityButtonObject, "PreviousPriorityButton", SetPreviousPriorityGroup);
 
             //Find Object Lengths Toggle and Objects
-            FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
             ObjectLengthsUIPanelObjects = CanvasObject.FindObject("ObjectLengthsPanel");
             ObjectLengthsUIPanelPosition = ObjectLengthsUIPanelObjects.transform.localPosition;
             ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
@@ -289,25 +289,25 @@ namespace CompasXR.UI
         private void SetMenuItemsOnStart()
         {
             //Find Info Toggle, and Add Listener for OnValueChanged method
-            FindToggleandSetOnValueChangedAction(MenuButtonObject, ref InfoToggleObject, "Info_Button", ToggleInfo);
+            UserInterface.FindToggleandSetOnValueChangedAction(MenuButtonObject, ref InfoToggleObject, "Info_Button", ToggleInfo);
 
             //Find Object, Button, and Add Listener for OnClick method
-            FindButtonandSetOnClickAction(MenuButtonObject, ref ReloadButtonObject, "Reload_Button", ReloadApplication);
+            UserInterface.FindButtonandSetOnClickAction(MenuButtonObject, ref ReloadButtonObject, "Reload_Button", ReloadApplication);
 
             //Find communication toggle objects
-            FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
+            UserInterface.FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
             //Find toggle for editor.
-            FindToggleandSetOnValueChangedAction(MenuButtonObject, ref EditorToggleObject, "Editor_Toggle", ToggleEditor);
+            UserInterface.FindToggleandSetOnValueChangedAction(MenuButtonObject, ref EditorToggleObject, "Editor_Toggle", ToggleEditor);
             
             //Find Object, Button, and Add Listener for OnClick method
-            FindButtonandSetOnClickAction(EditorToggleObject, ref BuilderEditorButtonObject, "Builder_Editor_Button", TouchModifyActor);
+            UserInterface.FindButtonandSetOnClickAction(EditorToggleObject, ref BuilderEditorButtonObject, "Builder_Editor_Button", TouchModifyActor);
 
             //Find Object, Button, and Add Listener for OnClick method
-            FindButtonandSetOnClickAction(EditorToggleObject, ref BuildStatusButtonObject, "Build_Status_Editor", TouchModifyBuildStatus);
+            UserInterface.FindButtonandSetOnClickAction(EditorToggleObject, ref BuildStatusButtonObject, "Build_Status_Editor", TouchModifyBuildStatus);
 
             //Find communication toggle objects
-            FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
+            UserInterface.FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
             //Find Panel Objects used for Info and communication
             InfoPanelObject = CanvasObject.FindObject("InfoPanel");
@@ -323,39 +323,39 @@ namespace CompasXR.UI
             MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();
             MqttUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
             MqttConnectionStatusObject = CommunicationPanelObject.FindObject("MqttConnectionStatusObject");
-            FindButtonandSetOnClickAction(CommunicationPanelObject, ref MqttConnectButtonObject, "MqttConnectButton", UpdateMqttConnectionFromUserInputs);
+            UserInterface.FindButtonandSetOnClickAction(CommunicationPanelObject, ref MqttConnectButtonObject, "MqttConnectButton", UpdateMqttConnectionFromUserInputs);
 
             //Find Pannel Objects used for connecting to a different ROS host
             RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
             RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
             RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsROSReconnectMessage");
             RosConnectionStatusObject = CommunicationPanelObject.FindObject("ROSConnectionStatusObject");
-            FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", UpdateRosConnectionFromUserInputs);
+            UserInterface.FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", UpdateRosConnectionFromUserInputs);
 
             //Find Control Objects and set up events
             GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
             ReviewTrajectoryObjects = TrajectoryControlObjects.FindObject("ReviewTrajectoryControls");
 
             //Find Object, request button and add event listner for on click method
-            FindButtonandSetOnClickAction(TrajectoryControlObjects, ref RequestTrajectoryButtonObject, "RequestTrajectoryButton", RequestTrajectoryButtonMethod);
+            UserInterface.FindButtonandSetOnClickAction(TrajectoryControlObjects, ref RequestTrajectoryButtonObject, "RequestTrajectoryButton", RequestTrajectoryButtonMethod);
         
             //Find object, approve button and add event listner for on click method
-            FindButtonandSetOnClickAction(ReviewTrajectoryObjects, ref ApproveTrajectoryButtonObject, "ApproveTrajectoryButton", ApproveTrajectoryButtonMethod);
+            UserInterface.FindButtonandSetOnClickAction(ReviewTrajectoryObjects, ref ApproveTrajectoryButtonObject, "ApproveTrajectoryButton", ApproveTrajectoryButtonMethod);
 
             //Find Reject button object, reject button and add event listner for on click method
-            FindButtonandSetOnClickAction(ReviewTrajectoryObjects, ref RejectTrajectoryButtonObject, "RejectTrajectoryButton", RejectTrajectoryButtonMethod);
+            UserInterface.FindButtonandSetOnClickAction(ReviewTrajectoryObjects, ref RejectTrajectoryButtonObject, "RejectTrajectoryButton", RejectTrajectoryButtonMethod);
 
             //Find slider for trajectory review and add event listner for on value changed method
-            FindSliderandSetOnValueChangeAction(ReviewTrajectoryObjects, ref TrajectoryReviewSliderObject, ref TrajectoryReviewSlider, "TrajectoryReviewSlider", TrajectorySliderReviewMethod);
+            UserInterface.FindSliderandSetOnValueChangeAction(ReviewTrajectoryObjects, ref TrajectoryReviewSliderObject, ref TrajectoryReviewSlider, "TrajectoryReviewSlider", TrajectorySliderReviewMethod);
 
             //Find Object, Execute button and add event listner for on click method
-            FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
+            UserInterface.FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
             //Find Objects for active robot selection
             RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
             RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
             RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> robotOptions = SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisualizer.RobotURDFList);
+            List<TMP_Dropdown.OptionData> robotOptions = UserInterface.SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisualizer.RobotURDFList);
             RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
             if(RobotSelectionControlObjects == null)
             {
@@ -372,59 +372,7 @@ namespace CompasXR.UI
             }
 
             //Find Object, Execute button and add event listner for on click method
-            FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
-        }
-        public void SetUIObjectColor(GameObject Button, Color color)
-        {
-            Button.GetComponent<Image>().color = color;
-        }
-        public void FindButtonandSetOnClickAction(GameObject searchObject, ref GameObject buttonParentObjectReference, string unityObjectName, UnityAction customAction)
-        {
-            //Check if the search object is null
-            if (searchObject != null)
-            {    
-                //Find Object, Button and add event listner for on click method
-                buttonParentObjectReference = searchObject.FindObject(unityObjectName);
-                Button buttonComponent = buttonParentObjectReference.GetComponent<Button>();
-                buttonComponent.onClick.AddListener(customAction);
-            }
-            else
-            {
-                Debug.LogError($"Button Constructer: Could not Set OnClick Action because search object is null for {unityObjectName}");
-            }
-        }
-        public void FindToggleandSetOnValueChangedAction(GameObject searchObject, ref GameObject toggleParentObjectReference, string unityObjectName, UnityAction<Toggle> customAction)
-        {
-            //Check if the search object is null
-            if (searchObject != null)
-            {    
-                //Find Object, Toggle and add event listner for on value changed method
-                toggleParentObjectReference = searchObject.FindObject(unityObjectName);
-                Toggle toggleComponent = toggleParentObjectReference.GetComponent<Toggle>();
-                toggleComponent.onValueChanged.AddListener(value => customAction(toggleComponent));
-            }
-            else
-            {
-                Debug.LogError($"Toggle Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
-            }
-        }
-        public void FindSliderandSetOnValueChangeAction(GameObject searchObject, ref GameObject sliderParentObjectReference, ref Slider sliderObjectReference, string unityObjectName, UnityAction<float> customAction)
-        {
-            if(searchObject != null)
-            {
-                //Find Object, Slider and add event listner for on value changed method
-                sliderParentObjectReference = searchObject.FindObject(unityObjectName);
-                sliderObjectReference = sliderParentObjectReference.GetComponent<Slider>();
-                sliderObjectReference.onValueChanged.AddListener(customAction);
-            }
-            else
-            {
-                Debug.LogError($"Slider Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
-            }
-        }
-        public void PrintStringOnClick(string Text)
-        {
-            Debug.Log(Text);
+            UserInterface.FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
         }
         public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, CompasXR.Systems.OperatingSystem currentOperatingSystem)
         {
@@ -459,7 +407,7 @@ namespace CompasXR.UI
                     ScrollSearchToggleObject.SetActive(true);
 
                     //Set color of toggle
-                    SetUIObjectColor(VisibilityMenuObject, Yellow);
+                    UserInterface.SetUIObjectColor(VisibilityMenuObject, Yellow);
 
                 }
                 else
@@ -474,7 +422,7 @@ namespace CompasXR.UI
                     ScrollSearchToggleObject.SetActive(false);
 
                     //Set color of toggle
-                    SetUIObjectColor(VisibilityMenuObject, White);
+                    UserInterface.SetUIObjectColor(VisibilityMenuObject, White);
                 }
             }
             else
@@ -496,7 +444,7 @@ namespace CompasXR.UI
                     EditorToggleObject.SetActive(true);
 
                     //Set color of toggle
-                    SetUIObjectColor(MenuButtonObject, Yellow);
+                    UserInterface.SetUIObjectColor(MenuButtonObject, Yellow);
 
                 }
                 else
@@ -520,7 +468,7 @@ namespace CompasXR.UI
                     EditorToggleObject.SetActive(false);
 
                     //Set color of toggle
-                    SetUIObjectColor(MenuButtonObject, White);
+                    UserInterface.SetUIObjectColor(MenuButtonObject, White);
                 }
             }
             else
@@ -795,7 +743,7 @@ namespace CompasXR.UI
                     string message = $"WARNING: This elements priority is incorrect. It is priority {step.data.priority.ToString()} and next priority to build is {Convert.ToInt16(databaseManager.CurrentPriority) + 1}";
                     // SignalOnScreenMessageFromReference(ref PriorityIncorrectWarningMessageObject, message, "Priority Incorrect Warning");
                     
-                    SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncorrectWarningMessageObject, "PriorityIncorrectWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incorrect Warning");
+                    UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncorrectWarningMessageObject, "PriorityIncorrectWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incorrect Warning");
                     //Return false to not push data.
                     return false;
                 }
@@ -830,7 +778,7 @@ namespace CompasXR.UI
                         //Signal on screen message for priority complete
                         string message = $"The previous priority {databaseManager.CurrentPriority} is complete you are now moving on to priority {step.data.priority.ToString()}.";
                         // SignalOnScreenMessageFromReference(ref PriorityCompleteMessageObject, message ,"Priority Complete Message");
-                        SignalOnScreenMessageFromPrefab(ref OnScreenInfoMessagePrefab, ref PriorityCompleteMessageObject, "PriorityCompleteMessage", MessagesParent, message, "LocalPriorityChecker: Priority Complete Message");
+                        UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenInfoMessagePrefab, ref PriorityCompleteMessageObject, "PriorityCompleteMessage", MessagesParent, message, "LocalPriorityChecker: Priority Complete Message");
                         
                         //Set Current Priority
                         SetCurrentPriority(step.data.priority.ToString());
@@ -850,7 +798,7 @@ namespace CompasXR.UI
                     {
                         //Signal on screen message for priority incomplete
                         string message = $"WARNING: This element cannot build because the following elements from Current Priority {databaseManager.CurrentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
-                        SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncompleteWarningMessageObject, "PriorityIncompleteWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incomplete Warning");
+                        UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncompleteWarningMessageObject, "PriorityIncompleteWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incomplete Warning");
 
                         //Return true to not push data.
                         return false;
@@ -978,35 +926,6 @@ namespace CompasXR.UI
             //Print setting current priority
             Debug.Log($"Setting Current Priority to {Priority} ");
         }
-        public List<TMP_Dropdown.OptionData> SetDropDownOptionsFromStringList(TMP_Dropdown dropDown, List<string> stringList)
-        {
-            //Create a new list of option data
-            List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
-
-            //Iterate through the robot list and add them to the option data list
-            foreach(string stringItem in stringList)
-            {
-                options.Add(new TMP_Dropdown.OptionData(stringItem));
-            }
-
-            Debug.Log($"SetDropDownOptionsFromStringList: Added Options {options} to Dropdown {dropDown.name}");
-            
-            //Return the options list
-            return options;
-        }
-        public TMP_Dropdown.OptionData AddOptionDataToDropdown(string option, TMP_Dropdown dropDown)
-        {
-            Debug.Log($"AddOptionDataToDropdown: Adding Option {option} to Dropdown {dropDown.name}");
-            
-            //Create a new option data
-            TMP_Dropdown.OptionData newOption = new TMP_Dropdown.OptionData(option);
-
-            //Add the option to the dropdown
-            dropDown.options.Add(newOption);
-
-            //Return the new option
-            return newOption;
-        }
         public void SetActiveRobotToggleMethod(Toggle toggle)
         {
             if(toggle!=null && toggle.isOn)
@@ -1109,7 +1028,7 @@ namespace CompasXR.UI
             if(messageComponent != null && message != null && TrajectoryReviewRequestMessageObject != null)
             {
                 //Signal On Screen Message with Acknowledge Button
-                SignalOnScreenMessageWithButton(TrajectoryReviewRequestMessageObject, messageComponent, message);
+                UserInterface.SignalOnScreenMessageWithButton(TrajectoryReviewRequestMessageObject, messageComponent, message);
             }
             else
             {
@@ -1184,7 +1103,7 @@ namespace CompasXR.UI
             if(messageComponent != null && message != null && ActiveRobotUpdatedFromPlannerMessageObject != null)
             {
                 //Signal On Screen Message with Acknowledge Button
-                SignalOnScreenMessageWithButton(ActiveRobotUpdatedFromPlannerMessageObject, messageComponent, message);
+                UserInterface.SignalOnScreenMessageWithButton(ActiveRobotUpdatedFromPlannerMessageObject, messageComponent, message);
             }
             else
             {
@@ -1221,86 +1140,8 @@ namespace CompasXR.UI
             
             //Signal On Screen Message with Acknowledge Button
             string message = $"WARNING: MQTT Failed to connect to broker: {mqttTrajectoryManager.brokerAddress} on port: {mqttTrajectoryManager.brokerPort}. Please check your internet and try again.";
-            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref MQTTFailedToConnectMessageObject, "MQTTConnectionFailedMessage", MessagesParent, message, "SignalMQTTConnectionFailed: MQTT Connection Failed.");
+            UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref MQTTFailedToConnectMessageObject, "MQTTConnectionFailedMessage", MessagesParent, message, "SignalMQTTConnectionFailed: MQTT Connection Failed.");
         
-        }
-        public void SignalOnScreenMessageFromPrefab(ref GameObject prefabReference, ref GameObject messageObjectReference, string activeMessageGameObjectName, GameObject activeMessageParent, string message, string logMessageName)
-        {
-            Debug.Log($"SignalOnScreenMessageFromPrefab: {logMessageName}: Signal On Screen Message.");
-
-            //If the message object reference is null then create it from the prefab
-            if(messageObjectReference == null)
-            {
-                //Instantiate the prefab
-                messageObjectReference = Instantiate(prefabReference);
-                messageObjectReference.transform.SetParent(activeMessageParent.transform, false);
-
-                //Set the name of the message object
-                messageObjectReference.name = activeMessageGameObjectName;
-            }
-
-            //Find text component for on screen message
-            TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
-
-            if(messageTextComponent != null && message != null && messageObjectReference != null)
-            {
-                //Signal On Screen Message with Acknowledge Button
-                SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
-            }
-            else
-            {
-                Debug.LogWarning($"SignalOnScreenMessageFromPrefab: {logMessageName}: Could not find message object or message component.");
-            }
-        }
-        public void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
-        {
-            Debug.Log($"SignalOnScreenMessageFromReference: {logMessageName}: Signal On Screen Message.");
-
-            //Find text component for on screen message
-            TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
-
-            if(messageTextComponent != null && message != null && messageObjectReference != null)
-            {
-                //Signal On Screen Message with Acknowledge Button
-                SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
-            }
-            else
-            {
-                Debug.LogWarning($"SignalOnScreenMessageFromReference: {logMessageName}: Could not find message object or message component.");
-            }
-        }
-        public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
-        {
-            if (messageGameObject != null)
-            {
-                if(message != "None" && messageComponent != null)
-                {
-                    //Set Text
-                    messageComponent.text = message;
-                }
-
-                //Set Object Active
-                messageGameObject.SetActive(true);
-
-                //Get Acknowledge button from the child of this panel
-                GameObject AcknowledgeButton = messageGameObject.FindObject("AcknowledgeButton");
-
-                //Check if this item already has a listner or not.
-                if (AcknowledgeButton.GetComponent<Button>().onClick.GetPersistentEventCount() == 0)
-                {
-                    //Add Listner for Acknowledge Button
-                    AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => messageGameObject.SetActive(false));
-                }
-                else
-                {
-                    Debug.LogWarning("ACKNOWLEDGE BUTTON SHOULD ALREADY HAVE A LISTNER THAT SETS IT TO FALSE.");
-                }
-
-            }
-            else
-            {
-                Debug.LogWarning($"Message: Could not find message object or message component inside of GameObject {messageGameObject.name}.");
-            }  
         }
 
         /////////////////////////////////////// Communication Buttons //////////////////////////////////////////////
@@ -1329,7 +1170,7 @@ namespace CompasXR.UI
         public void UpdateMqttConnectionFromUserInputs()
         {
             //Set UI Color
-            SetUIObjectColor(MqttConnectButtonObject, White);
+            UserInterface.SetUIObjectColor(MqttConnectButtonObject, White);
             
             //Check inputs and if they are not null update the connection if they are null leave the default.
             string newMqttBroker = MqttBrokerInputField.text;
@@ -1374,7 +1215,7 @@ namespace CompasXR.UI
             Debug.Log($"UpdateRosConnectionFromUserInputs: Attempting ROS Connection to ws://{RosHostInputField.text}:{RosPortInputField.text} from User Inputs.");
             
             //Set UI Color
-            SetUIObjectColor(RosConnectButtonObject, White);
+            UserInterface.SetUIObjectColor(RosConnectButtonObject, White);
             
             //Check inputs and if they are not null update the connection if they are null leave the default.
             string rosHostInput = RosHostInputField.text;
@@ -1413,7 +1254,6 @@ namespace CompasXR.UI
                 
                 //Signal Manual Input text
                 RosUpdateConnectionMessage.SetActive(true);
-
             }
         }
         public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
@@ -1469,7 +1309,7 @@ namespace CompasXR.UI
 
                 //If the active robot is null signal On Screen Message
                 string message = "WARNING: You are currently prevented from requesting because another active user is awaiting a Trajectory Result.";
-                SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
+                UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
                 
                 return;
             }
@@ -1479,7 +1319,7 @@ namespace CompasXR.UI
             
                 //If the active robot is null signal On Screen Message
                 string message = "WARNING: Active Robot is currently null. An active robot must be set before visulizing robotic information.";
-                SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref ActiveRobotIsNullWarningMessageObject, "ActiveRobotNullWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Active Robot is null.");
+                UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref ActiveRobotIsNullWarningMessageObject, "ActiveRobotNullWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Active Robot is null.");
 
                 return;
             }
@@ -1532,7 +1372,7 @@ namespace CompasXR.UI
                     
                     float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount-1); 
 
-                    //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
+                    //Print list item at the index of the remapped value
                     Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
 
                     //Color Static Robot Image based on SliderRemapedValue
@@ -1580,7 +1420,7 @@ namespace CompasXR.UI
                 instantiateObjects.ApplyColorBasedOnActor();
                 
                 //Color the button if it is on
-                SetUIObjectColor(PreviewActorToggleObject, Yellow);
+                UserInterface.SetUIObjectColor(PreviewActorToggleObject, Yellow);
             }
             else
             {
@@ -1591,7 +1431,7 @@ namespace CompasXR.UI
                 instantiateObjects.ApplyColorBasedOnAppModes();
 
                 //Color the button if it is off
-                SetUIObjectColor(PreviewActorToggleObject, White);
+                UserInterface.SetUIObjectColor(PreviewActorToggleObject, White);
             }
         }
         public void ToggleID(Toggle toggle)
@@ -1606,7 +1446,7 @@ namespace CompasXR.UI
                     ARSpaceTextControler(true, "IdxText", ref IDTagIsOffset, "IdxImage", PriorityViewerToggleObject.GetComponent<Toggle>().isOn, 0.155f); //bool verticlReposition, float distance
                     
                     //Set color of toggle
-                    SetUIObjectColor(IDToggleObject, Yellow);
+                    UserInterface.SetUIObjectColor(IDToggleObject, Yellow);
                 }
                 else
                 {
@@ -1620,7 +1460,7 @@ namespace CompasXR.UI
                     }
 
                     //Set color of toggle
-                    SetUIObjectColor(IDToggleObject, White);
+                    UserInterface.SetUIObjectColor(IDToggleObject, White);
                 }
             }
             else
@@ -1725,7 +1565,7 @@ namespace CompasXR.UI
                     }
 
                     //Set color of toggle
-                    SetUIObjectColor(ObjectLengthsToggleObject, Yellow);
+                    UserInterface.SetUIObjectColor(ObjectLengthsToggleObject, Yellow);
 
                 }
                 else
@@ -1736,7 +1576,7 @@ namespace CompasXR.UI
                     ObjectLengthsTags.FindObject("P2Tag").SetActive(false);
 
                     //Set color of toggle
-                    SetUIObjectColor(ObjectLengthsToggleObject, White);
+                    UserInterface.SetUIObjectColor(ObjectLengthsToggleObject, White);
                 }
             }
             else
@@ -1789,7 +1629,7 @@ namespace CompasXR.UI
                 }
                 
                 //Set the color of the robot toggle to yellow.
-                SetUIObjectColor(RobotToggleObject, Yellow);
+                UserInterface.SetUIObjectColor(RobotToggleObject, Yellow);
             }
             else
             {            
@@ -1818,7 +1658,7 @@ namespace CompasXR.UI
                 }
 
                 //Set the color of the Robot toggle button to white.
-                SetUIObjectColor(RobotToggleObject, White);
+                UserInterface.SetUIObjectColor(RobotToggleObject, White);
             }
         }
         public void SetRoboticUIElementsFromKey(string key)
@@ -1877,7 +1717,7 @@ namespace CompasXR.UI
                 instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
 
                 //Set UI Color
-                SetUIObjectColor(PriorityViewerToggleObject, Yellow);
+                UserInterface.SetUIObjectColor(PriorityViewerToggleObject, Yellow);
             }
             else
             {
@@ -1905,7 +1745,7 @@ namespace CompasXR.UI
                 PriorityViewerObjectsGraphicsController(false);
 
                 //Set UI Color
-                SetUIObjectColor(PriorityViewerToggleObject, White);
+                UserInterface.SetUIObjectColor(PriorityViewerToggleObject, White);
             }
         }
         public void PriorityViewerObjectsGraphicsController(bool? isVisible, string selectedPrioritytext=null)
@@ -2014,7 +1854,7 @@ namespace CompasXR.UI
                 scrollSearchManager.CreateCellsFromPrefab(ref scrollSearchManager.cellPrefab, scrollSearchManager.cellSpacing, scrollSearchManager.cellsParent, databaseManager.BuildingPlanDataItem.steps.Count, ref scrollSearchManager.cellsExist);
                 
                 //Set color of toggle
-                SetUIObjectColor(ScrollSearchToggleObject, Yellow);
+                UserInterface.SetUIObjectColor(ScrollSearchToggleObject, Yellow);
             }
             else
             {
@@ -2025,7 +1865,7 @@ namespace CompasXR.UI
                 scrollSearchManager.ResetScrollSearch(ref scrollSearchManager.cellsExist);
                 
                 //Set color of toggle
-                SetUIObjectColor(ScrollSearchToggleObject, White);
+                UserInterface.SetUIObjectColor(ScrollSearchToggleObject, White);
             }
         }
 
@@ -2048,7 +1888,7 @@ namespace CompasXR.UI
                     InfoPanelObject.SetActive(true);
 
                     //Set color of toggle
-                    SetUIObjectColor(InfoToggleObject, Yellow);
+                    UserInterface.SetUIObjectColor(InfoToggleObject, Yellow);
 
                 }
                 else
@@ -2057,7 +1897,7 @@ namespace CompasXR.UI
                     InfoPanelObject.SetActive(false);
 
                     //Set color of toggle
-                    SetUIObjectColor(InfoToggleObject, White);
+                    UserInterface.SetUIObjectColor(InfoToggleObject, White);
                 }
             }
             else
@@ -2088,7 +1928,7 @@ namespace CompasXR.UI
 
 
                     //Set color of toggle
-                    SetUIObjectColor(CommunicationToggleObject, Yellow);
+                    UserInterface.SetUIObjectColor(CommunicationToggleObject, Yellow);
 
                 }
                 else
@@ -2103,7 +1943,7 @@ namespace CompasXR.UI
                     CommunicationPanelObject.SetActive(false);
 
                     //Set color of toggle
-                    SetUIObjectColor(CommunicationToggleObject, White);
+                    UserInterface.SetUIObjectColor(CommunicationToggleObject, White);
                 }
             }
             else
@@ -2160,7 +2000,7 @@ namespace CompasXR.UI
             mqttTrajectoryManager.RemoveConnectionEventListners();
 
             //Fetch settings data again
-            databaseManager.FetchSettingsData(eventManager.dbReferenceSettings); //TODO: Should I await this?
+            databaseManager.FetchSettingsData(eventManager.dbReferenceSettings);
 
             //Disconnect from MQTT and reconnect after new application settings are received.
             mqttTrajectoryManager.DisconnectandReconnectAsyncRoutine();
@@ -2187,7 +2027,7 @@ namespace CompasXR.UI
                     TouchSearchModeController(TouchMode.ElementEditSelection);
                     
                     //Set color of toggle
-                    SetUIObjectColor(EditorToggleObject, Yellow);
+                    UserInterface.SetUIObjectColor(EditorToggleObject, Yellow);
 
                 }
                 else
@@ -2223,7 +2063,7 @@ namespace CompasXR.UI
                     }
 
                     //Set color of toggle
-                    SetUIObjectColor(EditorToggleObject, White);
+                    UserInterface.SetUIObjectColor(EditorToggleObject, White);
                 }
             }
             else
@@ -2243,7 +2083,7 @@ namespace CompasXR.UI
                     occlusionManager.enabled = true;            
 
                     //Set color of the toggle
-                    SetUIObjectColor(OcclusionToggleObject, Yellow);
+                    UserInterface.SetUIObjectColor(OcclusionToggleObject, Yellow);
                 }
                 else
                 {
@@ -2251,7 +2091,7 @@ namespace CompasXR.UI
                     occlusionManager.enabled = false;
 
                     //Set color of the toggle
-                    SetUIObjectColor(OcclusionToggleObject, White);            
+                    UserInterface.SetUIObjectColor(OcclusionToggleObject, White);            
                 }
             }
             else
@@ -2591,7 +2431,169 @@ namespace CompasXR.UI
                 ModifyStepActor(activeGameObject.transform.parent.name);
             }
         }
+    }
 
+    public static class UserInterface
+    {
+        public static void SetUIObjectColor(GameObject Button, Color color)
+        {
+            Button.GetComponent<Image>().color = color;
+        }
+        public static void FindButtonandSetOnClickAction(GameObject searchObject, ref GameObject buttonParentObjectReference, string unityObjectName, UnityAction customAction)
+        {
+            //Check if the search object is null
+            if (searchObject != null)
+            {    
+                //Find Object, Button and add event listner for on click method
+                buttonParentObjectReference = searchObject.FindObject(unityObjectName);
+                Button buttonComponent = buttonParentObjectReference.GetComponent<Button>();
+                buttonComponent.onClick.AddListener(customAction);
+            }
+            else
+            {
+                Debug.LogError($"Button Constructer: Could not Set OnClick Action because search object is null for {unityObjectName}");
+            }
+        }
+        public static void FindToggleandSetOnValueChangedAction(GameObject searchObject, ref GameObject toggleParentObjectReference, string unityObjectName, UnityAction<Toggle> customAction)
+        {
+            //Check if the search object is null
+            if (searchObject != null)
+            {    
+                //Find Object, Toggle and add event listner for on value changed method
+                toggleParentObjectReference = searchObject.FindObject(unityObjectName);
+                Toggle toggleComponent = toggleParentObjectReference.GetComponent<Toggle>();
+                toggleComponent.onValueChanged.AddListener(value => customAction(toggleComponent));
+            }
+            else
+            {
+                Debug.LogError($"Toggle Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
+            }
+        }
+        public static void FindSliderandSetOnValueChangeAction(GameObject searchObject, ref GameObject sliderParentObjectReference, ref Slider sliderObjectReference, string unityObjectName, UnityAction<float> customAction)
+        {
+            if(searchObject != null)
+            {
+                //Find Object, Slider and add event listner for on value changed method
+                sliderParentObjectReference = searchObject.FindObject(unityObjectName);
+                sliderObjectReference = sliderParentObjectReference.GetComponent<Slider>();
+                sliderObjectReference.onValueChanged.AddListener(customAction);
+            }
+            else
+            {
+                Debug.LogError($"Slider Constructer: Could not Set OnValueChanged Action because search object is null for {unityObjectName}");
+            }
+        }
+        public static void PrintStringOnClick(string Text)
+        {
+            Debug.Log(Text);
+        }
+        public static List<TMP_Dropdown.OptionData> SetDropDownOptionsFromStringList(TMP_Dropdown dropDown, List<string> stringList)
+        {
+            //Create a new list of option data
+            List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
+
+            //Iterate through the robot list and add them to the option data list
+            foreach(string stringItem in stringList)
+            {
+                options.Add(new TMP_Dropdown.OptionData(stringItem));
+            }
+
+            Debug.Log($"SetDropDownOptionsFromStringList: Added Options {options} to Dropdown {dropDown.name}");
+            
+            //Return the options list
+            return options;
+        }
+        public static TMP_Dropdown.OptionData AddOptionDataToDropdown(string option, TMP_Dropdown dropDown)
+        {
+            Debug.Log($"AddOptionDataToDropdown: Adding Option {option} to Dropdown {dropDown.name}");
+            
+            //Create a new option data
+            TMP_Dropdown.OptionData newOption = new TMP_Dropdown.OptionData(option);
+
+            //Add the option to the dropdown
+            dropDown.options.Add(newOption);
+
+            //Return the new option
+            return newOption;
+        }
+        public static void SignalOnScreenMessageFromPrefab(ref GameObject prefabReference, ref GameObject messageObjectReference, string activeMessageGameObjectName, GameObject activeMessageParent, string message, string logMessageName)
+        {
+            Debug.Log($"SignalOnScreenMessageFromPrefab: {logMessageName}: Signal On Screen Message.");
+
+            //If the message object reference is null then create it from the prefab
+            if(messageObjectReference == null)
+            {
+                //Instantiate the prefab
+                messageObjectReference = GameObject.Instantiate(prefabReference);
+                messageObjectReference.transform.SetParent(activeMessageParent.transform, false);
+
+                //Set the name of the message object
+                messageObjectReference.name = activeMessageGameObjectName;
+            }
+
+            //Find text component for on screen message
+            TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
+
+            if(messageTextComponent != null && message != null && messageObjectReference != null)
+            {
+                //Signal On Screen Message with Acknowledge Button
+                SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
+            }
+            else
+            {
+                Debug.LogWarning($"SignalOnScreenMessageFromPrefab: {logMessageName}: Could not find message object or message component.");
+            }
+        }
+        public static void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
+        {
+            Debug.Log($"SignalOnScreenMessageFromReference: {logMessageName}: Signal On Screen Message.");
+
+            //Find text component for on screen message
+            TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
+
+            if(messageTextComponent != null && message != null && messageObjectReference != null)
+            {
+                //Signal On Screen Message with Acknowledge Button
+                SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
+            }
+            else
+            {
+                Debug.LogWarning($"SignalOnScreenMessageFromReference: {logMessageName}: Could not find message object or message component.");
+            }
+        }
+        public static void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
+        {
+            if (messageGameObject != null)
+            {
+                if(message != "None" && messageComponent != null)
+                {
+                    //Set Text
+                    messageComponent.text = message;
+                }
+
+                //Set Object Active
+                messageGameObject.SetActive(true);
+
+                //Get Acknowledge button from the child of this panel
+                GameObject AcknowledgeButton = messageGameObject.FindObject("AcknowledgeButton");
+
+                //Check if this item already has a listner or not.
+                if (AcknowledgeButton.GetComponent<Button>().onClick.GetPersistentEventCount() == 0)
+                {
+                    //Add Listner for Acknowledge Button
+                    AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => messageGameObject.SetActive(false));
+                }
+                else
+                {
+                    Debug.LogWarning("ACKNOWLEDGE BUTTON SHOULD ALREADY HAVE A LISTNER THAT SETS IT TO FALSE.");
+                }
+
+            }
+            else
+            {
+                Debug.LogWarning($"Message: Could not find message object or message component inside of GameObject {messageGameObject.name}.");
+            }  
+        }
     }
 }
 

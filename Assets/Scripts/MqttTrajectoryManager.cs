@@ -104,7 +104,7 @@ namespace CompasXR.Robots
             //Set UI Object Color to green & connected if the communication toggle is on.
             if (UIFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
             {
-                UIFunctionalities.SetUIObjectColor(UIFunctionalities.MqttConnectButtonObject, Color.green);
+                UserInterface.SetUIObjectColor(UIFunctionalities.MqttConnectButtonObject, Color.green);
                 UIFunctionalities.UpdateConnectionStatusText(UIFunctionalities.MqttConnectionStatusObject, true);
             }
         }
@@ -127,7 +127,7 @@ namespace CompasXR.Robots
 
             //Signal On screen message that connection has been lost
             string message = "WARNING: MQTT connection has been lost. Please check your internet connection and restart the application.";
-            UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.MQTTConnectionLostMessageObject, "MQTTConnectionLostMessage", UIFunctionalities.MessagesParent, message, "OnConnectionLost: MQTT Connection Lost");
+            UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.MQTTConnectionLostMessageObject, "MQTTConnectionLostMessage", UIFunctionalities.MessagesParent, message, "OnConnectionLost: MQTT Connection Lost");
 
             Debug.Log("MQTT: CONNECTION LOST INTERNAL METHOD!");
         }
@@ -360,7 +360,7 @@ namespace CompasXR.Robots
                         Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
 
                         string message = "WARNING: Trajectory Response did not match expectations. Returning to Request Service.";
-                        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject, "TrajectoryResponseIncorrectWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Message Structure incorrect.");
+                        UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject, "TrajectoryResponseIncorrectWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Message Structure incorrect.");
 
                         //Set Primary user back to false
                         serviceManager.PrimaryUser = false;
@@ -520,7 +520,7 @@ namespace CompasXR.Robots
 
                             //Set on screen message and return to trajectory request service
                             string message = "WARNING: The robotic controler replied with a Null trajectory. You will be returned to trajectory request.";
-                            UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryNullWarningMessageObject, "TrajectoryNullWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Received trajectory is null");
+                            UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryNullWarningMessageObject, "TrajectoryNullWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Received trajectory is null");
                         }
                     }
                 }
@@ -681,7 +681,7 @@ namespace CompasXR.Robots
                     if (trajectoryApprovalMessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
                     {
                         string message = "WARNING : The trajectory approval has been canceled by another user. Returning to Request Trajectory Service.";
-                        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "ApproveTrajectoryMessageReceivedHandler: Trajectory Cancled by another user.");
+                        UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "ApproveTrajectoryMessageReceivedHandler: Trajectory Cancled by another user.");
                     }
 
                     //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
@@ -766,7 +766,7 @@ namespace CompasXR.Robots
 
                         //Signal On Screen Message for Trajectory Approval Timeout
                         string message = "WARNING : Trajectory Approval has timed out. Returning to Request Trajectory Service.";
-                        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "TrajectoryApprovalTimeout: Trajectory Approval Cancled by Timeout.");
+                        UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "TrajectoryApprovalTimeout: Trajectory Approval Cancled by Timeout.");
 
                         //Set visibility and interactibility of Request Trajectory Button
                         UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
@@ -810,7 +810,7 @@ namespace CompasXR.Robots
 
                     //Signal On Screen Message for Trajectory Approval Timeout
                     string message = "WARNING : Current Trajectory Request has timed out. Returning to Request Trajectory Service.";
-                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryRequestTimeoutMessage, "TrajectoryRequestTimeoutMessage", UIFunctionalities.MessagesParent, message, "TrajectoryRequestTimeoutMessage: Trajectory Request Cancled by Timeout.");
+                    UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryRequestTimeoutMessage, "TrajectoryRequestTimeoutMessage", UIFunctionalities.MessagesParent, message, "TrajectoryRequestTimeoutMessage: Trajectory Request Cancled by Timeout.");
 
                     //Set visibility and interactibility of Request Trajectory Button
                     UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
