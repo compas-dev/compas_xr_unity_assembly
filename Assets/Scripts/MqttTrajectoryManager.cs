@@ -550,7 +550,7 @@ namespace CompasXR.Robots
                 //Time out Cancelation Token Update
                 if(serviceManager.ApprovalTimeOutCancelationToken != null)
                 {
-                    Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR REJECTION.");
+                    Debug.Log("ApproveTrajectoryMessageReceivedHandler: Time Out Cancled from Rejection Message.");
                     serviceManager.ApprovalTimeOutCancelationToken.Cancel();
                 }
                 
@@ -631,7 +631,7 @@ namespace CompasXR.Robots
                 //Time out Cancelation Token: Cancel the time out because of consensus
                 if(serviceManager.ApprovalTimeOutCancelationToken != null)
                 {
-                    Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR CONSENSUS.");
+                    Debug.Log("ApproveTrajectoryMessageReceivedHandler: Time Out Cancled from Consensus Message.");
                     serviceManager.ApprovalTimeOutCancelationToken.Cancel();
                 }
 

@@ -932,7 +932,7 @@ namespace CompasXR.Core
 
             return rotationQuaternion;
         }
-        public List<Vector3> GetPositionsFromPriorityGroup(string priorityGroup)
+        public List<Vector3> GetPositionsFromPriorityGroup(string priorityGroup) //TODO: If you want to make this static you need to make priority tree an input, but I don't know how helpful it is as static.
         {
             List<Vector3> positions = new List<Vector3>();
 
