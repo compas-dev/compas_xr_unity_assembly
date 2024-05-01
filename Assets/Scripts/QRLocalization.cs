@@ -76,13 +76,13 @@ namespace CompasXR.Core
                         }
                         
                         //Fetch position data from the dictionary
-                        Vector3 position_data = InstantiateObjects.GetPosition(QRCodeDataDict[key].part.frame.point);
+                        Vector3 position_data = ObjectTransformations.GetPositionFromRightHand(QRCodeDataDict[key].part.frame.point);
 
                         //Fetch rotation data from the dictionary
-                        InstantiateObjects.Rotation rotationData = InstantiateObjects.GetRotation(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                         
                         //Convert Firebase rotation data to Quaternion rotation. Additionally
-                        Quaternion rotationQuaternion = InstantiateObjects.FromUnityRotation(rotationData);
+                        Quaternion rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
 
                         //Set Design Objects rotation to the rotation based on Observed rotation and Inverse rotation of physical QR
                         Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);

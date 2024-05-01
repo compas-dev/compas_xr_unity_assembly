@@ -303,13 +303,13 @@ namespace CompasXR.Robots
             Debug.Log($"SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
 
             //Fetch position data from the dictionary
-            Vector3 positionData = InstantiateObjects.GetPosition(robotBaseFrame.point);
+            Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(robotBaseFrame.point);
 
             //Fetch rotation data from the dictionary
-            InstantiateObjects.Rotation rotationData = InstantiateObjects.GetRotation(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
+            ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(robotBaseFrame.xaxis, robotBaseFrame.yaxis);
             
             //Convert Firebase rotation data to Quaternion rotation. Additionally
-            Quaternion rotationQuaternion = InstantiateObjects.FromUnityRotation(rotationData);
+            Quaternion rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
 
             //Set the local position and rotation of the active robot, so it it is in relation to the robot base frame and its parent object.
             robotToPosition.transform.localPosition = positionData;

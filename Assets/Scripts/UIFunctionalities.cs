@@ -1648,7 +1648,7 @@ namespace CompasXR.UI
                     if (verticalReposition)
                     {
                         Vector3 objectposition = textChild.transform.position;
-                        Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
+                        Vector3 newPosition = ObjectTransformations.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
                         textChild.position = newPosition;
                     }
                     else
@@ -1671,7 +1671,7 @@ namespace CompasXR.UI
                         if (verticalReposition)
                         {
                             Vector3 objectposition = imageChild.transform.position;
-                            Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
+                            Vector3 newPosition = ObjectTransformations.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
                             imageChild.position = newPosition;
                             tagIsOffset = true;
                         }

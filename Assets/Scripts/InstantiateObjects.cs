@@ -53,14 +53,6 @@ namespace CompasXR.Core
         public GameObject PriorityViewrLineObject;
         public GameObject PriorityViewerPointsObject;
 
-        //Struct for storing Rotation Values
-        public struct Rotation
-        {
-            public Vector3 x;
-            public Vector3 y;
-            public Vector3 z;
-        }
-
         public void Awake()
         {
             //Initilization Method for finding objects and materials
@@ -113,20 +105,20 @@ namespace CompasXR.Core
             Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
 
             //get position
-            Vector3 positionData = GetPosition(step.data.location.point);
+            Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(step.data.location.point);
             
             //get rotation
-            Rotation rotationData = GetRotation(step.data.location.xaxis, step.data.location.yaxis);
+            ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(step.data.location.xaxis, step.data.location.yaxis);
             
             //Define Object Rotation
             Quaternion rotationQuaternion;
             if(step.data.geometry == "2.ObjFile")
             {
-                rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.z_remapped);
+                rotationQuaternion = ObjectTransformations.FromRhinotoUnityRotation(rotationData, databaseManager.z_remapped);
             }
             else
             {
-                rotationQuaternion = FromUnityRotation(rotationData);
+                rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
             }
 
             //If the quaternion is null raise an error
@@ -391,10 +383,10 @@ namespace CompasXR.Core
             GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
 
             //Get the center of the child object
-            Vector3 center = FindGameObjectCenter(childobject);
+            Vector3 center = ObjectTransformations.FindGameObjectCenter(childobject);
 
             // Offset the position of center by a distance
-            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, offsetDistance, "y");
+            Vector3 offsetPosition = ObjectTransformations.OffsetPositionVectorByDistance(center, offsetDistance, "y");
 
             //Create 3D Text
             GameObject TextContainer = Create3DTextAsGameObject(
@@ -408,10 +400,10 @@ namespace CompasXR.Core
             string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
 
             // Find the gameObjects center
-            Vector3 centerPosition = FindGameObjectCenter(parentObject.FindObject(elementID + " Geometry"));
+            Vector3 centerPosition = ObjectTransformations.FindGameObjectCenter(parentObject.FindObject(elementID + " Geometry"));
 
             // Define the vertical offset 
-            Vector3 offsetPosition = OffsetPositionVectorByDistance(centerPosition, verticalOffset, "y");
+            Vector3 offsetPosition = ObjectTransformations.OffsetPositionVectorByDistance(centerPosition, verticalOffset, "y");
 
             // Instantiate the image object at the offset position
             GameObject imgObject = InstantiateObjectFromPrefabRefrence(ref inputImg, imgObjectName, offsetPosition, Quaternion.identity, parentObject);
@@ -450,8 +442,8 @@ namespace CompasXR.Core
                 return;
             }
             
-            Vector3 objectCenter = FindGameObjectCenter(geometryObject);
-            Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, "y"); //TODO: THIS NEEDS TO BE HEIGHT OF OBJECT
+            Vector3 objectCenter = ObjectTransformations.FindGameObjectCenter(geometryObject);
+            Vector3 arrowOffset = ObjectTransformations.OffsetPositionVectorByDistance(objectCenter, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, "y"); //TODO: THIS NEEDS TO BE HEIGHT OF OBJECT
 
             //Define rotation for the gameObject.
             Quaternion rotationQuaternion = Quaternion.identity;
@@ -472,7 +464,7 @@ namespace CompasXR.Core
                 newArrow.transform.rotation, true, true, newArrow);
 
             //Offset the position of the text based on the user indicator object
-            OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y");
+            ObjectTransformations.OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y");
 
             //Set Active
             newArrow.SetActive(true);
@@ -498,7 +490,7 @@ namespace CompasXR.Core
             Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
             //Find gameobject center
-            Vector3 center = FindGameObjectCenter(element.FindObject(step.data.element_ids[0] + " Geometry"));
+            Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(step.data.element_ids[0] + " Geometry"));
 
             //Find length from assembly dictionary
             float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
@@ -630,7 +622,7 @@ namespace CompasXR.Core
                     Debug.Log("KeysList: " + keyslist[i]);
 
                     GameObject element = Elements.FindObject(keyslist[i]);
-                    Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[i]].data.element_ids[0] + " Geometry"));
+                    Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[i]].data.element_ids[0] + " Geometry"));
                     lineRenderer.SetPosition(i, center);
 
                     //Create points if the bool is true
@@ -664,7 +656,7 @@ namespace CompasXR.Core
 
                             //Get the center of the only object in the list
                             GameObject element = Elements.FindObject(keyslist[0]);
-                            Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[0]].data.element_ids[0] + " Geometry"));
+                            Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[0]].data.element_ids[0] + " Geometry"));
 
                             //Create singular point if it is only 1.
                             CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[0] + "Point", ptsParentObject);
@@ -738,197 +730,16 @@ namespace CompasXR.Core
         }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
-    
-    //TODO: Move these transformation things to a true static class and start the class library conversion process...
-        public static Quaternion FromRhinotoUnityRotation(Rotation rotation, bool z_to_y_remapped)
-        {   
-            //Set Unity Rotation
-            Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
-
-            Rotation Zrotation = ZRotation(rotationLh);
-
-            Rotation ObjectRotation;
-
-            if (!z_to_y_remapped == true)
-            {
-                ObjectRotation = XRotation(Zrotation);
-            }
-            else
-            {
-                ObjectRotation = Zrotation;
-            }
-
-            //Rotate Instance
-            Quaternion rotationQuaternion = GetQuaternion(ObjectRotation.y, ObjectRotation.z);
-
-            return rotationQuaternion;
-        } 
-        public static Quaternion FromUnityRotation(Rotation rotation)
-        {   
-            //Right hand to left hand conversion
-            Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
-
-            //Set Unity Rotation
-            Quaternion rotationQuaternion = GetQuaternion(rotationLh.y, rotationLh.z);
-
-            return rotationQuaternion;
-        } 
-        public static Vector3 GetPosition(float[] pointlist)
-        {
-            Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
-            return position;
-        }
-        public static Rotation GetRotation(float[] x_vecdata, float [] y_vecdata)
-        {
-            Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
-            Vector3 y_vec_right  = new Vector3(y_vecdata[0], y_vecdata[1], y_vecdata[2]);
-            
-            Rotation rotationRH;
-            
-            rotationRH.x = x_vec_right;
-            rotationRH.y = y_vec_right;
-            //This is never used just needed to satisfy struct code structure.
-            rotationRH.z = Vector3.zero;
-            
-            return rotationRH;
-        } 
-        public static Rotation RightHandToLeftHand(Vector3 x_vec_right, Vector3 y_vec_right)
-        {        
-            Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
-            Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
-            Vector3 y_vec = Vector3.Cross(z_vec, x_vec);
-
-            Rotation rotationLh;
-            rotationLh.x = x_vec;
-            rotationLh.z = z_vec;
-            rotationLh.y = y_vec;
-
-
-            return rotationLh;
-        } 
-        public static Quaternion GetQuaternion(Vector3 y_vec, Vector3 z_vec)
-        {
-            Quaternion rotation = Quaternion.LookRotation(z_vec, y_vec);
-            return rotation;
-        }
-
-        //Methods for obj imort correction.
-        public static Rotation ZRotation(Rotation ObjectRotation)
-        {
-            //Deconstruct Rotation Struct into Vector3
-            Vector3 x_vec = ObjectRotation.x;
-            Vector3 z_vec = ObjectRotation.z;
-            Vector3 y_vec = ObjectRotation.y;
-            
-            //FIRST ROTATE 180 DEGREES AROUND Z AXIS
-            Quaternion z_rotation = Quaternion.AngleAxis(180, z_vec);
-            x_vec = z_rotation * x_vec;
-            y_vec = z_rotation * y_vec;
-            z_vec = z_rotation * z_vec;
-
-            //Reconstruct new rotation struct from manipulated vectors
-            Rotation ZXrotation;
-            ZXrotation.x = x_vec;
-            ZXrotation.y = y_vec;
-            ZXrotation.z = z_vec;
-
-            return ZXrotation;
-        }
-        public static Rotation XRotation(Rotation ObjectRotation)
-        {
-            //Deconstruct Rotation Struct into Vector3
-            Vector3 x_vec = ObjectRotation.x;
-            Vector3 z_vec = ObjectRotation.z;
-            Vector3 y_vec = ObjectRotation.y;
-
-            //THEN ROTATE 90 DEGREES AROUND X AXIS
-            Quaternion rotation_x = Quaternion.AngleAxis(90f, x_vec);
-            x_vec = rotation_x * x_vec;
-            y_vec = rotation_x * y_vec;
-            z_vec = rotation_x * z_vec;
-
-            //Reconstruct new rotation struct from manipulated vectors
-            Rotation ZXrotation;
-            ZXrotation.x = x_vec;
-            ZXrotation.y = y_vec;
-            ZXrotation.z = z_vec;
-
-            return ZXrotation;
-        }
-
-        //Methods for position and rotation of unity game objects
-        public Vector3 FindGameObjectCenter(GameObject gameObject)
-        {
-            Renderer renderer = gameObject.GetComponentInChildren<Renderer>();
-            if (renderer == null)
-            {
-                Debug.LogError("Renderer not found in the parent object.");
-                return Vector3.zero;
-            }
-            Vector3 center = renderer.bounds.center;
-            return center;
-        }
-        public Vector3 OffsetPositionVectorByDistance(Vector3 position, float offsetDistance, string axis)
-        {
-            // Offset the position based on input values.
-            switch (axis)
-            {
-                case "x":
-                {
-                    Vector3 offsetPosition = new Vector3(position.x + offsetDistance, position.y, position.z);
-                    return offsetPosition;
-                }
-                case "y":
-                {
-                    Vector3 offsetPosition = new Vector3(position.x, position.y + offsetDistance, position.z);
-                    return offsetPosition;
-                }
-                case "z":
-                {
-                    Vector3 offsetPosition = new Vector3(position.x, position.y, position.z + offsetDistance);
-                    return offsetPosition;
-                }
-            }
-            return Vector3.zero;
-        }
-        public void OffsetGameObjectPositionByExistingObjectPosition(GameObject gameObject, GameObject existingObject, float offsetDistance, string axis)
-        {
-            // Calculate the center of the existing GameObject
-            Vector3 center = FindGameObjectCenter(existingObject);
-
-            // Offset the position based on input values.
-            switch (axis)
-            {
-                case "x":
-                {
-                    Vector3 offsetPosition = new Vector3(center.x + offsetDistance, center.y, center.z);
-                    gameObject.transform.position = offsetPosition;
-                    break;
-                }
-                case "y":
-                {
-                    Vector3 offsetPosition = new Vector3(center.x, center.y + offsetDistance, center.z);
-                    gameObject.transform.position = offsetPosition;
-                    break;
-                }
-                case "z":
-                {
-                    Vector3 offsetPosition = new Vector3(center.x, center.y, center.z + offsetDistance);
-                    gameObject.transform.position = offsetPosition;
-                    break;
-                }
-            }
-        }
         public Quaternion GetQuaternionFromStepKey(string key)
         {
             //Calculate Right Hand Rotation
-            Rotation rotationrh = GetRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
+            ObjectTransformations.Rotation rotationrh = ObjectTransformations.GetRotationFromRightHand(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
             
             //Convert to Left Hand Rotation
-            Rotation rotationlh = RightHandToLeftHand(rotationrh.x , rotationrh.y);
+            ObjectTransformations.Rotation rotationlh = ObjectTransformations.RightHandToLeftHand(rotationrh.x , rotationrh.y);
             
             //GetQuaterion from Left Hand Rotation
-            Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
+            Quaternion rotationQuaternion = ObjectTransformations.GetQuaternion(rotationlh.y, rotationlh.z);
 
             return rotationQuaternion;
         }
@@ -943,7 +754,7 @@ namespace CompasXR.Core
             foreach (string key in keys)
             {
                 GameObject element = Elements.FindObject(key);
-                Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0] + " Geometry"));
+                Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0] + " Geometry"));
                 positions.Add(center);
             }
 
@@ -1228,6 +1039,7 @@ namespace CompasXR.Core
                 }
             }
         }
+
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, BuildingPlanDataDictEventArgs e)
         {
