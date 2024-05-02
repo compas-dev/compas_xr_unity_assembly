@@ -552,7 +552,7 @@ namespace CompasXR.Robots.MqttData
             var robotName = jsonObject["robot_name"].ToString();
             var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
             var robotBaseFrameDataDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(robotBaseFrameDict["data"]));
-            Frame robotBaseFrame = Frame.Parse(robotBaseFrameDataDict);
+            Frame robotBaseFrame = Frame.FromData(robotBaseFrameDataDict);
             if (robotBaseFrame == null)
             {
                 throw new Exception("Robot Base Frame is null");

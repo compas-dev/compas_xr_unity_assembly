@@ -380,7 +380,7 @@ namespace CompasXR.Core
             {
                 string key = childSnapshot.Key;
                 var json_data = childSnapshot.GetValue(true);
-                Node node_data = NodeDeserializer(key, json_data);
+                Node node_data = Node.Parse(key, json_data); //TODO: NODE DESERIALIZER
                 
                 if (IsValidNode(node_data))
                 {
@@ -658,7 +658,7 @@ namespace CompasXR.Core
                 var json_data = stepsList[i];
 
                 //Create step instance from the information
-                Step step_data = StepDeserializer(json_data);
+                Step step_data = Step.Parse(json_data);
                 
                 //Check if step is valid and add it to building plan dictionary
                 if (IsValidStep(step_data))
@@ -688,230 +688,6 @@ namespace CompasXR.Core
                 }
             }
             return buidingPlanData;
-        }
-        public Node NodeDeserializer(string key, object jsondata) //TODO: Move to a static class.
-        {
-            //Generic Dictionary for deserialization     
-            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-
-            // Access nested values 
-            Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
-            Dictionary<string, object> dataDict = partDict["data"] as Dictionary<string, object>;
-            Dictionary<string, object> frameDataDict = dataDict["frame"] as Dictionary<string, object>;
-
-            //Create class instances of node elements
-            Node node = new Node();
-            node.part = new Part();
-            node.attributes = new Attributes();
-
-            //Set node type_id
-            node.type_id = key;
-
-            //Get dtype from partDict
-            string dtype = (string)partDict["dtype"];
-            
-            //Check dtype, and determine how they should be deserilized.
-            if (dtype != "compas.datastructures/Part")
-            {
-                DtypeGeometryDesctiptionSelector(node, dtype, dataDict);
-            }
-            else
-            {
-                PartDesctiptionSelector(node, dataDict);
-            }
-
-            //Parse frame from class method
-            node.part.frame = Frame.Parse(frameDataDict);
-
-            return node;
-        }
-        private void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict) //TODO: Move to a static class?
-        {
-            //Set node part dtype
-            node.part.dtype = dtype;
-
-            switch (dtype)
-            {
-                case "compas.geometry/Cylinder":
-                    
-                    //Set node type_data
-                    node.type_data = "0.Cylinder";
-                    
-                    // Accessing different parts of json data to make common attributes dictionary
-                    float height = Convert.ToSingle(jsonDataDict["height"]);
-                    float radius = Convert.ToSingle(jsonDataDict["radius"]);
-
-                    //Add Items to the attributes dictionary remapping name to length, width, height
-                    node.attributes.length = radius;
-                    node.attributes.width = radius;
-                    node.attributes.height = height;
-                    break;
-
-                case "compas.geometry/Box":
-                    
-                    //Set node type_data
-                    node.type_data = "1.Box";
-
-                    // Accessing different parts of json data to make common attributes dictionary
-                    float xsize = Convert.ToSingle(jsonDataDict["xsize"]);
-                    float ysize = Convert.ToSingle(jsonDataDict["ysize"]);
-                    float zsize = Convert.ToSingle(jsonDataDict["zsize"]);
-
-                    //Add Items to the attributes dictionary remapping name to length, width, height
-                    node.attributes.length = xsize;
-                    node.attributes.width = ysize;
-                    node.attributes.height = zsize;
-                    break;
-                
-                case "compas.datastructures/Mesh":
-
-                    //Set node type_data
-                    node.type_data = "3.Mesh"; //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
-
-                    // Set Node Length width height to 0 because it does not contain definitions for this information.
-                    node.attributes.length = 0.00f;
-                    node.attributes.width = 0.00f;
-                    node.attributes.height = 0.00f;
-
-                    Debug.Log("This is a Mesh assembly");
-                    break;
-
-                case "compas.geometry/Frame":
-                    
-                    //Set node type_data //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
-                    node.type_data = "4.Frame";
-
-                    // Set Node Length width height to 0 because it does not contain definitions for this information.
-                    node.attributes.length = 0.00f;
-                    node.attributes.width = 0.00f;
-                    node.attributes.height = 0.00f;
-
-                    Debug.Log("This is a frame assembly");
-                    break;
-
-                case "compas_timber.parts/Beam":
-
-                    //Set node type_data
-                    node.type_data = "2.ObjFile";
-
-                    // Accessing different parts of json data to make common attributes dictionary
-                    float objLength = Convert.ToSingle(jsonDataDict["length"]);
-                    float objWidth = Convert.ToSingle(jsonDataDict["width"]);
-                    float objHeight = Convert.ToSingle(jsonDataDict["height"]);
-
-                    //Add Items to the attributes dictionary remapping name to length, width, height
-                    node.attributes.length = objLength;
-                    node.attributes.width = objWidth;
-                    node.attributes.height = objHeight;
-
-                    break;
-
-                case string connectionType when connectionType.StartsWith("compas_timber.connections"):
-            
-                    //Set node type_data
-                    node.type_data = "5.Joint";
-
-                    // Do not update attributes because this is not interactable.
-
-                    Debug.Log("This is a timbers connection");
-                    break;
-
-
-                default:
-                    Debug.Log("Default");
-                    break;
-            }
-        }
-        private void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict) //TODO: Move to a static class.
-        {
-            //Access nested Part information.
-            Dictionary<string, object> attributesDict = jsonDataDict["attributes"] as Dictionary<string, object>;
-            Dictionary<string, object> nameDict = attributesDict["name"] as Dictionary<string, object>;
-            Dictionary<string, object> partdataDict = nameDict["data"] as Dictionary<string, object>;
-
-            //Get dtype from name dictionary
-            string dtype = (string)nameDict["dtype"];
-
-            //Call dtype description selector.
-            DtypeGeometryDesctiptionSelector(node, dtype, partdataDict);
-
-        }
-        public Step StepDeserializer(object jsondata) //TODO: Move to a static class.
-        {
-            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-
-            //Create class instances of node elements
-            Step step = new Step();
-            step.data = new CompasXR.Core.Data.Data();
-            step.data.location = new Frame();
-
-            //Set values for base node class to keep data structure consistent
-            step.dtype = (string)jsonDataDict["dtype"];
-            step.guid = (string)jsonDataDict["guid"];
-
-            //Access nested information
-            Dictionary<string, object> dataDict = jsonDataDict["data"] as Dictionary<string, object>;
-            Dictionary<string, object> locationDataDict = dataDict["location"] as Dictionary<string, object>;
-
-            //Try to get device_id for the step if it does not exist set it to null.
-            if (dataDict.TryGetValue("device_id", out object device_id))
-            {
-                step.data.device_id = device_id.ToString();
-            }
-            else
-            {
-                step.data.device_id = null;
-            }
-            
-            //Set values for step
-            step.data.actor = (string)dataDict["actor"];
-            step.data.geometry = (string)dataDict["geometry"];
-            step.data.is_built = (bool)dataDict["is_built"];
-            step.data.is_planned = (bool)dataDict["is_planned"];
-            step.data.priority = (int)(long)dataDict["priority"];
-
-
-            //List Conversions System.double items to float for use in instantiation & Int64 to int & Object to string
-            List<object> pointslist = locationDataDict["point"] as List<object>;
-            List<object> xaxislist = locationDataDict["xaxis"] as List<object>;
-            List<object> yaxislist = locationDataDict["yaxis"] as List<object>;
-            List<object> element_ids = dataDict["element_ids"] as List<object>;
-            List<object> instructions = dataDict["instructions"] as List<object>;
-            List<object> elements_held = dataDict["elements_held"] as List<object>;
-            
-            if (pointslist != null &&
-                xaxislist != null &&
-                yaxislist != null &&
-                element_ids != null &&
-                instructions != null &&
-                elements_held != null)
-            {
-                step.data.location.point = pointslist.Select(Convert.ToSingle).ToArray();
-                step.data.location.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-                step.data.location.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
-                step.data.elements_held = elements_held.Select(Convert.ToInt32).ToArray();
-                step.data.element_ids = element_ids.Select(x => x.ToString()).ToArray();
-                step.data.instructions = instructions.Select(x => x.ToString()).ToArray();
-            }
-            else
-            {
-                Debug.Log("One of the Location lists is null");
-            }
-
-            return step;
-        }
-        public UserCurrentInfo UserInfoDeserilizer(object jsondata) //TODO: Move to a static class.
-        {
-            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-
-            //Create class instances of node elements
-            UserCurrentInfo userCurrentInfo = new UserCurrentInfo();
-
-            //Set values for base node class to keep data structure consistent
-            userCurrentInfo.currentStep = (string)jsonDataDict["currentStep"];
-            userCurrentInfo.timeStamp = (string)jsonDataDict["timeStamp"];
-
-            return userCurrentInfo;
         }
 
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
@@ -977,7 +753,7 @@ namespace CompasXR.Core
 
             if (childSnapshot != null)
             {
-                Step newValue = StepDeserializer(childSnapshot);
+                Step newValue = Step.Parse(childSnapshot); //TODO: STEP DESERIALIZER
             
                 //make a new entry in the dictionary if it doesnt already exist
                 if (IsValidStep(newValue))
@@ -1041,7 +817,7 @@ namespace CompasXR.Core
 
             if (childSnapshot != null)
             {
-                Step newValue = StepDeserializer(childSnapshot);
+                Step newValue = Step.Parse(childSnapshot); //TODO: STEP DESERILIZER
                 
                 //Check: if the step is equal to the one that I have in the dictionary
                 if (!AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
@@ -1303,7 +1079,7 @@ namespace CompasXR.Core
 
             if (childSnapshot != null)
             {
-                UserCurrentInfo newValue = UserInfoDeserilizer(childSnapshot);
+                UserCurrentInfo newValue = UserCurrentInfo.Parse(childSnapshot);
                 
                 //make a new entry in the dictionary if it doesnt already exist
                 if (newValue != null)
@@ -1344,7 +1120,7 @@ namespace CompasXR.Core
 
             if (childSnapshot != null)
             {
-                UserCurrentInfo newValue = UserInfoDeserilizer(childSnapshot);
+                UserCurrentInfo newValue = UserCurrentInfo.Parse(childSnapshot);
                 
                 //Check: if the current step update was from me or not.
                 if (key != SystemInfo.deviceUniqueIdentifier)
