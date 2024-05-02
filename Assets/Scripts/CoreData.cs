@@ -213,6 +213,46 @@ namespace CompasXR.Core.Data
             DtypeGeometryDesctiptionSelector(node, dtype, partdataDict);
 
         }
+        public bool IsValidNode()
+        {   
+            // Basic validation: Check if the required properties are present or have valid values
+            if (!string.IsNullOrEmpty(type_id) &&
+                !string.IsNullOrEmpty(type_data) &&
+                part != null &&
+                part.frame != null)
+            {
+                if (type_data == "5.Joint")
+                {
+                    Debug.Log("This is a timbers Joint and should be ignored");
+                    return false;
+                }
+                else if (type_data != "4.Frame" || type_data != "3.Mesh")
+                {
+                    // Check if the required properties are present or have valid values
+                    if (attributes != null &&
+                        attributes?.length != null &&
+                        attributes?.width != null &&
+                        attributes?.height != null)
+                    {
+                        // Set default values for properties that may be null
+                        return true;
+                    }
+                    else
+                    {
+                        // If it is not a frame assembly and does not have geometric description.
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Set default values for properties that may be null
+                    return true;
+                }
+            }
+            Debug.Log($"node.type_id is: '{type_id}'");
+            return false;
+        }
+
     }
 
     [System.Serializable]
@@ -249,7 +289,6 @@ namespace CompasXR.Core.Data
             Dictionary<string, object> frameDataDict = jsondata as Dictionary<string, object>;;
             return FromData(frameDataDict);
         }
-
         public static Frame FromData(Dictionary<string, object> frameDataDict)
         {            
             Frame frame = new Frame();
@@ -270,7 +309,6 @@ namespace CompasXR.Core.Data
 
             return frame;
         }
-
         public Dictionary<string, object> GetData()
         {
             return new Dictionary<string, object>
@@ -280,6 +318,7 @@ namespace CompasXR.Core.Data
                 { "yaxis", yaxis }
             };
         }
+
     }
 
     /////////////// Classes For Building Plan Desearialization///////////////////
@@ -289,6 +328,71 @@ namespace CompasXR.Core.Data
     {
         public string LastBuiltIndex { get; set; }
         public Dictionary<string, Step> steps { get; set; }
+        public static (BuildingPlanData, Dictionary<string, List<string>>) Parse(object jsondata, Dictionary<string, List<string>> PriorityTreeDictionary)
+        {
+            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
+            (BuildingPlanData buildingPlanData, Dictionary<string, List<string>> priorityTreeDictionary) = BuildingPlanData.FromData(jsonDataDict, PriorityTreeDictionary);
+            return (buildingPlanData, priorityTreeDictionary);
+        }
+        public static (BuildingPlanData, Dictionary<string, List<string>>) FromData(Dictionary<string, object> jsonDataDict, Dictionary<string, List<string>> PriorityTreeDictionary)
+        {
+            //Create new building plan instance
+            BuildingPlanData buidingPlanData = new BuildingPlanData();
+            buidingPlanData.steps = new Dictionary<string, Step>();
+            
+            //Attempt to get last built index and if it doesn't exist set it to null
+            if (jsonDataDict.TryGetValue("LastBuiltIndex", out object last_built_index))
+            {
+                Debug.Log($"Last Built Index Fetched From database: {last_built_index.ToString()}");
+                buidingPlanData.LastBuiltIndex = last_built_index.ToString();
+            }
+            else
+            {
+                buidingPlanData.LastBuiltIndex = null;
+            }
+
+            //Try to access steps as dictionary... might need to be a list
+            List<object> stepsList = jsonDataDict["steps"] as List<object>;
+
+            //Loop through steps desearialize and check if they are valid
+            for(int i =0 ; i < stepsList.Count; i++)
+            {
+                string key = i.ToString();
+                var json_data = stepsList[i];
+
+                //Create step instance from the information
+                Step step_data = Step.Parse(json_data);
+                
+                //Check if step is valid and add it to building plan dictionary
+                if (step_data.IsValidStep())
+                {
+                    //Add step to building plan dictionary
+                    buidingPlanData.steps[key] = step_data;
+                    Debug.Log($"Step {key} successfully added to the building plan dictionary");
+
+                    //Add step to priority tree dictionary
+                    if (PriorityTreeDictionary.ContainsKey(step_data.data.priority.ToString()))
+                    {
+                        //If the priority already exists add the key to the list
+                        PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
+                        Debug.Log($"Step {key} successfully added to the priority tree dictionary item {step_data.data.priority.ToString()}");
+                    }
+                    else
+                    {
+                        //If not create a new list and add the key to the list
+                        PriorityTreeDictionary[step_data.data.priority.ToString()] = new List<string>();
+                        PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
+                        Debug.Log($"Step {key} added a new priority {step_data.data.priority.ToString()} to the priority tree dictionary");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
+                }
+            }
+            return (buidingPlanData, PriorityTreeDictionary);
+        }
+
     }
     
     [System.Serializable]
@@ -303,7 +407,6 @@ namespace CompasXR.Core.Data
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             return FromData(jsonDataDict);
         }
-
         public static Step FromData(Dictionary<string, object> jsonDataDict)
         {
             //Create class instances of node elements
@@ -321,6 +424,49 @@ namespace CompasXR.Core.Data
 
             return step;
         }
+        public static bool AreEqualSteps(Step step ,Step NewStep)
+        {
+            // Basic validation: Check if two steps are equal
+            if (step != null &&
+                NewStep != null &&
+                step.data.device_id == NewStep.data.device_id &&
+                step.data.element_ids == step.data.element_ids &&
+                step.data.actor == NewStep.data.actor &&
+                step.data.location.point.SequenceEqual(NewStep.data.location.point) &&
+                step.data.location.xaxis.SequenceEqual(NewStep.data.location.xaxis) &&
+                step.data.location.yaxis.SequenceEqual(NewStep.data.location.yaxis) &&
+                step.data.geometry == NewStep.data.geometry &&
+                step.data.instructions.SequenceEqual(NewStep.data.instructions) &&
+                step.data.is_built == NewStep.data.is_built &&
+                step.data.is_planned == NewStep.data.is_planned &&
+                step.data.elements_held.SequenceEqual(NewStep.data.elements_held) &&
+                step.data.priority == NewStep.data.priority)
+            {
+                // Set default values for properties that may be null
+                return true;
+            }
+            Debug.Log($"Steps with elementID : {step.data.element_ids[0]} and {NewStep.data.element_ids[0]} are not equal");
+            return false;
+        }
+        public bool IsValidStep()
+        {
+            // Basic validation: Check if the required properties are present or have valid values
+            if (data != null &&
+                data.element_ids != null &&
+                !string.IsNullOrEmpty(data.actor) &&
+                data.location != null &&
+                data.geometry != null &&
+                data.instructions != null &&
+                data.is_built != null &&
+                data.is_planned != null &&
+                data.elements_held != null &&
+                data.priority != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
     }
 
     [System.Serializable]
@@ -342,7 +488,6 @@ namespace CompasXR.Core.Data
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             return FromData(jsonDataDict);
         }
-
         public static Data FromData(Dictionary<string, object> dataDict)
         {
             //Create class instances of data class
@@ -389,6 +534,7 @@ namespace CompasXR.Core.Data
 
             return data;
         }
+
     }
 
     ////////////////Classes for User Current Informatoin/////////////////////
@@ -398,13 +544,11 @@ namespace CompasXR.Core.Data
     {
         public string currentStep { get; set; }
         public string timeStamp { get; set; }
-        
         public static UserCurrentInfo Parse(object jsondata)
         {
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             return FromData(jsonDataDict);
         }
-
         public static UserCurrentInfo FromData(Dictionary<string, object> jsonDataDict)
         {
             //Create class instances of node elements
@@ -413,5 +557,6 @@ namespace CompasXR.Core.Data
             userCurrentInfo.timeStamp = (string)jsonDataDict["timeStamp"];
             return userCurrentInfo;
         }
+
     }
 }

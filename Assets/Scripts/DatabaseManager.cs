@@ -14,6 +14,7 @@ using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.AppSettings;
 using CompasXR.Database.FirebaseManagment;
+using Unity.IO.LowLevel.Unsafe;
 
 namespace CompasXR.Core
 {
@@ -83,21 +84,6 @@ namespace CompasXR.Core
         public delegate void UpdateUserInfoEventHandler(object source, UserInfoDataItemsDictEventArgs e);
         public event UpdateUserInfoEventHandler UserInfoUpdate;
 
-
-        //Define HTTP request response classes
-        class ListFilesResponse
-        {
-            public List<object> prefix { get; set; }
-            public List<FileMetadata> items { get; set; }
-        }
-
-        public class FileMetadata
-        {
-            public string name { get; set; }
-            public string bucket { get; set; }
-            public string uri { get; set; }
-        }
-
         //Other Scripts
         public UIFunctionalities UIFunctionalities;
 
@@ -154,13 +140,13 @@ namespace CompasXR.Core
             if (e.Settings.storage_folder == "None")
             {
                 //Fetch QR Data no event trigger
-                FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 
                 //Fetch Assembly Data no event trigger
-                FetchRTDData(dbReferenceAssembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
+                FetchRTDData(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
 
                 //Fetch Building plan data with event trigger
-                FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
+                FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
             }
             
@@ -173,56 +159,31 @@ namespace CompasXR.Core
                 //Storage Reference from data fetched
                 dbRefrenceStorageDirectory = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storage_folder);
                 string basepath = dbRefrenceStorageDirectory.Path;
-                string path = basepath.Substring(1);
-                Debug.Log($"Path for download on FB Storage: {path}");
-
-                //Get a list of files from the storage location and then get individual download URIs for each file.
-                List<FileMetadata> files = await GetFilesInFolder(path);
-                List<FileMetadata> filesWithUri = await GetDownloadUriFromFilesMedata(files);
+                string folderPath = basepath.Substring(1);
+                string storageBucket = FirebaseManager.Instance.storageBucket;
+                string firebaseUrl = $"https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={folderPath}/&delimiter=/";
+                List<DataHandlers.FileMetadata> files = await DataHandlers.GetFilesInWebFolder(firebaseUrl);
+                List<DataHandlers.FileMetadata> filesWithUri = await GetDownloadUriFromFilesMedata(files);
 
                 //Fetch Data from both storage and Realtime Database.
                 FetchAllData(filesWithUri);
             }
         }
-        private async void FetchAllData(List<FileMetadata> files)
+        private async void FetchAllData(List<DataHandlers.FileMetadata> files)
         {
             //Fetch Storage Data
             await FetchAndDownloadFilesFromStorage(files);
 
             //Fetch QR Data with "TrackingDict" event trigger
-            FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+            FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
-            FetchRTDData(dbReferenceAssembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
+            FetchRTDData(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
             
             //Fetch Building plan data with "BuildingPlandataDict" event trigger
-            FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
+            FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
         }
-        async Task<List<FileMetadata>> GetFilesInFolder(string path) //TODO: Reconfigure path and move to static class?
-        {
-            //Building the storage url dynamically
-            string storageBucket = FirebaseManager.Instance.storageBucket;
-            string baseUrl = $"https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={path}/&delimiter=/";
-            Debug.Log($"GetFilesInFolder: BaseUrl: {baseUrl}");
-
-            // Send a GET request to the URL
-            using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(baseUrl))
-            using (HttpContent content = response.Content)
-            {
-                
-                // Read the response body
-                string responseText = await content.ReadAsStringAsync();
-                Debug.Log($"HTTP Client Response: {responseText}");
-
-                // Deserialize the JSON response
-                ListFilesResponse responseData = JsonConvert.DeserializeObject<ListFilesResponse>(responseText);
-
-                // Return the list of files
-                return responseData.items;
-            }
-        }
-        private async Task<List<FileMetadata>> GetDownloadUriFromFilesMedata(List<FileMetadata> filesMetadata) //TODO: Move to a static class?
+        private async Task<List<DataHandlers.FileMetadata>> GetDownloadUriFromFilesMedata(List<DataHandlers.FileMetadata> filesMetadata) //TODO: Move to a static class?
         {
             List<Task> fetchUriTasks = new List<Task>();
             
@@ -258,7 +219,7 @@ namespace CompasXR.Core
 
             return filesMetadata;
         }
-        public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetadata)
+        public async Task FetchAndDownloadFilesFromStorage(List<DataHandlers.FileMetadata> filesMetadata)
         {
             List<Task> downloadTasks = new List<Task>();
             
@@ -293,18 +254,18 @@ namespace CompasXR.Core
                 if (webRequest.result != UnityWebRequest.Result.Success)
                 {
                     //If there is an error when downloading an object signal and on screen message.
-                    string message = $"ERROR: Application failed download file for object {Path.GetFileName(filePath)}. Please review the associated file and try again.";
+                    string message = $"DownloadFile: ERROR: Application failed download file for object {Path.GetFileName(filePath)}. Please review the associated file and try again.";
                     UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
 
-                    Debug.LogError("File download error: " + webRequest.error);
+                    Debug.LogError("DownloadFile: File download error: " + webRequest.error);
                 }
                 else
                 {
-                    Debug.Log("File successfully downloaded and saved to " + filePath);
+                    Debug.Log("DownloadFile: File successfully downloaded and saved to " + filePath);
                 }
             }
         }
-        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null) //TODO: Make a version of this in a static class.... & Wrap in event wrapper.
+        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null) //TODO: Make a version of this in a static class.... & Wrap in event wrapper.
         {
             await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
             {
@@ -317,9 +278,9 @@ namespace CompasXR.Core
                 if (task.IsCompleted)
                 {
                     DataSnapshot snapshot = task.Result;
-                    if (customAction != null)
+                    if (deserilizationMethod != null)
                     {
-                        customAction(snapshot);
+                        deserilizationMethod(snapshot);
                     }
                 }
             });
@@ -370,7 +331,7 @@ namespace CompasXR.Core
         
             OnSettingsUpdate(applicationSettings);
         } 
-        private void DeserializeDataSnapshot(DataSnapshot snapshot, Dictionary<string, Node> dataDict) //TODO: Move to a static class? & Rename?
+        private void DeserializeAssemblyDataSnapshot(DataSnapshot snapshot, Dictionary<string, Node> dataDict)
         {
             //Clear current Dictionary if it contains information
             dataDict.Clear();
@@ -382,7 +343,7 @@ namespace CompasXR.Core
                 var json_data = childSnapshot.GetValue(true);
                 Node node_data = Node.Parse(key, json_data); //TODO: NODE DESERIALIZER
                 
-                if (IsValidNode(node_data))
+                if (node_data.IsValidNode())
                 {
                     dataDict[key] = node_data;
                     dataDict[key].type_id = key;
@@ -396,7 +357,7 @@ namespace CompasXR.Core
             Debug.Log("Number of nodes stored as a dictionary = " + dataDict.Count);
 
         }
-        private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage) //TODO: Move to static class
+        private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
         {  
             string jsondatastring = snapshot.GetRawJsonValue();
             Debug.Log("DesearializeStringItem: String Item Data:" + jsondatastring);
@@ -411,7 +372,7 @@ namespace CompasXR.Core
                 tempStringStorage = null;
             }
         }
-        private void DesearializeBuildingPlan(DataSnapshot snapshot)
+        private void DesearializeBuildingPlanDataSnapshot(DataSnapshot snapshot)
         {
             //Set Buliding plan to a null value
             if (BuildingPlanDataItem.steps != null && BuildingPlanDataItem.LastBuiltIndex != null)
@@ -419,10 +380,19 @@ namespace CompasXR.Core
                 BuildingPlanDataItem.LastBuiltIndex = null;
                 BuildingPlanDataItem.steps.Clear();
             }
+            if (PriorityTreeDict != null)
+            {
+                PriorityTreeDict.Clear();
+            }
 
             var jsondata = snapshot.GetValue(true);
+            Dictionary<string, List<string>> priorityTreeDict = new Dictionary<string, List<string>>();
+            
+            (BuildingPlanData buildingPlanData, 
+            Dictionary<string, List<string>> priorityTreeDictionary) = BuildingPlanData.Parse(jsondata, priorityTreeDict);
 
-            BuildingPlanData buildingPlanData = BuildingPlanDeserializer(jsondata);
+            //Assign the data to the PriorityTreeDict Class Variable
+            PriorityTreeDict = priorityTreeDictionary;
 
             if (buildingPlanData != null && buildingPlanData.steps != null)
             {
@@ -436,123 +406,6 @@ namespace CompasXR.Core
         }
 
     /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
-        private bool IsValidNode(Node node) //TODO: Move to a static class.
-        {   
-            // Basic validation: Check if the required properties are present or have valid values
-            if (node != null &&
-                !string.IsNullOrEmpty(node.type_id) &&
-                !string.IsNullOrEmpty(node.type_data) &&
-                node.part != null &&
-                node.part.frame != null)
-            {
-                if (node.type_data == "5.Joint")
-                {
-                    Debug.Log("This is a timbers Joint and should be ignored");
-                    return false;
-                }
-                else if (node.type_data != "4.Frame" || node.type_data != "3.Mesh")
-                {
-                    // Check if the required properties are present or have valid values
-                    if (node.attributes != null &&
-                        node.attributes?.length != null &&
-                        node.attributes?.width != null &&
-                        node.attributes?.height != null)
-                    {
-                        // Set default values for properties that may be null
-                        return true;
-                    }
-                    else
-                    {
-                        // If it is not a frame assembly and does not have geometric description.
-                        return false;
-                    }
-                }
-                else
-                {
-                    // Set default values for properties that may be null
-                    return true;
-                }
-            }
-            Debug.Log($"node.type_id is: '{node.type_id}'");
-            return false;
-        }
-        private bool IsValidStep(Step step) //TODO: Move to a static class.
-        {
-            // Basic validation: Check if the required properties are present or have valid values
-            if (step != null &&
-                step.data.element_ids != null &&
-                !string.IsNullOrEmpty(step.data.actor) &&
-                step.data.location != null &&
-                step.data.geometry != null &&
-                step.data.instructions != null &&
-                step.data.is_built != null &&
-                step.data.is_planned != null &&
-                step.data.elements_held != null &&
-                step.data.priority != null)
-            {
-                // Set default values for properties that may be null
-                return true;
-            }
-            Debug.Log($"node.key is: '{step.data.element_ids[0]}'");
-            return false;
-        }
-        private bool AreEqualSteps(Step step ,Step NewStep) //TODO: Move to a static class.
-        {
-            // Basic validation: Check if two steps are equal
-            if (step != null &&
-                NewStep != null &&
-                step.data.device_id == NewStep.data.device_id &&
-                step.data.element_ids == step.data.element_ids &&
-                step.data.actor == NewStep.data.actor &&
-                step.data.location.point.SequenceEqual(NewStep.data.location.point) &&
-                step.data.location.xaxis.SequenceEqual(NewStep.data.location.xaxis) &&
-                step.data.location.yaxis.SequenceEqual(NewStep.data.location.yaxis) &&
-                step.data.geometry == NewStep.data.geometry &&
-                step.data.instructions.SequenceEqual(NewStep.data.instructions) &&
-                step.data.is_built == NewStep.data.is_built &&
-                step.data.is_planned == NewStep.data.is_planned &&
-                step.data.elements_held.SequenceEqual(NewStep.data.elements_held) &&
-                step.data.priority == NewStep.data.priority)
-            {
-                // Set default values for properties that may be null
-                return true;
-            }
-            Debug.Log($"Steps with elementID : {step.data.element_ids[0]} and {NewStep.data.element_ids[0]} are not equal");
-            return false;
-        }
-        public string print_out_data(DatabaseReference dbreference_assembly) //TODO: Move to a static class.
-        {
-            string jsondata = "";
-            dbreference_assembly.GetValueAsync().ContinueWithOnMainThread(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    Debug.Log("error");
-                }
-                else if (task.IsCompleted)
-                {
-                    DataSnapshot dataSnapshot = task.Result;
-                    jsondata = dataSnapshot.GetRawJsonValue(); 
-                    Debug.Log("all nodes" + jsondata);
-                }
-            });
-            return jsondata;
-        }
-        public void CheckPathExistance(string path) //TODO: Move to a static class.
-        {       
-            // Replace backslashes with forward slashes
-            path = path.Replace('\\', '/');
-
-            if (File.Exists(path))
-            {
-                Debug.Log($"File Exists @ {path}");
-            }
-            else
-            {
-                Debug.Log($"File does not exist @ {path}");
-            }
-
-        }
         public void FindInitialElement()
         {
             //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
@@ -627,69 +480,6 @@ namespace CompasXR.Core
 
         }
 
-    /////////////////////////////// Input Data Handlers //////////////////////////////////  
-        //This also creates the priority tree dictionary, but this is temporary to limit searching.
-        private BuildingPlanData BuildingPlanDeserializer(object jsondata) //TODO: Can the priority Tree dict be an input and return them both to the global variable?
-        {
-            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-            
-            //Create new building plan instance
-            BuildingPlanData buidingPlanData = new BuildingPlanData();
-            buidingPlanData.steps = new Dictionary<string, Step>();
-            
-            //Attempt to get last built index and if it doesn't exist set it to null
-            if (jsonDataDict.TryGetValue("LastBuiltIndex", out object last_built_index))
-            {
-                Debug.Log($"Last Built Index Fetched From database: {last_built_index.ToString()}");
-                buidingPlanData.LastBuiltIndex = last_built_index.ToString();
-            }
-            else
-            {
-                buidingPlanData.LastBuiltIndex = null;
-            }
-
-            //Try to access steps as dictionary... might need to be a list
-            List<object> stepsList = jsonDataDict["steps"] as List<object>;
-
-            //Loop through steps desearialize and check if they are valid
-            for(int i =0 ; i < stepsList.Count; i++)
-            {
-                string key = i.ToString();
-                var json_data = stepsList[i];
-
-                //Create step instance from the information
-                Step step_data = Step.Parse(json_data);
-                
-                //Check if step is valid and add it to building plan dictionary
-                if (IsValidStep(step_data))
-                {
-                    //Add step to building plan dictionary
-                    buidingPlanData.steps[key] = step_data;
-                    Debug.Log($"Step {key} successfully added to the building plan dictionary");
-
-                    //Add step to priority tree dictionary
-                    if (PriorityTreeDict.ContainsKey(step_data.data.priority.ToString()))
-                    {
-                        //If the priority already exists add the key to the list
-                        PriorityTreeDict[step_data.data.priority.ToString()].Add(key);
-                        Debug.Log($"Step {key} successfully added to the priority tree dictionary item {step_data.data.priority.ToString()}");
-                    }
-                    else
-                    {
-                        //If not create a new list and add the key to the list
-                        PriorityTreeDict[step_data.data.priority.ToString()] = new List<string>();
-                        PriorityTreeDict[step_data.data.priority.ToString()].Add(key);
-                        Debug.Log($"Step {key} added a new priority {step_data.data.priority.ToString()} to the priority tree dictionary");
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
-                }
-            }
-            return buidingPlanData;
-        }
-
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
 
         // Add listeners and remove them for firebase child events
@@ -756,7 +546,7 @@ namespace CompasXR.Core
                 Step newValue = Step.Parse(childSnapshot); //TODO: STEP DESERIALIZER
             
                 //make a new entry in the dictionary if it doesnt already exist
-                if (IsValidStep(newValue))
+                if (newValue.IsValidStep())
                 {
                     if (BuildingPlanDataItem.steps.ContainsKey(key))
                     {
@@ -820,14 +610,14 @@ namespace CompasXR.Core
                 Step newValue = Step.Parse(childSnapshot); //TODO: STEP DESERILIZER
                 
                 //Check: if the step is equal to the one that I have in the dictionary
-                if (!AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
+                if (!Step.AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
                 {    
                     Debug.Log($"On Child Changed: This key actually changed {key}");
 
                     if (newValue.data.device_id != null)
                     {
                         //Check: if the change is from me or from someone else could possibly get rid of this because we check every step, but still safety check for now.
-                        if (newValue.data.device_id == SystemInfo.deviceUniqueIdentifier && AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
+                        if (newValue.data.device_id == SystemInfo.deviceUniqueIdentifier && Step.AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
                         {
                             Debug.Log($"I changed element {key}");
                             return;
@@ -835,9 +625,8 @@ namespace CompasXR.Core
                         //This means that the change was specifically from another device.
                         else
                         {    
-                            if(IsValidStep(newValue))
+                            if(newValue.IsValidStep())
                             {
-
                                 //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                                 if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                                 {
@@ -890,7 +679,7 @@ namespace CompasXR.Core
                     {
                         Debug.LogWarning($"Device ID is null: the change for key {key} happened from gh or manually.");
 
-                        if(IsValidStep(newValue))
+                        if(newValue.IsValidStep())
                         {
 
                             //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
@@ -1203,14 +992,14 @@ namespace CompasXR.Core
                     Debug.Log("Project Changed: Assembly Changed");
                     
                     //If the assembly changed then fetch new assembly data
-                    await FetchRTDData(dbReferenceAssembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
+                    await FetchRTDData(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
                 }
                 else if(key == "QRFrames")
                 {
                     Debug.Log("Project Changed: QRFrames Changed");
 
                     //If the qrcodes changed then fetch new qrcode data
-                    await FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                    await FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 }
                 else if(key == "beams")
                 {
@@ -1277,6 +1066,19 @@ namespace CompasXR.Core
 
     public static class DataHandlers
     {
+        //Define HTTP request response classes
+        class ListFilesResponse
+        {
+            public List<object> prefix { get; set; }
+            public List<FileMetadata> items { get; set; }
+        }
+
+        public class FileMetadata
+        {
+            public string name { get; set; }
+            public string bucket { get; set; }
+            public string uri { get; set; }
+        }
         public static void DeleteFilesFromDirectory(string directoryPath)
         {
             string folderpath = directoryPath.Replace('\\', '/');
@@ -1308,6 +1110,62 @@ namespace CompasXR.Core
         public static void PushStringDataToDatabaseReference(DatabaseReference databaseReference, string data)
         {
             databaseReference.SetRawJsonValueAsync(data);
+        }
+        public static string PrintDataFromDatabaseRefrerence(DatabaseReference databaseReference)
+        {
+            string jsondata = "";
+            databaseReference.GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.Log("error");
+                }
+                else if (task.IsCompleted)
+                {
+                    DataSnapshot dataSnapshot = task.Result;
+                    jsondata = dataSnapshot.GetRawJsonValue(); 
+                    Debug.Log("all nodes" + jsondata);
+                }
+            });
+            return jsondata;
+        }
+        public static void CheckLocalPathExistance(string path)
+        {       
+            // Replace backslashes with forward slashes
+            path = path.Replace('\\', '/');
+
+            if (File.Exists(path))
+            {
+                Debug.Log($"CheckLocalPathExistance: File Exists @ {path}");
+            }
+            else
+            {
+                Debug.Log($"CheckLocalPathExistance: File does not exist @ {path}");
+            }
+
+        }
+
+        public static async Task<List<FileMetadata>> GetFilesInWebFolder(string webFolderUrl) //TODO: Reconfigure path and move to static class?
+        {
+            //Building the storage url dynamically
+            Debug.Log($"GetFilesInFolder: BaseUrl: {webFolderUrl}");
+
+            // Send a GET request to the URL
+            using (HttpClient client = new HttpClient())
+            using (HttpResponseMessage response = await client.GetAsync(webFolderUrl))
+            using (HttpContent content = response.Content)
+            {
+                
+                // Read the response body
+                string responseText = await content.ReadAsStringAsync();
+                Debug.Log($"HTTP Client Response: {responseText}");
+
+                // Deserialize the JSON response
+                ListFilesResponse responseData = JsonConvert.DeserializeObject<ListFilesResponse>(responseText);
+
+                // Return the list of files
+                return responseData.items;
+            }
         }
 
     }
