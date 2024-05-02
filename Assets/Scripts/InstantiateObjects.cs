@@ -100,50 +100,27 @@ namespace CompasXR.Core
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
         }
-        public void placeElement(string Key, Step step) //TODO: MAKE A STATIC METHOD INSIDE OF THIS ONE THAT CAN BE PLACEOBJECTFROMRHINOFRAMEDATA
+        public void PlaceElementFromStep(string Key, Step step) //TODO: MAKE A STATIC METHOD INSIDE OF THIS ONE THAT CAN BE PLACEOBJECTFROMRHINOFRAMEDATA
         {
-            Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
-
-            //get position
-            Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(step.data.location.point);
-            
-            //get rotation
-            ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(step.data.location.xaxis, step.data.location.yaxis);
-            
-            //Define Object Rotation
-            Quaternion rotationQuaternion;
-            if(step.data.geometry == "2.ObjFile")
-            {
-                rotationQuaternion = ObjectTransformations.FromRhinotoUnityRotation(rotationData, databaseManager.z_remapped);
-            }
-            else
-            {
-                rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
-            }
-
-            //If the quaternion is null raise an error
-            if(rotationQuaternion == null)
-            {
-                Debug.LogError("placeElement: Cannot assign object rotation because it is null");
-            }
+            Debug.Log($"PlaceElement: {step.data.element_ids[0]} from Step: {Key}");
 
             //instantiate a geometry at this position and rotation
             GameObject geometry_object = gameobjectTypeSelector(step);
-
             if (geometry_object == null)
             {
-                Debug.Log($"This key:{step.data.element_ids[0]} from Step: {Key} is null");
+                Debug.LogError($"PlaceElement: This key:{step.data.element_ids[0]} from Step: {Key} is null");
                 return;
             }
 
-            //Instantiate new gameObject from the existing selected gameobjects.
-            GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
-            
-            // Destroy Initial gameobject that is made.
-            if (geometry_object != null)
+            //Check if the object is suppose to be loaded as an .Obj file
+            bool isObj = false;
+            if (step.data.geometry == "2.ObjFile")
             {
-                Destroy(geometry_object);
+                isObj = true;
             }
+
+            //Instantiate the object at the position and rotation
+            GameObject elementPrefab = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(geometry_object, step.data.location.point, step.data.location.xaxis, step.data.location.yaxis, isObj, databaseManager.z_remapped);
 
             //Set parent and name
             elementPrefab.transform.SetParent(Elements.transform, false);
@@ -201,7 +178,7 @@ namespace CompasXR.Core
                 {
                     if (entry.Value != null)
                     {
-                        placeElement(entry.Key, entry.Value);
+                        PlaceElementFromStep(entry.Key, entry.Value);
                     }
 
                 }
@@ -320,63 +297,6 @@ namespace CompasXR.Core
                 return element;
             
         }
-        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null, bool storePositionData=true)
-        {
-            // Create a new GameObject for the text
-            GameObject textContainer = new GameObject(gameObjectName);
-
-            // Set the position and rotation of the text
-            textContainer.transform.position = position;
-            textContainer.transform.rotation = rotation;
-
-            // Add TextMeshPro component to the GameObject
-            TextMeshPro textMesh = textContainer.AddComponent<TextMeshPro>();
-            textMesh.text = text;
-            textMesh.fontSize = fontSize;
-            textMesh.autoSizeTextContainer = true;
-            textMesh.alignment = textAlignment;
-            textMesh.color = textColor;
-
-            // Add billboard effect(object rotating with camera)
-            if (isBillboard)
-            {
-                textContainer.AddComponent<HelpersExtensions.Billboard>();
-            }
-
-            //Set parent if there is a parent object
-            if (parentObject != null)
-            {
-                textContainer.transform.SetParent(parentObject.transform);
-            }
-            
-            // Add Position data class on the object
-            if (storePositionData)
-            {
-                HelpersExtensions.ObjectPositionInfo positionData = textContainer.AddComponent<HelpersExtensions.ObjectPositionInfo>();
-                positionData.StorePositionRotationScale(textContainer.transform.localPosition, textContainer.transform.localRotation, textContainer.transform.localScale);
-            }
-
-            // Set the visiblity based on the input
-            textContainer.SetActive(isVisible);
-
-            return textContainer;
-        }
-        public GameObject InstantiateObjectFromPrefabRefrence(ref GameObject prefabReference, string gameObjectName, Vector3 position, Quaternion rotation, GameObject parentObject=null)
-        {
-            //Instantiate the prefab at the position and rotation
-            GameObject instantiatedObject = Instantiate(prefabReference, position, rotation);
-
-            //Set the name of the instantiated object
-            instantiatedObject.name = gameObjectName;
-
-            //Set the parent of the instantiated object
-            if (parentObject != null)
-            {
-                instantiatedObject.transform.SetParent(parentObject.transform);
-            }
-
-            return instantiatedObject;
-        }
         private void CreateTextForGameObjectOnInstantiation(GameObject gameObject, string assemblyID, float offsetDistance, string text, string textObjectName, float fontSize)
         {              
             // Calculate the center of the GameObject
@@ -389,7 +309,7 @@ namespace CompasXR.Core
             Vector3 offsetPosition = ObjectTransformations.OffsetPositionVectorByDistance(center, offsetDistance, "y");
 
             //Create 3D Text
-            GameObject TextContainer = Create3DTextAsGameObject(
+            GameObject TextContainer = ObjectInstantiaion.CreateTextinARSpaceAsGameObject(
                 text, textObjectName, fontSize,
                 TextAlignmentOptions.Center, Color.white, offsetPosition,
                 Quaternion.identity, true, false, gameObject);
@@ -406,7 +326,7 @@ namespace CompasXR.Core
             Vector3 offsetPosition = ObjectTransformations.OffsetPositionVectorByDistance(centerPosition, verticalOffset, "y");
 
             // Instantiate the image object at the offset position
-            GameObject imgObject = InstantiateObjectFromPrefabRefrence(ref inputImg, imgObjectName, offsetPosition, Quaternion.identity, parentObject);
+            GameObject imgObject = ObjectInstantiaion.InstantiateObjectFromPrefabRefrence(ref inputImg, imgObjectName, offsetPosition, Quaternion.identity, parentObject);
 
             // Add billboard effect
             if (isBillboard)
@@ -452,13 +372,13 @@ namespace CompasXR.Core
             GameObject newArrow = null;
 
             // Instantiate arrow at the offset position
-            newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, namingBase+" Arrow", arrowOffset, rotationQuaternion, parentObject);
+            newArrow = ObjectInstantiaion.InstantiateObjectFromPrefabRefrence(ref UserIndicator, namingBase+" Arrow", arrowOffset, rotationQuaternion, parentObject);
 
             //Add billboard effect to the indicator
             newArrow.AddComponent<HelpersExtensions.Billboard>();
 
             //Create 3D Text
-            GameObject IndexTextContainer = Create3DTextAsGameObject(
+            GameObject IndexTextContainer = ObjectInstantiaion.CreateTextinARSpaceAsGameObject(
                 inGameText, $"{namingBase} UserText", fontSize,
                 TextAlignmentOptions.Center, Color.white, newArrow.transform.position,
                 newArrow.transform.rotation, true, true, newArrow);
@@ -743,7 +663,7 @@ namespace CompasXR.Core
 
             return rotationQuaternion;
         }
-        public List<Vector3> GetPositionsFromPriorityGroup(string priorityGroup) //TODO: If you want to make this static you need to make priority tree an input, but I don't know how helpful it is as static.
+        public List<Vector3> GetPositionsFromPriorityGroup(string priorityGroup)
         {
             List<Vector3> positions = new List<Vector3>();
 
@@ -1099,7 +1019,7 @@ namespace CompasXR.Core
             {
                 Debug.Log( $"Could Not find Object with key: {key}");
             }
-            placeElement(key, newValue);
+            PlaceElementFromStep(key, newValue);
         }
         public void RemoveObjects(string key)
         {
@@ -1122,5 +1042,103 @@ namespace CompasXR.Core
             //Find the first unbuilt element in the database
             databaseManager.FindInitialElement();
         }
+    }
+
+    public static class ObjectInstantiaion
+    {
+        public static GameObject CreateTextinARSpaceAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null, bool storePositionData=true)
+        {
+            // Create a new GameObject for the text
+            GameObject textContainer = new GameObject(gameObjectName);
+
+            // Set the position and rotation of the text
+            textContainer.transform.position = position;
+            textContainer.transform.rotation = rotation;
+
+            // Add TextMeshPro component to the GameObject
+            TextMeshPro textMesh = textContainer.AddComponent<TextMeshPro>();
+            textMesh.text = text;
+            textMesh.fontSize = fontSize;
+            textMesh.autoSizeTextContainer = true;
+            textMesh.alignment = textAlignment;
+            textMesh.color = textColor;
+
+            // Add billboard effect(object rotating with camera)
+            if (isBillboard)
+            {
+                textContainer.AddComponent<HelpersExtensions.Billboard>();
+            }
+
+            //Set parent if there is a parent object
+            if (parentObject != null)
+            {
+                textContainer.transform.SetParent(parentObject.transform);
+            }
+            
+            // Add Position data class on the object
+            if (storePositionData)
+            {
+                HelpersExtensions.ObjectPositionInfo positionData = textContainer.AddComponent<HelpersExtensions.ObjectPositionInfo>();
+                positionData.StorePositionRotationScale(textContainer.transform.localPosition, textContainer.transform.localRotation, textContainer.transform.localScale);
+            }
+
+            // Set the visiblity based on the input
+            textContainer.SetActive(isVisible);
+
+            return textContainer;
+        }
+        public static GameObject InstantiateObjectFromPrefabRefrence(ref GameObject prefabReference, string gameObjectName, Vector3 position, Quaternion rotation, GameObject parentObject=null)
+        {
+            //Instantiate the prefab at the position and rotation
+            GameObject instantiatedObject = GameObject.Instantiate(prefabReference, position, rotation);
+
+            //Set the name of the instantiated object
+            instantiatedObject.name = gameObjectName;
+
+            //Set the parent of the instantiated object
+            if (parentObject != null)
+            {
+                instantiatedObject.transform.SetParent(parentObject.transform);
+            }
+
+            return instantiatedObject;
+        }
+        public static GameObject InstantiateObjectFromRightHandFrameData(GameObject gameObject, float[] pointData, float[] xAxisData, float[] yAxisData, bool isObj, bool z_remapped)
+        {
+            //get position
+            Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(pointData);
+            
+            //get rotation
+            ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(xAxisData, yAxisData);
+            
+            //Define Object Rotation
+            Quaternion rotationQuaternion;
+            if(isObj)
+            {
+                rotationQuaternion = ObjectTransformations.FromRhinotoUnityRotation(rotationData, z_remapped);
+            }
+            else
+            {
+                rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
+            }
+
+            //If the quaternion is null raise an error
+            if(rotationQuaternion == null)
+            {
+                Debug.LogError("placeElement: Cannot assign object rotation because it is null");
+            }
+
+            //Instantiate new gameObject from the existing selected gameobjects.
+            GameObject elementPrefab = GameObject.Instantiate(gameObject, positionData, rotationQuaternion);
+            
+            // Destroy Initial gameobject that is made.
+            if (gameObject != null)
+            {
+                GameObject.Destroy(gameObject);
+            }
+
+            return elementPrefab;
+        }
+
     }
 }
