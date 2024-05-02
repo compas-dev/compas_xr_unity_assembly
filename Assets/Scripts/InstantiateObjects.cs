@@ -100,7 +100,7 @@ namespace CompasXR.Core
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
         }
-        public void placeElement(string Key, Step step)
+        public void placeElement(string Key, Step step) //TODO: MAKE A STATIC METHOD INSIDE OF THIS ONE THAT CAN BE PLACEOBJECTFROMRHINOFRAMEDATA
         {
             Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
 

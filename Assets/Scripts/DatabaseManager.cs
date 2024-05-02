@@ -304,7 +304,7 @@ namespace CompasXR.Core
                 }
             }
         }
-        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null) //TODO: Move to a static class.
+        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null) //TODO: Make a version of this in a static class.... & Wrap in event wrapper.
         {
             await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
             {
@@ -346,10 +346,6 @@ namespace CompasXR.Core
             //Push the data to firebase
             dbReferenceBuildingPlan.SetRawJsonValueAsync(data);
         }
-        public void PushStringData(DatabaseReference db_ref, string data) //TODO: Move to a static class.
-        {
-            db_ref.SetRawJsonValueAsync(data);
-        }
 
     /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
         private void DeserializeSettingsData(DataSnapshot snapshot)
@@ -357,8 +353,8 @@ namespace CompasXR.Core
             //Delete Objects from the storage directory path
             string path = Application.persistentDataPath;
             string storageFolderPath = Path.Combine(path, "Object_Storage");
-            DeleteObjectsFromDirectory(storageFolderPath);
-            CreateDirectory(storageFolderPath);
+            DataHandlers.DeleteFilesFromDirectory(storageFolderPath);
+            DataHandlers.CreateDirectory(storageFolderPath);
 
             string AppData = snapshot.GetRawJsonValue();
 
@@ -400,10 +396,10 @@ namespace CompasXR.Core
             Debug.Log("Number of nodes stored as a dictionary = " + dataDict.Count);
 
         }
-        private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
+        private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage) //TODO: Move to static class
         {  
             string jsondatastring = snapshot.GetRawJsonValue();
-            Debug.Log("String Item Data:" + jsondatastring);
+            Debug.Log("DesearializeStringItem: String Item Data:" + jsondatastring);
             
             if (!string.IsNullOrEmpty(jsondatastring))
             {
@@ -411,7 +407,7 @@ namespace CompasXR.Core
             }
             else
             {
-                Debug.LogWarning("String Item Did not produce a value");
+                Debug.LogWarning("DesearializeStringItem: String Item Did not produce a value");
                 tempStringStorage = null;
             }
         }
@@ -440,34 +436,6 @@ namespace CompasXR.Core
         }
 
     /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
-        private static void DeleteObjectsFromDirectory(string directoryPath) //TODO: Move to a static class.
-        {
-            string folderpath = directoryPath.Replace('\\', '/');
-
-            //If the folder exists delete all files in the folder. If not create the folder.
-            if (Directory.Exists(folderpath))
-            {
-                System.IO.DirectoryInfo di = new DirectoryInfo(folderpath);
-                foreach (FileInfo file in di.GetFiles())
-                {
-                    file.Delete();
-                }
-
-                Debug.Log($"DeleteObjectsFromDirectory: Deleted all files in the directory @ {folderpath}");
-            }
-        }
-        public void CreateDirectory(string directoryPath) //TODO: Move to a static class.
-        {
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-                Debug.Log($"CreateDirectory: Created Directory for Object Storage @ {directoryPath}");
-            }
-            else
-            {
-                Debug.Log($"CreateDirectory: Directory @ path {directoryPath} already exists.");
-            }
-        }
         private bool IsValidNode(Node node) //TODO: Move to a static class.
         {   
             // Basic validation: Check if the required properties are present or have valid values
@@ -661,7 +629,7 @@ namespace CompasXR.Core
 
     /////////////////////////////// Input Data Handlers //////////////////////////////////  
         //This also creates the priority tree dictionary, but this is temporary to limit searching.
-        private BuildingPlanData BuildingPlanDeserializer(object jsondata)
+        private BuildingPlanData BuildingPlanDeserializer(object jsondata) //TODO: Can the priority Tree dict be an input and return them both to the global variable?
         {
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             
@@ -719,8 +687,6 @@ namespace CompasXR.Core
                     Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
                 }
             }
-
-            Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
             return buidingPlanData;
         }
         public Node NodeDeserializer(string key, object jsondata) //TODO: Move to a static class.
@@ -1530,5 +1496,44 @@ namespace CompasXR.Core
             //Remove Listners
             RemoveListners();
         }
+
     }
+
+    public static class DataHandlers
+    {
+        public static void DeleteFilesFromDirectory(string directoryPath)
+        {
+            string folderpath = directoryPath.Replace('\\', '/');
+
+            //If the folder exists delete all files in the folder. If not create the folder.
+            if (Directory.Exists(folderpath))
+            {
+                System.IO.DirectoryInfo di = new DirectoryInfo(folderpath);
+                foreach (FileInfo file in di.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                Debug.Log($"DeleteObjectsFromDirectory: Deleted all files in the directory @ {folderpath}");
+            }
+        }
+        public static void CreateDirectory(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+                Debug.Log($"CreateDirectory: Created Directory for Object Storage @ {directoryPath}");
+            }
+            else
+            {
+                Debug.Log($"CreateDirectory: Directory @ path {directoryPath} already exists.");
+            }
+        }
+        public static void PushStringDataToDatabaseReference(DatabaseReference databaseReference, string data)
+        {
+            databaseReference.SetRawJsonValueAsync(data);
+        }
+
+    }
+
 }

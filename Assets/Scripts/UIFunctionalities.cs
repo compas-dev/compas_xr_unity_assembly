@@ -561,7 +561,7 @@ namespace CompasXR.UI
             databaseManager.UserCurrentStepDict[SystemInfo.deviceUniqueIdentifier] = userCurrentInfo;
 
             //Push Current key to the firebase
-            databaseManager.PushStringData(databaseManager.dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
+            DataHandlers.PushStringDataToDatabaseReference(databaseManager.dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier), JsonConvert.SerializeObject(userCurrentInfo));
 
             //Update Lengths if Object Lengths Toggle is on
             if(ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
