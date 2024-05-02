@@ -140,13 +140,13 @@ namespace CompasXR.Core
             if (e.Settings.storage_folder == "None")
             {
                 //Fetch QR Data no event trigger
-                FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 
                 //Fetch Assembly Data no event trigger
-                FetchRTDData(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
+                FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
 
                 //Fetch Building plan data with event trigger
-                FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
+                FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
             }
             
@@ -172,18 +172,19 @@ namespace CompasXR.Core
         private async void FetchAllData(List<DataHandlers.FileMetadata> files)
         {
             //Fetch Storage Data
-            await FetchAndDownloadFilesFromStorage(files);
+            string directoryPath = System.IO.Path.Combine(Application.persistentDataPath, "Object_Storage");
+            await FetchAndDownloadFilesFromStorage(files, directoryPath);
 
             //Fetch QR Data with "TrackingDict" event trigger
-            FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+            FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
-            FetchRTDData(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
+            FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
             
             //Fetch Building plan data with "BuildingPlandataDict" event trigger
-            FetchRTDData(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
+            FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
         }
-        private async Task<List<DataHandlers.FileMetadata>> GetDownloadUriFromFilesMedata(List<DataHandlers.FileMetadata> filesMetadata) //TODO: Move to a static class?
+        private async Task<List<DataHandlers.FileMetadata>> GetDownloadUriFromFilesMedata(List<DataHandlers.FileMetadata> filesMetadata) //TODO: Dificulty Moving with OnScreenMessage
         {
             List<Task> fetchUriTasks = new List<Task>();
             
@@ -219,7 +220,7 @@ namespace CompasXR.Core
 
             return filesMetadata;
         }
-        public async Task FetchAndDownloadFilesFromStorage(List<DataHandlers.FileMetadata> filesMetadata)
+        public async Task FetchAndDownloadFilesFromStorage(List<DataHandlers.FileMetadata> filesMetadata, string localDirectoryPath) //TODO: Can't Move Because DownloadFile cant move
         {
             List<Task> downloadTasks = new List<Task>();
             
@@ -229,14 +230,10 @@ namespace CompasXR.Core
                 string downloadUrl = fileMetadata.uri;
 
                 // Construct the local file path
-                string localFilePath = System.IO.Path.Combine(Application.persistentDataPath, "Object_Storage", System.IO.Path.GetFileName(fileMetadata.name));
+                string localFilePath = System.IO.Path.Combine(localDirectoryPath, System.IO.Path.GetFileName(fileMetadata.name));
                 
                 // Ensure the directory exists
-                string directoryPath = System.IO.Path.GetDirectoryName(localFilePath);
-                if (!System.IO.Directory.Exists(directoryPath))
-                {
-                    System.IO.Directory.CreateDirectory(directoryPath);
-                }
+                DataHandlers.CreateDirectory(localDirectoryPath);
 
                 //Add the Download task to the tasklist
                 downloadTasks.Add(DownloadFile(downloadUrl, localFilePath));
@@ -244,46 +241,30 @@ namespace CompasXR.Core
             //Await all download tasks are done before refreshing.
             await Task.WhenAll(downloadTasks);
         }
-        private async Task DownloadFile(string downloadUrl, string filePath) //TODO: Move to a static class.
+        private async Task DownloadFile(string downloadUrl, string saveFilePath) //TODO: Dificulty Moving with OnScreenMessage
         {
             using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
             {
-                webRequest.downloadHandler = new DownloadHandlerFile(filePath);
+                webRequest.downloadHandler = new DownloadHandlerFile(saveFilePath);
                 await webRequest.SendWebRequest();
 
                 if (webRequest.result != UnityWebRequest.Result.Success)
                 {
                     //If there is an error when downloading an object signal and on screen message.
-                    string message = $"DownloadFile: ERROR: Application failed download file for object {Path.GetFileName(filePath)}. Please review the associated file and try again.";
+                    string message = $"DownloadFile: ERROR: Application failed download file for object {Path.GetFileName(saveFilePath)}. Please review the associated file and try again.";
                     UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
 
                     Debug.LogError("DownloadFile: File download error: " + webRequest.error);
                 }
                 else
                 {
-                    Debug.Log("DownloadFile: File successfully downloaded and saved to " + filePath);
+                    Debug.Log("DownloadFile: File successfully downloaded and saved to " + saveFilePath);
                 }
             }
         }
-        public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null) //TODO: Make a version of this in a static class.... & Wrap in event wrapper.
+        public async Task FetchRTDDatawithEventHandler(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null)
         {
-            await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    Debug.LogError("Error fetching data from Firebase");
-                    return;
-                }
-
-                if (task.IsCompleted)
-                {
-                    DataSnapshot snapshot = task.Result;
-                    if (deserilizationMethod != null)
-                    {
-                        deserilizationMethod(snapshot);
-                    }
-                }
-            });
+            await DataHandlers.FetchDataFromDatabaseReference(dbreference, deserilizationMethod);
 
             if (eventname != null && eventname == "BuildingPlanDataDict")
             {
@@ -794,7 +775,7 @@ namespace CompasXR.Core
             //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
             TempDatabaseLastBuiltStep = null;
             
-            await FetchRTDData(dbReferenceLastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
+            await FetchRTDDatawithEventHandler(dbReferenceLastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
         
             if (TempDatabaseLastBuiltStep != null)
             {
@@ -992,14 +973,14 @@ namespace CompasXR.Core
                     Debug.Log("Project Changed: Assembly Changed");
                     
                     //If the assembly changed then fetch new assembly data
-                    await FetchRTDData(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
+                    await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
                 }
                 else if(key == "QRFrames")
                 {
                     Debug.Log("Project Changed: QRFrames Changed");
 
                     //If the qrcodes changed then fetch new qrcode data
-                    await FetchRTDData(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                    await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 }
                 else if(key == "beams")
                 {
@@ -1144,8 +1125,7 @@ namespace CompasXR.Core
             }
 
         }
-
-        public static async Task<List<FileMetadata>> GetFilesInWebFolder(string webFolderUrl) //TODO: Reconfigure path and move to static class?
+        public static async Task<List<FileMetadata>> GetFilesInWebFolder(string webFolderUrl)
         {
             //Building the storage url dynamically
             Debug.Log($"GetFilesInFolder: BaseUrl: {webFolderUrl}");
@@ -1167,7 +1147,27 @@ namespace CompasXR.Core
                 return responseData.items;
             }
         }
+        public static async Task FetchDataFromDatabaseReference(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod)
+        {
+            await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError("Error fetching data from Firebase");
+                    return;
+                }
 
+                if (task.IsCompleted)
+                {
+                    DataSnapshot snapshot = task.Result;
+                    if (deserilizationMethod != null)
+                    {
+                        deserilizationMethod(snapshot);
+                    }
+                }
+            });
+
+        }
     }
 
 }
