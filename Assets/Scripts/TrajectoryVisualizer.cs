@@ -103,7 +103,7 @@ namespace CompasXR.Robots
                 temporaryRobot.transform.SetParent(ActiveRobot.transform);
 
                 //Color the active robot
-                ColorRobot(temporaryRobot, material, ref URDFRenderComponents);
+                URDFManagement.ColorURDFGameObject(temporaryRobot, material, ref URDFRenderComponents);
             
                 //Set the active robot visibility.
                 temporaryRobot.SetActive(visibility);
@@ -118,7 +118,7 @@ namespace CompasXR.Robots
         }
 
         ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
-        public void InstantiateRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
+        public void InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
         {
             Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             
@@ -135,13 +135,13 @@ namespace CompasXR.Robots
                     temporaryRobot.name = $"Config {i}";
 
                     //Visualize the robot configuration
-                    SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames); //TODO: CONVERT THIS TO A CUSTOM ACTION.... THIS WAY YOU CAN USE A LIST OR DICT.
+                    SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames);
 
                     //Set temporary Robots parent to the ActiveRobot.
                     temporaryRobot.transform.SetParent(parentObject.transform);
                     
                     //Set the position of the robot by the included robot baseframe
-                    SetRobotPositionandRotation(robotBaseFrame, temporaryRobot);
+                    URDFManagement.SetRobotLocalPositionandRotationFromFrame(robotBaseFrame, temporaryRobot);
                     
                     //Set the active robot visibility.
                     temporaryRobot.SetActive(visibility);
@@ -153,7 +153,7 @@ namespace CompasXR.Robots
                 Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
         }
-        public void VisualizeRobotTrajectory(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
+        public void VisualizeRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
         {
             Debug.Log($"VisualizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             //If the child is not active for some reason, activate it.
@@ -166,7 +166,7 @@ namespace CompasXR.Robots
             ActiveRobot.SetActive(false);
 
             //Visualize the robot trajectory
-            InstantiateRobotTrajectory(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);  
+            InstantiateRobotTrajectoryFromJointsDict(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);  
         }
         public void DestroyActiveRobotObjects()
         {
@@ -191,23 +191,21 @@ namespace CompasXR.Robots
                 }
             }
         }
-
-        ////////////////////////////////////////// Position, Rotation, & Configuration ////////////////////////////////////////////
-        public void SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure,ref Dictionary<string, string> urdfLinkNames)
+        public void SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure, ref Dictionary<string, string> urdfLinkNames)
         {
             Debug.Log($"SetRobotConfigfromDictWrapper: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
             
             //If the URDFLinkNames are not found, find them.
             if (urdfLinkNames.Count == 0)
             {
-                FindLinkNames(robotToConfigure.transform, config, ref urdfLinkNames);
-            }            
+                URDFManagement.FindLinkNamesFromJointNames(robotToConfigure.transform, config, ref urdfLinkNames);
+            }
             
             //Check if the config structure matches the URDF structure
-            if(ConfigJointsEqualURDFLinks(config, ref urdfLinkNames))
+            if(URDFManagement.ConfigJointsEqualURDFLinks(config, urdfLinkNames))
             {
                 //Find the parent object for holding trajectory Objects
-                SetRobotConfigfromDict(config, robotToConfigure, urdfLinkNames);
+                URDFManagement.SetRobotConfigfromJointsDict(config, robotToConfigure, urdfLinkNames);
             }
             else
             {
@@ -226,46 +224,42 @@ namespace CompasXR.Robots
                 Debug.LogWarning($"SetRobotConfigfromDictWrapper: Config dict {config.Count} (Count) and LinkNames dict {urdfLinkNames.Count} (Count) for search do not match.");
             }
         }
-        public void SetRobotConfigfromDict(Dictionary<string, float> config, GameObject robotToConfigure, Dictionary<string, string> linkNames)
+        public void ColorRobotConfigfromSliderInput(int sliderValue, Material inactiveMaterial, Material activeMaterial, ref int? previousSliderValue)
         {
-            Debug.Log($"SetRobotConfigFromDict: Visulizing robot configuration for gameObject {robotToConfigure.name}.");    
-
-            //Find the parent object for holding trajectory Objects
-            foreach (KeyValuePair<string, float> jointDescription in config)
+            Debug.Log($"ColorRobotConfigfromSlider: Coloring robot config {sliderValue} for active trajectory.");
+            //If the previous version is not null find it and color it inactive
+            if(previousSliderValue != null)
             {
-                //Get the name of the joint, value, and URDFLinkName
-                string jointName = jointDescription.Key;
-                float jointValue = jointDescription.Value;
-                string urdfLinkName = linkNames[jointName];
+                Debug.Log ("ColorRobotConfigfromSlider: Previous slider value is not null.");
+                //Find the parent associated with the slider value
+                GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
 
-                //Find the joint object in the robotToConfigure
-                GameObject urdfLinkObject = robotToConfigure.FindObject(urdfLinkName);
+                //Color the robot active robot
+                URDFManagement.ColorURDFGameObject(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
+            }
+            
+            //Find the parent associated with the slider value
+            GameObject robotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {sliderValue}");
 
-                if (urdfLinkObject)
-                {
-                    //Get the jointStateWriter component from the joint.
-                    JointStateWriter jointStateWriter = urdfLinkObject.GetComponent<JointStateWriter>();
-                    // UrdfJoint urdfJoint = joint.GetComponent<UrdfJoint>();
-                
-                    //If the jointStateWriter is not found, add it to the joint.
-                    if (!jointStateWriter)
-                    {
-                        jointStateWriter = urdfLinkObject.AddComponent<JointStateWriter>();    
-                    }
-                    
-                    //Write the joint value to the joint.
-                    jointStateWriter.Write(jointValue);
-                }  
-                else
-                {
-                    Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {name} not found in the robotToConfigure.");
-                }
+            if (robotGameObject == null)
+            {
+                Debug.Log($"ColorRobotConfigfromSlider: Robot GameObject not found for Config {sliderValue}.");
             }
 
+            //Color the robot active robot
+            URDFManagement.ColorURDFGameObject(robotGameObject, activeMaterial, ref URDFRenderComponents);
+
+            //Set the previous slider value to the current slider value
+            previousSliderValue = sliderValue;
         }
-        public void SetRobotConfigfromList(List<float> config, GameObject robotToConfigure, List<string> jointNames)
+
+    }
+
+    public static class URDFManagement
+    {
+        public static void SetRobotConfigfromList(List<float> config, GameObject URDFGameObject, List<string> jointNames)
         {
-            Debug.Log($"SetRobotConfigFromList: Visulizing robot configuration for gameObject {robotToConfigure.name}.");
+            Debug.Log($"SetRobotConfigFromList: Visulizing robot configuration for gameObject {URDFGameObject.name}.");
             
             //Get the number of joints in the list
             int configCount = config.Count;
@@ -273,7 +267,7 @@ namespace CompasXR.Robots
             //Find the parent object for holding trajectory Objects
             for (int i = 0; i < configCount; i++)
             {
-                GameObject joint = robotToConfigure.FindObject(jointNames[i]);
+                GameObject joint = URDFGameObject.FindObject(jointNames[i]);
 
                 if (joint)
                 {
@@ -293,12 +287,83 @@ namespace CompasXR.Robots
                 }  
                 else
                 {
-                    Debug.Log($"SetRobotConfigfromList: Joint {name} not found in the robotToConfigure.");
+                    Debug.Log($"SetRobotConfigfromList: Joint {joint.name} not found in the robotToConfigure.");
                 }
             }
 
         }
-        public void SetRobotPositionandRotation(Frame robotBaseFrame, GameObject robotToPosition)
+        public static void FindAllMeshRenderersInURDFGameObject(Transform currentTransform, Dictionary<string,string> URDFRenderComponents)
+        {
+            Debug.Log($"FindMeshRenderers: Searching for Mesh Renderer in {currentTransform.gameObject.name}.");
+            // Check if the current GameObject has a MeshRenderer component
+            MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
+
+            if (meshRenderer != null)
+            {
+                //InstanceID of the MeshRenderer
+                int instanceID = meshRenderer.GetInstanceID();
+
+                // If found, do something with the MeshRenderer, like add it to a list
+                if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
+                {
+                    Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name} and renaming to {meshRenderer.gameObject.name + $"_{instanceID.ToString()}"}.");
+                    meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
+                    URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
+                }
+            }
+
+            // Traverse through all child game objects recursively
+            if (currentTransform.childCount > 0)
+            {
+                foreach (Transform child in currentTransform)
+                {
+                    FindAllMeshRenderersInURDFGameObject(child, URDFRenderComponents);
+                }
+            }
+            else
+            {
+                Debug.Log($"FindMeshRenderers: No MeshRenderer found in URDF on GameObject {currentTransform.gameObject.name}");
+            }
+
+        }
+        public static void SetRobotConfigfromJointsDict(Dictionary<string, float> config, GameObject URDFGameObject, Dictionary<string, string> linkNamesStorageDict)
+        {
+            Debug.Log($"SetRobotConfigFromDict: Visulizing robot configuration for gameObject {URDFGameObject.name}.");    
+
+            //Find the parent object for holding trajectory Objects
+            foreach (KeyValuePair<string, float> jointDescription in config)
+            {
+                //Get the name of the joint, value, and URDFLinkName
+                string jointName = jointDescription.Key;
+                float jointValue = jointDescription.Value;
+                string urdfLinkName = linkNamesStorageDict[jointName];
+
+                //Find the joint object in the robotToConfigure
+                GameObject urdfLinkObject = URDFGameObject.FindObject(urdfLinkName);
+
+                if (urdfLinkObject)
+                {
+                    //Get the jointStateWriter component from the joint.
+                    JointStateWriter jointStateWriter = urdfLinkObject.GetComponent<JointStateWriter>();
+                    // UrdfJoint urdfJoint = joint.GetComponent<UrdfJoint>();
+                
+                    //If the jointStateWriter is not found, add it to the joint.
+                    if (!jointStateWriter)
+                    {
+                        jointStateWriter = urdfLinkObject.AddComponent<JointStateWriter>();    
+                    }
+                    
+                    //Write the joint value to the joint.
+                    jointStateWriter.Write(jointValue);
+                }  
+                else
+                {
+                    Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {urdfLinkObject.name} not found in the robotToConfigure.");
+                }
+            }
+
+        }
+        public static void SetRobotLocalPositionandRotationFromFrame(Frame robotBaseFrame, GameObject robotToPosition)
         {
             Debug.Log($"SetRobotPosition: Setting the robot {robotToPosition.name} to position and rotation from robot baseframe.");
 
@@ -315,48 +380,18 @@ namespace CompasXR.Robots
             robotToPosition.transform.localPosition = positionData;
             robotToPosition.transform.localRotation = rotationQuaternion;
         }
-
-        ////////////////////////////////////////// Color and Visiblity ////////////////////////////////////////////////////////////
-        public void ColorRobotConfigfromSliderInput(int sliderValue, Material inactiveMaterial, Material activeMaterial, ref int? previousSliderValue)
-        {
-            Debug.Log($"ColorRobotConfigfromSlider: Coloring robot config {sliderValue} for active trajectory.");
-            //If the previous version is not null find it and color it inactive
-            if(previousSliderValue != null)
-            {
-                Debug.Log ("ColorRobotConfigfromSlider: Previous slider value is not null.");
-                //Find the parent associated with the slider value
-                GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
-
-                //Color the robot active robot
-                ColorRobot(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
-            }
-            
-            //Find the parent associated with the slider value
-            GameObject robotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {sliderValue}");
-
-            if (robotGameObject == null)
-            {
-                Debug.Log($"ColorRobotConfigfromSlider: Robot GameObject not found for Config {sliderValue}.");
-            }
-
-            //Color the robot active robot
-            ColorRobot(robotGameObject, activeMaterial, ref URDFRenderComponents);
-
-            //Set the previous slider value to the current slider value
-            previousSliderValue = sliderValue;
-        }
-        public void ColorRobot(GameObject RobotParent, Material material, ref Dictionary<string, string> URDFRenderComponents)
+        public static void ColorURDFGameObject(GameObject RobotParent, Material material, ref Dictionary<string, string> URDFRenderComponentsStorageDict)
         {
             Debug.Log($"ColorRobotChildCount: {RobotParent.transform.childCount}");
 
-            if (URDFRenderComponents.Count == 0)
+            if (URDFRenderComponentsStorageDict.Count == 0)
             {
                 Debug.Log("ColorRobot: URDFRenderComponents list is empty. Searching through URDF for MeshRenderers.");
 
                 //Loop through all the children of the game object
                 foreach (Transform child in RobotParent.transform)
                 {
-                    FindMeshRenderers(child, ref URDFRenderComponents);
+                    URDFManagement.FindAllMeshRenderersInURDFGameObject(child, URDFRenderComponentsStorageDict);
                 }
             }
             else
@@ -365,7 +400,7 @@ namespace CompasXR.Robots
             }
 
             //Loop through the list objects and color them
-            foreach (KeyValuePair<string, string> component in URDFRenderComponents)
+            foreach (KeyValuePair<string, string> component in URDFRenderComponentsStorageDict)
             {
                 //Get the name of the object associated with the mesh renderer
                 string gameObjectName = component.Value;
@@ -392,9 +427,7 @@ namespace CompasXR.Robots
                 }
             }
         }
-
-        ////////////////////////////////////////// Organization and Structuring ///////////////////////////////////////////////////
-        private void FindLinkNames(Transform currentTransform, Dictionary<string, float> config, ref Dictionary<string,string> URDFLinkNames)
+        public static void FindLinkNamesFromJointNames(Transform currentTransform, Dictionary<string, float> config, ref Dictionary<string,string> URDFLinkNamesStorageDict)
         {
             Debug.Log("FindLinkNames: Searching through URDF to find LinkNames Associated with Joint Names.");
 
@@ -403,10 +436,10 @@ namespace CompasXR.Robots
 
             if (urdfJoint != null)
             {
-                if(config.ContainsKey(urdfJoint.JointName) && !URDFLinkNames.ContainsKey(urdfJoint.JointName))
+                if(config.ContainsKey(urdfJoint.JointName) && !URDFLinkNamesStorageDict.ContainsKey(urdfJoint.JointName))
                 {
                     Debug.Log($"FindLinkNames: Found UrdfJointName {urdfJoint.JointName} in URDF on GameObject {currentTransform.gameObject.name}.");
-                    URDFLinkNames.Add(urdfJoint.JointName, currentTransform.gameObject.name);
+                    URDFLinkNamesStorageDict.Add(urdfJoint.JointName, currentTransform.gameObject.name);
                 }
             }
 
@@ -415,7 +448,7 @@ namespace CompasXR.Robots
             {
                 foreach (Transform child in currentTransform)
                 {
-                    FindLinkNames(child, config, ref URDFLinkNames);
+                    FindLinkNamesFromJointNames(child, config, ref URDFLinkNamesStorageDict);
                 }
             }
             else
@@ -424,7 +457,7 @@ namespace CompasXR.Robots
             }
 
         }
-        private bool ConfigJointsEqualURDFLinks(Dictionary<string, float> config, ref Dictionary<string,string> URDFLinkNames)
+        public static bool ConfigJointsEqualURDFLinks(Dictionary<string, float> config, Dictionary<string,string> URDFLinkNamesDict) //TODO: NOT STATIC.
         {
             Debug.Log("ConfigJointsEqualURDFLinks: Confirming URDF Link names and sent Joint names are Consistent.");
             
@@ -437,7 +470,7 @@ namespace CompasXR.Robots
                 string jointName = joint.Key;
 
                 //Try to fetch the joint name from the URDFLinkNames
-                if(URDFLinkNames.ContainsKey(jointName))
+                if(URDFLinkNamesDict.ContainsKey(jointName))
                 {
                     Debug.Log($"ConfigJointsEqualURDFLinks: Found joint {jointName} in URDFLinkNames.");
                 }
@@ -447,42 +480,7 @@ namespace CompasXR.Robots
                     isEqual = false;
                 }
             }
-
             return isEqual;
-        }
-        private void FindMeshRenderers(Transform currentTransform, ref Dictionary<string,string> URDFRenderComponents)
-        {
-            Debug.Log($"FindMeshRenderers: Searching for Mesh Renderer in {currentTransform.gameObject.name}.");
-            // Check if the current GameObject has a MeshRenderer component
-            MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
-
-            if (meshRenderer != null)
-            {
-                //InstanceID of the MeshRenderer
-                int instanceID = meshRenderer.GetInstanceID();
-
-                // If found, do something with the MeshRenderer, like add it to a list
-                if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
-                {
-                    Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name} and renaming to {meshRenderer.gameObject.name + $"_{instanceID.ToString()}"}.");
-                    meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
-                    URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
-                }
-            }
-
-            // Traverse through all child game objects recursively
-            if (currentTransform.childCount > 0)
-            {
-                foreach (Transform child in currentTransform)
-                {
-                    FindMeshRenderers(child, ref URDFRenderComponents);
-                }
-            }
-            else
-            {
-                Debug.Log($"FindMeshRenderers: No MeshRenderer found in URDF on GameObject {currentTransform.gameObject.name}");
-            }
-
         }
 
     }

@@ -157,7 +157,7 @@ namespace CompasXR.Robots
             //Set Compas_XR Topics Information from the project name
             compasXRTopics = new CompasXRTopics(e.Settings.project_name);
         }
-        private void SubscribeToTopic(string topicToSubscribe) //TODO: Move to statics class
+        private void SubscribeToTopic(string topicToSubscribe)
         {
             if (!string.IsNullOrEmpty(topicToSubscribe) && client != null)
             {
@@ -169,7 +169,7 @@ namespace CompasXR.Robots
                 Debug.LogError("MQTT: Topic to subscribe is empty or client is null.");
             }
         }
-        private void UnsubscribeFromTopic(string topicToUnsubscribe) //TODO: Move to statics class
+        private void UnsubscribeFromTopic(string topicToUnsubscribe)
         {
             if (!string.IsNullOrEmpty(topicToUnsubscribe) && client != null)
             {
@@ -181,7 +181,7 @@ namespace CompasXR.Robots
                 Debug.LogWarning("MQTT: Topic to unsubscribe is empty or client is null.");
             }
         }
-        public void PublishToTopic(string publishingTopic,  Dictionary<string, object> message) //TODO: Move to statics class
+        public void PublishToTopic(string publishingTopic,  Dictionary<string, object> message)
         {   
             if (client != null && client.IsConnected)
             {
@@ -428,7 +428,7 @@ namespace CompasXR.Robots
                                 getTrajectoryResultmessage.ElementID,
                                 getTrajectoryResultmessage.RobotName,
                                 serviceManager.ActiveRobotName,
-                                () => trajectoryVisualizer.VisualizeRobotTrajectory(
+                                () => trajectoryVisualizer.VisualizeRobotTrajectoryFromJointsDict(
                                     getTrajectoryResultmessage.Trajectory,
                                     trajectoryVisualizer.URDFLinkNames,
                                     getTrajectoryResultmessage.RobotBaseFrame,
@@ -483,7 +483,7 @@ namespace CompasXR.Robots
                                     getTrajectoryResultmessage.ElementID,
                                     getTrajectoryResultmessage.RobotName,
                                     serviceManager.ActiveRobotName,
-                                    () => trajectoryVisualizer.VisualizeRobotTrajectory(
+                                    () => trajectoryVisualizer.VisualizeRobotTrajectoryFromJointsDict(
                                         getTrajectoryResultmessage.Trajectory,
                                         trajectoryVisualizer.URDFLinkNames,
                                         getTrajectoryResultmessage.RobotBaseFrame,
@@ -497,7 +497,7 @@ namespace CompasXR.Robots
                             }
                             else
                             {
-                                trajectoryVisualizer.VisualizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisualizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisualizer.ActiveRobot, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
+                                trajectoryVisualizer.VisualizeRobotTrajectoryFromJointsDict(getTrajectoryResultmessage.Trajectory, trajectoryVisualizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisualizer.ActiveRobot, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
                                 Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
                             }
                             

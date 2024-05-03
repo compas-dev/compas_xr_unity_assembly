@@ -9,9 +9,6 @@ namespace CompasXR.Systems
     {
         Android,
         iOS,
-        // Windows,
-        // MacOS,
-        // Linux,
         Unknown
     }
 
@@ -25,7 +22,6 @@ namespace CompasXR.Systems
             #elif UNITY_IOS
             Debug.Log("Operating System: iOS");
             return OperatingSystem.iOS;
-
             #else
             Debug.Log("Operating System: Unknown");
             return OperatingSystem.Unknown; 
