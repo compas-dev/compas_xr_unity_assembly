@@ -437,17 +437,28 @@ namespace CompasXR.Core
             Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(step.data.element_ids[0] + " Geometry"));
 
             //Find length from assembly dictionary
-            float heightOffset = getHeightOffsetByStepGeometryType(step, step.data.geometry);
+            float offsetDistance;
+            Vector3 offsetVector;
+            if(step.data.geometry == "0.Cylinder")
+            {
+                offsetDistance =  databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.height;
+                offsetVector = element.transform.up;
+            }
+            else
+            {
+                offsetDistance = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
+                offsetVector = element.transform.right;
+            }
 
             Vector3 ptPosition = new Vector3(0, 0, 0);
             //Calculate position of P1 or P2 
             if(!isP2)
             {                
-                ptPosition = center + element.transform.right * (heightOffset / 2)* -1;
+                ptPosition = center + offsetVector * (offsetDistance / 2)* -1;
             }
             else
             {
-                ptPosition = center + element.transform.right * (heightOffset / 2);
+                ptPosition = center + offsetVector * (offsetDistance / 2);
             }
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
