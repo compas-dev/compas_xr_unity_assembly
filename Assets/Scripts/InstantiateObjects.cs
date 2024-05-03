@@ -100,7 +100,7 @@ namespace CompasXR.Core
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
         }
-        public void PlaceElementFromStep(string Key, Step step) //TODO: MAKE A STATIC METHOD INSIDE OF THIS ONE THAT CAN BE PLACEOBJECTFROMRHINOFRAMEDATA
+        public void PlaceElementFromStep(string Key, Step step)
         {
             Debug.Log($"PlaceElement: {step.data.element_ids[0]} from Step: {Key}");
 
@@ -131,13 +131,16 @@ namespace CompasXR.Core
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
             
+            //Set the height offset based on the Geometry Type
+            float heightOffset = getHeightOffsetByStepGeometryType(step, step.data.geometry);
+
             //Create 3D Index Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
-            CreateBackgroundImageForText(ref IdxImage, elementPrefab,  databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{elementPrefab.name}IdxImage", false);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateBackgroundImageForText(ref IdxImage, elementPrefab,  heightOffset, $"{elementPrefab.name}IdxImage", false);
 
             //Create Priority Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
-            CreateBackgroundImageForText(ref PriorityImage, elementPrefab, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{elementPrefab.name}PriorityImage", false);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
+            CreateBackgroundImageForText(ref PriorityImage, elementPrefab, heightOffset, $"{elementPrefab.name}PriorityImage", false);
 
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, geometryObject);
@@ -166,6 +169,26 @@ namespace CompasXR.Core
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                 UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
             }
+        }
+        public float getHeightOffsetByStepGeometryType(Step step, string geometryType)
+        {
+            float heightOffset = 0.0f;
+            switch (geometryType)
+            {
+                case "0.Cylinder":
+                    heightOffset = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width * 3.0f;
+                    break;
+                case "1.Box":
+                    heightOffset = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width;
+                    break;
+                case "2.ObjFile":
+                    heightOffset = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width;
+                    break;
+                default:
+                    heightOffset = 0.155f;
+                    break;
+            }
+            return heightOffset;
         }
         public void placeElementsDict(Dictionary<string, Step> BuildingPlanDataDict)
         {
@@ -362,8 +385,9 @@ namespace CompasXR.Core
                 return;
             }
             
+            float heightOffset = getHeightOffsetByStepGeometryType(step, step.data.geometry);
             Vector3 objectCenter = ObjectTransformations.FindGameObjectCenter(geometryObject);
-            Vector3 arrowOffset = ObjectTransformations.OffsetPositionVectorByDistance(objectCenter, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, "y"); //TODO: THIS NEEDS TO BE HEIGHT OF OBJECT
+            Vector3 arrowOffset = ObjectTransformations.OffsetPositionVectorByDistance(objectCenter, heightOffset, "y");
 
             //Define rotation for the gameObject.
             Quaternion rotationQuaternion = Quaternion.identity;
@@ -413,17 +437,17 @@ namespace CompasXR.Core
             Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(step.data.element_ids[0] + " Geometry"));
 
             //Find length from assembly dictionary
-            float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
+            float heightOffset = getHeightOffsetByStepGeometryType(step, step.data.geometry);
 
             Vector3 ptPosition = new Vector3(0, 0, 0);
             //Calculate position of P1 or P2 
             if(!isP2)
             {                
-                ptPosition = center + element.transform.right * (length / 2)* -1;
+                ptPosition = center + element.transform.right * (heightOffset / 2)* -1;
             }
             else
             {
-                ptPosition = center + element.transform.right * (length / 2);
+                ptPosition = center + element.transform.right * (heightOffset / 2);
             }
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
@@ -431,7 +455,7 @@ namespace CompasXR.Core
             Vector3 ptPositionAdjusted = new Vector3(0,0,0);
             if (ptPosition != Vector3.zero)
             {
-                ptPositionAdjusted = new Vector3(ptPosition.x, ElementsPosition.y, ptPosition.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
+                ptPositionAdjusted = new Vector3(ptPosition.x, ElementsPosition.y, ptPosition.z);
             }
             else
             {
@@ -1131,7 +1155,7 @@ namespace CompasXR.Core
             //Instantiate new gameObject from the existing selected gameobjects.
             GameObject elementPrefab = GameObject.Instantiate(gameObject, positionData, rotationQuaternion);
             
-            // Destroy Initial gameobject that is made.
+            // // Destroy Initial gameobject that is made.
             if (gameObject != null)
             {
                 GameObject.Destroy(gameObject);
