@@ -10,6 +10,11 @@ using System.Collections.Generic;
 
 namespace CompasXR.Database.FirebaseManagment
 {
+    /*
+    * CompasXR.Database.FirebaseManagement : A namespace to define and controll various Firebase connection,
+    * configuration information, user record and general database management.
+    */
+
     public class FirebaseConfigSettings : MonoBehaviour
     {
         private TMP_InputField applicationIdInput;

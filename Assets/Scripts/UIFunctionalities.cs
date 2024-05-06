@@ -2132,6 +2132,10 @@ namespace CompasXR.UI
         }
         private void TouchSearchControler()
         {
+            /*
+            Touch search controler is used to control the touch input modes for the application.
+            */
+            
             if (instantiateObjects.visulizationController.TouchMode == TouchMode.ElementEditSelection)
             {
                 SearchInput();

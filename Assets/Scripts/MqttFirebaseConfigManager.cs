@@ -9,6 +9,11 @@ using TMPro;
 
 namespace CompasXR.Database.FirebaseManagment
 {
+    /*
+    * CompasXR.Database.FirebaseManagement : A namespace to define and controll various Firebase connection,
+    * configuration information, user user record and general database management.
+    */
+
     public class MqttFirebaseConfigManager : M2MqttUnityClient
     {
         [Header("MQTT Settings")]

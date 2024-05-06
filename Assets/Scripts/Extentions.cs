@@ -12,12 +12,16 @@ using UnityEngine.Events;
 using System.Linq;
 using UnityEngine.InputSystem;
 using CompasXR.Core.Data;
-
+using UnityEngine.SceneManagement;
 
 namespace CompasXR.Core.Extentions
 {
     public static class HelpersExtensions
     { 
+        public static void ChangeScene(string sceneName)
+        {
+            SceneManager.LoadScene(sceneName);
+        }
         public static GameObject FindObject(this GameObject parent, string name)
         {
             Transform[] trs= parent.GetComponentsInChildren<Transform>(true);
@@ -28,7 +32,6 @@ namespace CompasXR.Core.Extentions
             }
             return null;
         }
-
         public static float Remap(float from, float fromMin, float fromMax, float toMin,  float toMax)
         {
             var fromAbs  =  from - fromMin;
@@ -43,7 +46,6 @@ namespace CompasXR.Core.Extentions
         
             return to;
         }
-
         public static bool IsPointerOverUIObject(Vector2 touchPosition)
         {
             //checking if we are touching a button
@@ -64,7 +66,6 @@ namespace CompasXR.Core.Extentions
 
             return raycastResults.Count > 0;
         }
-
         public static void PrintStepDataTypes(Step step, string key)
         {
             Debug.Log($"Value Type: {step.GetType()}");
@@ -89,7 +90,6 @@ namespace CompasXR.Core.Extentions
                         "yaxis Types: " + step.data.location.yaxis[0].GetType() + " " + step.data.location.yaxis[1].GetType() + " " + step.data.location.yaxis[2].GetType());
 
         }
-
         public static void PrintTypesJsonStep(string key, object jsonStep)
         {
             Dictionary<string, object> jsonDataDict = jsonStep as Dictionary<string, object>;
@@ -135,7 +135,6 @@ namespace CompasXR.Core.Extentions
             }            
 
         }
-
         public static void FaceObjectToCamera(Transform transform)
         {
             if (Camera.main != null)
@@ -175,6 +174,7 @@ namespace CompasXR.Core.Extentions
                 this.scale = scale;
             }
         }
+
     }   
 
 }

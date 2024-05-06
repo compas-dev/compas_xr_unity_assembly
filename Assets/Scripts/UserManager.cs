@@ -9,6 +9,11 @@ using CompasXR.Core.Extentions;
 
 namespace CompasXR.Database.FirebaseManagment
 {
+    /*
+    * CompasXR.Database.FirebaseManagement : A namespace to define and controll various Firebase connection,
+    * configuration information, user record and general database management.
+    */
+
     public class UserManager : MonoBehaviour
     {
         private string userID;
@@ -36,9 +41,6 @@ namespace CompasXR.Database.FirebaseManagment
             }
         }
 
-        
-
-        // Start is called before the first frame update
         void Start()
         {
             userID = SystemInfo.deviceUniqueIdentifier;
@@ -97,9 +99,7 @@ namespace CompasXR.Database.FirebaseManagment
                             string date = dateSnapshot.GetValue(true).ToString();
                             currentDates.Add(date);
                         }
-
                         currentDates.Add(time);
-                        print("added time");
                         dbReference_root.Child("Users").Child(playerName).Child("devices").Child(userID).Child("dates").SetValueAsync(currentDates).ContinueWithOnMainThread(t =>
                         {
                             if (t.IsFaulted)
@@ -109,7 +109,7 @@ namespace CompasXR.Database.FirebaseManagment
                             else if (t.IsCompleted)
                             {
                                 Debug.Log("User updated successfully.");
-                                LoadNextScene(); // Change the scene here
+                                HelpersExtensions.ChangeScene("MainGame"); // Change the scene here
                             }
                         });
                     }
@@ -125,7 +125,7 @@ namespace CompasXR.Database.FirebaseManagment
                             else if (t.IsCompleted)
                             {
                                 Debug.Log("Device created successfully.");
-                                LoadNextScene(); // Change the scene here
+                                HelpersExtensions.ChangeScene("MainGame"); // Change the scene here
                             }
                         });
                     }
@@ -147,16 +147,16 @@ namespace CompasXR.Database.FirebaseManagment
                         else if (t.IsCompleted)
                         {
                             Debug.Log("User created successfully.");
-                            LoadNextScene(); // Change the scene here
+                            HelpersExtensions.ChangeScene("MainGame");
                         }
                     });
                 }
             });
         }
 
-        private void LoadNextScene()
-        {
-            SceneManager.LoadScene("MainGame"); // Replace with the name of your next scene
-        }
+        // private void LoadNextScene()
+        // {
+        //     SceneManager.LoadScene("MainGame"); // Replace with the name of your next scene
+        // }
     }
 }
