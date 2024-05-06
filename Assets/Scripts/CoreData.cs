@@ -187,9 +187,6 @@ namespace CompasXR.Core.Data
             
                     //Set node type_data
                     node.type_data = "5.Joint";
-
-                    // Do not update attributes because this is not interactable.
-
                     Debug.Log("This is a timbers connection");
                     break;
 
