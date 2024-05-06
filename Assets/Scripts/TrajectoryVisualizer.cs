@@ -126,7 +126,7 @@ namespace CompasXR.Robots
         }
 
         ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
-        public void InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility) //TODO: STUCK WITHOUT STATIC, BECAUSE OF INTERNAL
+        public void InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
         {
             Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             
@@ -161,7 +161,7 @@ namespace CompasXR.Robots
                 Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
         }
-        public void VisualizeRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)//TODO:
+        public void VisualizeRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
         {
             Debug.Log($"VisualizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             //If the child is not active for some reason, activate it.
@@ -300,40 +300,6 @@ namespace CompasXR.Robots
             }
 
         }
-        public static void FindAllMeshRenderersInURDFGameObject(Transform currentTransform, Dictionary<string,string> URDFRenderComponents)
-        {
-            Debug.Log($"FindMeshRenderers: Searching for Mesh Renderer in {currentTransform.gameObject.name}.");
-            // Check if the current GameObject has a MeshRenderer component
-            MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
-
-            if (meshRenderer != null)
-            {
-                //InstanceID of the MeshRenderer
-                int instanceID = meshRenderer.GetInstanceID();
-
-                // If found, do something with the MeshRenderer, like add it to a list
-                if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
-                {
-                    Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name} and renaming to {meshRenderer.gameObject.name + $"_{instanceID.ToString()}"}.");
-                    meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
-                    URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
-                }
-            }
-
-            // Traverse through all child game objects recursively
-            if (currentTransform.childCount > 0)
-            {
-                foreach (Transform child in currentTransform)
-                {
-                    FindAllMeshRenderersInURDFGameObject(child, URDFRenderComponents);
-                }
-            }
-            else
-            {
-                Debug.Log($"FindMeshRenderers: No MeshRenderer found in URDF on GameObject {currentTransform.gameObject.name}");
-            }
-
-        }
         public static void SetRobotConfigfromJointsDict(Dictionary<string, float> config, GameObject URDFGameObject, Dictionary<string, string> linkNamesStorageDict)
         {
             Debug.Log($"SetRobotConfigFromDict: Visulizing robot configuration for gameObject {URDFGameObject.name}.");    
@@ -368,6 +334,40 @@ namespace CompasXR.Robots
                 {
                     Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {urdfLinkObject.name} not found in the robotToConfigure.");
                 }
+            }
+
+        }
+        public static void FindAllMeshRenderersInURDFGameObject(Transform currentTransform, Dictionary<string,string> URDFRenderComponents)
+        {
+            Debug.Log($"FindMeshRenderers: Searching for Mesh Renderer in {currentTransform.gameObject.name}.");
+            // Check if the current GameObject has a MeshRenderer component
+            MeshRenderer meshRenderer = currentTransform.GetComponentInChildren<MeshRenderer>();
+
+            if (meshRenderer != null)
+            {
+                //InstanceID of the MeshRenderer
+                int instanceID = meshRenderer.GetInstanceID();
+
+                // If found, do something with the MeshRenderer, like add it to a list
+                if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
+                {
+                    Debug.Log($"Found MeshRenderer in URDF on GameObject {meshRenderer.gameObject.name} and renaming to {meshRenderer.gameObject.name + $"_{instanceID.ToString()}"}.");
+                    meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
+                    URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
+                }
+            }
+
+            // Traverse through all child game objects recursively
+            if (currentTransform.childCount > 0)
+            {
+                foreach (Transform child in currentTransform)
+                {
+                    FindAllMeshRenderersInURDFGameObject(child, URDFRenderComponents);
+                }
+            }
+            else
+            {
+                Debug.Log($"FindMeshRenderers: No MeshRenderer found in URDF on GameObject {currentTransform.gameObject.name}");
             }
 
         }
@@ -465,7 +465,7 @@ namespace CompasXR.Robots
             }
 
         }
-        public static bool ConfigJointsEqualURDFLinks(Dictionary<string, float> config, Dictionary<string,string> URDFLinkNamesDict) //TODO: NOT STATIC.
+        public static bool ConfigJointsEqualURDFLinks(Dictionary<string, float> config, Dictionary<string,string> URDFLinkNamesDict)
         {
             Debug.Log("ConfigJointsEqualURDFLinks: Confirming URDF Link names and sent Joint names are Consistent.");
             

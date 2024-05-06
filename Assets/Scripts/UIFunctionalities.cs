@@ -2669,6 +2669,7 @@ namespace CompasXR.UI
                 Debug.LogWarning($"Message: Could not find message object or message component inside of GameObject {messageGameObject.name}.");
             }  
         }
+
     }
 }
 
