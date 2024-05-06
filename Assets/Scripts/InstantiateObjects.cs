@@ -235,10 +235,11 @@ namespace CompasXR.Core
                         //Define the Size of the Cylinder from the data values
                         float cylinderRadius = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width;
                         float cylinderHeight = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height;
-                        Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight, cylinderRadius*2);
-                        
+                        Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight/2, cylinderRadius*2);
+
                         //Create, Scale, & name child object (Named by Assembly ID)
                         GameObject cylinderObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        cylinderObject.transform.localScale = Vector3.one;
                         cylinderObject.transform.localScale = cylindersize;
                         cylinderObject.name = step.data.element_ids[0].ToString() + " Geometry";
 
