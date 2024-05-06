@@ -1008,7 +1008,7 @@ namespace CompasXR.Core
             if (eventArgs.NewValue == null)
             {
                 Debug.Log("Object will be removed");
-                RemoveObjects(eventArgs.Key);
+                ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key);
             }
             else
             {
@@ -1023,14 +1023,14 @@ namespace CompasXR.Core
             if (eventArgs.UserInfo == null)
             {
                 Debug.Log($"user {eventArgs.Key} will be removed");
-                RemoveObjects(eventArgs.Key);
+                ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key);
             }
             else
             {
                 if (GameObject.Find(eventArgs.Key) != null)
                 {
                     //Remove existing Arrow
-                    RemoveObjects(eventArgs.Key + " Arrow");
+                    ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key + " Arrow");
 
                     //Instantiate new Arrow
                     // ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
@@ -1056,20 +1056,6 @@ namespace CompasXR.Core
                 Debug.Log( $"Could Not find Object with key: {key}");
             }
             PlaceElementFromStep(key, newValue);
-        }
-        public void RemoveObjects(string key)
-        {
-            //Delete old object if it already exists
-            if (GameObject.Find(key) != null)
-            {
-                Debug.Log("Deleting old object");
-                GameObject oldObject = GameObject.Find(key);
-                Destroy(oldObject);
-            }
-            else
-            {
-                Debug.Log( $"Could Not find Object with key: {key}");
-            }
         }
         protected virtual void OnInitialObjectsPlaced()
         {
@@ -1174,6 +1160,23 @@ namespace CompasXR.Core
             }
 
             return elementPrefab;
+        }
+
+        public static void DestroyGameObjectByName(string gameObjectName)
+        {
+            /*
+            Destroy the gameobject by input gameObjectName
+            */
+
+            if (GameObject.Find(gameObjectName) != null)
+            {
+                GameObject oldObject = GameObject.Find(gameObjectName);
+                GameObject.Destroy(oldObject);
+            }
+            else
+            {
+                Debug.LogWarning( $"DestroyGameObjectByName: Could Not find Object with key: {gameObjectName}");
+            }
         }
 
     }

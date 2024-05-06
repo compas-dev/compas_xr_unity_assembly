@@ -500,7 +500,7 @@ namespace CompasXR.UI
             if(CurrentStep != null)
             {
                 //Find Arrow and Destroy it
-                instantiateObjects.RemoveObjects($"{CurrentStep} Arrow");
+                ObjectInstantiaion.DestroyGameObjectByName($"{CurrentStep} Arrow");
                 
                 //Find Gameobject Associated with that step
                 GameObject previousStepElement = Elements.FindObject(CurrentStep);
