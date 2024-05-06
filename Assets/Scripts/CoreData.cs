@@ -315,6 +315,17 @@ namespace CompasXR.Core.Data
                 { "yaxis", yaxis }
             };
         }
+        public Frame RhinoWorldXY()
+        {
+            /*
+            Returns a frame that represents the world XY plane in Rhino coordinates.
+            */
+            Frame frame = new Frame();
+            frame.point = new float[] { 0.0f, 0.0f, 0.0f };
+            frame.xaxis = new float[] { 1.0f, 0.0f, 0.0f };
+            frame.yaxis = new float[] { 0.0f, 1.0f, 0.0f };
+            return frame;
+        }
 
     }
 
