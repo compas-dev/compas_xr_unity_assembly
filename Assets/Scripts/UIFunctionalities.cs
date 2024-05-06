@@ -15,6 +15,7 @@ using CompasXR.Core.Extentions;
 using CompasXR.AppSettings;
 using CompasXR.Robots;
 using CompasXR.Robots.MqttData;
+using Unity.VisualScripting;
 
 namespace CompasXR.UI
 {
@@ -2435,7 +2436,6 @@ namespace CompasXR.UI
 
     public static class UserInterface
     {
-        //TODO: Insert simple text....
         public static void SetUIObjectColor(GameObject Button, Color color)
         {
             Button.GetComponent<Image>().color = color;
@@ -2544,6 +2544,80 @@ namespace CompasXR.UI
             {
                 Debug.LogWarning($"SignalOnScreenMessageFromPrefab: {logMessageName}: Could not find message object or message component.");
             }
+        }
+        public static void CreateCenterAlignedSelfDestructiveMessageInstance(string messageGameObjectName, float messageHeight, float messageWidth, Color messagePanelColor, TextAlignmentOptions textAlignment, float textBoarderOffset, Color textColor, string message, float buttonHeight, float buttonWidth, Color buttonColor, float buttonTextBoarderOffset, string buttonText, Color buttonTextColor)
+        {
+            /*
+
+            Create an instance of an On Screen Message with a button that will destroy itself when clicked.
+            This instance is used for messages in the library where
+            you cannot find instances of message objects in other classes.
+
+            */
+
+            GameObject newCanvas = new GameObject($"{messageGameObjectName}Canvas");
+            Canvas canvas = newCanvas.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+	        newCanvas.AddComponent<CanvasScaler>();
+	        newCanvas.AddComponent<GraphicRaycaster>();
+
+            GameObject panel = new GameObject($"{messageGameObjectName}Panel");
+	        panel.AddComponent<CanvasRenderer>();
+	        Image panelImage = panel.AddComponent<Image>();
+	        panelImage.color = messagePanelColor;
+	        panel.transform.SetParent(newCanvas.transform, false);
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.sizeDelta = new Vector2(messageWidth, messageHeight);
+            panelRect.anchoredPosition = new Vector2(0, 0);
+
+            GameObject textObject = new GameObject($"{messageGameObjectName}Text");
+	        textObject.transform.SetParent(newCanvas.transform, false);
+            TMPro.TextMeshProUGUI messageText = textObject.AddComponent<TMPro.TextMeshProUGUI>();
+            RectTransform textRectObject = textObject.GetComponent<RectTransform>();
+            float textWidth = messageWidth-textBoarderOffset*2;
+            float textHeight = messageHeight-textBoarderOffset*3-buttonHeight;
+            Debug.Log("TEXT HEIGHT: " + textHeight);
+            textRectObject.sizeDelta = new Vector2(textWidth, textHeight);
+
+            GameObject randomItems = GameObject.Instantiate(textObject, newCanvas.transform, false);
+            textRectObject.anchoredPosition = new Vector2(0, (textBoarderOffset*2 + buttonHeight)/2);
+
+            messageText.alignment = textAlignment;
+            messageText.color = textColor;
+            messageText.text = message;
+            messageText.enableAutoSizing = true;
+            messageText.fontSizeMin = 1;
+            messageText.fontSizeMax = 100;
+
+            GameObject buttonObject = new GameObject($"{messageGameObjectName}Button");
+	        buttonObject.transform.SetParent(newCanvas.transform, false);
+            float buttonYLocation = (messageHeight/2 - textBoarderOffset - buttonHeight/2)*-1;
+            RectTransform buttonRectObject = buttonObject.AddComponent<RectTransform>();
+            buttonRectObject.anchoredPosition = new Vector2(0, buttonYLocation);
+            buttonRectObject.sizeDelta = new Vector2(buttonWidth, buttonHeight);
+            Button buttonComponent = buttonObject.AddComponent<Button>();
+            Image buttonImage = buttonObject.AddComponent<Image>();
+            buttonImage.color = buttonColor;
+
+            GameObject buttonTextObject = new GameObject($"{messageGameObjectName}ButtonText");
+	        buttonTextObject.transform.SetParent(buttonObject.transform, false);
+            TMPro.TextMeshProUGUI buttonTextComponent = buttonTextObject.AddComponent<TMPro.TextMeshProUGUI>();
+            RectTransform buttontextRectObject = buttonTextComponent.GetComponent<RectTransform>();
+            buttontextRectObject.anchoredPosition = new Vector2(0, 0);
+            buttontextRectObject.sizeDelta = new Vector2(buttonWidth-buttonTextBoarderOffset, buttonHeight-buttonTextBoarderOffset);
+
+            buttonTextComponent.enableAutoSizing = true;
+            buttonTextComponent.fontSizeMin = 1;
+            buttonTextComponent.fontSizeMax = 100;
+            buttonTextComponent.text = buttonText;
+            buttonTextComponent.color = buttonTextColor;
+            buttonTextComponent.alignment = TextAlignmentOptions.Center;
+
+            buttonComponent.onClick.AddListener(() => GameObject.Destroy(newCanvas));
+
+            //Find text component for on screen message
+            // TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
+
         }
         public static void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
         {

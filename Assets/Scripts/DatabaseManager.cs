@@ -163,7 +163,7 @@ namespace CompasXR.Core
                 string storageBucket = FirebaseManager.Instance.storageBucket;
                 string firebaseUrl = $"https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={folderPath}/&delimiter=/";
                 List<DataHandlers.FileMetadata> files = await DataHandlers.GetFilesInWebFolder(firebaseUrl);
-                List<DataHandlers.FileMetadata> filesWithUri = await GetDownloadUriFromFilesMedata(files);
+                List<DataHandlers.FileMetadata> filesWithUri = await DataHandlers.GetDownloadUriFromFirebaseStorageWithMetaData(files, true);
 
                 //Fetch Data from both storage and Realtime Database.
                 FetchAllData(filesWithUri);
@@ -173,7 +173,7 @@ namespace CompasXR.Core
         {
             //Fetch Storage Data
             string directoryPath = System.IO.Path.Combine(Application.persistentDataPath, "Object_Storage");
-            await FetchAndDownloadFilesFromStorage(files, directoryPath);
+            await DataHandlers.DownloadFilesFromOnlineStorageDirectory(files, directoryPath);
 
             //Fetch QR Data with "TrackingDict" event trigger
             FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
@@ -183,84 +183,6 @@ namespace CompasXR.Core
             
             //Fetch Building plan data with "BuildingPlandataDict" event trigger
             FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
-        }
-        private async Task<List<DataHandlers.FileMetadata>> GetDownloadUriFromFilesMedata(List<DataHandlers.FileMetadata> filesMetadata) //TODO: Dificulty Moving with OnScreenMessage
-        {
-            List<Task> fetchUriTasks = new List<Task>();
-            
-            foreach (var fileMetadata in filesMetadata)
-            {
-                // Set the reference to the file in Firebase Storage
-                var fileRef = FirebaseStorage.DefaultInstance.GetReference(fileMetadata.name);
-
-                //Add Fetch Uri Task to the list
-                fetchUriTasks.Add(fileRef.GetDownloadUrlAsync().ContinueWithOnMainThread(task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        //If there is an error when fetching an object signal and on screen message.
-                        string message = $"ERROR: Application unable to fetch URL for {fileMetadata.name}. Please review the associated file and try again.";
-                        UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorFetchingDownloadUriMessageObject, "ErrorFetchingDownloadUriMessage", UIFunctionalities.MessagesParent, message, "GetDownloadUriFromFilesMedata: Error Fetching Download URL");
-                        
-                        Debug.LogError("Error fetching download URL from Firebase Storage");
-                        return;
-                    }
-                    if (task.IsCompleted)
-                    {
-                        Uri downloadUrlUri = task.Result;
-
-                        //Convert URI to string and Add the download URL to the file metadata
-                        string downloadUrl = downloadUrlUri.ToString();
-                        fileMetadata.uri = downloadUrl;
-                    }
-                }));
-            }
-            //Await all download tasks are done before refreshing.
-            await Task.WhenAll(fetchUriTasks);
-
-            return filesMetadata;
-        }
-        public async Task FetchAndDownloadFilesFromStorage(List<DataHandlers.FileMetadata> filesMetadata, string localDirectoryPath) //TODO: Can't Move Because DownloadFile cant move
-        {
-            List<Task> downloadTasks = new List<Task>();
-            
-            foreach (var fileMetadata in filesMetadata)
-            {
-                // Retrieve the download URL from the files metadata information
-                string downloadUrl = fileMetadata.uri;
-
-                // Construct the local file path
-                string localFilePath = System.IO.Path.Combine(localDirectoryPath, System.IO.Path.GetFileName(fileMetadata.name));
-                
-                // Ensure the directory exists
-                DataHandlers.CreateDirectory(localDirectoryPath);
-
-                //Add the Download task to the tasklist
-                downloadTasks.Add(DownloadFile(downloadUrl, localFilePath));
-            }
-            //Await all download tasks are done before refreshing.
-            await Task.WhenAll(downloadTasks);
-        }
-        private async Task DownloadFile(string downloadUrl, string saveFilePath) //TODO: Dificulty Moving with OnScreenMessage
-        {
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
-            {
-                webRequest.downloadHandler = new DownloadHandlerFile(saveFilePath);
-                await webRequest.SendWebRequest();
-
-                if (webRequest.result != UnityWebRequest.Result.Success)
-                {
-                    //If there is an error when downloading an object signal and on screen message.
-                    string message = $"DownloadFile: ERROR: Application failed download file for object {Path.GetFileName(saveFilePath)}. Please review the associated file and try again.";
-                    UserInterface.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
-
-                    Debug.LogError("DownloadFile: File download error: " + webRequest.error);
-                }
-                else
-                {
-                    Debug.Log("DownloadFile: File successfully downloaded and saved to " + saveFilePath);
-                }
-            }
         }
         public async Task FetchRTDDatawithEventHandler(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null)
         {
@@ -1125,6 +1047,18 @@ namespace CompasXR.Core
             }
 
         }
+        public static async Task DownloadFilesFromOnlineStorageDirectory(List<DataHandlers.FileMetadata> filesMetadata, string localDirectoryPath) //TODO: Can't Move Because DownloadFile cant move
+        {
+            List<Task> downloadTasks = new List<Task>();
+            foreach (var fileMetadata in filesMetadata)
+            {
+                string downloadUrl = fileMetadata.uri;
+                string localFilePath = System.IO.Path.Combine(localDirectoryPath, System.IO.Path.GetFileName(fileMetadata.name));
+                CreateDirectory(localDirectoryPath);
+                downloadTasks.Add(DownloadFileFromURLToLocal(downloadUrl, localFilePath, true));
+            }
+            await Task.WhenAll(downloadTasks);
+        }
         public static async Task<List<FileMetadata>> GetFilesInWebFolder(string webFolderUrl)
         {
             //Building the storage url dynamically
@@ -1167,6 +1101,75 @@ namespace CompasXR.Core
                 }
             });
 
+        }
+        public static async Task DownloadFileFromURLToLocal(string downloadUrl, string saveFilePath, bool onScreenMessage)
+        {
+            using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
+            {
+                webRequest.downloadHandler = new DownloadHandlerFile(saveFilePath);
+                await webRequest.SendWebRequest();
+
+                if (webRequest.result != UnityWebRequest.Result.Success)
+                {
+                    if(onScreenMessage)
+                    {    
+                        Color panelColor = new Color(1.0f, 1.0f, 1.0f, 0.85f);
+                        string filepath = Path.GetFileName(saveFilePath);
+                        string message = $"DownloadFile: ERROR: Application failed download file for object {filepath}. Please review the associated file and try again.";
+
+                        UserInterface.CreateCenterAlignedSelfDestructiveMessageInstance(
+                            "FileDownloadFailedMessage", 450.0f, 725.0f, panelColor,
+                            TMPro.TextAlignmentOptions.TopLeft, 25.0f, Color.red,
+                            message, 70.0f, 250.0f, Color.red, 25.0f, "Acknowledge",
+                            Color.white);
+                    }
+
+                    Debug.LogError("DownloadFile: File download error: " + webRequest.error);
+                }
+                else
+                {
+                    Debug.Log("DownloadFile: File successfully downloaded and saved to " + saveFilePath);
+                }
+            }
+        }
+        public static async Task<List<DataHandlers.FileMetadata>> GetDownloadUriFromFirebaseStorageWithMetaData(List<DataHandlers.FileMetadata> filesMetadata, bool onScreenMessage)
+        {
+            List<Task> fetchUriTasks = new List<Task>();
+            
+            foreach (var fileMetadata in filesMetadata)
+            {
+                // Set the reference to the file in Firebase Storage
+                var fileRef = FirebaseStorage.DefaultInstance.GetReference(fileMetadata.name);
+
+                //Add Fetch Uri Task to the list
+                fetchUriTasks.Add(fileRef.GetDownloadUrlAsync().ContinueWithOnMainThread(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        if(onScreenMessage)
+                        {    
+                            Color panelColor = new Color(1.0f, 1.0f, 1.0f, 0.85f);
+                            string message = $"ERROR: Application unable to fetch URL for {fileMetadata.name}. Please review the associated file and try again.";
+
+                            UserInterface.CreateCenterAlignedSelfDestructiveMessageInstance(
+                                "FetchDownloadURIFailedMessage", 450.0f, 725.0f, panelColor,
+                                TMPro.TextAlignmentOptions.TopLeft, 25.0f, Color.red,
+                                message, 70.0f, 250.0f, Color.red, 25.0f, "Acknowledge",
+                                Color.white);
+                        }
+                        Debug.LogError("Error fetching download URL from Firebase Storage");
+                        return;
+                    }
+                    if (task.IsCompleted)
+                    {
+                        Uri downloadUrlUri = task.Result;
+                        string downloadUrl = downloadUrlUri.ToString();
+                        fileMetadata.uri = downloadUrl;
+                    }
+                }));
+            }
+            await Task.WhenAll(fetchUriTasks);
+            return filesMetadata;
         }
     }
 

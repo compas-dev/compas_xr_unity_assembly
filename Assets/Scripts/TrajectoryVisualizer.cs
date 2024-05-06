@@ -45,7 +45,10 @@ namespace CompasXR.Robots
         ////////////////////////////////////////// Initilization & Selection //////////////////////////////////////////////////////
         private void OnStartInitilization()
         {
-            //Find Objects for retreiving and storing the active robots in the scene
+            /*
+            OnStartInitilization is called at the start of the script,
+            and is responsible for finding and setting the necessary dependencies to objects that exist in the scene.
+            */
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
             uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
