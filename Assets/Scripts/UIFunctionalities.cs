@@ -2435,6 +2435,7 @@ namespace CompasXR.UI
 
     public static class UserInterface
     {
+        //TODO: Insert simple text....
         public static void SetUIObjectColor(GameObject Button, Color color)
         {
             Button.GetComponent<Image>().color = color;

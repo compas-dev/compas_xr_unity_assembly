@@ -12,6 +12,11 @@ namespace CompasXR.Robots
 {
     public class TrajectoryVisualizer : MonoBehaviour
     {
+        /*
+        The TrajectoryVisualizer class is responsible for managing the active robot in the scene,
+        instantiating and visualizing robot trajectories, and controling placing active robot objects in the scene.
+        */
+
         //Other script objects
         private InstantiateObjects instantiateObjects;
         private MqttTrajectoryManager mqttTrajectoryManager;
@@ -118,7 +123,7 @@ namespace CompasXR.Robots
         }
 
         ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
-        public void InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
+        public void InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility) //TODO: STUCK WITHOUT STATIC, BECAUSE OF INTERNAL
         {
             Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             
@@ -153,7 +158,7 @@ namespace CompasXR.Robots
                 Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
         }
-        public void VisualizeRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
+        public void VisualizeRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)//TODO:
         {
             Debug.Log($"VisualizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             //If the child is not active for some reason, activate it.
