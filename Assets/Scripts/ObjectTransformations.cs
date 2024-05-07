@@ -264,5 +264,33 @@ namespace CompasXR.Core
 
             return (x_vecdata, y_vecdata);
         }      
+
+        //Methods for translating Unity GameObjects based on Image Target Data
+        public static Vector3 TranslateGameObjectsPositionFromImageTarget(GameObject gameObject, Vector3 rightHandPositionData, Quaternion calculatedObjectQuaternion)
+        {
+            Vector3 pos = gameObject.transform.position + (gameObject.transform.rotation * Quaternion.Inverse(calculatedObjectQuaternion) * -rightHandPositionData);
+            return pos;
+        }
+        public static Quaternion TranslateGameObjectRotationFromImageTarget(GameObject imageTargetGameObject, float[] targetXAxis, float[] targetYAxis)
+        {
+            Rotation rotationData = GetRotationFromRightHand(targetXAxis, targetYAxis);
+            Quaternion rotationQuaternion = FromUnityRotation(rotationData);
+            Quaternion rot = imageTargetGameObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
+            return rot;
+        }
+        public static void TranslateGameObjectByImageTarget(GameObject gameObject, GameObject imageTargetGameObject, float[] targetPoint, float[] targetXAxis, float[] targetYAxis)
+        {
+            //Translate the rotation of the gameObject
+            Rotation rotationData = GetRotationFromRightHand(targetXAxis, targetYAxis);
+            Quaternion rotationQuaternion = FromUnityRotation(rotationData);
+            Quaternion rot = imageTargetGameObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
+
+            //Translate the position of the gameObject
+            Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(targetPoint);
+            Vector3 pos = ObjectTransformations.TranslateGameObjectsPositionFromImageTarget(imageTargetGameObject, positionData, rotationQuaternion);
+
+            gameObject.transform.position = pos;
+            gameObject.transform.rotation = rot;
+        }
     }
 }

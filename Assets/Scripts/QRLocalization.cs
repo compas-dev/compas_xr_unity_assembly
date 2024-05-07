@@ -78,28 +78,11 @@ namespace CompasXR.Core
                             lastQrName = qrObject.name;
                         }
                         
-                        //Fetch position data from the dictionary
-                        ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
-                        Quaternion rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
-                        Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
-                        
-                        //Transform the rotation of game objects that need to be transformed
-                        Elements.transform.rotation = rot;
-                        UserObjects.transform.rotation = rot;
-                        ObjectLengthsTags.transform.rotation = rot;
-                        PriorityViewerObjects.transform.rotation = rot;
-                        ActiveRobotObjects.transform.rotation = rot;
-
-                        //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
-                        Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(QRCodeDataDict[key].part.frame.point);
-                        pos = TranslateGameObjectsPositionFromImageTarget(qrObject, positionData, rotationQuaternion);
-
-                        //Set the position of the gameobjects object to the translated position                    
-                        Elements.transform.position = pos;
-                        UserObjects.transform.position = pos;
-                        ObjectLengthsTags.transform.position = pos;
-                        PriorityViewerObjects.transform.position = pos;
-                        ActiveRobotObjects.transform.position = pos;
+                        ObjectTransformations.TranslateGameObjectByImageTarget(Elements, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(UserObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(ObjectLengthsTags, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(PriorityViewerObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(ActiveRobotObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
 
                         //Update position of line objects in the scene
                         if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
@@ -116,11 +99,6 @@ namespace CompasXR.Core
                 }
             }
 
-        }
-        private Vector3 TranslateGameObjectsPositionFromImageTarget(GameObject gobject, Vector3 position, Quaternion Individualrotation)
-        {
-            Vector3 pos = gobject.transform.position + (gobject.transform.rotation * Quaternion.Inverse(Individualrotation) * -position);
-            return pos;
         }
         public void OnTrackingInformationReceived(object source, TrackingDataDictEventArgs e)
         {
