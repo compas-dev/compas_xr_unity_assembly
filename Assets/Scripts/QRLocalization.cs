@@ -39,7 +39,6 @@ namespace CompasXR.Core
 
         //In script use variables
         public Vector3 pos;
-
         private string lastQrName = "random";
         
         //////////////////////////// Monobehaviour Methods //////////////////////////////
