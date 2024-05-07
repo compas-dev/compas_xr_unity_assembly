@@ -16,6 +16,12 @@ namespace CompasXR.Core
     */
     public class QRLocalization : MonoBehaviour
     {
+        /*
+        * QRLocalization : Class is used to localize the objects in the scene
+        * this localization is all in reference to the world positions of both
+        * the QR codes and the objects in their assebly frames.
+        */
+
         //Public GameObjects
         private GameObject Elements;
         private GameObject UserObjects;
@@ -36,9 +42,14 @@ namespace CompasXR.Core
 
         private string lastQrName = "random";
         
-
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
         void Start()
         {   
+            /*
+            * The Start Method is called before the first frame update
+            * and is used to initialize the required variables and objects.
+            */
+
             //Find Other scripts in the scene
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
             uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
@@ -50,10 +61,14 @@ namespace CompasXR.Core
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
             PriorityViewerObjects = GameObject.Find("PriorityViewerObjects");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
-
         }
         void Update()
         {
+
+            /*
+            * The Update Method is called once per frame and is used to update the
+            * position of the objects in the scene based on the QR code data.
+            */
 
             if (QRCodeDataDict.Count > 0 && Elements != null)
             {
@@ -100,9 +115,15 @@ namespace CompasXR.Core
             }
 
         }
+
+        //////////////////////////// Event Methods /////////////////////////////////////
         public void OnTrackingInformationReceived(object source, TrackingDataDictEventArgs e)
         {
-            Debug.Log("Database is loaded." + " " + "Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
+            /*
+            * Method is used to update the QRCodeDataDict
+            * with the data received from the QR code tracking event.
+            */
+            Debug.Log("OnTrackingInformationReceived: Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
             QRCodeDataDict = e.QRCodeDataDict;
         }
 
