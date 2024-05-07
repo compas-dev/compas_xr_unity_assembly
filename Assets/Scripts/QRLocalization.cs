@@ -36,10 +36,10 @@ namespace CompasXR.Core
 
         private string lastQrName = "random";
         
-        // Start is called before the first frame update
+
         void Start()
         {   
-            //Find the Instantiate Objects game object to call methods from inside the script
+            //Find Other scripts in the scene
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
             uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
@@ -52,7 +52,6 @@ namespace CompasXR.Core
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
         }
-
         void Update()
         {
 
@@ -80,15 +79,8 @@ namespace CompasXR.Core
                         }
                         
                         //Fetch position data from the dictionary
-                        Vector3 position_data = ObjectTransformations.GetPositionFromRightHand(QRCodeDataDict[key].part.frame.point);
-
-                        //Fetch rotation data from the dictionary
                         ObjectTransformations.Rotation rotationData = ObjectTransformations.GetRotationFromRightHand(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
-                        
-                        //Convert Firebase rotation data to Quaternion rotation. Additionally
                         Quaternion rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
-
-                        //Set Design Objects rotation to the rotation based on Observed rotation and Inverse rotation of physical QR
                         Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
                         
                         //Transform the rotation of game objects that need to be transformed
@@ -99,7 +91,8 @@ namespace CompasXR.Core
                         ActiveRobotObjects.transform.rotation = rot;
 
                         //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
-                        pos = TranslatedPosition(qrObject, position_data, rotationQuaternion);
+                        Vector3 positionData = ObjectTransformations.GetPositionFromRightHand(QRCodeDataDict[key].part.frame.point);
+                        pos = TranslateGameObjectsPositionFromImageTarget(qrObject, positionData, rotationQuaternion);
 
                         //Set the position of the gameobjects object to the translated position                    
                         Elements.transform.position = pos;
@@ -108,13 +101,11 @@ namespace CompasXR.Core
                         PriorityViewerObjects.transform.position = pos;
                         ActiveRobotObjects.transform.position = pos;
 
-                        //Update priority viewer objects if it is on
+                        //Update position of line objects in the scene
                         if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             instantiateObjects.UpdatePriorityLine(uiFunctionalities.SelectedPriority ,instantiateObjects.PriorityViewrLineObject);
                         }
-
-                        //Update Object lenghts lines if the Object Lengths toggle is on
                         if (uiFunctionalities.ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
                         {
                             instantiateObjects.UpdateObjectLengthsLines(uiFunctionalities.CurrentStep, instantiateObjects.ObjectLengthsTags.FindObject("P1Tag"), instantiateObjects.ObjectLengthsTags.FindObject("P2Tag"));
@@ -126,9 +117,8 @@ namespace CompasXR.Core
             }
 
         }
-        private Vector3 TranslatedPosition(GameObject gobject, Vector3 position, Quaternion Individualrotation)
+        private Vector3 TranslateGameObjectsPositionFromImageTarget(GameObject gobject, Vector3 position, Quaternion Individualrotation)
         {
-            //Position determined by positioning the QR codes observed position and rotation and translating by position vector and the inverse of the QR rotation
             Vector3 pos = gobject.transform.position + (gobject.transform.rotation * Quaternion.Inverse(Individualrotation) * -position);
             return pos;
         }
