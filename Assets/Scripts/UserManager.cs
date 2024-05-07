@@ -4,7 +4,6 @@ using UnityEngine;
 using Firebase.Database;
 using Firebase.Extensions;
 using Newtonsoft.Json;
-using UnityEngine.SceneManagement;
 using CompasXR.Core.Extentions;
 
 namespace CompasXR.Database.FirebaseManagment
@@ -81,7 +80,6 @@ namespace CompasXR.Database.FirebaseManagment
                 if (task.IsFaulted)
                 {
                     Debug.LogError("Error occurred while reading data from the database.");
-                    print("root child error. Error occurred while reading data from the database.");
                     return;
                 }
 
@@ -153,10 +151,5 @@ namespace CompasXR.Database.FirebaseManagment
                 }
             });
         }
-
-        // private void LoadNextScene()
-        // {
-        //     SceneManager.LoadScene("MainGame"); // Replace with the name of your next scene
-        // }
     }
 }

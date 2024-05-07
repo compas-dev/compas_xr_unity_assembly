@@ -6,8 +6,8 @@
     namespace CompasXR.AppSettings
     {
         /*
-        CompasXR.AppSettings Namespace contains all classes related to control
-        & management of internal app functionalities and methods.
+        * CompasXR.AppSettings Namespace contains all classes related to control
+        * & management of internal app functionalities and methods.
         */
 
         [System.Serializable]
@@ -15,7 +15,8 @@
         {
 
             /*
-            CompasXR.AppSettings Namespace contains all classes related to direct control of internal app functionalities and methods.
+            * CompasXR.AppSettings Namespace contains all classes related to direct control of 
+            * internal app functionalities and methods.
             */
             public string project_name {get; set;}
             public string storage_folder {get; set;}

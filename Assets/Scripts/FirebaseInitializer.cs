@@ -20,6 +20,7 @@ namespace CompasXR.Database.FirebaseManagment
         
         public MqttFirebaseConfigManager mqttConfigManager;
 
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
         public void Start()
         {
             mqttConfigManager = FindObjectOfType<MqttFirebaseConfigManager>();
@@ -29,6 +30,7 @@ namespace CompasXR.Database.FirebaseManagment
             }
         }
 
+        //////////////////////////// Firebase Initilization Methods///////////////////////
         public void InitializeFirebase()
         {
             /*

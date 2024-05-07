@@ -64,47 +64,6 @@ namespace CompasXR.Core.Data
         public string type_data { get; set; }
         public string type_id { get; set; }
         public Attributes attributes { get; set; }
-
-        // public static Node Parse(string key, object jsondata)
-        // {
-        //     //Generic Dictionary for deserialization     
-        //     Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-
-        //     // Access nested values 
-        //     Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
-        //     Dictionary<string, object> dataDict = partDict["data"] as Dictionary<string, object>;
-        //     Dictionary<string, object> frameDataDict = dataDict["frame"] as Dictionary<string, object>;
-
-        //     //Create class instances of node elements
-        //     Node node = new Node();
-        //     node.part = new Part();
-        //     node.attributes = new Attributes();
-
-        //     //Set node type_id
-        //     node.type_id = key;
-
-        //     //Get dtype from partDict
-        //     string dtype = (string)partDict["dtype"];
-            
-        //     //Check dtype, and determine how they should be deserilized.
-        //     if (dtype != "compas.datastructures/Part")
-        //     {
-        //         DtypeGeometryDesctiptionSelector(node, dtype, dataDict);
-        //     }
-        //     else
-        //     {
-        //         PartDesctiptionSelector(node, dataDict);
-        //     }
-
-        //     //Parse frame from class method
-        //     node.part.frame = Frame.FromData(frameDataDict);
-
-        //     Debug.Log("Node Deserilized");
-
-        //     return node;
-        // }
-
-        //TODO://///////////////////////////WIP BELOW /////////////////////////////////////
         public static Node Parse(string key, object jsondata)
         {
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
@@ -118,10 +77,7 @@ namespace CompasXR.Core.Data
             node.part = new Part();
             node.attributes = new Attributes();
             node.type_id = key;
-
-            //INSTERT PARSING LOGIC HERE.
             DtypeGeometryDesctiptionSelector(node, jsonDataDict);
-
             return node;
         }
         private static void DtypeGeometryDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
@@ -157,7 +113,6 @@ namespace CompasXR.Core.Data
                     node.attributes.length = xsize;
                     node.attributes.width = ysize;
                     node.attributes.height = zsize;
-                    Debug.Log("DtypeGeometryDesctiptionSelector: This is a box assembly");
 
                     break;
 
@@ -171,7 +126,6 @@ namespace CompasXR.Core.Data
                     node.attributes.width = 0.00f;
                     node.attributes.height = 0.00f;
 
-                    Debug.Log("This is a frame assembly");
                     break;
 
                 case "compas.datastructures/Mesh":
@@ -181,14 +135,12 @@ namespace CompasXR.Core.Data
                     Dictionary<string, object> frameDict;
                     if (jsonDataDict.TryGetValue("frame", out object frameObject))
                     {
-                        Debug.Log("DtypeGeometryDesctiptionSelector: Type Mesh: Frame object found.");
                         frameDict = jsonDataDict["frame"] as Dictionary<string, object>;
                         Dictionary<string, object> frameDataDict = frameDict["data"] as Dictionary<string, object>;
                         node.part.frame = Frame.FromData(frameDataDict);
                     }
                     else
                     {
-                        Debug.Log("DtypeGeometryDesctiptionSelector: Type Mesh: Frame Not Found, assuming mesh frame is based off of Frame.worldXY().");
                         node.part.frame = Frame.RhinoWorldXY();
                     }
 
@@ -196,7 +148,6 @@ namespace CompasXR.Core.Data
                     node.attributes.width = 0.00f;
                     node.attributes.height = 0.00f;
 
-                    Debug.Log("DtypeGeometryDesctiptionSelector: This is a Mesh assembly");
                     break;
 
                 case "compas_timber.parts/Beam":
@@ -211,19 +162,15 @@ namespace CompasXR.Core.Data
                     node.attributes.width = objWidth;
                     node.attributes.height = objHeight;
 
-                    Debug.Log("DtypeGeometryDesctiptionSelector: This is a Timber Assembly Beam");
                     break;
 
                 case string connectionType when connectionType.StartsWith("compas_timber.connections"):
-
                     //TODO: Set dtype to only compas_timber.connections so It can be checked in valid node without .StartsWith
                     node.part.dtype = "compas_timber.connections";
-                    Debug.Log("DtypeGeometryDesctiptionSelector: This Timber Assembly Joint");
                     break;
 
                 case "compas.datastructures/Part":
                     PartDesctiptionSelector(node, jsonDataDict);
-                    Debug.Log("DtypeGeometryDesctiptionSelector: This is made of Parts.");
                     break;
 
                 default:
@@ -233,7 +180,6 @@ namespace CompasXR.Core.Data
         }
         private static void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
         {
-            //Access nested Part information.
             Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
             Dictionary<string, object> dataDict = partDict["data"] as Dictionary<string, object>;
             Dictionary<string, object> attributesDict = dataDict["attributes"] as Dictionary<string, object>;
@@ -254,7 +200,6 @@ namespace CompasXR.Core.Data
                     node.attributes.width = radius;
                     node.attributes.height = height;
 
-                    Debug.Log("PartDesctiptionSelector: This is a Part assembly of Cylinders");
                     break;
 
                 case "compas.geometry/Box":
@@ -269,23 +214,21 @@ namespace CompasXR.Core.Data
                     node.attributes.width = ysize;
                     node.attributes.height = zsize;
 
-                    Debug.Log("PartDesctiptionSelector: This is a Part assembly of boxes");
                     break;
                 
                 case "compas.datastructures/Mesh":
 
                     node.part.dtype = dtype;
+
                     Dictionary<string, object> frameDict;
                     if (jsonDataDict.TryGetValue("frame", out object frameObject))
                     {
                         frameDict = jsonDataDict["frame"] as Dictionary<string, object>;
                         Dictionary<string, object> frameDataDict = frameDict["data"] as Dictionary<string, object>;
                         node.part.frame = Frame.FromData(frameDataDict);
-                        Debug.Log("PartDesctiptionSelector: Type Mesh: Frame object found.");
                     }
                     else
                     {
-                        Debug.Log("PartDesctiptionSelector: Type Mesh: Frame Not Found, assuming mesh frame is based off of Frame.worldXY().");
                         node.part.frame = Frame.RhinoWorldXY();
                     }
 
@@ -293,7 +236,6 @@ namespace CompasXR.Core.Data
                     node.attributes.width = 0.00f;
                     node.attributes.height = 0.00f;
 
-                    Debug.Log("PartDesctiptionSelector: This is a Mesh assembly");
                     break;
 
                 case "compas.geometry/Frame":
@@ -312,11 +254,9 @@ namespace CompasXR.Core.Data
                         if(nameString.StartsWith("QR_"))
                         {
                             node.part.dtype = "compas_xr/QRCode";
-                            Debug.Log($"PartDesctiptionSelector: This is a Part assembly of QR Codes QR == {nameString}");
                         }
                     }
 
-                    Debug.Log("PartDesctiptionSelector: This is a Part assembly of Frames");
                     break;
 
                 default:
@@ -327,7 +267,6 @@ namespace CompasXR.Core.Data
         }
         public bool IsValidNode()
         {   
-            // Basic validation: Check if the required properties are present or have valid values
             if (!string.IsNullOrEmpty(type_id) &&
                 !string.IsNullOrEmpty(part.dtype) &&
                 part != null &&
@@ -342,183 +281,25 @@ namespace CompasXR.Core.Data
                         part.dtype != "compas.datastructures/Mesh" ||
                         part.dtype != "compas_xr/QRCode")
                 {
-                    // Check if the required properties are present or have valid values
                     if (attributes != null &&
                         attributes?.length != null &&
                         attributes?.width != null &&
                         attributes?.height != null)
                     {
-                        // Set default values for properties that may be null
                         return true;
                     }
                     else
                     {
-                        // If it is not a frame assembly and does not have geometric description.
                         return false;
                     }
                 }
                 else
                 {
-                    // Set default values for properties that may be null
                     return true;
                 }
             }
-            Debug.Log($"node.type_id is: '{type_id}'");
             return false;
         }
-
-        //TODO://///////////////////////////WIP ABOVE/////////////////////////////////////
-
-        // private static void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict) //TODO: Adjust Static Class Parsing
-        // {
-        //     //Set node part dtype
-        //     node.part.dtype = dtype;
-
-        //     switch (dtype)
-        //     {
-        //         case "compas.geometry/Cylinder":
-                    
-        //             //Set node type_data
-        //             node.type_data = "0.Cylinder";
-                    
-        //             // Accessing different parts of json data to make common attributes dictionary
-        //             float height = Convert.ToSingle(jsonDataDict["height"]);
-        //             float radius = Convert.ToSingle(jsonDataDict["radius"]);
-
-        //             //Add Items to the attributes dictionary remapping name to length, width, height
-        //             node.attributes.length = radius;
-        //             node.attributes.width = radius;
-        //             node.attributes.height = height;
-        //             break;
-
-        //         case "compas.geometry/Box":
-                    
-        //             //Set node type_data
-        //             node.type_data = "1.Box";
-
-        //             // Accessing different parts of json data to make common attributes dictionary
-        //             float xsize = Convert.ToSingle(jsonDataDict["xsize"]);
-        //             float ysize = Convert.ToSingle(jsonDataDict["ysize"]);
-        //             float zsize = Convert.ToSingle(jsonDataDict["zsize"]);
-
-        //             //Add Items to the attributes dictionary remapping name to length, width, height
-        //             node.attributes.length = xsize;
-        //             node.attributes.width = ysize;
-        //             node.attributes.height = zsize;
-        //             break;
-                
-        //         case "compas.datastructures/Mesh":
-
-        //             //Set node type_data
-        //             node.type_data = "3.Mesh"; //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
-
-        //             // Set Node Length width height to 0 because it does not contain definitions for this information.
-        //             node.attributes.length = 0.00f;
-        //             node.attributes.width = 0.00f;
-        //             node.attributes.height = 0.00f;
-
-        //             Debug.Log("This is a Mesh assembly");
-        //             break;
-
-        //         case "compas.geometry/Frame":
-                    
-        //             //Set node type_data //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
-        //             node.type_data = "4.Frame";
-
-        //             // Set Node Length width height to 0 because it does not contain definitions for this information.
-        //             node.attributes.length = 0.00f;
-        //             node.attributes.width = 0.00f;
-        //             node.attributes.height = 0.00f;
-
-        //             Debug.Log("This is a frame assembly");
-        //             break;
-
-        //         case "compas_timber.parts/Beam":
-
-        //             //Set node type_data
-        //             node.type_data = "2.ObjFile";
-
-        //             // Accessing different parts of json data to make common attributes dictionary
-        //             float objLength = Convert.ToSingle(jsonDataDict["length"]);
-        //             float objWidth = Convert.ToSingle(jsonDataDict["width"]);
-        //             float objHeight = Convert.ToSingle(jsonDataDict["height"]);
-
-        //             //Add Items to the attributes dictionary remapping name to length, width, height
-        //             node.attributes.length = objLength;
-        //             node.attributes.width = objWidth;
-        //             node.attributes.height = objHeight;
-
-        //             break;
-
-        //         case string connectionType when connectionType.StartsWith("compas_timber.connections"):
-            
-        //             //Set node type_data
-        //             node.type_data = "5.Joint";
-        //             Debug.Log("This is a timbers connection");
-        //             break;
-
-
-        //         default:
-        //             Debug.Log("Default");
-        //             break;
-        //     }
-        // }
-
-        // private static void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict) //TODO: Adjust Static Class Parsing
-        // {
-        //     //Access nested Part information.
-        //     Dictionary<string, object> attributesDict = jsonDataDict["attributes"] as Dictionary<string, object>;
-        //     Dictionary<string, object> nameDict = attributesDict["name"] as Dictionary<string, object>;
-        //     Dictionary<string, object> partdataDict = nameDict["data"] as Dictionary<string, object>;
-
-        //     //Get dtype from name dictionary
-        //     string dtype = (string)nameDict["dtype"];
-
-        //     //Call dtype description selector.
-        //     DtypeGeometryDesctiptionSelector(node, dtype, partdataDict);
-
-        // }
-    
-        // public bool IsValidNode()
-        // {   
-        //     // Basic validation: Check if the required properties are present or have valid values
-        //     if (!string.IsNullOrEmpty(type_id) &&
-        //         !string.IsNullOrEmpty(type_data) &&
-        //         part != null &&
-        //         part.frame != null)
-        //     {
-        //         if (type_data == "5.Joint")
-        //         {
-        //             Debug.Log("This is a timbers Joint and should be ignored");
-        //             return false;
-        //         }
-        //         else if (type_data != "4.Frame" || type_data != "3.Mesh")
-        //         {
-        //             // Check if the required properties are present or have valid values
-        //             if (attributes != null &&
-        //                 attributes?.length != null &&
-        //                 attributes?.width != null &&
-        //                 attributes?.height != null)
-        //             {
-        //                 // Set default values for properties that may be null
-        //                 return true;
-        //             }
-        //             else
-        //             {
-        //                 // If it is not a frame assembly and does not have geometric description.
-        //                 return false;
-        //             }
-        //         }
-        //         else
-        //         {
-        //             // Set default values for properties that may be null
-        //             return true;
-        //         }
-        //     }
-        //     Debug.Log($"node.type_id is: '{type_id}'");
-        //     return false;
-        // }
-
     }
 
     [System.Serializable]
