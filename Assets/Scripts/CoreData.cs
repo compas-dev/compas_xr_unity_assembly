@@ -68,7 +68,6 @@ namespace CompasXR.Core.Data
         {
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             Node node = FromData(jsonDataDict, key);
-            Debug.Log("Node Deserilized");
             return node;
         }
         public static Node FromData(Dictionary<string, object> jsonDataDict, string key)

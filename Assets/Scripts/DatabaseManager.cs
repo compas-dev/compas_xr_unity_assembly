@@ -1082,7 +1082,7 @@ namespace CompasXR.Core
             }
 
         }
-        public static async Task DownloadFilesFromOnlineStorageDirectory(List<DataHandlers.FileMetadata> filesMetadata, string localDirectoryPath) //TODO: Can't Move Because DownloadFile cant move
+        public static async Task DownloadFilesFromOnlineStorageDirectory(List<DataHandlers.FileMetadata> filesMetadata, string localDirectoryPath)
         {
             List<Task> downloadTasks = new List<Task>();
             foreach (var fileMetadata in filesMetadata)

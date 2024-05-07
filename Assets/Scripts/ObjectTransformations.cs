@@ -140,7 +140,6 @@ namespace CompasXR.Core
             Vector3 center = renderer.bounds.center;
             return center;
         }
-
         public static Vector3 OffsetPositionVectorByDistance(Vector3 position, float offsetDistance, string axis)
         {
             // Offset the position based on input values.

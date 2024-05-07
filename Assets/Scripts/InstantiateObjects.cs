@@ -1165,7 +1165,6 @@ namespace CompasXR.Core
 
             return elementPrefab;
         }
-
         public static void DestroyGameObjectByName(string gameObjectName)
         {
             /*
