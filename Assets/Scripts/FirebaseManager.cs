@@ -44,22 +44,22 @@ namespace CompasXR.Database.FirebaseManagment
 
         FirebaseManager() 
         {
-            apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
-            databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
-            storageBucket = "test-project-94f41.appspot.com";
-            projectId = "test-project-94f41";
+            apiKey = "AIzaSyBuZrrhXNZ19bMHIEbM3lDjFT5QZ9ASnPA";
+            databaseUrl = "https://mas-t2-compas-xr-default-rtdb.europe-west1.firebasedatabase.app";
+            storageBucket = "mas-t2-compas-xr.appspot.com";
+            projectId = "mas-t2-compas-xr";
 
             CompasXR.Systems.OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
             switch (currentOS)
             {
                 case CompasXR.Systems.OperatingSystem.iOS:
-                    appId = "1:116159730378:ios:a99ce204d214df3c0b5a33";
+                    appId = "1:825413694819:ios:ea365dc53356ff2f064f56";
                     break;
                 case CompasXR.Systems.OperatingSystem.Android: 
-                    appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+                    appId = "1:825413694819:android:ea365dc53356ff2f064f56";
                     break;
                 default:
-                    appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+                    appId = "1:825413694819:android:ea365dc53356ff2f064f56";
                     break;
             }
         }

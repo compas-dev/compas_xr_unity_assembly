@@ -138,7 +138,7 @@ namespace CompasXR.Core
             dbReferenceBuildingPlan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data");
             dbReferenceSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data").Child("steps");
             dbReferenceLastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data").Child("LastBuiltIndex");
-            dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("QRFrames").Child("graph").Child("node");
+            dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference("QRFrames").Child("graph").Child("node");
             dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("UsersCurrentStep");
 
             //If there is nothing to download Storage=="None" then trigger Objects Secured event
@@ -249,7 +249,7 @@ namespace CompasXR.Core
             {
                 string key = childSnapshot.Key;
                 var json_data = childSnapshot.GetValue(true);
-                Node node_data = Node.Parse(key, json_data); //TODO: NODE DESERIALIZER
+                Node node_data = Node.Parse(key, json_data);
                 
                 if (node_data.IsValidNode())
                 {
@@ -394,7 +394,12 @@ namespace CompasXR.Core
         public void AddListeners(object source, EventArgs args)
         {        
             Debug.Log("Adding Listners");
-            
+
+            //Add listner for QRFrames
+            dbReferenceQRCodes.ChildAdded += OnQRCodeDataChanged;
+            dbReferenceQRCodes.ChildChanged += OnQRCodeDataChanged;
+            dbReferenceQRCodes.ChildRemoved += OnQRCodeDataChanged;
+
             //Add listners for building plan steps
             dbReferenceSteps.ChildAdded += OnStepsChildAdded;
             dbReferenceSteps.ChildChanged += OnStepsChildChanged;
@@ -417,6 +422,11 @@ namespace CompasXR.Core
         {        
             Debug.Log("Removing the listeners");
 
+            //Remove listner for QRFrames
+            dbReferenceQRCodes.ChildAdded += OnQRCodeDataChanged;
+            dbReferenceQRCodes.ChildChanged += OnQRCodeDataChanged;
+            dbReferenceQRCodes.ChildRemoved += OnQRCodeDataChanged;
+
             //Remove listners for building plan steps
             dbReferenceSteps.ChildAdded += OnStepsChildAdded;
             dbReferenceSteps.ChildChanged += OnStepsChildChanged;
@@ -434,6 +444,26 @@ namespace CompasXR.Core
             dbRefrenceProject.ChildAdded += OnProjectInfoChangedUpdate;
             dbRefrenceProject.ChildChanged += OnProjectInfoChangedUpdate;
             dbRefrenceProject.ChildRemoved += OnProjectInfoChangedUpdate;
+        }
+
+        // Event handler for QRCode child changes
+        public async void OnQRCodeDataChanged(object sender, Firebase.Database.ChildChangedEventArgs args) 
+        {
+            if (args.DatabaseError != null)
+            {
+                Debug.LogError(args.DatabaseError.Message);
+                return;
+            }
+
+            var key = args.Snapshot.Key;
+            var childSnapshot = args.Snapshot.GetValue(true);
+            Debug.Log($"QRCodeDataChanged: Fetching New information");
+            
+            if (childSnapshot != null)
+            {
+                //If the qrcodes changed then fetch new qrcode data
+                await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+            }
         }
 
         // Event handler for BuildingPlan child changes
