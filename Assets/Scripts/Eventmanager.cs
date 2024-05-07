@@ -6,8 +6,18 @@ using CompasXR.Robots;
 
 namespace CompasXR.Core
 {
+    /*
+    * CompasXR.Core : Is the Primary namespace for all Classes that
+    * controll the primary functionalities of the CompasXR Application.
+    */
     public class EventManager : MonoBehaviour
     {
+        /*
+        * EventManager : Class is used to manage global event listeners and subscriptions and has 2 primary functions.
+        * 1. To initialize the application and establish the start up routine for passing information between scripts.
+        * 2. To manage the global event listeners and throughout interaction and infomtion change.
+        */
+
         //GameObjects for Script Storage
         public GameObject databaseManagerObject;
         public GameObject instantiateObjectsObject;
@@ -16,21 +26,18 @@ namespace CompasXR.Core
         public GameObject mqttTrajectoryReceiverObject;
         public GameObject trajectoryVisualizerObject;
 
-        //Database Reference
+        //Settings Database Reference
         public DatabaseReference dbReferenceSettings;
 
         //Other Script Components
         public DatabaseManager databaseManager;
 
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
         void Awake()
         {            
-            //On Application Start clear data in Cache.
+            //Initilization functionalities for the application.
             Caching.ClearCache();
-
-            //Set Persistence: Disables storing information on the device for when there is no internet connection.
             FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
-            
-            //Get Reference for the correct application settings. To dynamically connect to different RTDB and Storage.
             dbReferenceSettings =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
             
             //Add script components to objects in the scene
@@ -41,33 +48,24 @@ namespace CompasXR.Core
             MqttTrajectoryManager mqttTrajectoryReceiver = mqttTrajectoryReceiverObject.GetComponent<MqttTrajectoryManager>();
             TrajectoryVisualizer trajectoryVisualizer = trajectoryVisualizerObject.GetComponent<TrajectoryVisualizer>();
             
-            //Initilize Connection to Firebase and Fetch Settings Data
+            //Establish Global Event Listeners
             checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
-
-            //Fetch data from realtime database
             databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
-
-            //Set publisher and subscriber topic based on project name from application settings.
             databaseManager.ApplicationSettingUpdate += mqttTrajectoryReceiver.SetCompasXRTopics;
-
-            //Initialize the database.. once the database is initialized the objects are instantiated
             databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;
-
-            //Start tracking Codes only once tracking information is received
             databaseManager.TrackingDictReceived += qrLocalization.OnTrackingInformationReceived;
-
-            //Add listners after initial objects have been placed to avoid simultanous item placement
             instantiateObjects.PlacedInitialElements += databaseManager.AddListeners;
-
-            //Trigger events for updates in the database.
             databaseManager.DatabaseUpdate += instantiateObjects.OnDatabaseUpdate;
             databaseManager.UserInfoUpdate += instantiateObjects.OnUserInfoUpdate;
-
         }
 
+        //////////////////////////// Event Methods //////////////////////////////////////
         public void DBInitializedFetchSettings(object sender, EventArgs e)
         {
-            Debug.Log("Database Initilized: Safe to Fetch Settings Data.");
+            /*
+            * Method is used to fetch the settings data from the Firebase Database
+            * once the connection has been initilized.
+            */
             databaseManager.FetchSettingsData(dbReferenceSettings);
         }  
 

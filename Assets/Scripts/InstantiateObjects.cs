@@ -12,6 +12,10 @@ using CompasXR.AppSettings;
 
 namespace CompasXR.Core
 {
+    /*
+    * CompasXR.Core : Is the Primary namespace for all Classes that
+    * controll the primary functionalities of the CompasXR Application.
+    */
     public class InstantiateObjects : MonoBehaviour
     {
         //Other Sript Objects

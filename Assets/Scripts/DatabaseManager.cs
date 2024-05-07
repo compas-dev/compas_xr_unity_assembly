@@ -18,6 +18,11 @@ using Unity.IO.LowLevel.Unsafe;
 
 namespace CompasXR.Core
 {
+    /*
+    * CompasXR.Core : Is the Primary namespace for all Classes that
+    * controll the primary functionalities of the CompasXR Application.
+    */
+
     public class BuildingPlanDataDictEventArgs : EventArgs
     {
         public BuildingPlanData BuildingPlanDataItem { get; set; }
