@@ -209,8 +209,6 @@ namespace CompasXR.Robots.MqttData
     }
     /////////////////////////////////////////// Classes for Compas XR Custom Messages //////////////////////////////////////////////////
     
-    //TODO: ELEMENT ID SHOULD ACTUALLY BE STEP ID EVERYWHERE.
-    //TODO: IMPLEMENT EXCEPTIONS FOR FETCHING DATA.
     [System.Serializable]
     public class SequenceCounter
     {
@@ -240,7 +238,6 @@ namespace CompasXR.Robots.MqttData
         {
             lock (_lock)
             {
-                //If my response value is greater then my current value update my value
                 if(responseValue > _value)
                 {
                     _value = responseValue;
@@ -250,11 +247,9 @@ namespace CompasXR.Robots.MqttData
         }
     }
 
-    //Class for setting specific response ID's for each message
     [System.Serializable]
     public class ResponseID
     {
-        //Response Attributes.
         private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
@@ -291,7 +286,6 @@ namespace CompasXR.Robots.MqttData
         {
             lock (_lock)
             {
-                //If my response value is greater then my current value update my value
                 if(responseValue > _value)
                 {
                     _value = responseValue;
