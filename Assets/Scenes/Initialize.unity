@@ -3815,8 +3815,6 @@ MonoBehaviour:
   mqttPassword: 
   mqttClientConnected: 0
   nameController: Controller 1
-  topicPublish: 
-  messagePublish: 
   greenScreenPanel: {fileID: 910881914}
 --- !u!222 &4355106605784088839
 CanvasRenderer:
