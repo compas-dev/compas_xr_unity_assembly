@@ -19,6 +19,11 @@ using Unity.VisualScripting;
 
 namespace CompasXR.UI
 {
+    /*
+    * CompasXR.UI : Is the namespace for all Classes that
+    * controll the primary functionalities releated to the User Interface in the CompasXR Application.
+    * Functionalities, such as UI interaction, UI element creation, and UI element control.
+    */
     public class UIFunctionalities : MonoBehaviour
     {
         //Other Scripts for inuse objects
