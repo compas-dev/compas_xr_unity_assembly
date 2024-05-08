@@ -15,6 +15,10 @@ namespace CompasXR.Database.FirebaseManagment
 
     public class UserManager : MonoBehaviour
     {
+        /*
+        * UserManager : Class is used to manage the user record and configuration settings.
+        * Additionally it is designed to handle the user record events, and allow users to create new user
+        */
         private string userID;
         private DatabaseReference dbReference_root;
         public TMPro.TMP_InputField Username;
@@ -25,6 +29,9 @@ namespace CompasXR.Database.FirebaseManagment
 
             public User()
             {
+                /*
+                * User : Class is used to manage a device name under a user input.
+                */
                 devices = new Dictionary<string, Device>();
             }
         }
@@ -32,6 +39,9 @@ namespace CompasXR.Database.FirebaseManagment
         [System.Serializable]
         public class Device
         {
+            /*
+            * Device : Class is used to manage the device record and configuration settings.
+            */
             public List<string> dates;
 
             public Device()
@@ -40,6 +50,7 @@ namespace CompasXR.Database.FirebaseManagment
             }
         }
 
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
         void Start()
         {
             userID = SystemInfo.deviceUniqueIdentifier;
@@ -55,6 +66,7 @@ namespace CompasXR.Database.FirebaseManagment
             }
         }
 
+        //////////////////////////// User Management Methods //////////////////////////////
         public void CreateUser()
         {
             if (dbReference_root == null)
@@ -74,7 +86,6 @@ namespace CompasXR.Database.FirebaseManagment
             string time = System.DateTime.UtcNow.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
             string playerName = Username.text.ToLower();
 
-            // Check if the user with the same playerName exists in the database
             dbReference_root.Child("Users").Child(playerName).GetValueAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
@@ -87,10 +98,8 @@ namespace CompasXR.Database.FirebaseManagment
 
                 if (snapshot.Exists)
                 {   
-                    // User with the same playerName exists, check if device exists
                     if (snapshot.Child("devices").Child(userID).Exists)
                     {
-                        // Device exists, update the "dates" node
                         List<string> currentDates = new List<string>();
                         foreach (var dateSnapshot in snapshot.Child("devices").Child(userID).Child("dates").Children)
                         {
@@ -107,13 +116,12 @@ namespace CompasXR.Database.FirebaseManagment
                             else if (t.IsCompleted)
                             {
                                 Debug.Log("User updated successfully.");
-                                HelpersExtensions.ChangeScene("MainGame"); // Change the scene here
+                                HelpersExtensions.ChangeScene("MainGame");
                             }
                         });
                     }
                     else
                     {   
-                        // Device does not exist, create a new "devices" node
                         dbReference_root.Child("Users").Child(playerName).Child("devices").Child(userID).Child("dates").Child("0").SetValueAsync(time).ContinueWithOnMainThread(t =>
                         {
                             if (t.IsFaulted)
@@ -123,14 +131,13 @@ namespace CompasXR.Database.FirebaseManagment
                             else if (t.IsCompleted)
                             {
                                 Debug.Log("Device created successfully.");
-                                HelpersExtensions.ChangeScene("MainGame"); // Change the scene here
+                                HelpersExtensions.ChangeScene("MainGame");
                             }
                         });
                     }
                 }
                 else
                 {   
-                    // User with the same playerName doesn't exist, create a new node
                     User newUser = new User();
                     Device newDevice = new Device();
                     newDevice.dates.Add(time);
