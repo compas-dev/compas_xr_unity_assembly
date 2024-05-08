@@ -145,13 +145,13 @@ namespace CompasXR.Core
             if (e.Settings.storage_folder == "None")
             {
                 //Fetch QR Data no event trigger
-                FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+                await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 
                 //Fetch Assembly Data no event trigger
-                FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
+                await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
 
                 //Fetch Building plan data with event trigger
-                FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
+                await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
             }
             
@@ -181,13 +181,13 @@ namespace CompasXR.Core
             await DataHandlers.DownloadFilesFromOnlineStorageDirectory(files, directoryPath);
 
             //Fetch QR Data with "TrackingDict" event trigger
-            FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
+            await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             
             //Fetch Assembly Data no event trigger
-            FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
+            await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
             
             //Fetch Building plan data with "BuildingPlandataDict" event trigger
-            FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
+            await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
         }
         public async Task FetchRTDDatawithEventHandler(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null)
         {
@@ -392,9 +392,7 @@ namespace CompasXR.Core
 
         // Add listeners and remove them for firebase child events
         public void AddListeners(object source, EventArgs args)
-        {        
-            Debug.Log("Adding Listners");
-            
+        {          
             //Add listners for building plan steps
             dbReferenceSteps.ChildAdded += OnStepsChildAdded;
             dbReferenceSteps.ChildChanged += OnStepsChildChanged;
@@ -415,8 +413,6 @@ namespace CompasXR.Core
         }
         public void RemoveListners()
         {        
-            Debug.Log("Removing the listeners");
-
             //Remove listners for building plan steps
             dbReferenceSteps.ChildAdded += OnStepsChildAdded;
             dbReferenceSteps.ChildChanged += OnStepsChildChanged;
@@ -451,7 +447,7 @@ namespace CompasXR.Core
 
             if (childSnapshot != null)
             {
-                Step newValue = Step.Parse(childSnapshot); //TODO: STEP DESERIALIZER
+                Step newValue = Step.Parse(childSnapshot);
             
                 //make a new entry in the dictionary if it doesnt already exist
                 if (newValue.IsValidStep())
@@ -515,7 +511,7 @@ namespace CompasXR.Core
 
             if (childSnapshot != null)
             {
-                Step newValue = Step.Parse(childSnapshot); //TODO: STEP DESERILIZER
+                Step newValue = Step.Parse(childSnapshot);
                 
                 //Check: if the step is equal to the one that I have in the dictionary
                 if (!Step.AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
@@ -966,6 +962,12 @@ namespace CompasXR.Core
             //Remove my name from the UserCurrentStep list
             dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
             
+            //Clear dictionaries
+            BuildingPlanDataItem.steps.Clear();
+            PriorityTreeDict.Clear();
+            UserCurrentStepDict.Clear();
+            AssemblyDataDict.Clear();
+
             //Remove Listners
             RemoveListners();
         }

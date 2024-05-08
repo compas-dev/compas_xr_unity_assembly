@@ -44,6 +44,11 @@ namespace CompasXR.Database.FirebaseManagment
 
         FirebaseManager() 
         {
+            /*
+            * FirebaseManager : Constructor for the FirebaseManager class.
+            * This constructor is used to set the configuration settings for Firebase.
+            * It contains the required settings for connecting to the base database.
+            */
             apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
             databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
             storageBucket = "test-project-94f41.appspot.com";

@@ -16,14 +16,26 @@ using UnityEngine.SceneManagement;
 
 namespace CompasXR.Core.Extentions
 {
+    /*
+    * CompasXR.Core.Extentions : A namespace to define and controll various Unity Engine extention methods.
+    * This namespace is used to extend the functionality of the Unity Engine.
+    * Additionally it contains methods that don't fit into any other namespaces.
+    */
+
     public static class HelpersExtensions
     { 
         public static void ChangeScene(string sceneName)
         {
+            /*
+            *  Method used to change the scene to the provided scene name.
+            */
             SceneManager.LoadScene(sceneName);
         }
         public static GameObject FindObject(this GameObject parent, string name)
         {
+            /*
+            *  Method used to find a game object by name within a parent object.
+            */
             Transform[] trs= parent.GetComponentsInChildren<Transform>(true);
             foreach(Transform t in trs){
                 if(t.name == name){
@@ -34,40 +46,35 @@ namespace CompasXR.Core.Extentions
         }
         public static float Remap(float from, float fromMin, float fromMax, float toMin,  float toMax)
         {
+            /*
+            *  Method used to remap a value from one range to another.
+            */
             var fromAbs  =  from - fromMin;
             var fromMaxAbs = fromMax - fromMin;      
-        
             var normal = fromAbs / fromMaxAbs;
-
             var toMaxAbs = toMax - toMin;
             var toAbs = toMaxAbs * normal;
-
             var to = toAbs + toMin;
-        
             return to;
         }
         public static bool IsPointerOverUIObject(Vector2 touchPosition)
         {
-            //checking if we are touching a button
+            /*
+            *  Method used to check if the pointer is over a UI object.
+            *  This method is used to prevent UI interaction when interacting with the AR scene.
+            *  It determines if the touch is an UI touch or an AR touch.
+            */
             PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
             pointerEventData.position = touchPosition;
             List<RaycastResult> raycastResults = new List<RaycastResult>();
-
             EventSystem.current.RaycastAll(pointerEventData, raycastResults);
-
-            if (raycastResults.Count > 0)
-            {
-                Debug.Log($"Touch: Pointer over a UI element > 0 {raycastResults.Count}");
-            }
-            else
-            {
-                Debug.Log($"Touch: Pointer over a UI element NOT > 0 {raycastResults.Count}");
-            }
-
             return raycastResults.Count > 0;
         }
         public static void PrintStepDataTypes(Step step, string key)
         {
+            /*
+            *  Method used to print the data types of the Step object.
+            */
             Debug.Log($"Value Type: {step.GetType()}");
             Debug.Log($"Value types {key} " +
                         "Data Type: " + step.data.GetType() +
@@ -92,12 +99,12 @@ namespace CompasXR.Core.Extentions
         }
         public static void PrintTypesJsonStep(string key, object jsonStep)
         {
+            /*
+            *  Method used to print the data types of the JSON object of the step data structure.
+            */
             Dictionary<string, object> jsonDataDict = jsonStep as Dictionary<string, object>;
-            
-            //Access nested information
             Dictionary<string, object> dataDict = jsonDataDict["data"] as Dictionary<string, object>;
             Dictionary<string, object> locationDataDict = dataDict["location"] as Dictionary<string, object>;
-            
             Debug.Log(  "Value Types for " + key + " " + jsonStep.GetType() +
                         "Actor Type: " + dataDict["actor"].GetType() + 
                         "Geometry Type: " + dataDict["geometry"].GetType() +
@@ -110,7 +117,6 @@ namespace CompasXR.Core.Extentions
                         "Elements_held Type: " + dataDict["elements_held"].GetType() +
                         "Location Type: " + dataDict["location"].GetType());
 
-            //Nested value types
             List<object> pointslist = locationDataDict["point"] as List<object>;
             List<object> xaxislist = locationDataDict["xaxis"] as List<object>;
             List<object> yaxislist = locationDataDict["yaxis"] as List<object>;
@@ -137,25 +143,30 @@ namespace CompasXR.Core.Extentions
         }
         public static void FaceObjectToCamera(Transform transform)
         {
+            /*
+            *  Method used to face an object towards the camera.
+            */
             if (Camera.main != null)
             {
                 transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward, Camera.main.transform.rotation * Vector3.up);
             }
         }
-
-        // Billboard class encapsulated within the GameObjectExtensions namespace
         public class Billboard : MonoBehaviour
         {
+            /*
+            *  Billboard : Class used to face an object towards the camera in the unity update format.
+            */
             void LateUpdate()
             {
-                // Access the FaceObjectToCamera method from the same namespace
                 FaceObjectToCamera(transform);
             }
         }
-
-        //Class for storing the position, rotation and scale of an object
         public class ObjectPositionInfo : MonoBehaviour
         {
+            /*
+            *  ObjectPositionInfo : Class used to store the position, rotation and scale of an object.
+            *  It is typically used to store information directly on GameObjects.
+            */
             public Vector3 position;
             public Quaternion rotation;
             public Vector3 scale;
