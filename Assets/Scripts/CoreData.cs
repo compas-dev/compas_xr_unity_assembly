@@ -7,11 +7,21 @@ using Newtonsoft.Json.Linq;
 
 namespace CompasXR.Core.Data
 {   
+    /*
+    * CompasXR.Core.Data : A namespace to define and controll various data structures and data processing methods.
+    * This namespace is used to define the data structures that corelate to Compas data structures
+    */
+
    ///////////// Class for Handeling Data conversion Inconsistencies /////////////// 
 
     [System.Serializable]
     public static class DataConverters
     {
+        /*
+        * DataConverters : A class to handle data conversion inconsistencies between different data types
+        * and casting information to info required for deserilization.
+        */
+
         public static float[] ConvertDatatoFloatArray(object data)
         {
             if (data is List<object>)
@@ -60,19 +70,29 @@ namespace CompasXR.Core.Data
     [System.Serializable]
     public class Node
     {
+        /*
+        * Node : A class to define the structure of a node in the assembly data structure.
+        * This class is used to define the structure of a node in the assembly data structure.
+        * It is based off the Compas data structure for a node.
+        */
         public Part part { get; set; }
         public string type_data { get; set; }
         public string type_id { get; set; }
         public Attributes attributes { get; set; }
         public static Node Parse(string key, object jsondata)
         {
+            /*
+            * Method to create an instance of a the Node class from a json string.
+            */
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             Node node = FromData(jsonDataDict, key);
-            Debug.Log("Node Deserilized");
             return node;
         }
         public static Node FromData(Dictionary<string, object> jsonDataDict, string key)
         {
+            /*
+            * Method to create an instance of a the Node class from a dictionary.
+            */
             Node node = new Node();
             node.part = new Part();
             node.attributes = new Attributes();
@@ -82,7 +102,11 @@ namespace CompasXR.Core.Data
         }
         private static void DtypeGeometryDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
         {
-            //Set node part dtype
+            /*
+            * Method to select the correct desearialization method based on the dtype of the part in the assembly.
+            * It is used to parse the data from the dictionary and set the values of the node class.
+            */
+
             Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
             Dictionary<string, object> dataDict = partDict["data"] as Dictionary<string, object>;
             string dtype = (string)partDict["dtype"];
@@ -180,6 +204,11 @@ namespace CompasXR.Core.Data
         }
         private static void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
         {
+            /*
+            * Method to select the correct desearialization method based on the dtype of the part in the assembly.
+            * It is used to parse the data from the dictionary and set the values of the node class.
+            * This method is specifically used to parse the data for the part dtype "compas.datastructures/Part".
+            */
             Dictionary<string, object> partDict = jsonDataDict["part"] as Dictionary<string, object>;
             Dictionary<string, object> dataDict = partDict["data"] as Dictionary<string, object>;
             Dictionary<string, object> attributesDict = dataDict["attributes"] as Dictionary<string, object>;
@@ -267,6 +296,9 @@ namespace CompasXR.Core.Data
         }
         public bool IsValidNode()
         {   
+            /*
+            * Method to check if the node contains all valid information.
+            */
             if (!string.IsNullOrEmpty(type_id) &&
                 !string.IsNullOrEmpty(part.dtype) &&
                 part != null &&
@@ -305,6 +337,10 @@ namespace CompasXR.Core.Data
     [System.Serializable]
     public class Part
     {
+        /*
+        * Part : A class to define the structure of a part in the assembly data structure.
+        * It is based off the Compas data structure for a part, but not a direct corelation.
+        */
         public Frame frame { get; set; }
         public string dtype { get; set; }
 
@@ -313,30 +349,38 @@ namespace CompasXR.Core.Data
     [System.Serializable]
     public class Attributes
     {
-        public bool is_built { get; set;}
-        public bool is_planned { get; set;}
-        public string placed_by { get; set; }
+        /*
+        * Attributes : A class to define the attributes of the node item.
+        */
         public float length { get; set; }
         public float width { get; set; }
         public float height { get; set; }
-        public string type { get; set; }
     } 
 
     [System.Serializable]
     public class Frame
     {
+        /*
+        * Frame : A class to define the structure of a frame in the assembly data structure.
+        * It is based off the Compas data structure for a frame.
+        */
         public float[] point { get; set; }
         public float[] xaxis { get; set; }
         public float[] yaxis { get; set; }
 
-        // Method to parse an instance of the class from a json string
         public static Frame Parse(object jsondata)
         {
+            /*
+            * Method to create an instance of a the Frame class from a json string.
+            */
             Dictionary<string, object> frameDataDict = jsondata as Dictionary<string, object>;;
             return FromData(frameDataDict);
         }
         public static Frame FromData(Dictionary<string, object> frameDataDict)
         {            
+            /*
+            * Method to create an instance of a the Frame class from a dictionary.
+            */
             Frame frame = new Frame();
             float[] point = DataConverters.ConvertDatatoFloatArray(frameDataDict["point"]);
             float[] xaxis = DataConverters.ConvertDatatoFloatArray(frameDataDict["xaxis"]);
@@ -357,6 +401,9 @@ namespace CompasXR.Core.Data
         }
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method to return the frame data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "point", point },
@@ -367,7 +414,7 @@ namespace CompasXR.Core.Data
         public static Frame RhinoWorldXY()
         {
             /*
-            Returns a frame that represents the world XY plane in Rhino coordinates.
+            * Returns a frame that represents the world XY plane in Rhino coordinates.
             */
             Frame frame = new Frame();
             frame.point = new float[] { 0.0f, 0.0f, 0.0f };
@@ -383,21 +430,33 @@ namespace CompasXR.Core.Data
     [System.Serializable]
     public class BuildingPlanData
     {
+        /*
+        * BuildingPlanData : A class to define the structure of a building plan in the assembly data structure.
+        * It is based off the Compas data structure for a building plan.
+        * The building plan contains a dictionary of steps required for assembly, and the last built index.
+        */
         public string LastBuiltIndex { get; set; }
         public Dictionary<string, Step> steps { get; set; }
+
+        //TODO: ADD PRIORITY TREE DICTIONARY AS A PROPERTY
         public static (BuildingPlanData, Dictionary<string, List<string>>) Parse(object jsondata, Dictionary<string, List<string>> PriorityTreeDictionary)
         {
+            /*
+            * Method to create an instance of a the BuildingPlanData class from a json
+            * Returns BuildingPlan Class instance & PriorityTreeDictionary
+            */
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             (BuildingPlanData buildingPlanData, Dictionary<string, List<string>> priorityTreeDictionary) = BuildingPlanData.FromData(jsonDataDict, PriorityTreeDictionary);
             return (buildingPlanData, priorityTreeDictionary);
         }
         public static (BuildingPlanData, Dictionary<string, List<string>>) FromData(Dictionary<string, object> jsonDataDict, Dictionary<string, List<string>> PriorityTreeDictionary)
         {
-            //Create new building plan instance
+            /*
+            * Method to create an instance of a the BuildingPlanData class from a dictionary.
+            * Returns BuildingPlan Class instance & PriorityTreeDictionary
+            */
             BuildingPlanData buidingPlanData = new BuildingPlanData();
             buidingPlanData.steps = new Dictionary<string, Step>();
-            
-            //Attempt to get last built index and if it doesn't exist set it to null
             if (jsonDataDict.TryGetValue("LastBuiltIndex", out object last_built_index))
             {
                 Debug.Log($"Last Built Index Fetched From database: {last_built_index.ToString()}");
@@ -407,39 +466,26 @@ namespace CompasXR.Core.Data
             {
                 buidingPlanData.LastBuiltIndex = null;
             }
-
-            //Try to access steps as dictionary... might need to be a list
             List<object> stepsList = jsonDataDict["steps"] as List<object>;
-
-            //Loop through steps desearialize and check if they are valid
             for(int i =0 ; i < stepsList.Count; i++)
             {
                 string key = i.ToString();
                 var json_data = stepsList[i];
-
-                //Create step instance from the information
                 Step step_data = Step.Parse(json_data);
                 
-                //Check if step is valid and add it to building plan dictionary
                 if (step_data.IsValidStep())
                 {
-                    //Add step to building plan dictionary
                     buidingPlanData.steps[key] = step_data;
-                    Debug.Log($"Step {key} successfully added to the building plan dictionary");
+                    Debug.Log($"FromData: BuildingPlan Step {key} successfully added to the building plan dictionary");
 
-                    //Add step to priority tree dictionary
                     if (PriorityTreeDictionary.ContainsKey(step_data.data.priority.ToString()))
                     {
-                        //If the priority already exists add the key to the list
                         PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
-                        Debug.Log($"Step {key} successfully added to the priority tree dictionary item {step_data.data.priority.ToString()}");
                     }
                     else
                     {
-                        //If not create a new list and add the key to the list
                         PriorityTreeDictionary[step_data.data.priority.ToString()] = new List<string>();
                         PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
-                        Debug.Log($"Step {key} added a new priority {step_data.data.priority.ToString()} to the priority tree dictionary");
                     }
                 }
                 else
@@ -449,41 +495,46 @@ namespace CompasXR.Core.Data
             }
             return (buidingPlanData, PriorityTreeDictionary);
         }
-
     }
     
     [System.Serializable]
     public class Step
     {
+        /*
+        * Step : A class to define the structure of a step in the building plan data structure.
+        * It is based off the Compas data structure for a step.
+        * The step contains the data required for a single step of the building process
+        */
         public Data data { get; set; }
         public string dtype { get; set; }
         public string guid { get; set; }
 
         public static Step Parse(object jsondata)
         {
+            /*
+            * Method to create an instance of a the Step class from a json string.
+            */
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             return FromData(jsonDataDict);
         }
         public static Step FromData(Dictionary<string, object> jsonDataDict)
         {
-            //Create class instances of node elements
+            /*
+            * Method to create an instance of a the Step class from a dictionary.
+            */
             Step step = new Step();
-
-            //Set values for base node class to keep data structure consistent
             step.dtype = (string)jsonDataDict["dtype"];
             step.guid = (string)jsonDataDict["guid"];
 
-            //Access nested information
             Dictionary<string, object> dataDict = jsonDataDict["data"] as Dictionary<string, object>;
-
-            //Parse the frame information from the location dictionary
             step.data = Data.FromData(dataDict);
-
             return step;
         }
         public static bool AreEqualSteps(Step step ,Step NewStep)
         {
-            // Basic validation: Check if two steps are equal
+            /*
+            * Method to compare two steps and check if they are equal.
+            */
             if (step != null &&
                 NewStep != null &&
                 step.data.device_id == NewStep.data.device_id &&
@@ -499,15 +550,15 @@ namespace CompasXR.Core.Data
                 step.data.elements_held.SequenceEqual(NewStep.data.elements_held) &&
                 step.data.priority == NewStep.data.priority)
             {
-                // Set default values for properties that may be null
                 return true;
             }
-            Debug.Log($"Steps with elementID : {step.data.element_ids[0]} and {NewStep.data.element_ids[0]} are not equal");
             return false;
         }
         public bool IsValidStep()
         {
-            // Basic validation: Check if the required properties are present or have valid values
+            /*
+            * Method to check if the step contains all valid information.
+            */
             if (data != null &&
                 data.element_ids != null &&
                 !string.IsNullOrEmpty(data.actor) &&
@@ -529,6 +580,10 @@ namespace CompasXR.Core.Data
     [System.Serializable]
     public class Data
     {
+        /*
+        * Data : A class to define the structure of a data in the building plan data structure.
+        * data contains the information required for coordinating the building process
+        */
         public string device_id { get; set; }
         public string[] element_ids { get; set; }
         public string actor { get; set; }
@@ -542,19 +597,21 @@ namespace CompasXR.Core.Data
 
         public static Data Parse(object jsondata)
         {
+            /*
+            * Method to create an instance of a the Data class from a json string.
+            */
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
             return FromData(jsonDataDict);
         }
         public static Data FromData(Dictionary<string, object> dataDict)
         {
-            //Create class instances of data class
+            /*
+            * Method to create an instance of a the Data class from a dictionary.
+            */
             Data data = new Data();
-
-            //Parse the frame as from the nested location dictionary
             Dictionary<string, object> locationDataDict = dataDict["location"] as Dictionary<string, object>;
             data.location = Frame.FromData(locationDataDict);
 
-            //Try to get device_id for the step if it does not exist set it to null.
             if (dataDict.TryGetValue("device_id", out object device_id))
             {
                 data.device_id = device_id.ToString();
@@ -563,19 +620,15 @@ namespace CompasXR.Core.Data
             {
                 data.device_id = null;
             }
-
-            //Set values for step
             data.actor = (string)dataDict["actor"];
             data.geometry = (string)dataDict["geometry"];
             data.is_built = (bool)dataDict["is_built"];
             data.is_planned = (bool)dataDict["is_planned"];
             data.priority = (int)(long)dataDict["priority"];
 
-            //Parse list informatoin from the items
             List<object> element_ids = dataDict["element_ids"] as List<object>;
             List<object> instructions = dataDict["instructions"] as List<object>;
             List<object> elements_held = dataDict["elements_held"] as List<object>;
-            
             if (element_ids != null &&
                 instructions != null &&
                 elements_held != null)
@@ -588,7 +641,6 @@ namespace CompasXR.Core.Data
             {
                 Debug.Log("FromData (Data): One of the lists is null or improperly casted.");
             }
-
             return data;
         }
 
@@ -599,6 +651,10 @@ namespace CompasXR.Core.Data
     [System.Serializable]
     public class UserCurrentInfo
     {
+        /*
+        * UserCurrentInfo : A class to define the structure of a user current information in the building plan data structure.
+        * UserCurrentInfo contains the information required for tracking multiple users across the building process
+        */
         public string currentStep { get; set; }
         public string timeStamp { get; set; }
         public static UserCurrentInfo Parse(object jsondata)
