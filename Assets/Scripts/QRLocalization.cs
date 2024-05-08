@@ -107,8 +107,6 @@ namespace CompasXR.Core
                         {
                             instantiateObjects.UpdateObjectLengthsLines(uiFunctionalities.CurrentStep, instantiateObjects.ObjectLengthsTags.FindObject("P1Tag"), instantiateObjects.ObjectLengthsTags.FindObject("P2Tag"));
                         }
-
-                        Debug.Log($"QR: Translation from QR object: {qrObject.name}");
                     }
                 }
             }

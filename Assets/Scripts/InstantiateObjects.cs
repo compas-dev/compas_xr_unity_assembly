@@ -1141,11 +1141,11 @@ namespace CompasXR.Core
             Quaternion rotationQuaternion;
             if(isObj)
             {
-                rotationQuaternion = ObjectTransformations.FromRhinotoUnityRotation(rotationData, z_remapped);
+                rotationQuaternion = ObjectTransformations.GetQuaternionFromFrameDataForObj(rotationData, z_remapped);
             }
             else
             {
-                rotationQuaternion = ObjectTransformations.FromUnityRotation(rotationData);
+                rotationQuaternion = ObjectTransformations.GetQuaternionFromFrameDataForUnityObject(rotationData);
             }
 
             //If the quaternion is null raise an error
