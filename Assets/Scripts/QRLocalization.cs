@@ -123,6 +123,5 @@ namespace CompasXR.Core
             Debug.Log("OnTrackingInformationReceived: Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
             QRCodeDataDict = e.QRCodeDataDict;
         }
-
     }
 }

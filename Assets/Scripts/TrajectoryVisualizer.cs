@@ -10,6 +10,11 @@ using CompasXR.Core.Extentions;
 
 namespace CompasXR.Robots
 {
+    /*
+    * CompasXR.Robots : Is the namespace for all Classes that
+    * controll the primary functionalities releated to the use of robots in the CompasXR Application.
+    * Functionalities, such as robot communication, robot visualization, and robot interaction.
+    */
     public class TrajectoryVisualizer : MonoBehaviour
     {
         /*
