@@ -139,7 +139,7 @@ namespace CompasXR.Core
             float heightOffset = getHeightOffsetByStepGeometryType(step, step.data.geometry);
 
             //Create 3D Index Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $" {step.data.element_ids[0]} | {Key}", $"{elementPrefab.name}IdxText", 0.25f);
             CreateBackgroundImageForText(ref IdxImage, elementPrefab,  heightOffset, $"{elementPrefab.name}IdxImage", false);
 
             //Create Priority Text

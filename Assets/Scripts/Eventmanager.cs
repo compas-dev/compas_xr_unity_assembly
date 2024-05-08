@@ -39,7 +39,7 @@ namespace CompasXR.Core
             Caching.ClearCache();
             FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
             dbReferenceSettings =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
-            
+
             //Add script components to objects in the scene
             databaseManager = databaseManagerObject.AddComponent<DatabaseManager>();  
             InstantiateObjects instantiateObjects = instantiateObjectsObject.AddComponent<InstantiateObjects>();

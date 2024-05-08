@@ -149,6 +149,7 @@ namespace CompasXR.UI
         public GameObject CurrentStepTextObject;
         public GameObject EditorSelectedTextObject;
         public TMP_Text CurrentStepText;
+        public TMP_Text AssemblyIDText;
         public TMP_Text LastBuiltIndexText;
         public TMP_Text CurrentPriorityText;
         public TMP_Text EditorSelectedText;
@@ -234,6 +235,7 @@ namespace CompasXR.UI
             //Find Text Objects
             CurrentStepTextObject = GameObject.Find("Current_Index_Text");
             CurrentStepText = CurrentStepTextObject.GetComponent<TMPro.TMP_Text>();
+            AssemblyIDText = GameObject.Find("AssemblyID_Text").GetComponent<TMPro.TMP_Text>();
 
             GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltElement_Text");
             LastBuiltIndexText = LastBuiltIndexTextObject.GetComponent<TMPro.TMP_Text>();
@@ -548,6 +550,7 @@ namespace CompasXR.UI
             
             //Update Onscreen Text
             CurrentStepText.text = CurrentStep;
+            AssemblyIDText.text = step.data.element_ids[0];
             
             //Instantiate an arrow at the current step
             // instantiateObjects.ArrowInstantiator(element, CurrentStep);
