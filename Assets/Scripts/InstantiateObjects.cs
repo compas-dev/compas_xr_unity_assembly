@@ -498,9 +498,9 @@ namespace CompasXR.Core
             * based on the selected priority.
             */
             List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriority];
-            DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, ptRadius, ptColor, ptsParentObject);
+            DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, ptColor, ptsParentObject);
         }
-        public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, float? ptRadius=null, Color? ptColor=null, GameObject ptsParentObject=null)
+        public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, Color? ptColor=null, GameObject ptsParentObject=null)
         {
             /*
             * Method is used to draw a line in the AR space based on the list of keys
@@ -537,9 +537,9 @@ namespace CompasXR.Core
                     lineRenderer.SetPosition(i, center);
                     if (createPoints)
                     {
-                        if(ptRadius != null && ptColor != null)
+                        if(ptColor != null)
                         {
-                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[i] + "Point", ptsParentObject);
+                            CreateSphereForPriorityViewerFromGameObject(element, ptColor.Value, keyslist[i] + "Point", ptsParentObject);
                         }
                         else
                         {
@@ -555,12 +555,11 @@ namespace CompasXR.Core
                 {                        
                     if(createPoints)
                     {
-                        if(ptRadius != null && ptColor != null)
+                        if(ptColor != null)
                         {
                             lineObject.SetActive(false);
                             GameObject element = Elements.FindObject(keyslist[0]);
-                            Vector3 center = ObjectTransformations.FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[0]].data.element_ids[0] + " Geometry"));
-                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[0] + "Point", ptsParentObject);
+                            CreateSphereForPriorityViewerFromGameObject(element, ptColor.Value, keyslist[0] + "Point", ptsParentObject);
                         }
                         else
                         {
@@ -605,6 +604,34 @@ namespace CompasXR.Core
             {
                 Debug.LogWarning("UpdateLinePositionsByVectorList: List length is 0.");
             }
+        }
+        public GameObject CreateSphereForPriorityViewerFromGameObject(GameObject gameObject, Color color, string name=null, GameObject parentObject=null)
+        {
+            /*
+            * Method is used to create a sphere object in the AR space
+            * based on the the scale of the input game object.
+            */
+            Collider collider = gameObject.GetComponentInChildren<Collider>();
+            Vector3 center = ObjectTransformations.FindGameObjectCenter(gameObject);
+            float radius = collider.bounds.extents.magnitude;
+
+            float scaleFactor;
+            if(radius>0.75)
+            {
+                scaleFactor = 0.1f;
+            }
+            else if(radius<0.2)
+            {
+                scaleFactor = 0.3f;
+            }
+            else
+            {
+                scaleFactor = 0.2f;
+            }
+
+            float scaledRadius = radius * scaleFactor;
+            GameObject sphere = CreateSphereAtPosition(center, scaledRadius, color, name, parentObject);
+            return sphere;
         }
         public GameObject CreateSphereAtPosition(Vector3 position, float radius, Color color, string name=null, GameObject parentObject=null)
         {
@@ -866,7 +893,6 @@ namespace CompasXR.Core
                             ColorObjectByPriority(newPriorityGroup, databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString(), key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
                             if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && key == scrollSearchManager.selectedCellStepIndex)
                             {
-                                //Color based on search
                                 ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
                             }
                         }
@@ -1081,6 +1107,5 @@ namespace CompasXR.Core
                 Debug.LogWarning( $"DestroyGameObjectByName: Could Not find Object with key: {gameObjectName}");
             }
         }
-
     }
 }
