@@ -249,7 +249,7 @@ namespace CompasXR.Core
             {
                 string key = childSnapshot.Key;
                 var json_data = childSnapshot.GetValue(true);
-                Node node_data = Node.Parse(key, json_data); //TODO: NODE DESERIALIZER
+                Node node_data = Node.Parse(key, json_data);
                 
                 if (node_data.IsValidNode())
                 {
@@ -258,7 +258,10 @@ namespace CompasXR.Core
                 }
                 else
                 {
-                    Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                    if (node_data.part.dtype != "compas_timber.connections")
+                    {
+                        Debug.LogWarning($"DeserializeAssemblyDataSnapshot: Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                    }
                 }
             }
             
