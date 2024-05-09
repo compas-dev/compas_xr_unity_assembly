@@ -25,32 +25,59 @@ namespace CompasXR.Core
 
     public class BuildingPlanDataDictEventArgs : EventArgs
     {
+        /*
+        * BuildingPlanDataDictEventArgs : Class inherits from EventArgs &
+        * it is used to send the BuildingPlanData Class on events.
+        */
         public BuildingPlanData BuildingPlanDataItem { get; set; }
     }
 
     public class TrackingDataDictEventArgs : EventArgs
     {
+        /*
+        * TrackingDataDictEventArgs : Class inherits from EventArgs &
+        * it is used to send the TrackingDataDict on events.
+        */
         public Dictionary<string, Node> QRCodeDataDict { get; set; }
     }
 
     public class UpdateDataItemsDictEventArgs : EventArgs
     {
+        /*
+        * UpdateDataItemsDictEventArgs : Class inherits from EventArgs &
+        * it is used to send the new Step items on event arguments.
+        */
         public Step NewValue { get; set; }
         public string Key { get; set; }
     }
     public class UserInfoDataItemsDictEventArgs : EventArgs
     {
+        /*
+        * UserInfoDataItemsDictEventArgs : Class inherits from EventArgs &
+        * it is used to send the UserInfo Class on events.
+        */
         public UserCurrentInfo UserInfo { get; set; }
         public string Key { get; set; }
     }
 
     public class ApplicationSettingsEventArgs : EventArgs
     {
+        /*
+        * ApplicationSettingsEventArgs : Class inherits from EventArgs &
+        * it is used to send the ApplicationSettings Class on events.
+        */
+        
         public ApplicationSettings Settings { get; set; }
     }
 
     public class DatabaseManager : MonoBehaviour
     {
+        /*
+        * DatabaseManager : Class is used to manage the Firebase Realtime Database connection and configuration settings.
+        * Additionally it is designed to handle the database events, and allow users to fetch and push data to the database.
+        * The primary goal of the DatabaseManager class is to handle data from the Firebase RealtimeDatabase and Storage.
+        */
+        
         // Firebase database references
         public DatabaseReference dbReferenceAssembly;
         public DatabaseReference dbReferenceBuildingPlan;
@@ -60,7 +87,6 @@ namespace CompasXR.Core
         public DatabaseReference dbReferenceUsersCurrentSteps;
         public StorageReference dbRefrenceStorageDirectory;
         public DatabaseReference dbRefrenceProject;
-
 
         // Data structures to store nodes and steps
         public Dictionary<string, Node> AssemblyDataDict { get; private set; } = new Dictionary<string, Node>();
@@ -98,41 +124,65 @@ namespace CompasXR.Core
 
         public string CurrentPriority = null;
 
+    /////////////////////// Monobehaviour Methods /////////////////////////////////
+
         void Awake()
         {
+            /*
+            * Method is triggered on the awake event of the script and sets up object/script dependencies.
+            */
             OnAwakeInitilization();
+        }
+        protected virtual void OnDestroy()
+        {
+            /*
+            * Method is used to trigger the OnDestroy Event.
+            * It is designed to trigger the event and send the data to the respective classes.
+            */
+            dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
+            BuildingPlanDataItem.steps.Clear();
+            PriorityTreeDict.Clear();
+            UserCurrentStepDict.Clear();
+            AssemblyDataDict.Clear();
+            RemoveListners();
         }
 
     /////////////////////// FETCH AND PUSH DATA /////////////////////////////////
         private void OnAwakeInitilization()
         {
-            //Set Persistence: Disables storing information on the device for when there is no internet connection.
+            /*
+            * Method is used to initialize the DatabaseManager class on Awake.
+            * It is used to find dependencies and set data persistence.
+            */
             FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
-
-            //Find UI Functionalities
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
         }
         public async void FetchSettingsData(DatabaseReference settings_reference)
         {
+            /*
+            * Method is used to fetch the ApplicationSettings data from the Firebase Realtime Database.
+            * It is used to fetch the settings data and trigger an event to send the data to the ApplicationSettings class.
+            */
             await settings_reference.GetValueAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
                 {
-                    Debug.LogError("Error fetching data from Firebase");
+                    Debug.LogError("FetchSettingsData: Error fetching data from Firebase");
                     return;
                 }
-
                 if (task.IsCompleted)
                 {
                     DataSnapshot snapshot = task.Result;
                     DeserializeSettingsData(snapshot);
                 }
             });
-
         }    
         public async void FetchData(object source, ApplicationSettingsEventArgs e)
         {
-            //Create DB References
+            /*
+            * Method is used to fetch the data from the Firebase Realtime Database.
+            * It is used to fetch the data and trigger events to send the data to the respective classes.
+            */
             dbRefrenceProject = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name);
             dbReferenceAssembly = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("assembly").Child("graph").Child("node");
             dbReferenceBuildingPlan = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("building_plan").Child("data");
@@ -141,28 +191,17 @@ namespace CompasXR.Core
             dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("QRFrames").Child("graph").Child("node");
             dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("UsersCurrentStep");
 
-            //If there is nothing to download Storage=="None" then trigger Objects Secured event
             if (e.Settings.storage_folder == "None")
             {
-                //Fetch QR Data no event trigger
                 await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
-                
-                //Fetch Assembly Data no event trigger
                 await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
-
-                //Fetch Building plan data with event trigger
                 await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
-
             }
-            
-            //Else trigger download.
             else
             {
-                //Set Obj Orientation bool
                 z_remapped = e.Settings.z_to_y_remap;
-                
-                //Storage Reference from data fetched
                 dbRefrenceStorageDirectory = FirebaseStorage.DefaultInstance.GetReference("obj_storage").Child(e.Settings.storage_folder);
+
                 string basepath = dbRefrenceStorageDirectory.Path;
                 string folderPath = basepath.Substring(1);
                 string storageBucket = FirebaseManager.Instance.storageBucket;
@@ -170,34 +209,34 @@ namespace CompasXR.Core
                 List<DataHandlers.FileMetadata> files = await DataHandlers.GetFilesInWebFolder(firebaseUrl);
                 List<DataHandlers.FileMetadata> filesWithUri = await DataHandlers.GetDownloadUriFromFirebaseStorageWithMetaData(files, true);
 
-                //Fetch Data from both storage and Realtime Database.
-                FetchAllData(filesWithUri);
+                FetchRealTimeandStorageData(filesWithUri);
             }
         }
-        private async void FetchAllData(List<DataHandlers.FileMetadata> files)
+        private async void FetchRealTimeandStorageData(List<DataHandlers.FileMetadata> files)
         {
-            //Fetch Storage Data
+            /*
+            * Method is used to fetch the data from the Firebase Realtime Database and Firebase Storage.
+            * It is used to fetch the data and trigger events to send the data to the respective classes.
+            */
             string directoryPath = System.IO.Path.Combine(Application.persistentDataPath, "Object_Storage");
             await DataHandlers.DownloadFilesFromOnlineStorageDirectory(files, directoryPath);
 
-            //Fetch QR Data with "TrackingDict" event trigger
             await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
-            
-            //Fetch Assembly Data no event trigger
             await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
-            
-            //Fetch Building plan data with "BuildingPlandataDict" event trigger
             await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
         }
         public async Task FetchRTDDatawithEventHandler(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null)
         {
+            /*
+            * Method is used to fetch the data from the Firebase Realtime Database.
+            * It is used to fetch the data and trigger events to send the data to the respective classes.
+            */
             await DataHandlers.FetchDataFromDatabaseReference(dbreference, deserilizationMethod);
 
             if (eventname != null && eventname == "BuildingPlanDataDict")
             {
                 OnDatabaseInitializedDict(BuildingPlanDataItem); 
             }
-
             if (eventname != null && eventname == "TrackingDict")
             {
                 OnTrackingDataReceived(QRCodeDataDict);
@@ -205,26 +244,27 @@ namespace CompasXR.Core
         }      
         public void PushAllDataBuildingPlan(string key)
         {        
-            //Find step that I changed in the building plan and add my custom device id.
+            /*
+            * Method is used to push the data to the Firebase Realtime Database.
+            * It particulararly is used to push all of the BuildingPlanData Information.
+            * Additionally it overwrites the individual step with my specefied device ID to indicate I made the change.
+            */
             Step specificstep = BuildingPlanDataItem.steps[key];
             specificstep.data.device_id = SystemInfo.deviceUniqueIdentifier;
-
-            //Searilize the data for push to firebase
             string data = JsonConvert.SerializeObject(BuildingPlanDataItem);
-            
-            //Push the data to firebase
             dbReferenceBuildingPlan.SetRawJsonValueAsync(data);
         }
 
     /////////////////////////// DATA DESERIALIZATION ///////////////////////////////////////
         private void DeserializeSettingsData(DataSnapshot snapshot)
         {
-            //Delete Objects from the storage directory path
+            /*  
+            * Method is used to deserialize the ApplicationSettings data from the Firebase Realtime Database.
+            */
             string path = Application.persistentDataPath;
             string storageFolderPath = Path.Combine(path, "Object_Storage");
             DataHandlers.DeleteFilesFromDirectory(storageFolderPath);
             DataHandlers.CreateDirectory(storageFolderPath);
-
             string AppData = snapshot.GetRawJsonValue();
 
             if (!string.IsNullOrEmpty(AppData))
@@ -241,16 +281,16 @@ namespace CompasXR.Core
         } 
         private void DeserializeAssemblyDataSnapshot(DataSnapshot snapshot, Dictionary<string, Node> dataDict)
         {
-            //Clear current Dictionary if it contains information
+            /*
+            * Method is used to deserialize the Assembly Node data from the Firebase Realtime Database.
+            * It is designed to take a snapshot of the Node data reference and iterate through them parsing the information.
+            */
             dataDict.Clear();
-
-            //Desearialize individual data items from the snapshots
             foreach (DataSnapshot childSnapshot in snapshot.Children)
             {
                 string key = childSnapshot.Key;
                 var json_data = childSnapshot.GetValue(true);
                 Node node_data = Node.Parse(key, json_data);
-                
                 if (node_data.IsValidNode())
                 {
                     dataDict[key] = node_data;
@@ -264,15 +304,15 @@ namespace CompasXR.Core
                     }
                 }
             }
-            
-            Debug.Log("Number of nodes stored as a dictionary = " + dataDict.Count);
-
+            Debug.Log($"DeserializeAssemblyDataSnapshot: The number of nodes stored in the Assembly Dict is {dataDict.Count}");
         }
         private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
         {  
+            /*
+            * Method is used to deserialize a string item from the Firebase Realtime Database.
+            * It is designed to take a snapshot of the a string data reference and parse the information.
+            */
             string jsondatastring = snapshot.GetRawJsonValue();
-            Debug.Log("DesearializeStringItem: String Item Data:" + jsondatastring);
-            
             if (!string.IsNullOrEmpty(jsondatastring))
             {
                 tempStringStorage = JsonConvert.DeserializeObject<string>(jsondatastring);
@@ -285,7 +325,10 @@ namespace CompasXR.Core
         }
         private void DesearializeBuildingPlanDataSnapshot(DataSnapshot snapshot)
         {
-            //Set Buliding plan to a null value
+            /*
+            * Method is used to deserialize the Building Plan data from the Firebase Realtime Database.
+            * It is designed to take a snapshot of the Building Plan data reference and parse the information.
+            */
             if (BuildingPlanDataItem.steps != null && BuildingPlanDataItem.LastBuiltIndex != null)
             {
                 BuildingPlanDataItem.LastBuiltIndex = null;
@@ -298,11 +341,8 @@ namespace CompasXR.Core
 
             var jsondata = snapshot.GetValue(true);
             Dictionary<string, List<string>> priorityTreeDict = new Dictionary<string, List<string>>();
-            
             (BuildingPlanData buildingPlanData, 
             Dictionary<string, List<string>> priorityTreeDictionary) = BuildingPlanData.Parse(jsondata, priorityTreeDict);
-
-            //Assign the data to the PriorityTreeDict Class Variable
             PriorityTreeDict = priorityTreeDictionary;
 
             if (buildingPlanData != null && buildingPlanData.steps != null)
@@ -319,125 +359,108 @@ namespace CompasXR.Core
     /////////////////////////// INTERNAL DATA MANAGERS //////////////////////////////////////
         public void FindInitialElement()
         {
-            //ITERATE THROUGH THE BUILDING PLAN DATA DICT IN ORDER.
+            /*
+            * Method is used to find the initial element in the Building Plan Data.
+            * It is designed to iterate through the Building Plan Data and find the first element that is not built.
+            */
             for (int i =0 ; i < BuildingPlanDataItem.steps.Count; i++)
             {
-                //Set data items
                 Step step = BuildingPlanDataItem.steps[i.ToString()];
-
-                //Find the first unbuilt element
                 if(step.data.is_built == false)
                 {
-                    //Set Current Priority as the priority of the first this current step. This needs to be done before setting the current step.
                     UIFunctionalities.SetCurrentPriority(step.data.priority.ToString());
-
-                    //Set Current Element
                     UIFunctionalities.SetCurrentStep(i.ToString());
-
                     break;
                 }
             }
         }
         public int OtherUserPriorityChecker(Step step, string stepKey)
         {        
-            //If the priority of the current priority then check if it is complete.
+            /*
+            * Method is used to check the priority of the step changed by someone else and compare it to the current priority.
+            * It is designed to check if the priority is the same as the current priority
+            * if it is complete, or if it is incomplete.
+            */
             if (CurrentPriority == step.data.priority.ToString())
             {
-                //New empty list to store unbuilt elements
                 List<string> UnbuiltElements = new List<string>();
-                
-                //Find the current priority in the dictionary for iteration
                 List<string> PriorityDataItem = PriorityTreeDict[CurrentPriority];
 
-                //Iterate through the Priority tree dictionary to check the elements and if the priority is complete
                 foreach(string element in PriorityDataItem)
                 {
-                    //Find the step in the dictoinary
                     Step stepToCheck = BuildingPlanDataItem.steps[element];
-
-                    //Check if the element is built
                     if(!stepToCheck.data.is_built)
                     {
                         UnbuiltElements.Add(element);
                     }
                 }
-
-                //If the list is empty return 2 because all elements of that priority are built, and we want to move on to the next priority.
                 if(UnbuiltElements.Count == 0)
                 {
-                    Debug.Log($"OtherUser Priority Check: Current Priority is complete. Unlocking Next Priority.");
-                    
-                    //Return 2, to move on to the next priority.
+                    Debug.Log($"OtherUserPriorityCheck: Current Priority is complete. Unlocking Next Priority.");
                     return 2;
                 }
-                
-                //If the list is not empty return 0 so do nothing.
                 else
                 {
-                    Debug.Log($"OtherUser Priority Check: Current Priority is not complete. Incomplete Priority");
-                    
-                    //Return 0 to not push data.
+                    Debug.Log($"OtherUserPriorityCheck: Current Priority is not complete. Incomplete Priority");
                     return 0;
                 }
             }
             else
             {
-                //If the priority is not the same as the current priority (meaning it is a lower priority) then we should set it.
-                Debug.Log($"OtherUser Priority Check: Current Priority is not the same as the priority of the step. Set this priority.");
-                
-                //Return set this item to the current priority.
+                Debug.Log($"OtherUserPriorityCheck: Current Priority is not the same as the priority of the step. Set this priority.");
                 return 1;
             }
 
         }
 
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
-
-        // Add listeners and remove them for firebase child events
         public void AddListeners(object source, EventArgs args)
         {          
-            //Add listners for building plan steps
+            /*
+            * Method is used to add event listeners to the Firebase Realtime Database Events.
+            * It is designed to listen for changes in the database and trigger events to update the data.
+            */
             dbReferenceSteps.ChildAdded += OnStepsChildAdded;
             dbReferenceSteps.ChildChanged += OnStepsChildChanged;
             dbReferenceSteps.ChildRemoved += OnStepsChildRemoved;
             
-            //Add Listners for Users Current Step
             dbReferenceUsersCurrentSteps.ChildAdded += OnUserChildAdded; 
             dbReferenceUsersCurrentSteps.ChildChanged += OnUserChildChanged;
             dbReferenceUsersCurrentSteps.ChildRemoved += OnUserChildRemoved;
 
-            //Add Listner for building plan last built index
             dbReferenceLastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
 
-            //Add Listners to the Overall project to list for data changes in assembly, qrcodes, and additional Info.
             dbRefrenceProject.ChildAdded += OnProjectInfoChangedUpdate;
             dbRefrenceProject.ChildChanged += OnProjectInfoChangedUpdate;
             dbRefrenceProject.ChildRemoved += OnProjectInfoChangedUpdate;
         }
         public void RemoveListners()
         {        
-            //Remove listners for building plan steps
+            /*
+            * Method is used to remove event listeners to the Firebase Realtime Database Events.
+            * It is used on restart and other methods in which I cause resubscription to new references.
+            */
             dbReferenceSteps.ChildAdded += OnStepsChildAdded;
             dbReferenceSteps.ChildChanged += OnStepsChildChanged;
             dbReferenceSteps.ChildRemoved += OnStepsChildRemoved;
             
-            //Remove Listners for Users Current Step
             dbReferenceUsersCurrentSteps.ChildAdded += OnUserChildAdded; 
             dbReferenceUsersCurrentSteps.ChildChanged += OnUserChildChanged;
             dbReferenceUsersCurrentSteps.ChildRemoved += OnUserChildRemoved;
 
-            //Remove Listner for building plan last built index
             dbReferenceLastBuiltIndex.ValueChanged += OnLastBuiltIndexChanged;
 
-            //Remove Listners to the Overall project to list for data changes in assembly, qrcodes, and additional Info.
             dbRefrenceProject.ChildAdded += OnProjectInfoChangedUpdate;
             dbRefrenceProject.ChildChanged += OnProjectInfoChangedUpdate;
             dbRefrenceProject.ChildRemoved += OnProjectInfoChangedUpdate;
         }
-
-        // Event handler for BuildingPlan child changes
         public void OnStepsChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args) 
         {
+            /*
+            * Method is used to handle the Child Added event from the Firebase Realtime Database.
+            * It is designed to take the snapshot of the child added event and parse the information.
+            * Additionally it the validity of the step and adds it to the dictoinary if it is.
+            */
             if (args.DatabaseError != null)
             {
                 Debug.LogError(args.DatabaseError.Message);
@@ -446,68 +469,56 @@ namespace CompasXR.Core
 
             var key = args.Snapshot.Key;
             var childSnapshot = args.Snapshot.GetValue(true);
-            Debug.Log($"ON CHILD ADDED {key}");
+            Debug.Log($"OnStepsChildAdded: A child added event was triggered for the key: {key} in the steps reference.");
 
             if (childSnapshot != null)
             {
                 Step newValue = Step.Parse(childSnapshot);
             
-                //make a new entry in the dictionary if it doesnt already exist
                 if (newValue.IsValidStep())
                 {
                     if (BuildingPlanDataItem.steps.ContainsKey(key))
                     {
-                        Debug.Log("The key already exists in the dictionary");
+                        Debug.Log($"OnStepsChildAdded: The key: {key} already exists in the dictionary");
                     }
                     else
                     {
-                        Debug.Log($"The key '{key}' does not exist in the dictionary");
+                        Debug.Log($"OnStepsChildAdded: The key: {key} does not exist in the dictionary added to priority tree in {newValue.data.priority.ToString()}");
                         BuildingPlanDataItem.steps.Add(key, newValue);
 
-                        //Check if the steps priority is one that I already have in the priority tree dictionary
                         if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
                         {
-                            //If the priority already exists add the key to the list
                             PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
-                            Debug.Log($"Step {key} successfully added to the priority tree dictionary item {newValue.data.priority.ToString()}");
                         }
                         else
                         {
-                            //If not create a new list and add the key to the list
                             PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
                             PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
-                            Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
                         }
-
-                        //Instantiate new object
-                        OnDatabaseUpdate(newValue, key);
-                        
+                        OnDatabaseUpdate(newValue, key);                        
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
+                    Debug.LogWarning($"OnStepsChildAdded: The Changed key is no longer valid and will not be added to the dictionary");
                 }
-
-                //Print out the priority tree as a check
-                Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
             }
         } 
         public void OnStepsChildChanged(object sender, Firebase.Database.ChildChangedEventArgs args) 
         {
             if (args.DatabaseError != null) {
-            Debug.LogError($"Database error: {args.DatabaseError}");
+            Debug.LogError($"OnStepsChildChanged: Database error: {args.DatabaseError}");
             return;
             }
-
             if (args.Snapshot == null) {
-                Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+                Debug.LogWarning("OnStepsChildChanged: Snapshot is null. Ignoring the child change.");
                 return;
             }
 
             string key = args.Snapshot.Key;
             if (key == null) {
-                Debug.LogWarning("Snapshot key is null. Ignoring the child change.");
+                Debug.LogWarning("OnStepsChildChanged: Snapshot key is null. Ignoring the child change.");
+                return;
             }
 
             var childSnapshot = args.Snapshot.GetValue(true);
@@ -515,107 +526,79 @@ namespace CompasXR.Core
             if (childSnapshot != null)
             {
                 Step newValue = Step.Parse(childSnapshot);
-                
-                //Check: if the step is equal to the one that I have in the dictionary
                 if (!Step.AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
                 {    
-                    Debug.Log($"On Child Changed: This key actually changed {key}");
-
                     if (newValue.data.device_id != null)
                     {
-                        //Check: if the change is from me or from someone else could possibly get rid of this because we check every step, but still safety check for now.
+                        //TODO: This is in the case that we want to switch to pushing one item at a time... however for now it is un needed.
                         if (newValue.data.device_id == SystemInfo.deviceUniqueIdentifier && Step.AreEqualSteps(newValue, BuildingPlanDataItem.steps[key]))
                         {
-                            Debug.Log($"I changed element {key}");
                             return;
                         }
-                        //This means that the change was specifically from another device.
                         else
                         {    
                             if(newValue.IsValidStep())
                             {
-                                //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                                 if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                                 {
-                                    //Remove the old key from the priority tree dictionary
+                                    //Remove old key from nested list, and if the list is empty remove the list from the dictionary.
                                     PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
-
-                                    //Check if the priority tree value item is null and if so remove it from the dictionary
                                     if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
                                     {
                                         PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                                     }
 
-                                    //Check if the steps priority is one that I already have in the priority tree dictionary
+                                    //Check if the steps priority already in the priority tree dictionary
                                     if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
                                     {
-                                        //If the priority already exists add the key to the list
                                         PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
-                                        Debug.Log($"Step {key} successfully added to the priority tree dictionary item {newValue.data.priority.ToString()}");
                                     }
+                                    //If not add a new list and add the key to the list
                                     else
                                     {
-                                        //If not create a new list and add the key to the list
                                         PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
                                         PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
-                                        Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
                                     }
                                 }
                                 else
                                 {
-                                    Debug.Log($"The priority of the step {key} did not change");
+                                    Debug.Log($"OnStepsChildChanged: The priority of the step {key} did not change");
                                 }
-
-                                //Add the new value to the Building plan dictionary
                                 BuildingPlanDataItem.steps[key] = newValue;
                             }
                             else
                             {
-                                Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                                Debug.LogWarning($"OnStepsChildChanged: Invalid Node structure for key '{key}'. Not added to the dictionary.");
                             }
-
-                            Debug.Log($"HandleChildChanged - The key of the changed Step is {key}");
-                            Debug.Log("newData[key] = " + BuildingPlanDataItem.steps[key]);
-                            
-                            //Instantiate new object
+                            Debug.Log($"OnStepsChildChanged: This key: {key} changed and will be replaced in the dictionary.");
                             OnDatabaseUpdate(newValue, key);
                         }
                     }
                     //Check: This change happened either manually or from grasshopper. To an object that doesn't have a device id.
                     else
                     {
-                        Debug.LogWarning($"Device ID is null: the change for key {key} happened from gh or manually.");
-
+                        Debug.LogWarning($"OnStepsChildChanged: Device ID is null: the change for key {key} happened from gh or manually.");
                         if(newValue.IsValidStep())
                         {
-
-                            //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                             if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                             {                            
-                                //Remove the old key from the priority tree dictionary
                                 PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
-
-                                //Check if the priority tree value item is null and if so remove it from the dictionary
                                 if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
                                 {
                                     PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                                 }
 
-                                //Check if the steps priority is one that I already have in the priority tree dictionary
+                                //Check if the steps priority already in the priority tree dictionary
                                 if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
                                 {
-                                    //If the priority already exists add the key to the list
                                     PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
-                                    Debug.Log($"Step {key} successfully added to the priority tree dictionary item {newValue.data.priority.ToString()}");
                                 }
+                                //If not add a new list and add the key to the list
                                 else
                                 {
-                                    //If not create a new list and add the key to the list
                                     PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
                                     PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
-                                    Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
                                 }
-                                
                                 BuildingPlanDataItem.steps[key] = newValue;
                             }
                             else
@@ -628,19 +611,10 @@ namespace CompasXR.Core
                         {
                             Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
                         }
-
-                        Debug.Log($"HandleChildChanged - The key of the changed Step is {key}");
-                        Debug.Log("newData[key] = " + BuildingPlanDataItem.steps[key]);
-                        
-                        //Instantiate new object
+                        Debug.Log($"OnStepsChildChanged: This key: {key} changed and will be replaced in the dictoinary.");
                         OnDatabaseUpdate(newValue, key);
-
                     }
-
-                    //Print out the priority tree as a check
-                    Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
                 }
-
             }
         }
         public void OnStepsChildRemoved(object sender, Firebase.Database.ChildChangedEventArgs args)
@@ -656,16 +630,13 @@ namespace CompasXR.Core
 
             if (!string.IsNullOrEmpty(childSnapshot))
             {
-                //remove an entry in the dictionary
                 if (BuildingPlanDataItem.steps.ContainsKey(key))
                 {
                     Step newValue = null;
-                    Debug.Log("The key exists in the dictionary and is going to be removed");
-                    
-                    //First check thee steps priorty Remove the steps key from the priority tree dictionary
+                    Debug.Log($"OnStepsChildRemoved: The key: {key} exists in the dictionary and is going to be removed");
                     PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
 
-                    //Check if the priority tree value item is null and if so remove it from the dictionary
+                    //Check if the priority tree list is empty and remove it from the dictionary if it is.
                     if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
                     {
                         PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
@@ -673,19 +644,21 @@ namespace CompasXR.Core
                     
                     //Remove the step from the building plan dictionary
                     BuildingPlanDataItem.steps.Remove(key);
-
-                    //Trigger database event
                     OnDatabaseUpdate(newValue, key);
                 }
                 else
                 {
-                    Debug.Log("The key does not exist in the dictionary");
+                    Debug.Log($"OnStepsChildRemoved: The key: {key} did not exist in the dictionary.");
                 }
             }
         }  
         public async void OnLastBuiltIndexChanged(object sender, Firebase.Database.ValueChangedEventArgs args)
         {
-
+            /*
+            * Method is used to handle the Last Built Index Changed event from the Firebase Realtime Database.
+            * It is designed to take the snapshot of the Last Built Index and parse the information.
+            * Additionally it checks the priority of this step and updates my current priority as needed.
+            */
             if (args.DatabaseError != null) {
             Debug.LogError($"Database error: {args.DatabaseError}");
             return;
@@ -696,48 +669,34 @@ namespace CompasXR.Core
                 return;
             }
             
-            Debug.Log("Last Built Index Changed");
-            
-            //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
             TempDatabaseLastBuiltStep = null;
-            
             await FetchRTDDatawithEventHandler(dbReferenceLastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
-        
             if (TempDatabaseLastBuiltStep != null)
             {
                 if(TempDatabaseLastBuiltStep != BuildingPlanDataItem.LastBuiltIndex)
                 {
-                    // Update Last Built Index
                     BuildingPlanDataItem.LastBuiltIndex = TempDatabaseLastBuiltStep;
                     Debug.Log($"Last Built Index is now {BuildingPlanDataItem.LastBuiltIndex}");
 
-                    // Update On Screen Text
                     UIFunctionalities.SetLastBuiltText(BuildingPlanDataItem.LastBuiltIndex);
-                
+
                     // Check Priority to see if its complete.
                     Step step = BuildingPlanDataItem.steps[BuildingPlanDataItem.LastBuiltIndex];
                     int priorityCheck = OtherUserPriorityChecker(step, BuildingPlanDataItem.LastBuiltIndex);
 
-                    // If the priority checker == 1 then set priority from this step. If it == 2 then set priority from the next step. (THIS COULD BE PRIORITY + 1, but safest to use the next step because it avoids errors from if a priority is missing)
-                    if (priorityCheck == 1)
+                    if (priorityCheck == 1) //Priority is not the same, and we should set this priority now.
                     {
                         UIFunctionalities.SetCurrentPriority(step.data.priority.ToString());
                     }
+                    //All the elements of this priority are complete, and it is not the last item in the building plan.
                     else if (priorityCheck == 2 && Convert.ToInt32(BuildingPlanDataItem.LastBuiltIndex) < BuildingPlanDataItem.steps.Count - 1)
                     {
-                        //Get my current priority
                         string localCurrentPriority = CurrentPriority;
-
-                        //convert to int and add 1
                         int nextPriority = Convert.ToInt32(localCurrentPriority) + 1;
-
-                        //Set this as my new current priority
                         UIFunctionalities.SetCurrentPriority(nextPriority.ToString());
 
                         //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
                         Step localCurrentStep = BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep];
-
-                        //If my CurrentStep Priority is the same as New Current Priority then update UI graphics
                         if(localCurrentStep.data.priority.ToString() == CurrentPriority)
                         {    
                             UIFunctionalities.IsBuiltButtonGraphicsControler(localCurrentStep.data.is_built, localCurrentStep.data.priority);
@@ -746,27 +705,29 @@ namespace CompasXR.Core
                     }
                     else
                     {
-                        Debug.Log($"OtherUser Priority Check: returned {priorityCheck} and is not 1 or 2 and shouldn't do anything");
+                        Debug.Log($"OnLastBuiltIndexChanged: priority check returned incomplete priority, and we should not move to the next priority");
                     }
                 }
                 else
                 {
-                    Debug.Log("Last Built Index is the same your current Last Built Index");
+                    Debug.Log("OnLastBuiltIndexChanged: Last Built Index is the same your current Last Built Index");
                 }
 
             }
         }    
-        
-        // Event handlers for User Current Step
         public void OnUserChildAdded(object sender, Firebase.Database.ChildChangedEventArgs args)
         {
+            /*
+            * Method is used to handle the User Child Added event from the Firebase Realtime Database.
+            * It is designed to take the snapshot of the User Current Step and parse the information.
+            * Additionally it checks the validity of the step and adds it to the dictoinary if it is.
+            */
             if (args.DatabaseError != null) {
-            Debug.LogError($"Database error: {args.DatabaseError}");
+            Debug.LogError($"OnUserChildAdded: Database error: {args.DatabaseError}");
             return;
             }
-
             if (args.Snapshot == null) {
-                Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+                Debug.LogWarning("OnUserChildAdded: Snapshot is null. Ignoring the child change.");
                 return;
             }
 
@@ -776,38 +737,35 @@ namespace CompasXR.Core
             if (childSnapshot != null)
             {
                 UserCurrentInfo newValue = UserCurrentInfo.Parse(childSnapshot);
-                
-                //make a new entry in the dictionary if it doesnt already exist
                 if (newValue != null)
                 {
                     if (UserCurrentStepDict.ContainsKey(key))
                     {
-                        Debug.Log($"This User {key} already exists in the dictionary");
+                        Debug.Log($"OnUserChildAdded: This User {key} already exists in the dictionary");
                     }
                     else
                     {
-                        Debug.Log($"The key '{key}' does not exist in the dictionary");
+                        Debug.Log($"OnUserChildAdded: The key '{key}' does not exist in the dictionary");
                         UserCurrentStepDict.Add(key, newValue);
-
-                        //Instantiate new object
                         OnUserInfoUpdated(newValue, key);
                     }
-                }
-                else
-                {
-                    Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
                 }
             }
         }
         public void OnUserChildChanged(object sender, Firebase.Database.ChildChangedEventArgs args)
         {
+            /*
+            * Method is used to handle the User Child Changed event from the Firebase Realtime Database.
+            * It is designed to take the snapshot of the User Current Information and parse the information.
+            * Additionally it triggers event changes to remove or update the Users Object.
+            */
             if (args.DatabaseError != null) {
-            Debug.LogError($"Database error: {args.DatabaseError}");
+            Debug.LogError($"OnUserChildChanged: Database error: {args.DatabaseError}");
             return;
             }
 
             if (args.Snapshot == null) {
-                Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+                Debug.LogWarning("OnUserChildChanged: Snapshot is null. Ignoring the child change.");
                 return;
             }
 
@@ -817,39 +775,29 @@ namespace CompasXR.Core
             if (childSnapshot != null)
             {
                 UserCurrentInfo newValue = UserCurrentInfo.Parse(childSnapshot);
-                
-                //Check: if the current step update was from me or not.
                 if (key != SystemInfo.deviceUniqueIdentifier)
                 {    
-                    Debug.Log($"User {key} updated their current step");
-
-
-                    Debug.Log($"I entered here for key {key}");
                     if(newValue != null)
                     {
                         UserCurrentStepDict[key] = newValue;
                     }
                     else
                     {
-                        Debug.LogWarning($"Invalid Node structure for key '{key}'. Not added to the dictionary.");
+                        Debug.LogWarning($"OnUserChildChanged: User info data for '{key}' is null. Not added to the dictionary.");
                     }
-
-                    Debug.Log($"Handle Changed User INfo - User {key} updated their current step to {newValue.currentStep}");
-                    
-                    //Instantiate new object
                     OnUserInfoUpdated(newValue, key);
                 }
-                else
-                {
-                    Debug.Log("I updated my current key");
-                }
-
             }
         }
         public void OnUserChildRemoved(object sender, Firebase.Database.ChildChangedEventArgs args)
         {
+            /*
+            * Method is used to handle the User Child Removed event from the Firebase Realtime Database.
+            * It is designed to take the snapshot of the User Current Information and parse the information.
+            * Additionally it triggers event changes to remove the Users Object.
+            */
             if (args.DatabaseError != null) {
-            Debug.LogError($"Database error: {args.DatabaseError}");
+            Debug.LogError($"OnUserChildRemoved: Database error: {args.DatabaseError}");
             return;
             }
             
@@ -858,71 +806,74 @@ namespace CompasXR.Core
             
             if (!string.IsNullOrEmpty(childSnapshot))
             {
-                //remove an entry in the dictionary
                 if (UserCurrentStepDict.ContainsKey(key))
                 {
                     UserCurrentInfo newValue = null;
-                    Debug.Log("The key exists in the dictionary and is going to be removed");
+                    Debug.Log($"OnUserChildRemoved: User {key} left and will be removed from the scene.");
                     UserCurrentStepDict.Remove(key);
                     OnUserInfoUpdated(newValue, key);
                 }
                 else
                 {
-                    Debug.Log("The key does not exist in the dictionary");
+                    Debug.Log($"OnUserChildRemoved: User {key} doesn't exist in the dictionary.");
                 }
             }
 
         }
-
-        // Event Handlers for Additional Project Information, Assembly, Parts, QRFrames, & Joints
         public async void OnProjectInfoChangedUpdate(object sender, Firebase.Database.ChildChangedEventArgs args)
         {
+            /*
+            * Method is used to handle the Project Info Changed event from the Firebase Realtime Database.
+            * It is designed to take the snapshot of the Project Information and parse the information.
+            * Additionally it triggers event changes to update the data in the respective dictionaries.
+            * It is used to handle global changes like assembly, qrcodes, & etc.
+            * It will clear my currently stored information and fetch the new data.
+            */
+
             if (args.DatabaseError != null) {
-            Debug.LogError($"Database error: {args.DatabaseError}");
+            Debug.LogError($"OnProjectInfoChangedUpdate: Database error: {args.DatabaseError}");
             return;
             }
 
             if (args.Snapshot == null) {
-                Debug.LogWarning("Snapshot is null. Ignoring the child change.");
+                Debug.LogWarning("OnProjectInfoChangedUpdate: Snapshot is null. Ignoring the child change.");
                 return;
             }
 
-            //Get the child changed key and value
             string key = args.Snapshot.Key;
             var childSnapshot = args.Snapshot.GetValue(true);
 
-            //If Snapshot and Key are not null check for where the change needs to happen.
             if (childSnapshot != null && key != null)
             {
                 if(key == "assembly")
                 {
-                    Debug.Log("Project Changed: Assembly Changed");
-                    
-                    //If the assembly changed then fetch new assembly data
+                    Debug.Log("OnProjectInfoChangedUpdate: Assembly Changed");
                     await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
                 }
                 else if(key == "QRFrames")
                 {
-                    Debug.Log("Project Changed: QRFrames Changed");
-
-                    //If the qrcodes changed then fetch new qrcode data
+                    Debug.Log("OnProjectInfoChangedUpdate: QRFrames Changed");
                     await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 }
                 else if(key == "beams")
                 {
-                    Debug.Log("Project Changed: Beams");
+                    Debug.Log("OnProjectInfoChangedUpdate: Beams Changed");
                 }
                 else if(key == "joints")
                 {
-                    Debug.Log("Project Changed: Joints");
+                    Debug.Log("OnProjectInfoChangedUpdate: Joints Changed");
+                }
+                else if(key == "parts")
+                {
+                    Debug.Log("OnProjectInfoChangedUpdate: Parts changed");
                 }
                 else if(key == "building_plan")
                 {
-                    Debug.Log("Project Changed: BuildingPlan and should be handled by other listners");
+                    Debug.Log("OnProjectInfoChangedUpdate: BuildingPlan and should be handled by other listners");
                 }
                 else if(key == "UsersCurrentStep")
                 {
-                    Debug.Log("Project Changed: User Current Step Changed this should be handled by other listners");
+                    Debug.Log("OnProjectInfoChangedUpdate: User Current Step Changed this should be handled by other listners");
                 }
                 else
                 {
@@ -930,73 +881,81 @@ namespace CompasXR.Core
                 }
             }
         }
-        
-        // Event handling for database initialization
         protected virtual void OnDatabaseInitializedDict(BuildingPlanData BuildingPlanDataItem)
         {
+            /*
+            * Method is used to trigger the Database Initialized Event.
+            * It is designed to trigger the event and send the Building Plan Data to the respective classes.
+            */
             UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "Database dict is null!");
-            Debug.Log("Building Plan Data Received");
+            Debug.Log("OnDatabaseInitializedDict: Building Plan Data Received");
             DatabaseInitializedDict(this, new BuildingPlanDataDictEventArgs() {BuildingPlanDataItem = BuildingPlanDataItem});
         }
         protected virtual void OnTrackingDataReceived(Dictionary<string, Node> QRCodeDataDict)
         {
+            /*
+            * Method is used to trigger the Tracking Data Received Event.
+            * It is designed to trigger the event and send the Tracking Data to the respective classes.
+            */
             UnityEngine.Assertions.Assert.IsNotNull(TrackingDictReceived, "Tracking Dict is null!");
-            Debug.Log("Tracking Data Received");
+            Debug.Log("OnTrackingDataReceived: Tracking Data Received");
             TrackingDictReceived(this, new TrackingDataDictEventArgs() {QRCodeDataDict = QRCodeDataDict});
         }
         protected virtual void OnDatabaseUpdate(Step newValue, string key)
         {
+            /*
+            * Method is used to trigger the Database Update Event.
+            * It is designed to trigger the event and send the Step Data to the respective classes.
+            */
             UnityEngine.Assertions.Assert.IsNotNull(DatabaseInitializedDict, "new dict is null!");
             DatabaseUpdate(this, new UpdateDataItemsDictEventArgs() {NewValue = newValue, Key = key });
         }
         protected virtual void OnUserInfoUpdated(UserCurrentInfo newValue, string key)
         {
+            /*
+            * Method is used to trigger the User Info Updated Event.
+            * It is designed to trigger the event and send the User Info Data to the respective classes.
+            */
             UnityEngine.Assertions.Assert.IsNotNull(UserInfoUpdate, "new dict is null!");
             UserInfoUpdate(this, new UserInfoDataItemsDictEventArgs() {UserInfo = newValue, Key = key });
         }
         protected virtual void OnSettingsUpdate(ApplicationSettings settings)
         {
+            /*
+            * Method is used to trigger the Settings Update Event.
+            * It is designed to trigger the event and send the Settings Data to the ApplicationSettings class.
+            */
             ApplicationSettingUpdate(this, new ApplicationSettingsEventArgs(){Settings = settings});
         }
-
-        // Event Handeling to take care of App Clean up. When the GameObject is destroyed it cleans up everything.     
-        protected virtual void OnDestroy()
-        {
-            //Remove my name from the UserCurrentStep list
-            dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
-            
-            //Clear dictionaries
-            BuildingPlanDataItem.steps.Clear();
-            PriorityTreeDict.Clear();
-            UserCurrentStepDict.Clear();
-            AssemblyDataDict.Clear();
-
-            //Remove Listners
-            RemoveListners();
-        }
-
     }
 
     public static class DataHandlers
     {
-        //Define HTTP request response classes
         class ListFilesResponse
         {
+            /*
+            * Class is used to deserialize the JSON response from web request to a online directory.
+            */
             public List<object> prefix { get; set; }
             public List<FileMetadata> items { get; set; }
         }
 
         public class FileMetadata
         {
+            /*
+            * Class is used to store the metadata of the files in the online directory.
+            */
             public string name { get; set; }
             public string bucket { get; set; }
             public string uri { get; set; }
         }
         public static void DeleteFilesFromDirectory(string directoryPath)
         {
+            /*
+            * Method is used to delete all files in a directory.
+            * It is designed to take the directory path and delete all files in the directory.
+            */
             string folderpath = directoryPath.Replace('\\', '/');
-
-            //If the folder exists delete all files in the folder. If not create the folder.
             if (Directory.Exists(folderpath))
             {
                 System.IO.DirectoryInfo di = new DirectoryInfo(folderpath);
@@ -1010,6 +969,10 @@ namespace CompasXR.Core
         }
         public static void CreateDirectory(string directoryPath)
         {
+            /*
+            * Method is used to create a directory.
+            * It is designed to take the directory path and create the directory if it does not exist.
+            */
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
@@ -1022,10 +985,16 @@ namespace CompasXR.Core
         }
         public static void PushStringDataToDatabaseReference(DatabaseReference databaseReference, string data)
         {
+            /*
+            * Method is used to push a string data to the Firebase Realtime Database databaseReference.
+            */
             databaseReference.SetRawJsonValueAsync(data);
         }
         public static string PrintDataFromDatabaseRefrerence(DatabaseReference databaseReference)
         {
+            /*
+            * Method is used to print the data from the Firebase Realtime Database databaseReference.
+            */
             string jsondata = "";
             databaseReference.GetValueAsync().ContinueWithOnMainThread(task =>
             {
@@ -1044,9 +1013,11 @@ namespace CompasXR.Core
         }
         public static void CheckLocalPathExistance(string path)
         {       
-            // Replace backslashes with forward slashes
+            /*
+            * Method is used to check if a file exists in the local directory.
+            * It is designed to take the file path and check if the file exists.
+            */
             path = path.Replace('\\', '/');
-
             if (File.Exists(path))
             {
                 Debug.Log($"CheckLocalPathExistance: File Exists @ {path}");
@@ -1059,6 +1030,10 @@ namespace CompasXR.Core
         }
         public static async Task DownloadFilesFromOnlineStorageDirectory(List<DataHandlers.FileMetadata> filesMetadata, string localDirectoryPath) //TODO: Can't Move Because DownloadFile cant move
         {
+            /*
+            * Method is used to download files from an online storage directory.
+            * It is designed to take the files metadata and the local directory path and download the files.
+            */
             List<Task> downloadTasks = new List<Task>();
             foreach (var fileMetadata in filesMetadata)
             {
@@ -1071,33 +1046,32 @@ namespace CompasXR.Core
         }
         public static async Task<List<FileMetadata>> GetFilesInWebFolder(string webFolderUrl)
         {
-            //Building the storage url dynamically
-            Debug.Log($"GetFilesInFolder: BaseUrl: {webFolderUrl}");
-
-            // Send a GET request to the URL
+            /*
+            * Method is used to get the files in a web folder.
+            * It is designed to take the web folder URL and return the files in the folder.
+            */
+            Debug.Log($"GetFilesInFolder: Web Directory URL : {webFolderUrl}");
             using (HttpClient client = new HttpClient())
             using (HttpResponseMessage response = await client.GetAsync(webFolderUrl))
             using (HttpContent content = response.Content)
-            {
-                
-                // Read the response body
+            {                
                 string responseText = await content.ReadAsStringAsync();
-                Debug.Log($"HTTP Client Response: {responseText}");
-
-                // Deserialize the JSON response
+                Debug.Log($"GetFilesInFolder: File list response information: {responseText}");
                 ListFilesResponse responseData = JsonConvert.DeserializeObject<ListFilesResponse>(responseText);
-
-                // Return the list of files
                 return responseData.items;
             }
         }
         public static async Task FetchDataFromDatabaseReference(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod)
         {
+            /*
+            * Method is used to fetch the data from the Firebase Realtime Database.
+            * It is designed to take the database reference and the deserialization method and fetch the data.
+            */
             await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
                 {
-                    Debug.LogError("Error fetching data from Firebase");
+                    Debug.LogError("FetchDataFromDatabaseReference: Error fetching data from Firebase");
                     return;
                 }
 
@@ -1110,23 +1084,24 @@ namespace CompasXR.Core
                     }
                 }
             });
-
         }
         public static async Task DownloadFileFromURLToLocal(string downloadUrl, string saveFilePath, bool onScreenMessage)
         {
+            /*
+            * Method is used to download a file from a URL to a local directory.
+            * It is designed to take the download URL, the save file path, and a boolean to display an on screen message.
+            */
             using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
             {
                 webRequest.downloadHandler = new DownloadHandlerFile(saveFilePath);
                 await webRequest.SendWebRequest();
-
                 if (webRequest.result != UnityWebRequest.Result.Success)
                 {
                     if(onScreenMessage)
                     {    
                         Color panelColor = new Color(1.0f, 1.0f, 1.0f, 0.85f);
                         string filepath = Path.GetFileName(saveFilePath);
-                        string message = $"DownloadFile: ERROR: Application failed download file for object {filepath}. Please review the associated file and try again.";
-
+                        string message = $"DownloadFileFromURLToLocal: ERROR: Application failed download file for object {filepath}. Please review the associated file and try again.";
                         UserInterface.CreateCenterAlignedSelfDestructiveMessageInstance(
                             "FileDownloadFailedMessage", 450.0f, 725.0f, panelColor,
                             TMPro.TextAlignmentOptions.TopLeft, 25.0f, Color.red,
@@ -1134,24 +1109,24 @@ namespace CompasXR.Core
                             Color.white);
                     }
 
-                    Debug.LogError("DownloadFile: File download error: " + webRequest.error);
+                    Debug.LogError("DownloadFileFromURLToLocal: File download error: " + webRequest.error);
                 }
                 else
                 {
-                    Debug.Log("DownloadFile: File successfully downloaded and saved to " + saveFilePath);
+                    Debug.Log("DownloadFileFromURLToLocal: File successfully downloaded and saved to " + saveFilePath);
                 }
             }
         }
         public static async Task<List<DataHandlers.FileMetadata>> GetDownloadUriFromFirebaseStorageWithMetaData(List<DataHandlers.FileMetadata> filesMetadata, bool onScreenMessage)
         {
+            /*
+            * Method is used to get the download URI from Firebase Storage ONLY with metadata.
+            * It is designed to take the files metadata and a boolean to display an on screen message with download failure.
+            */
             List<Task> fetchUriTasks = new List<Task>();
-            
             foreach (var fileMetadata in filesMetadata)
             {
-                // Set the reference to the file in Firebase Storage
                 var fileRef = FirebaseStorage.DefaultInstance.GetReference(fileMetadata.name);
-
-                //Add Fetch Uri Task to the list
                 fetchUriTasks.Add(fileRef.GetDownloadUrlAsync().ContinueWithOnMainThread(task =>
                 {
                     if (task.IsFaulted)
@@ -1160,14 +1135,13 @@ namespace CompasXR.Core
                         {    
                             Color panelColor = new Color(1.0f, 1.0f, 1.0f, 0.85f);
                             string message = $"ERROR: Application unable to fetch URL for {fileMetadata.name}. Please review the associated file and try again.";
-
                             UserInterface.CreateCenterAlignedSelfDestructiveMessageInstance(
                                 "FetchDownloadURIFailedMessage", 450.0f, 725.0f, panelColor,
                                 TMPro.TextAlignmentOptions.TopLeft, 25.0f, Color.red,
                                 message, 70.0f, 250.0f, Color.red, 25.0f, "Acknowledge",
                                 Color.white);
                         }
-                        Debug.LogError("Error fetching download URL from Firebase Storage");
+                        Debug.LogError("GetDownloadUriFromFirebaseStorageWithMetaData: Error fetching download URL from Firebase Storage");
                         return;
                     }
                     if (task.IsCompleted)

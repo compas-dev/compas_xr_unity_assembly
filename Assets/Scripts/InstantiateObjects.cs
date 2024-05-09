@@ -920,7 +920,7 @@ namespace CompasXR.Core
             /*
             * Method is used to handle the event when the database is updated
             */
-            Debug.Log("OnDatabaseUpdate:" + " " + "Key of Step updated= " + eventArgs.Key);
+            Debug.Log("OnDatabaseUpdate:" + " " + "Key of Step updated = " + eventArgs.Key);
             if (eventArgs.NewValue == null)
             {
                 ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key);
@@ -936,21 +936,22 @@ namespace CompasXR.Core
             /*
             * Method is used to handle the event when the user info is updated
             */
-            Debug.Log("OnUserInfoUpdate: User Info is loaded." + " " + "Key of User updated= " + eventArgs.Key);
             if (eventArgs.UserInfo == null)
             {
-                Debug.Log($"user {eventArgs.Key} will be removed");
+                Debug.Log($"OnUserInfoUpdate: User Info is null {eventArgs.Key} will be removed");
                 ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key);
             }
             else
             {
                 if (GameObject.Find(eventArgs.Key) != null)
                 {
+                    Debug.Log($"OnUserInfoUpdate: User {eventArgs.Key} updated their current step.");
                     ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key + " Arrow");
                     UserIndicatorInstantiator(ref OtherUserIndacator, GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, eventArgs.Key, eventArgs.Key, 0.15f);
                 }
                 else
                 {
+                    Debug.Log($"OnUserInfoUpdate: New user joined and {eventArgs.Key} now join the assembly party :)");
                     CreateNewUserObject(eventArgs.Key, eventArgs.UserInfo.currentStep);
                 }
             }
@@ -962,7 +963,7 @@ namespace CompasXR.Core
             */
             if (GameObject.Find(key) != null)
             {
-                Debug.Log("InstantiateChangedKeys: Deleting old object with key" + key);
+                Debug.Log("InstantiateChangedKeys: Deleting old object with key: " + key);
                 GameObject oldObject = GameObject.Find(key);
                 Destroy(oldObject);
             }
