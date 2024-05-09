@@ -652,9 +652,9 @@ namespace CompasXR.UI
             }
             else if (Convert.ToInt16(databaseManager.CurrentPriority) > step.data.priority) //TODO: THIS ONLY WORKS BECAUSE WE PUSH EVERYTHING.
             {
-                for(int i = Convert.ToInt16(step.data.priority) + 1; i < databaseManager.PriorityTreeDict.Count; i++)
+                for(int i = Convert.ToInt16(step.data.priority) + 1; i < databaseManager.BuildingPlanDataItem.PriorityTreeDictionary.Count; i++)
                 {
-                    List<string> PriorityDataItem = databaseManager.PriorityTreeDict[i.ToString()];
+                    List<string> PriorityDataItem = databaseManager.BuildingPlanDataItem.PriorityTreeDictionary[i.ToString()];
                     foreach(string key in PriorityDataItem)
                     {
                         Step stepToUnbuild = databaseManager.BuildingPlanDataItem.steps[key];
@@ -678,7 +678,7 @@ namespace CompasXR.UI
                 else
                 {   
                     List<string> UnbuiltElements = new List<string>();
-                    List<string> PriorityDataItem = databaseManager.PriorityTreeDict[databaseManager.CurrentPriority];
+                    List<string> PriorityDataItem = databaseManager.BuildingPlanDataItem.PriorityTreeDictionary[databaseManager.CurrentPriority];
 
                     foreach(string element in PriorityDataItem)
                     {
@@ -1482,7 +1482,7 @@ namespace CompasXR.UI
                 int SelectedPriorityInt = Convert.ToInt16(SelectedPriority);
                 int newPriorityGroupInt = SelectedPriorityInt + 1;
 
-                if(newPriorityGroupInt <= databaseManager.PriorityTreeDict.Count - 1)
+                if(newPriorityGroupInt <= databaseManager.BuildingPlanDataItem.PriorityTreeDictionary.Count - 1)
                 {                
                     instantiateObjects.ApplyColortoPriorityGroup(SelectedPriorityInt.ToString(), newPriorityGroupInt.ToString());
                     instantiateObjects.CreatePriorityViewerItems(newPriorityGroupInt.ToString(), ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
@@ -1652,7 +1652,7 @@ namespace CompasXR.UI
             databaseManager.AssemblyDataDict.Clear();
             databaseManager.QRCodeDataDict.Clear();
             databaseManager.UserCurrentStepDict.Clear();
-            databaseManager.PriorityTreeDict.Clear();
+            databaseManager.BuildingPlanDataItem.PriorityTreeDictionary.Clear();
 
             mqttTrajectoryManager.UnsubscribeFromCompasXRTopics();
             mqttTrajectoryManager.RemoveConnectionEventListners();
@@ -1945,7 +1945,7 @@ namespace CompasXR.UI
                 }
             }
         }
-        private void addBoundingBox(GameObject gameObj) //TODO: USE THIS LOGIC TO CREATE PRIORITY VIEWER SPHERE
+        private void addBoundingBox(GameObject gameObj)
         {
             /*
             * Add bounding box is used to add a bounding box to the selected object.

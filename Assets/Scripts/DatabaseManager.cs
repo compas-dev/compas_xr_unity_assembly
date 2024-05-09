@@ -93,11 +93,9 @@ namespace CompasXR.Core
         public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
         public Dictionary<string, Node> QRCodeDataDict { get; private set; } = new Dictionary<string, Node>();
         public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
-        public Dictionary<string, List<string>> PriorityTreeDict { get; private set; } = new Dictionary<string, List<string>>();
 
         //Data Structure to Store Application Settings
         public ApplicationSettings applicationSettings;
-
 
         // Define event delegates and events
         public delegate void StoreDataDictEventHandler(object source, BuildingPlanDataDictEventArgs e); 
@@ -125,7 +123,6 @@ namespace CompasXR.Core
         public string CurrentPriority = null;
 
     /////////////////////// Monobehaviour Methods /////////////////////////////////
-
         void Awake()
         {
             /*
@@ -141,7 +138,7 @@ namespace CompasXR.Core
             */
             dbReferenceUsersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
             BuildingPlanDataItem.steps.Clear();
-            PriorityTreeDict.Clear();
+            BuildingPlanDataItem.PriorityTreeDictionary.Clear();
             UserCurrentStepDict.Clear();
             AssemblyDataDict.Clear();
             RemoveListners();
@@ -334,17 +331,14 @@ namespace CompasXR.Core
                 BuildingPlanDataItem.LastBuiltIndex = null;
                 BuildingPlanDataItem.steps.Clear();
             }
-            if (PriorityTreeDict != null)
+            if (BuildingPlanDataItem.PriorityTreeDictionary != null)
             {
-                PriorityTreeDict.Clear();
+                BuildingPlanDataItem.PriorityTreeDictionary.Clear();
             }
 
             var jsondata = snapshot.GetValue(true);
-            Dictionary<string, List<string>> priorityTreeDict = new Dictionary<string, List<string>>();
-            (BuildingPlanData buildingPlanData, 
-            Dictionary<string, List<string>> priorityTreeDictionary) = BuildingPlanData.Parse(jsondata, priorityTreeDict);
-            PriorityTreeDict = priorityTreeDictionary;
-
+            BuildingPlanData buildingPlanData = BuildingPlanData.Parse(jsondata);
+            Debug.Log($" THIS IS YOUR PRIOIRTY TREE DICTIONARY {JsonConvert.SerializeObject(buildingPlanData.PriorityTreeDictionary)}");
             if (buildingPlanData != null && buildingPlanData.steps != null)
             {
                 BuildingPlanDataItem = buildingPlanData;
@@ -384,7 +378,7 @@ namespace CompasXR.Core
             if (CurrentPriority == step.data.priority.ToString())
             {
                 List<string> UnbuiltElements = new List<string>();
-                List<string> PriorityDataItem = PriorityTreeDict[CurrentPriority];
+                List<string> PriorityDataItem = BuildingPlanDataItem.PriorityTreeDictionary[CurrentPriority];
 
                 foreach(string element in PriorityDataItem)
                 {
@@ -486,14 +480,14 @@ namespace CompasXR.Core
                         Debug.Log($"OnStepsChildAdded: The key: {key} does not exist in the dictionary added to priority tree in {newValue.data.priority.ToString()}");
                         BuildingPlanDataItem.steps.Add(key, newValue);
 
-                        if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
+                        if (BuildingPlanDataItem.PriorityTreeDictionary.ContainsKey(newValue.data.priority.ToString()))
                         {
-                            PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                            BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()].Add(key);
                         }
                         else
                         {
-                            PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
-                            PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                            BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()] = new List<string>();
+                            BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()].Add(key);
                         }
                         OnDatabaseUpdate(newValue, key);                        
                     }
@@ -542,22 +536,22 @@ namespace CompasXR.Core
                                 if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                                 {
                                     //Remove old key from nested list, and if the list is empty remove the list from the dictionary.
-                                    PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
-                                    if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
+                                    BuildingPlanDataItem.PriorityTreeDictionary[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
+                                    if (BuildingPlanDataItem.PriorityTreeDictionary[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
                                     {
-                                        PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
+                                        BuildingPlanDataItem.PriorityTreeDictionary.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                                     }
 
                                     //Check if the steps priority already in the priority tree dictionary
-                                    if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
+                                    if (BuildingPlanDataItem.PriorityTreeDictionary.ContainsKey(newValue.data.priority.ToString()))
                                     {
-                                        PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                        BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()].Add(key);
                                     }
                                     //If not add a new list and add the key to the list
                                     else
                                     {
-                                        PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
-                                        PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                        BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()] = new List<string>();
+                                        BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()].Add(key);
                                     }
                                 }
                                 else
@@ -582,22 +576,22 @@ namespace CompasXR.Core
                         {
                             if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                             {                            
-                                PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
-                                if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
+                                BuildingPlanDataItem.PriorityTreeDictionary[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
+                                if (BuildingPlanDataItem.PriorityTreeDictionary[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
                                 {
-                                    PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
+                                    BuildingPlanDataItem.PriorityTreeDictionary.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                                 }
 
                                 //Check if the steps priority already in the priority tree dictionary
-                                if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
+                                if (BuildingPlanDataItem.PriorityTreeDictionary.ContainsKey(newValue.data.priority.ToString()))
                                 {
-                                    PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                    BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()].Add(key);
                                 }
                                 //If not add a new list and add the key to the list
                                 else
                                 {
-                                    PriorityTreeDict[newValue.data.priority.ToString()] = new List<string>();
-                                    PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
+                                    BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()] = new List<string>();
+                                    BuildingPlanDataItem.PriorityTreeDictionary[newValue.data.priority.ToString()].Add(key);
                                 }
                                 BuildingPlanDataItem.steps[key] = newValue;
                             }
@@ -634,12 +628,12 @@ namespace CompasXR.Core
                 {
                     Step newValue = null;
                     Debug.Log($"OnStepsChildRemoved: The key: {key} exists in the dictionary and is going to be removed");
-                    PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
+                    BuildingPlanDataItem.PriorityTreeDictionary[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
 
                     //Check if the priority tree list is empty and remove it from the dictionary if it is.
-                    if (PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
+                    if (BuildingPlanDataItem.PriorityTreeDictionary[BuildingPlanDataItem.steps[key].data.priority.ToString()].Count == 0)
                     {
-                        PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
+                        BuildingPlanDataItem.PriorityTreeDictionary.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                     }
                     
                     //Remove the step from the building plan dictionary

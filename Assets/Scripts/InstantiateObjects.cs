@@ -497,7 +497,7 @@ namespace CompasXR.Core
             * Method is used to create the priority viewer items in the AR space
             * based on the selected priority.
             */
-            List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriority];
+            List<string> priorityList = databaseManager.BuildingPlanDataItem.PriorityTreeDictionary[selectedPriority];
             DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, ptColor, ptsParentObject);
         }
         public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, Color? ptColor=null, GameObject ptsParentObject=null)
@@ -673,7 +673,7 @@ namespace CompasXR.Core
             * based on the priority group.
             */
             List<Vector3> positions = new List<Vector3>();
-            List<string> keys = databaseManager.PriorityTreeDict[priorityGroup];
+            List<string> keys = databaseManager.BuildingPlanDataItem.PriorityTreeDictionary[priorityGroup];
             foreach (string key in keys)
             {
                 GameObject element = Elements.FindObject(key);
@@ -870,7 +870,7 @@ namespace CompasXR.Core
             /*
             * Method is used to apply color to objects based on the selected priority group
             */
-            List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriorityGroup];
+            List<string> priorityList = databaseManager.BuildingPlanDataItem.PriorityTreeDictionary[selectedPriorityGroup];
             foreach (string key in priorityList)
             {
                 GameObject gameObject = GameObject.Find(key);

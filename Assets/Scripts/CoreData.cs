@@ -437,19 +437,18 @@ namespace CompasXR.Core.Data
         */
         public string LastBuiltIndex { get; set; }
         public Dictionary<string, Step> steps { get; set; }
-
-        //TODO: ADD PRIORITY TREE DICTIONARY AS A PROPERTY
-        public static (BuildingPlanData, Dictionary<string, List<string>>) Parse(object jsondata, Dictionary<string, List<string>> PriorityTreeDictionary)
+        public Dictionary<string, List<string>> PriorityTreeDictionary { get; set; }
+        public static BuildingPlanData Parse(object jsondata)
         {
             /*
             * Method to create an instance of a the BuildingPlanData class from a json
-            * Returns BuildingPlan Class instance & PriorityTreeDictionary
+            * Returns BuildingPlanData Class
             */
             Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
-            (BuildingPlanData buildingPlanData, Dictionary<string, List<string>> priorityTreeDictionary) = BuildingPlanData.FromData(jsonDataDict, PriorityTreeDictionary);
-            return (buildingPlanData, priorityTreeDictionary);
+            BuildingPlanData buildingPlanData = BuildingPlanData.FromData(jsonDataDict);
+            return buildingPlanData;
         }
-        public static (BuildingPlanData, Dictionary<string, List<string>>) FromData(Dictionary<string, object> jsonDataDict, Dictionary<string, List<string>> PriorityTreeDictionary)
+        public static BuildingPlanData FromData(Dictionary<string, object> jsonDataDict)
         {
             /*
             * Method to create an instance of a the BuildingPlanData class from a dictionary.
@@ -457,6 +456,7 @@ namespace CompasXR.Core.Data
             */
             BuildingPlanData buidingPlanData = new BuildingPlanData();
             buidingPlanData.steps = new Dictionary<string, Step>();
+            buidingPlanData.PriorityTreeDictionary = new Dictionary<string, List<string>>();
             if (jsonDataDict.TryGetValue("LastBuiltIndex", out object last_built_index))
             {
                 Debug.Log($"Last Built Index Fetched From database: {last_built_index.ToString()}");
@@ -478,14 +478,14 @@ namespace CompasXR.Core.Data
                     buidingPlanData.steps[key] = step_data;
                     Debug.Log($"FromData: BuildingPlan Step {key} successfully added to the building plan dictionary");
 
-                    if (PriorityTreeDictionary.ContainsKey(step_data.data.priority.ToString()))
+                    if (buidingPlanData.PriorityTreeDictionary.ContainsKey(step_data.data.priority.ToString()))
                     {
-                        PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
+                        buidingPlanData.PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
                     }
                     else
                     {
-                        PriorityTreeDictionary[step_data.data.priority.ToString()] = new List<string>();
-                        PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
+                        buidingPlanData.PriorityTreeDictionary[step_data.data.priority.ToString()] = new List<string>();
+                        buidingPlanData.PriorityTreeDictionary[step_data.data.priority.ToString()].Add(key);
                     }
                 }
                 else
@@ -493,7 +493,7 @@ namespace CompasXR.Core.Data
                     Debug.LogWarning($"Invalid Step structure for key '{key}'. Not added to the dictionary.");
                 }
             }
-            return (buidingPlanData, PriorityTreeDictionary);
+            return buidingPlanData;
         }
     }
     
