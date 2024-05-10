@@ -727,7 +727,7 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
-    public Node NodeDeserializer(string key, object jsondata, bool additionalAttributes = false)
+    public Node NodeDeserializer(string key, object jsondata)
     {
         //Generic Dictionary for deserialization     
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
