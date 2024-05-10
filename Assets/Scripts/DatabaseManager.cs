@@ -741,7 +741,6 @@ public class DatabaseManager : MonoBehaviour
         Node node = new Node();
         node.part = new Part();
         node.attributes = new Attributes();
-        // node.part.frame = new Frame();
 
         //Set node type_id
         node.type_id = key;
@@ -759,24 +758,8 @@ public class DatabaseManager : MonoBehaviour
             PartDesctiptionSelector(node, dataDict);
         }
 
-        Debug.Log("I MADE IT HERE!");
+        //Parse frame from class method
         node.part.frame = Frame.Parse(frameDataDict);
-        Debug.Log("I MADE IT HERE! 2");
-        // //Convert System.double items to float for use in instantiation
-        // List<object> pointslist = frameDataDict["point"] as List<object>;
-        // List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
-        // List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
-
-        // if (pointslist != null && xaxislist != null && yaxislist != null)
-        // {
-        //     node.part.frame.point = pointslist.Select(Convert.ToSingle).ToArray();
-        //     node.part.frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-        //     node.part.frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
-        // }
-        // else
-        // {
-        //     Debug.Log("One of the Frame lists is null");
-        // }
 
         return node;
     }
