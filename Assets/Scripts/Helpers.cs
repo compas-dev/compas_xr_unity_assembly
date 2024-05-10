@@ -14,9 +14,9 @@ using System.Linq;
 using UnityEngine.InputSystem;
 
 
-namespace Extentions
+namespace Helpers
 {
-    public static class GameObjectExtensions
+    public static class HelpersExtensions
     { 
         public static GameObject FindObject(this GameObject parent, string name)
         {

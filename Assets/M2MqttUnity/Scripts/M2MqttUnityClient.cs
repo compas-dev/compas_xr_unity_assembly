@@ -71,7 +71,7 @@ namespace M2MqttUnity
         private List<MqttMsgPublishEventArgs> frontMessageQueue = null;
         private List<MqttMsgPublishEventArgs> backMessageQueue = null;
         private bool mqttClientConnectionClosed = false;
-        private bool mqttClientConnected = false;
+        public bool mqttClientConnected = false;
 
         /// <summary>
         /// Event fired when a connection is successfully established
@@ -119,7 +119,7 @@ namespace M2MqttUnity
         {
             Debug.LogFormat("Connected to {0}:{1}...\n", brokerAddress, brokerPort.ToString());
 
-            SubscribeTopics();
+            // SubscribeTopics();
 
             if (ConnectionSucceeded != null)
             {
@@ -226,6 +226,7 @@ namespace M2MqttUnity
 
             if (mqttClientConnectionClosed)
             {
+                Debug.Log("MQTT: mqttClientConnectionClosed");
                 mqttClientConnectionClosed = false;
                 OnConnectionLost();
             }

@@ -12,7 +12,7 @@ using UnityEngine.XR.ARSubsystems;
 using UnityEngine.EventSystems;
 using ApplicationInfo;
 using JSON;
-using Extentions;
+using Helpers;
 using Dummiesman;
 using TMPro;
 using ApplicationModeControler;
@@ -27,15 +27,12 @@ namespace Instantiate
 {
     public class InstantiateObjects : MonoBehaviour
     {
-
-        //DATA STRUCTURE ITEMS
-        public Dictionary<string, Node> DataItemDict;
         
-        //OTHER Sript Objects
+        //Other Sript Objects
         public DatabaseManager databaseManager;
         public UIFunctionalities UIFunctionalities;
 
-        //INPUT MATERIALS AND OBJECTS
+        //Object Materials
         public Material BuiltMaterial;
         public Material UnbuiltMaterial;
         public Material HumanBuiltMaterial;
@@ -48,7 +45,7 @@ namespace Instantiate
         //Parent Objects
         public GameObject QRMarkers; 
         public GameObject Elements;
-        public GameObject UserObjects;
+        public GameObject ActiveUserObjects;
 
         //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
@@ -57,22 +54,22 @@ namespace Instantiate
         //Make Initial Visulization controler
         public ModeControler visulizationController = new ModeControler();
 
-        //Private IN SCRIPT USE OBJECTS
-        private GameObject geometry_object;
+        //Private in script use objects
         private GameObject IdxImage;
-        private GameObject SelectionArrow;
-        private GameObject NewUserArrow;
-        private GameObject ObjectLengthsTags;
+        private GameObject PriorityImage;
+        public GameObject MyUserIndacator;
+        private GameObject OtherUserIndacator;
+        public GameObject ObjectLengthsTags;
+        public GameObject PriorityViewrLineObject;
+        public GameObject PriorityViewerPointsObject;
 
+        //Struct for storing Rotation Values
         public struct Rotation
         {
             public Vector3 x;
             public Vector3 y;
             public Vector3 z;
         }
-
-        //Private in script use objects
-        private ARRaycastManager rayManager;
 
         public void Awake()
         {
@@ -90,7 +87,7 @@ namespace Instantiate
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
             QRMarkers = GameObject.Find("QRMarkers");
-            UserObjects = GameObject.Find("UserObjects");
+            ActiveUserObjects = GameObject.Find("ActiveUserObjects");
 
             //Find Initial Materials
             BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
@@ -103,10 +100,13 @@ namespace Instantiate
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
-            IdxImage = GameObject.Find("IdxTagsTemplates").FindObject("Circle");
-            SelectionArrow = GameObject.Find("SelectionArrows").FindObject("Arrow");
-            NewUserArrow = GameObject.Find("SelectionArrows").FindObject("NewUserArrow");
+            IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
+            PriorityImage = GameObject.Find("ImageTagTemplates").FindObject("Triangle");
+            MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
+            OtherUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
+            PriorityViewrLineObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerLine");
+            PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
             //Set Initial Visulization Modes
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
@@ -161,33 +161,41 @@ namespace Instantiate
 
             //Get the nested gameobject from the .Obj so we can adapt colors only the first object
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
+            
+            //Create 3D Index Text
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key} | {step.data.element_ids[0]}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
 
-            // Create and attach text label to the GameObject
-            CreateIndexTextForGameObject(elementPrefab, step.data.element_ids[0]);
-            CreateCircleImageForTag(elementPrefab);
+            //Create Priority Text
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.15f, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
+            CreateBackgroundImageForText(ref PriorityImage, elementPrefab, 0.15f, $"{elementPrefab.name}PriorityImage", false);
 
             //Case Switches to evaluate color and touch modes.
-            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, geometryObject);
+            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, geometryObject);
             
             //Check if the visulization tags mode is on
             if (UIFunctionalities.IDToggleObject.GetComponent<Toggle>().isOn)
             {
                 //Set tag and Image visibility if the mode is on
-                elementPrefab.FindObject(elementPrefab.name + " Text").gameObject.SetActive(true);
+                elementPrefab.FindObject(elementPrefab.name + "IdxText").gameObject.SetActive(true);
                 elementPrefab.FindObject(elementPrefab.name + "IdxImage").gameObject.SetActive(true);
             }
 
-            //If Priority Viewer toggle is on then color the add additional color based on priority: //TODO: IF I CHANGE PV then it checks text.
+            //If Priority Viewer toggle is on then color the add additional color based on priority:
             if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
             {
-                ColorObjectByPriority(databaseManager.CurrentPriority, step.data.priority.ToString(), Key, geometryObject);
+                ColorObjectByPriority(UIFunctionalities.SelectedPriority, step.data.priority.ToString(), Key, geometryObject);
+
+                //Set tag and Image visibility if the mode is on
+                elementPrefab.FindObject(elementPrefab.name + "PriorityText").gameObject.SetActive(true);
+                elementPrefab.FindObject(elementPrefab.name + "PriorityImage").gameObject.SetActive(true);
             }
 
             //If the object is equal to the current step also color it human or robot and instantiate an arrow again.
             if (Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-                ArrowInstantiator(elementPrefab, Key);
+                UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
             }
         }
         public void placeElementAssembly(string Key, Node node)
@@ -437,123 +445,135 @@ namespace Instantiate
                 Debug.Log($"Element: {node.type_id} type: {node.type_data}");
                 return element;
             
-        }
-        private void CreateIndexTextForGameObject(GameObject gameObject, string assemblyID)
+        }      
+        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null)
         {
             // Create a new GameObject for the text
-            GameObject IndexTextContainer = new GameObject(gameObject.name + " Text");
-            TextMeshPro IndexText = IndexTextContainer.AddComponent<TextMeshPro>();
-            IndexText.text = assemblyID;
-            IndexText.fontSize = 1f;
-            IndexText.alignment = TextAlignmentOptions.Center;
+            GameObject textContainer = new GameObject(gameObjectName);
 
-            // Calculate the center of the GameObject
-            GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
-            Renderer renderer = childobject.GetComponent<Renderer>();
-            if (renderer == null)
-            {
-                Debug.Log("Renderer not found in the parent object.");
-            }
-            Vector3 center = Vector3.zero;
-            center = renderer.bounds.center;
+            // Set the position and rotation of the text
+            textContainer.transform.position = position;
+            textContainer.transform.rotation = rotation;
 
-            // Offset the position slightly above the GameObject
-            float verticalOffset = 0.13f;
-            Vector3 textPosition = new Vector3(center.x, center.y + verticalOffset, center.z);
-            IndexTextContainer.transform.position = textPosition;
-            IndexTextContainer.transform.rotation = Quaternion.identity;
-            IndexTextContainer.transform.SetParent(gameObject.transform);
+            // Add TextMeshPro component to the GameObject
+            TextMeshPro textMesh = textContainer.AddComponent<TextMeshPro>();
+            textMesh.text = text;
+            textMesh.fontSize = fontSize;
+            textMesh.autoSizeTextContainer = true;
+            textMesh.alignment = textAlignment;
+            textMesh.color = textColor;
 
             // Add billboard effect(object rotating with camera)
-            GameObjectExtensions.Billboard billboard = IndexTextContainer.AddComponent<GameObjectExtensions.Billboard>();
-
-            // Initially set the text as inactive
-            IndexTextContainer.SetActive(false);
-
-        }
-        private void CreateCircleImageForTag(GameObject parentObject)
-        {            
-            if (IdxImage == null)
+            if (isBillboard)
             {
-                Debug.LogError("CircleImage template is not found or not assigned.");
-                return;
+                textContainer.AddComponent<HelpersExtensions.Billboard>();
             }
 
+            //Set parent if there is a parent object
+            if (parentObject != null)
+            {
+                textContainer.transform.SetParent(parentObject.transform);
+            }
+
+            // Set the visiblity based on the input
+            textContainer.SetActive(isVisible);
+
+            return textContainer;
+        }
+        public GameObject InstantiateObjectFromPrefabRefrence(ref GameObject prefabReference, string gameObjectName, Vector3 position, Quaternion rotation, GameObject parentObject=null)
+        {
+            //Instantiate the prefab at the position and rotation
+            GameObject instantiatedObject = Instantiate(prefabReference, position, rotation);
+
+            //Set the name of the instantiated object
+            instantiatedObject.name = gameObjectName;
+
+            //Set the parent of the instantiated object
+            if (parentObject != null)
+            {
+                instantiatedObject.transform.SetParent(parentObject.transform);
+            }
+
+            return instantiatedObject;
+        }
+        private void CreateTextForGameObjectOnInstantiation(GameObject gameObject, string assemblyID, float offsetDistance, string text, string textObjectName, float fontSize)
+        {              
+            // Calculate the center of the GameObject
+            GameObject childobject = gameObject.FindObject(assemblyID + " Geometry");
+
+            //Get the center of the child object
+            Vector3 center = FindGameObjectCenter(childobject);
+
+            // Offset the position of center by a distance
+            Vector3 offsetPosition = OffsetPositionVectorByDistance(center, offsetDistance, "y");
+
+            //Create 3D Text
+            GameObject TextContainer = Create3DTextAsGameObject(
+                text, textObjectName, fontSize,
+                TextAlignmentOptions.Center, Color.white, offsetPosition,
+                Quaternion.identity, true, false, gameObject);
+        }
+        private void CreateBackgroundImageForText(ref GameObject inputImg, GameObject parentObject, float verticalOffset,string imgObjectName, bool isVisible=true, bool isBillboard=true)
+        {            
             //Find the element ID from the step associated with this geometry
             string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
 
-            // Find the center of the parent object's renderer
-            Renderer renderer = parentObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
-            if (renderer == null)
-            {
-                Debug.LogError("Renderer not found in the parent object.");
-                return;
-            }
-
-            Vector3 centerPosition = renderer.bounds.center;
+            // Find the gameObjects center
+            Vector3 centerPosition = FindGameObjectCenter(parentObject.FindObject(elementID + " Geometry"));
 
             // Define the vertical offset 
-            float verticalOffset = 0.13f;
-            Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+            Vector3 offsetPosition = OffsetPositionVectorByDistance(centerPosition, verticalOffset, "y");
 
             // Instantiate the image object at the offset position
-            GameObject circleImage = Instantiate(IdxImage, offsetPosition, Quaternion.identity, parentObject.transform);
-
-            //Set name and parent
-            circleImage.transform.SetParent(parentObject.transform);
-            circleImage.name = $"{parentObject.name}IdxImage";
+            GameObject imgObject = InstantiateObjectFromPrefabRefrence(ref inputImg, imgObjectName, offsetPosition, Quaternion.identity, parentObject);
 
             // Add billboard effect
-            GameObjectExtensions.Billboard billboard = circleImage.AddComponent<GameObjectExtensions.Billboard>();
-
-            //Set Initial Visivility to false
-            circleImage.SetActive(false);
-        }
-        public void ArrowInstantiator(GameObject parentObject, string itemKey, bool newUserArrow = false)
-        {            
-            if (SelectionArrow == null)
+            if (isBillboard)
             {
-                Debug.LogError("Could Not find SelectionArrow.");
+                HelpersExtensions.Billboard billboard = imgObject.AddComponent<HelpersExtensions.Billboard>();
+            }
+
+            //set visibility on instantiation
+            imgObject.SetActive(isVisible);
+        }
+        public void UserIndicatorInstantiator(ref GameObject UserIndicator, GameObject parentObject, string stepKey, string namingBase, string inGameText, float fontSize)
+        {            
+            if (UserIndicator == null)
+            {
+                Debug.LogError("Could Not find UserIndicator.");
                 return;
             }
 
             //Find the center of the Item key object
-            GameObject itemObject = Elements.FindObject(itemKey);
-            string elementID = databaseManager.BuildingPlanDataItem.steps[itemKey].data.element_ids[0];
-
-            Renderer renderer = itemObject.FindObject(elementID + " Geometry").GetComponentInChildren<Renderer>();
-            if (renderer == null)
+            Step step = databaseManager.BuildingPlanDataItem.steps[stepKey];
+            GameObject element = Elements.FindObject(stepKey);
+            GameObject geometryObject = element.FindObject(step.data.element_ids[0] + " Geometry");
+            if (geometryObject == null)
             {
-                Debug.LogError("Renderer not found in the parent object.");
+                Debug.LogError("Geometry Object not found.");
                 return;
             }
-
-            Vector3 centerPosition = renderer.bounds.center;
-
-            // Define the vertical offset 
-            float verticalOffset = 0.13f;
-            Vector3 offsetPosition = new Vector3(centerPosition.x, centerPosition.y + verticalOffset, centerPosition.z);
+            
+            Vector3 objectCenter = FindGameObjectCenter(geometryObject);
+            Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, 0.13f, "y");
 
             //Define rotation for the gameObject.
-            Rotation arrowRotation = getRotation(databaseManager.BuildingPlanDataItem.steps[itemKey].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[itemKey].data.location.yaxis); 
-            Rotation rotationlh = rhToLh(arrowRotation.x , arrowRotation.y);
-            Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
+            Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
 
             //Set new arrow item
             GameObject newArrow = null;
 
             // Instantiate arrow at the offset position
-            if (newUserArrow)
-            {
-                newArrow = Instantiate(NewUserArrow, offsetPosition, rotationQuaternion, parentObject.transform);
-            }
-            else
-            {
-                newArrow = Instantiate(SelectionArrow, offsetPosition, rotationQuaternion, parentObject.transform);
-            }
-            //Set name and parent
-            newArrow.transform.SetParent(parentObject.transform);
-            newArrow.name = $"{parentObject.name} Arrow";
+            newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, namingBase+" Arrow", arrowOffset, rotationQuaternion, parentObject);
+
+            //Create 3D Text
+            GameObject IndexTextContainer = Create3DTextAsGameObject(
+                inGameText, $"{namingBase} UserText", fontSize,
+                TextAlignmentOptions.Center, Color.white, newArrow.transform.position,
+                newArrow.transform.rotation, true, true, newArrow);
+
+            //Offset the position of the text based on the user indicator object
+            OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y");
 
             //Set Active
             newArrow.SetActive(true);
@@ -563,58 +583,261 @@ namespace Instantiate
             GameObject userObject = new GameObject(UserInfoname);
 
             //Set parent
-            userObject.transform.SetParent(UserObjects.transform);
+            userObject.transform.SetParent(ActiveUserObjects.transform);
 
             //Set position and rotation
             userObject.transform.position = Vector3.zero;
             userObject.transform.rotation = Quaternion.identity;
 
             //Instantiate Arrow
-            ArrowInstantiator(userObject, itemKey, true);
+            UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname, UserInfoname, 0.15f);
         }
-        public void CalculateandSetLengthPositions(string key)
+        public (Vector3, Vector3) FindP1orP2Positions(string key, bool isP2)
         {
             //Find Gameobject Associated with that step
             GameObject element = Elements.FindObject(key);
             Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
             //Find gameobject center
-            Vector3 center = element.FindObject(step.data.element_ids[0] + " Geometry").GetComponent<Renderer>().bounds.center;
+            Vector3 center = FindGameObjectCenter(element.FindObject(step.data.element_ids[0] + " Geometry"));
 
             //Find length from assembly dictionary
             float length = databaseManager.AssemblyDataDict[step.data.element_ids[0]].attributes.length;
 
-            //Calculate position of P1 and P2 
-            Vector3 P1Position = center + element.transform.right * (length / 2)* -1;
-            Vector3 P2Position = center + element.transform.right * (length / 2);
-
-            //Set Positions of P1 and P2
-            ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
-            ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
-
-            //Check if the component has a billboard component and if it doesn't add it.
-            if (ObjectLengthsTags.FindObject("P1Tag").GetComponent<GameObjectExtensions.Billboard>() == null)
-            {
-                ObjectLengthsTags.FindObject("P1Tag").AddComponent<GameObjectExtensions.Billboard>();
+            Vector3 ptPosition = new Vector3(0, 0, 0);
+            //Calculate position of P1 or P2 
+            if(!isP2)
+            {                
+                ptPosition = center + element.transform.right * (length / 2)* -1;
             }
-            if (ObjectLengthsTags.FindObject("P2Tag").GetComponent<GameObjectExtensions.Billboard>() == null)
+            else
             {
-                ObjectLengthsTags.FindObject("P2Tag").AddComponent<GameObjectExtensions.Billboard>();
+                ptPosition = center + element.transform.right * (length / 2);
             }
 
             //Adjust P1 and P2 to be the same xz position as the elements for distance calculation
             Vector3 ElementsPosition = Elements.transform.position;
-            Vector3 P1Adjusted = new Vector3(ElementsPosition.x, P1Position.y, ElementsPosition.z);
-            Vector3 P2Adjusted = new Vector3(ElementsPosition.x, P2Position.y, ElementsPosition.z);
+            Vector3 ptPositionAdjusted = new Vector3(0,0,0);
+            if (ptPosition != Vector3.zero)
+            {
+                ptPositionAdjusted = new Vector3(ptPosition.x, ElementsPosition.y, ptPosition.z); //TODO: IT MIGHT MAKE MORE SENSE TO FLIP THIS THE OTHER WAY FOR DISTANCE CALCULATION ex. (ElementsPosition.x, P2Position.y, ElementsPosition.z)
+            }
+            else
+            {
+                Debug.LogError("P1 or P2 Position is null.");
+            }
+
+            return (ptPosition, ptPositionAdjusted);
+        }
+        public void CalculateandSetLengthPositions(string key)
+        {
+            //Find P1 and P2 Positions
+            (Vector3 P1Position, Vector3 P1Adjusted) = FindP1orP2Positions(key, false);
+            (Vector3 P2Position, Vector3 P2Adjusted) = FindP1orP2Positions(key, true);
+
+            //Set Positions of P1 and P2
+            ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
+            ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
+            
+            //Check if the component has a billboard component and if it doesn't add it.
+            if (ObjectLengthsTags.FindObject("P1Tag").GetComponent<HelpersExtensions.Billboard>() == null)
+            {
+                ObjectLengthsTags.FindObject("P1Tag").AddComponent<HelpersExtensions.Billboard>();
+            }
+            if (ObjectLengthsTags.FindObject("P2Tag").GetComponent<HelpersExtensions.Billboard>() == null)
+            {
+                ObjectLengthsTags.FindObject("P2Tag").AddComponent<HelpersExtensions.Billboard>();
+            }
 
             //Get distance between position of P1, P2 and position of elements
-            float P1distance = Vector3.Distance(P1Adjusted, ElementsPosition);
-            float P2distance = Vector3.Distance(P2Adjusted, ElementsPosition);
+            float P1distance = Vector3.Distance(P1Position, P1Adjusted);
+            float P2distance = Vector3.Distance(P2Position, P2Adjusted);
+
+            //Draw lines between the two points for P1
+            LineRenderer P1Line = ObjectLengthsTags.FindObject("P1Tag").GetComponent<LineRenderer>();
+            P1Line.useWorldSpace = true;
+            P1Line.SetPosition(0, P1Position);
+            P1Line.SetPosition(1, P1Adjusted);
+
+            //Draw lines between the two points for P2
+            LineRenderer P2Line = ObjectLengthsTags.FindObject("P2Tag").GetComponent<LineRenderer>();
+            P2Line.useWorldSpace = true;
+            P2Line.SetPosition(0, P2Position);
+            P2Line.SetPosition(1, P2Adjusted);
 
             //Update Distance Text
             UIFunctionalities.SetObjectLengthsText(P1distance, P2distance);
         }
-    
+        public void UpdateObjectLengthsLines(string currentStep, GameObject p1LineObject, GameObject p2LineObject)
+        {
+            //Find P1 positions & update line
+            (Vector3 P1Position, Vector3 P1Adjusted) = FindP1orP2Positions(currentStep, false);
+            List<Vector3> P1Positions = new List<Vector3> { P1Position, P1Adjusted };
+            UpdateLinePositionsByVectorList(P1Positions, p1LineObject);
+
+            //FindPostions of P2 & Update line
+            (Vector3 P2Position, Vector3 P2Adjusted) = FindP1orP2Positions(currentStep, true);
+            List<Vector3> P2Positions = new List<Vector3> { P2Position, P2Adjusted };
+            UpdateLinePositionsByVectorList(P2Positions, p2LineObject);
+
+        }
+        public void CreatePriorityViewerItems(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth, float ptRadius, Color ptColor, GameObject ptsParentObject)
+        {
+            //Fetch priority item from PriorityTreeDIct
+            List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriority];
+
+            //draw a line between points
+            DrawLinefromKeyswithGameObjectReference(priorityList, ref lineObject, lineColor, lineWidth, true, ptRadius, ptColor, ptsParentObject);
+        }
+        public void DrawLinefromKeyswithGameObjectReference(List<string> keyslist, ref GameObject lineObject, Color lineColor, float lineWidth, bool createPoints=true, float? ptRadius=null, Color? ptColor=null, GameObject ptsParentObject=null)
+        {
+            //Create a new line object
+            LineRenderer lineRenderer = lineObject.GetComponent<LineRenderer>();
+
+            //Add a line renderer component to the line object if it is null
+            if (lineRenderer == null)
+            {
+                Debug.Log("LineRenderer is null. for object: " + lineObject.name);
+                lineRenderer = lineObject.AddComponent<LineRenderer>();
+            }
+
+            //If the gameobject reference contains children
+            if (ptsParentObject && ptsParentObject.transform.childCount > 0)
+            {
+                //Destroy all children
+                foreach (Transform child in ptsParentObject.transform)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+
+            //Set the line color and width
+            lineRenderer.startColor = lineColor;
+            lineRenderer.endColor = lineColor;
+            lineRenderer.startWidth = lineWidth;
+            lineRenderer.endWidth = lineWidth;
+
+            //Check list length
+            int listLength = keyslist.Count;
+
+            //Only draw the line if the list length is greater then 1
+            if (listLength > 1)
+            {
+                //Set the line positions & point positions
+                lineRenderer.positionCount = keyslist.Count;
+
+                for (int i = 0; i < keyslist.Count; i++)
+                {
+                    Debug.Log("KeysList: " + keyslist[i]);
+
+                    GameObject element = Elements.FindObject(keyslist[i]);
+                    Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[i]].data.element_ids[0] + " Geometry"));
+                    lineRenderer.SetPosition(i, center);
+
+                    //Create points if the bool is true
+                    if (createPoints)
+                    {
+                        if(ptRadius != null && ptColor != null)
+                        {
+                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[i] + "Point", ptsParentObject);
+                        }
+                        else
+                        {
+                            Debug.Log("DrawLineFromKeys: Point Radius and Color not provided.");
+                        }
+                    }
+                }
+
+                //Set the line object to visible incase it is on an automatic update when it is not visible.
+                lineObject.SetActive(true);
+            }
+            else
+            {
+                //If create points set reference line to not visible, but create the sphere for the object
+                if(listLength != 0)
+                {                        
+                    if(createPoints)
+                    {
+                        if(ptRadius != null && ptColor != null)
+                        {
+                            //Set the line object to not visible because there is just 1 point and cannot create a line.
+                            lineObject.SetActive(false);
+
+                            //Get the center of the only object in the list
+                            GameObject element = Elements.FindObject(keyslist[0]);
+                            Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[keyslist[0]].data.element_ids[0] + " Geometry"));
+
+                            //Create singular point if it is only 1.
+                            CreateSphereAtPosition(center, ptRadius.Value, ptColor.Value, keyslist[0] + "Point", ptsParentObject);
+                        }
+                        else
+                        {
+                            Debug.Log("DrawLineFromKeys: Point Radius and Color not provided.");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("DrawLineFromKeys: List length is 0.");
+                }
+            }
+
+        }
+        public void UpdatePriorityLine(string selectedPriority, GameObject lineObject)
+        {
+            Debug.Log($"UpdatingPriorityLine: priority {selectedPriority}");
+            
+            //Fetch priority item from PriorityTreeDIct
+            List<Vector3> priorityObjectPositions = GetPositionsFromPriorityGroup(selectedPriority);
+
+            //Update the line positions
+            UpdateLinePositionsByVectorList(priorityObjectPositions, lineObject);
+        }
+        public void UpdateLinePositionsByVectorList(List<Vector3> posVectorList, GameObject lineObject)
+        {
+            //Create a new line object
+            LineRenderer lineRenderer = lineObject.GetComponent<LineRenderer>();
+
+            //Check list length
+            int listLength = posVectorList.Count;
+
+            //Only draw the line if the list length is greater then 1
+            if (listLength > 1)
+            {
+
+                for (int i = 0; i < posVectorList.Count; i++)
+                {
+                    lineRenderer.SetPosition(i, posVectorList[i]);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("UpdateLinePositionsByVectorList: List length is 0.");
+            }
+        }
+        public GameObject CreateSphereAtPosition(Vector3 position, float radius, Color color, string name=null, GameObject parentObject=null)
+        {
+            //Create a new sphere
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.position = position;
+            sphere.transform.localScale = new Vector3(radius, radius, radius);
+            sphere.GetComponent<Renderer>().material.color = color;
+
+            //Set the name of the sphere
+            if (name != null)
+            {
+                sphere.name = name;
+            }
+
+            //Set the parent of the sphere
+            if (parentObject != null)
+            {
+                sphere.transform.SetParent(parentObject.transform);
+            }
+
+            return sphere;
+        }
+
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
         {   
@@ -732,8 +955,102 @@ namespace Instantiate
             return ZXrotation;
         }
 
+        //Methods for position and rotation of unity game objects
+        public Vector3 FindGameObjectCenter(GameObject gameObject)
+        {
+            Renderer renderer = gameObject.GetComponentInChildren<Renderer>();
+            if (renderer == null)
+            {
+                Debug.LogError("Renderer not found in the parent object.");
+                return Vector3.zero;
+            }
+            Vector3 center = renderer.bounds.center;
+            return center;
+        }
+        public Vector3 OffsetPositionVectorByDistance(Vector3 position, float offsetDistance, string axis)
+        {
+            // Offset the position based on input values.
+            switch (axis)
+            {
+                case "x":
+                {
+                    Vector3 offsetPosition = new Vector3(position.x + offsetDistance, position.y, position.z);
+                    return offsetPosition;
+                }
+                case "y":
+                {
+                    Vector3 offsetPosition = new Vector3(position.x, position.y + offsetDistance, position.z);
+                    return offsetPosition;
+                }
+                case "z":
+                {
+                    Vector3 offsetPosition = new Vector3(position.x, position.y, position.z + offsetDistance);
+                    return offsetPosition;
+                }
+            }
+            return Vector3.zero;
+        }
+        public void OffsetGameObjectPositionByExistingObjectPosition(GameObject gameObject, GameObject existingObject, float offsetDistance, string axis)
+        {
+            // Calculate the center of the existing GameObject
+            Vector3 center = FindGameObjectCenter(existingObject);
+
+            // Offset the position based on input values.
+            switch (axis)
+            {
+                case "x":
+                {
+                    Vector3 offsetPosition = new Vector3(center.x + offsetDistance, center.y, center.z);
+                    gameObject.transform.position = offsetPosition;
+                    break;
+                }
+                case "y":
+                {
+                    Vector3 offsetPosition = new Vector3(center.x, center.y + offsetDistance, center.z);
+                    gameObject.transform.position = offsetPosition;
+                    break;
+                }
+                case "z":
+                {
+                    Vector3 offsetPosition = new Vector3(center.x, center.y, center.z + offsetDistance);
+                    gameObject.transform.position = offsetPosition;
+                    break;
+                }
+            }
+        }
+        public Quaternion GetQuaternionFromStepKey(string key)
+        {
+            //Calculate Right Hand Rotation
+            Rotation rotationrh = getRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
+            
+            //Convert to Left Hand Rotation
+            Rotation rotationlh = rhToLh(rotationrh.x , rotationrh.y);
+            
+            //GetQuaterion from Left Hand Rotation
+            Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
+
+            return rotationQuaternion;
+        }
+        public List<Vector3> GetPositionsFromPriorityGroup(string priorityGroup)
+        {
+            List<Vector3> positions = new List<Vector3>();
+
+            //Get the list of keys from the priority group
+            List<string> keys = databaseManager.PriorityTreeDict[priorityGroup];
+
+            //Get the positions of the keys
+            foreach (string key in keys)
+            {
+                GameObject element = Elements.FindObject(key);
+                Vector3 center = FindGameObjectCenter(element.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0] + " Geometry"));
+                positions.Add(center);
+            }
+
+            return positions;
+        }
+
     /////////////////////////////// Material and colors ////////////////////////////////////////
-        public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, GameObject geometryObject)
+        public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
             switch (visulizationController.VisulizationMode)
@@ -753,11 +1070,10 @@ namespace Instantiate
                     //Do nothing
                     break;
                 case TouchMode.ElementEditSelection:
-                    //Disable collider if the element edit selection is on and the element priority is not the same as my current element.
-                    if (step.data.priority != databaseManager.BuildingPlanDataItem.steps[UIFunctionalities.CurrentStep].data.priority)
+                    //Color the object if it is a lower priority then the current one.
+                    if (step.data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
                     {    
-                        geometryObject.GetComponent<Collider>().enabled = false;
-                        geometryObject.GetComponent<Renderer>().material = LockedObjectMaterial;
+                        ColorObjectByLowerPriority(key, databaseManager.CurrentPriority, geometryObject);
                     }
                     break;
             }
@@ -820,8 +1136,6 @@ namespace Instantiate
             //If the steps priority is not the same as the selected priority then color it grey
             if (StepPriority != SelectedPriority)
             {
-                Debug.Log($"Coloring object {gamobj.name} grey");
-
                 //Create a new color for the object based on its current color, and add a greyscale blend factor
                 Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
 
@@ -835,7 +1149,39 @@ namespace Instantiate
                 string elementID = step.data.element_ids[0];
 
                 //Color based on visulization mode
-                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, gamobj.FindObject(elementID + " Geometry"));
+                ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, gamobj.FindObject(elementID + " Geometry"));
+            }
+        }
+        public void ColorObjectByLowerPriority(string key, string currentPriority, GameObject gameObject)
+        {
+            //Get Object Renderer
+            Renderer m_renderer= gameObject.GetComponentInChildren<Renderer>();
+
+            //Step for the for key
+            Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
+            if(currentPriority != null)
+            {
+                //Color based if it is lower then current priority
+                if (step.data.priority > Convert.ToInt16(currentPriority))
+                {
+                    //If the steps priority is not the same as the selected priority then color it grey
+                    Debug.Log($"ColorObjectByLowerPriority: Coloring object {gameObject.name} grey");
+
+                    //Create a new color for the object based on its current color, and add a greyscale blend factor
+                    Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
+
+                    //Set the object to the new color
+                    m_renderer.material.color = objectAdjustedColor;
+                }
+                else
+                {
+                    Debug.Log($"ColorObjectByLowerPriority: Gameobject {key} is of a lower priority then current step.");
+                }
+            }
+            else
+            {
+                Debug.Log("ColorObjectByLowerPriority: Current Priority is null.");
             }
         }
         public void ApplyColorBasedOnBuildState()
@@ -854,7 +1200,7 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on Priority
-                            ColorObjectByPriority(databaseManager.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -876,7 +1222,7 @@ namespace Instantiate
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on priority
-                            ColorObjectByPriority(databaseManager.CurrentPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
                         }
                     }
                 }
@@ -895,7 +1241,62 @@ namespace Instantiate
                     if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
                     {
                         //Color based on priority
-                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Could not find object with key: {entry.Key}");
+                    }
+                }
+            }
+        }
+        public void ApplyColortoPriorityGroup(string selectedPriorityGroup, string newPriorityGroup, bool newPriority=false)
+        {
+            //Get the list of keys from the priority group
+            List<string> priorityList = databaseManager.PriorityTreeDict[selectedPriorityGroup];
+
+            //Loop through keys in the priority list to color
+            foreach (string key in priorityList)
+            {
+                GameObject gameObject = GameObject.Find(key);
+
+                if (gameObject != null)
+                {
+                    if (key != UIFunctionalities.CurrentStep)
+                    {
+                        if (newPriority)
+                        {
+                            //Color the object based on current app settings
+                            ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[key], key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+                        }
+                        else
+                        {
+                            //Color the object based on the priority group
+                            Debug.Log("SetPriority" + selectedPriorityGroup + "Priority of selected item: " + databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString() + " Key: " + key + " GameObject: " + gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]) + " PriorityGroup: ");
+                            ColorObjectByPriority(newPriorityGroup, databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString(), key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Could not find object with key: {key}");
+                }
+            }
+        }
+        public void ApplyColorForHigherPriority(string CurrentPriority)
+        {
+            Debug.Log($"Applying color for touch : {CurrentPriority}.");
+            if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
+                {
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    
+                    //If the objects are not null color by priority function.
+                    if (gameObject != null)
+                    {
+                        //Color object if it is of a higher priority then the current priority
+                        ColorObjectByLowerPriority(entry.Key, CurrentPriority, gameObject);
                     }
                     else
                     {
@@ -976,7 +1377,8 @@ namespace Instantiate
                     RemoveObjects(eventArgs.Key + " Arrow");
 
                     //Instantiate new Arrow
-                    ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
+                    // ArrowInstantiator(GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, true);
+                    UserIndicatorInstantiator(ref OtherUserIndacator, GameObject.Find(eventArgs.Key), eventArgs.UserInfo.currentStep, eventArgs.Key, eventArgs.Key, 0.15f);
                 }
                 else
                 {

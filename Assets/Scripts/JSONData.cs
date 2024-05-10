@@ -1,8 +1,4 @@
-    // Create a class structure that matches the JSON data
-// using System;
-// using System.Collections;
 using System.Collections.Generic;
-// using UnityEngine;
 
 namespace JSON
 {   
@@ -46,7 +42,7 @@ namespace JSON
         public float[] yaxis { get; set; }
     }
 
-    /////////////// Classes For Step Desearialization///////////////////
+    /////////////// Classes For Building Plan Desearialization///////////////////
     
     [System.Serializable]
     public class BuildingPlanData

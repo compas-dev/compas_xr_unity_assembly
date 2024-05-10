@@ -199,6 +199,13 @@ namespace uPLibrary.Networking.M2Mqtt
         /// </summary>
         public bool IsConnected { get; private set; }
 
+        // /// <summary>
+        // /// TODO: I ADDED THIS
+        // /// EVENT TO TRIGGER WHEN MQTT CLIENT IS CONNECTED (ADDED BY JOE)
+        // /// </summary>
+        // public delegate void MqttClientIsConnedtedEventHandler(object sender, EventArgs e);
+        // public event MqttClientIsConnedtedEventHandler MqttClientIsConnected;
+
         /// <summary>
         /// Client identifier
         /// </summary>
@@ -603,6 +610,9 @@ namespace uPLibrary.Networking.M2Mqtt
                 Fx.StartThread(this.ProcessInflightThread);
 
                 this.IsConnected = true;
+
+                // //TODO: I ADDED THIS
+                // MqttClientIsConnected?.Invoke(this, EventArgs.Empty);
             }
             return connack.ReturnCode;
         }
@@ -746,6 +756,9 @@ namespace uPLibrary.Networking.M2Mqtt
 
                 this.isConnectionClosing = false;
                 this.IsConnected = true;
+
+                // //TODO: I ADDED THIS
+                // MqttClientIsConnected?.Invoke(this, EventArgs.Empty);
             }
             // connection refused, close TCP/IP channel
             else

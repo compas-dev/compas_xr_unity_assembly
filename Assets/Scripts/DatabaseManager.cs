@@ -20,7 +20,7 @@ using System.Linq.Expressions;
 using Unity.VisualScripting;
 using Instantiate;
 using Google.MiniJSON;
-using Extentions;
+using Helpers;
 using UnityEngine.InputSystem;
 
 
@@ -50,11 +50,6 @@ public class ApplicationSettingsEventArgs : EventArgs
     public ApplicationSettings Settings { get; set; }
 }
 
-public class UpdateDatabaseReferenceEventArgs: EventArgs
-{
-    public DatabaseReference Reference { get; set; }
-}
-    
 public class DatabaseManager : MonoBehaviour
 {
     // Firebase database references
@@ -105,10 +100,11 @@ public class DatabaseManager : MonoBehaviour
         public List<FileMetadata> items { get; set; }
     }
 
-    class FileMetadata
+    public class FileMetadata
     {
         public string name { get; set; }
         public string bucket { get; set; }
+        public string uri { get; set; }
     }
 
     //Other Scripts
@@ -163,7 +159,7 @@ public class DatabaseManager : MonoBehaviour
         dbreference_steps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("steps");
         dbreference_LastBuiltIndex = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("building_plan").Child("data").Child("LastBuiltIndex");
         dbreference_qrcodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("QRFrames").Child("graph").Child("node");
-        dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrenStep");
+        dbrefernece_usersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.parentname).Child("UsersCurrentStep");
 
         //If there is nothing to download Storage=="None" then trigger Objects Secured event
         if (e.Settings.storagename == "None")
@@ -191,25 +187,26 @@ public class DatabaseManager : MonoBehaviour
             string path = basepath.Substring(1);
             Debug.Log($"Path for download on FB Storage: {path}");
 
-            //Get a list of files from the storage location
+            //Get a list of files from the storage location and then get individual download URIs for each file.
             List<FileMetadata> files = await GetFilesInFolder(path);
+            List<FileMetadata> filesWithUri = await GetDownloadUriFromFilesMedata(files);
 
             //Fetch Data from both storage and Realtime Database.
-            FetchAllData(files);
+            FetchAllData(filesWithUri);
         }
     }
     private async void FetchAllData(List<FileMetadata> files)
     {
         //Fetch Storage Data
-        await FetchStorageData(files);
+        await FetchAndDownloadFilesFromStorage(files);
 
-        //Fetch QR Data no event trigger
+        //Fetch QR Data with "TrackingDict" event trigger
         FetchRTDData(dbreference_qrcodes, snapshot => DeserializeDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
         
         //Fetch Assembly Data no event trigger
         FetchRTDData(dbreference_assembly, snapshot => DeserializeDataSnapshot(snapshot, AssemblyDataDict));
         
-        //Fetch Building plan data with event trigger
+        //Fetch Building plan data with "BuildingPlandataDict" event trigger
         FetchRTDData(dbreference_buildingplan, snapshot => DesearializeBuildingPlan(snapshot), "BuildingPlanDataDict");
     }
     async Task<List<FileMetadata>> GetFilesInFolder(string path)
@@ -217,10 +214,7 @@ public class DatabaseManager : MonoBehaviour
         //Building the storage url dynamically
         string storageBucket = FirebaseManager.Instance.storageBucket;
         string baseUrl = $"https://firebasestorage.googleapis.com/v0/b/{storageBucket}/o?prefix={path}/&delimiter=/";
-
-        // const string baseUrl = "https://firebasestorage.googleapis.com/v0/b/test-project-94f41.appspot.com/o?prefix=obj_storage/buildingplan_test/&delimiter=/"; //Hardcoded value for example
- 
-        Debug.Log($"BaseUrl: {baseUrl}");
+        Debug.Log($"GetFilesInFolder: BaseUrl: {baseUrl}");
 
         // Send a GET request to the URL
         using (HttpClient client = new HttpClient())
@@ -239,47 +233,90 @@ public class DatabaseManager : MonoBehaviour
             return responseData.items;
         }
     }
-    async Task FetchStorageData(List<FileMetadata> files) 
+    private async Task<List<FileMetadata>> GetDownloadUriFromFilesMedata(List<FileMetadata> filesMetadata)
     {
-        List<Task> downloadTasks = new List<Task>();
+        List<Task> fetchUriTasks = new List<Task>();
         
-        foreach (FileMetadata file in files)
-        {    
-            string baseurl = file.name;
+        foreach (var fileMetadata in filesMetadata)
+        {
+            // Set the reference to the file in Firebase Storage
+            var fileRef = FirebaseStorage.DefaultInstance.GetReference(fileMetadata.name);
 
-            //Construct FirebaseStorage Reference from 
-            StorageReference FileReference = FirebaseStorage.DefaultInstance.GetReference(baseurl);
-            string basepath = Application.persistentDataPath;
-            string filename = Path.GetFileName(baseurl);
-            string folderpath = Path.Combine(basepath, "Object_Storage");
-            string savefilepath = Path.Combine(folderpath, filename);
-                                
-            // Replace backslashes with forward slashes
-            savefilepath = savefilepath.Replace('\\', '/');
-
-            //Run all async tasks and add them to a task list we can wait for all of them to complete.            
-            downloadTasks.Add(FileReference.GetFileAsync(savefilepath).ContinueWithOnMainThread(task =>
+            //Add Fetch Uri Task to the list
+            fetchUriTasks.Add(fileRef.GetDownloadUrlAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
                 {
-                    foreach (var exception in task.Exception.InnerExceptions)
+                    //If there is an error when fetching an object signal and on screen message.
+                    if(!UIFunctionalities.ErrorFetchingDownloadUriMessageObject.activeSelf)
                     {
-                        Debug.LogError("Error fetching data from Firebase: " + exception.Message);
+                        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorFetchingDownloadUriMessageObject);
                     }
+                    Debug.LogError("Error fetching download URL from Firebase Storage");
                     return;
                 }
-
                 if (task.IsCompleted)
                 {
-                    Debug.Log($"Downloaded file to path '{savefilepath}'");
-                    CheckPathExistance(savefilepath);
+                    Uri downloadUrlUri = task.Result;
+
+                    //Convert URI to string and Add the download URL to the file metadata
+                    string downloadUrl = downloadUrlUri.ToString();
+                    fileMetadata.uri = downloadUrl;
                 }
             }));
         }
+        //Await all download tasks are done before refreshing.
+        await Task.WhenAll(fetchUriTasks);
+
+        return filesMetadata;
+    }
+    public async Task FetchAndDownloadFilesFromStorage(List<FileMetadata> filesMetadata)
+    {
+        List<Task> downloadTasks = new List<Task>();
         
+        foreach (var fileMetadata in filesMetadata)
+        {
+            // Retrieve the download URL from the files metadata information
+            string downloadUrl = fileMetadata.uri;
+
+            // Construct the local file path
+            string localFilePath = System.IO.Path.Combine(Application.persistentDataPath, "Object_Storage", System.IO.Path.GetFileName(fileMetadata.name));
+            
+            // Ensure the directory exists
+            string directoryPath = System.IO.Path.GetDirectoryName(localFilePath);
+            if (!System.IO.Directory.Exists(directoryPath))
+            {
+                System.IO.Directory.CreateDirectory(directoryPath);
+            }
+
+            //Add the Download task to the tasklist
+            downloadTasks.Add(DownloadFile(downloadUrl, localFilePath));
+        }
         //Await all download tasks are done before refreshing.
         await Task.WhenAll(downloadTasks);
-    }        
+    }
+    private async Task DownloadFile(string downloadUrl, string filePath)
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(downloadUrl))
+        {
+            webRequest.downloadHandler = new DownloadHandlerFile(filePath);
+            await webRequest.SendWebRequest();
+
+            if (webRequest.result != UnityWebRequest.Result.Success)
+            {
+                //If there is an error when downloading an object signal and on screen message.
+                if(!UIFunctionalities.ErrorDownloadingObjectMessageObject.activeSelf)
+                {
+                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorDownloadingObjectMessageObject);
+                }
+                Debug.LogError("File download error: " + webRequest.error);
+            }
+            else
+            {
+                Debug.Log("File successfully downloaded and saved to " + filePath);
+            }
+        }
+    }
     public async Task FetchRTDData(DatabaseReference dbreference, Action<DataSnapshot> customAction, string eventname = null)
     {
         await dbreference.GetValueAsync().ContinueWithOnMainThread(task =>
@@ -384,19 +421,19 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("Number of nodes stored as a dictionary = " + dataDict.Count);
 
     }
-    private void DesearializeLastBuiltIndex(DataSnapshot snapshot)
+    private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
     {  
         string jsondatastring = snapshot.GetRawJsonValue();
-        Debug.Log("Last Bulit Index Data:" + jsondatastring);
+        Debug.Log("String Item Data:" + jsondatastring);
         
         if (!string.IsNullOrEmpty(jsondatastring))
         {
-            TempDatabaseLastBuiltStep = JsonConvert.DeserializeObject<string>(jsondatastring);
+            tempStringStorage = JsonConvert.DeserializeObject<string>(jsondatastring);
         }
         else
         {
-            Debug.LogWarning("Last Built Index Did not produce a value");
-            TempDatabaseLastBuiltStep = null;
+            Debug.LogWarning("String Item Did not produce a value");
+            tempStringStorage = null;
         }
     }
     private void DesearializeBuildingPlan(DataSnapshot snapshot)
@@ -466,9 +503,9 @@ public class DatabaseManager : MonoBehaviour
             {
                 // Check if the required properties are present or have valid values
                 if (node.attributes != null &&
-                    node.attributes.length != null &&
-                    node.attributes.width != null &&
-                    node.attributes.height != null)
+                    node.attributes?.length != null &&
+                    node.attributes?.width != null &&
+                    node.attributes?.height != null)
                 {
                     // Set default values for properties that may be null
                     return true;
@@ -869,8 +906,6 @@ public class DatabaseManager : MonoBehaviour
     }
     private void PartDesctiptionSelector(Node node, Dictionary<string, object> jsonDataDict)
     {
-        Debug.Log("Assembly is constructed of Parts");
-
         //Access nested Part information.
         Dictionary<string, object> attributesDict = jsonDataDict["attributes"] as Dictionary<string, object>;
         Dictionary<string, object> nameDict = attributesDict["name"] as Dictionary<string, object>;
@@ -1282,7 +1317,7 @@ public class DatabaseManager : MonoBehaviour
         //Set Temp Current Element to null so that everytime an event is triggered it becomes null again and doesnt keep old data.
         TempDatabaseLastBuiltStep = null;
         
-        await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeLastBuiltIndex(snapshot));
+        await FetchRTDData(dbreference_LastBuiltIndex, snapshot => DesearializeStringItem(snapshot, ref TempDatabaseLastBuiltStep));
     
         if (TempDatabaseLastBuiltStep != null)
         {
@@ -1501,7 +1536,7 @@ public class DatabaseManager : MonoBehaviour
             {
                 Debug.Log("Project Changed: BuildingPlan and should be handled by other listners");
             }
-            else if(key == "UserCurrentStep")
+            else if(key == "UsersCurrentStep")
             {
                 Debug.Log("Project Changed: User Current Step Changed this should be handled by other listners");
             }

@@ -5,11 +5,10 @@ using Firebase.Database;
 using Firebase.Extensions;
 using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
-using Extentions; // Added namespace for scene management
+using Helpers; // Added namespace for scene management
 
 public class UserManager : MonoBehaviour
 {
-
     private string userID;
     private DatabaseReference dbReference_root;
     public TMPro.TMP_InputField Username;
