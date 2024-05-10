@@ -63468,7 +63468,6 @@ MonoBehaviour:
   IsBuiltPanelObjects: {fileID: 0}
   IsBuiltButtonObject: {fileID: 0}
   IsbuiltButtonImage: {fileID: 0}
-  IsbuiltPriorityLockedImage: {fileID: 0}
   MessagesParent: {fileID: 0}
   OnScreenErrorMessagePrefab: {fileID: 0}
   OnScreenInfoMessagePrefab: {fileID: 0}
