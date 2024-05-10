@@ -28,6 +28,7 @@ namespace CompasXR.Core.Data
                 List<System.Double> doubleList = data as List<System.Double>;
                 return doubleList.Select(Convert.ToSingle).ToArray();
             }
+
             else if (data is System.Single[])
             {
                 return new float[] { (float)data };
@@ -53,9 +54,8 @@ namespace CompasXR.Core.Data
                 return null;
             }
         }
-    } 
-    
-
+    }
+  
    /////////////Classes for Assembly Desearialization./////////////// 
     [System.Serializable]
     public class Node
@@ -99,6 +99,7 @@ namespace CompasXR.Core.Data
             //Create a new instance of the class
             Frame frame = new Frame();
 
+
             //Method for converting data values to fload arrays.
             float[] point = DataConverters.ConvertDatatoFloatArray(frameDataDict["point"]);
             float[] xaxis = DataConverters.ConvertDatatoFloatArray(frameDataDict["xaxis"]);
@@ -116,7 +117,6 @@ namespace CompasXR.Core.Data
                 frame.xaxis = xaxis;
                 frame.yaxis = yaxis;
             }
-
             return frame;
         }
 
