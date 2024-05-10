@@ -17,6 +17,7 @@ public class Eventmanager : MonoBehaviour
     public GameObject Checkfirebase;
     public GameObject QRLocalization;
     public GameObject MqttTrajectoryReceiver;
+    public GameObject TrajectoryVisulizer;
     public DatabaseReference settings_reference;
     DatabaseManager databaseManager;
 
@@ -37,7 +38,8 @@ public class Eventmanager : MonoBehaviour
         CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
         QRLocalization qrLocalization = QRLocalization.GetComponent<QRLocalization>();
         MqttTrajectoryManager mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryManager>();
-
+        TrajectoryVisulizer trajectoryVisulizer = TrajectoryVisulizer.GetComponent<TrajectoryVisulizer>();
+        
         //Initilize Connection to Firebase and Fetch Settings Data
         checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
 
@@ -68,5 +70,6 @@ public class Eventmanager : MonoBehaviour
         databaseManager.FetchSettingsData(settings_reference);
     }  
     
+    //TODO: ULTIMATE ERROR HANDELING... LISTEN TO LOGS AND WHEN ERROR OCURRS, DISPLAY ONSCREEN MESSAGE.
 }
 

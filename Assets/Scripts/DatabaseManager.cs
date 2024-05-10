@@ -1575,4 +1575,13 @@ public class DatabaseManager : MonoBehaviour
         ApplicationSettingUpdate(this, new ApplicationSettingsEventArgs(){Settings = settings});
     }
 
+    // Event Handeling to take care of App Clean up. When the GameObject is destroyed it cleans up everything.     
+    protected virtual void OnDestroy()
+    {
+        //Remove my name from the UserCurrentStep list
+        dbrefernece_usersCurrentSteps.Child(SystemInfo.deviceUniqueIdentifier).RemoveValueAsync();
+        
+        //Remove Listners
+        RemoveListners();
+    }
 }

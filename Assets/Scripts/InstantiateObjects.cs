@@ -41,6 +41,8 @@ namespace Instantiate
         public Material RobotUnbuiltMaterial;
         public Material LockedObjectMaterial;
         public Material SearchedObjectMaterial;
+        public Material ActiveRobotMaterial;
+        public Material InactiveRobotMaterial;
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -98,6 +100,8 @@ namespace Instantiate
             RobotUnbuiltMaterial = GameObject.Find("Materials").FindObject("RobotUnbuilt").GetComponentInChildren<Renderer>().material;
             LockedObjectMaterial = GameObject.Find("Materials").FindObject("LockedObjects").GetComponentInChildren<Renderer>().material;
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
+            ActiveRobotMaterial = GameObject.Find("Materials").FindObject("ActiveRobot").GetComponentInChildren<Renderer>().material;
+            InactiveRobotMaterial = GameObject.Find("Materials").FindObject("InactiveRobot").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");

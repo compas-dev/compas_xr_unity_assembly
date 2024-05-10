@@ -1,4 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
+using System;
+using UnityEngine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace JSON
 {   
@@ -24,7 +29,6 @@ namespace JSON
     [System.Serializable]
     public class Attributes
     {
-        // public string device_id { get; set; }
         public bool is_built { get; set;}
         public bool is_planned { get; set;}
         public string placed_by { get; set; }
@@ -40,6 +44,68 @@ namespace JSON
         public float[] point { get; set; }
         public float[] xaxis { get; set; }
         public float[] yaxis { get; set; }
+
+        // Method to parse an instance of the class from a json string
+        public static Frame Parse(Dictionary<string, object> frameDataDict)
+        {            
+            //Create a new instance of the class
+            Frame frame = new Frame();
+
+            if (frameDataDict["point"] is List<object> && frameDataDict["xaxis"] is List<object> && frameDataDict["yaxis"] is List<object>)
+            {
+                //Convert System.double items to float for use in instantiation
+                List<object> pointslist = frameDataDict["point"] as List<object>;
+                List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
+                List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+
+                if (pointslist != null && xaxislist != null && yaxislist != null)
+                {
+                    frame.point = pointslist.Select(Convert.ToSingle).ToArray();
+                    frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
+                    frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+                }
+                else
+                {
+                    Debug.LogError("One of the Frame lists is null");
+                }
+            }
+            else if(frameDataDict["point"] is float[] && frameDataDict["xaxis"] is float[] && frameDataDict["yaxis"] is float[]) //TODO: convert to static method for converting any type of anything to float lists.
+            {
+                frame.point = (float[])frameDataDict["point"];
+                frame.xaxis = (float[])frameDataDict["xaxis"];
+                frame.yaxis = (float[])frameDataDict["yaxis"];
+            }
+            else if(frameDataDict["point"] is JArray && frameDataDict["xaxis"] is JArray && frameDataDict["yaxis"] is JArray)
+            {
+                JArray pointsArray = frameDataDict["point"] as JArray;
+                JArray xaxisArray = frameDataDict["xaxis"] as JArray;
+                JArray yaxisArray = frameDataDict["yaxis"] as JArray;
+
+                // Convert JArrays to arrays of floats
+                float[] points = pointsArray.Select(token => (float)token).ToArray();
+                float[] xaxis = xaxisArray.Select(token => (float)token).ToArray();
+                float[] yaxis = yaxisArray.Select(token => (float)token).ToArray();
+
+                frame.point = points;
+                frame.xaxis = xaxis;
+                frame.yaxis = yaxis;
+            }
+            else
+            {
+                Debug.LogError("FrameParse: Frame Data is not a List, Array, or JArray.");
+            }
+            return frame;
+        }
+
+        public Dictionary<string, object> GetData()
+        {
+            return new Dictionary<string, object>
+            {
+                { "point", point },
+                { "xaxis", xaxis },
+                { "yaxis", yaxis }
+            };
+        }
     }
 
     /////////////// Classes For Building Plan Desearialization///////////////////

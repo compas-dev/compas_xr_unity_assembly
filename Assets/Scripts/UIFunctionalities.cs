@@ -28,6 +28,7 @@ public class UIFunctionalities : MonoBehaviour
     public InstantiateObjects instantiateObjects;
     public Eventmanager eventManager;
     public MqttTrajectoryManager mqttTrajectoryManager;
+    public TrajectoryVisulizer trajectoryVisulizer;
     
     //Primary UI Objects
     private GameObject VisibilityMenuObject;
@@ -59,6 +60,13 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject TrajectoryReviewRequestMessageObject;
     public GameObject TrajectoryApprovalTimedOutMessageObject;
     public GameObject SearchItemNotFoundWarningMessageObject;
+    public GameObject ActiveRobotIsNullWarningMessageObject;
+    public GameObject TransactionLockActiveWarningMessageObject;
+    public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
+    public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
+    public GameObject TrajectoryResponseIncorrectWarningMessageObject;
+    public GameObject ConfigDoesNotMatchURDFStructureWarningMessageObject;
+    public GameObject TrajectoryNullWarningMessageObject;
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
@@ -80,9 +88,18 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject MenuBackground;
     private GameObject ReloadButtonObject;
     private GameObject InfoToggleObject;
+    private GameObject LoadFromROSToggleObject;
     private GameObject InfoPanelObject;
     public GameObject CommunicationToggleObject;
+    private GameObject OcclusionToggleObject;
     private GameObject CommunicationPanelObject;
+    private GameObject LoadURDFFromROSPannelObject;
+
+    //Load URDF from ROS Objects
+    private TMP_InputField LoadURDFRosHostInputField;
+    private TMP_InputField LoadURDFRosPortInputField;
+    public GameObject LoadURDFRosConnectButtonObject;
+    public GameObject URDFReadButtonObject;
 
     //Editor Toggle Objects
     private GameObject EditorBackground;
@@ -107,6 +124,10 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject TrajectoryReviewSliderObject;
     public Slider TrajectoryReviewSlider;
     public GameObject ExecuteTrajectoryButtonObject;
+    public GameObject RobotSelectionControlObjects;
+    public GameObject RobotSelectionDropdownObject;
+    public TMP_Dropdown RobotSelectionDropdown;
+    public GameObject SetActiveRobotToggleObject;
 
     //Object Colors
     private Color Yellow = new Color(1.0f, 1.0f, 0.0f, 1.0f);
@@ -119,11 +140,13 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject QRMarkers;
     public GameObject UserObjects;
 
-    //AR Camera and Touch GameObjects
+    //AR Camera and Touch GameObjects & Occlusion Objects
     public Camera arCamera;
     private GameObject activeGameObject;
     private GameObject temporaryObject; 
     private ARRaycastManager rayManager;
+    public OperatingSystem currentOperatingSystem;
+    private AROcclusionManager occlusionManager;
 
     //On Screen Text
     public GameObject CurrentStepTextObject;
@@ -159,6 +182,7 @@ public class UIFunctionalities : MonoBehaviour
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
         mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
+        trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -171,6 +195,12 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find the Raycast manager in the script in order to use it to acquire data
         rayManager = FindObjectOfType<ARRaycastManager>();
+
+        //Find and set current operating system
+        currentOperatingSystem = OperatingSystemManager.GetCurrentOS();
+
+        //Set occlusion manager based on the current operating system.
+        SetOcclusionFromOS(ref occlusionManager, currentOperatingSystem);
 
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
@@ -236,7 +266,14 @@ public class UIFunctionalities : MonoBehaviour
         ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
         TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
         TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
-
+        ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
+        TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockActiveWarningMessage");
+        ActiveRobotCouldNotBeFoundWarningMessage = MessagesParent.FindObject("ActiveRobotCouldNotBeFoundWarningMessage");
+        ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
+        TrajectoryResponseIncorrectWarningMessageObject = MessagesParent.FindObject("TrajectoryResponseIncorrectWarningMessage");
+        ConfigDoesNotMatchURDFStructureWarningMessageObject = MessagesParent.FindObject("ConfigDoesNotMatchURDFStructureWarningMessage");
+        TrajectoryNullWarningMessageObject = MessagesParent.FindObject("TrajectoryNullWarningMessage");
+        
         /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
 
         //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
@@ -265,6 +302,9 @@ public class UIFunctionalities : MonoBehaviour
         /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
         
         //Find Info Toggle, and Add Listener for OnValueChanged method
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref LoadFromROSToggleObject, "LoadURDFFromROSButton", ToggleLoadFromROS);
+
+        //Find Info Toggle, and Add Listener for OnValueChanged method
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref InfoToggleObject, "Info_Button", ToggleInfo);
 
         //Find Object, Button, and Add Listener for OnClick method
@@ -282,9 +322,23 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(EditorToggleObject, ref BuildStatusButtonObject, "Build_Status_Editor", TouchModifyBuildStatus);
 
+        //Find communication toggle objects
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
+
+        //Find Occlusion toggle objects should be found every time, but only turned on if the device is an iOS device
+        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref OcclusionToggleObject, "OcclusionToggle", ToggleAROcclusion);
+
         //Find Panel Objects used for Info and communication
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
         CommunicationPanelObject = CanvasObject.FindObject("CommunicationPanel");
+        LoadURDFFromROSPannelObject = CanvasObject.FindObject("LoadURDFFromROSPannel");
+
+        //Find panel objects used for loading a URDF from ROS
+        LoadURDFRosHostInputField = LoadURDFFromROSPannelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
+        LoadURDFRosPortInputField = LoadURDFFromROSPannelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
+        FindButtonandSetOnClickAction(LoadURDFFromROSPannelObject, ref LoadURDFRosConnectButtonObject, "ROSConnectButton", () => print_string_on_click("LOAD ROS CONNECT BUTTONPRESSED"));
+        FindButtonandSetOnClickAction(LoadURDFFromROSPannelObject, ref URDFReadButtonObject, "ReadRobotDescriptionButton", () => print_string_on_click("READ ROBOT DESCRIPTION BUTTONPRESSED"));
+        //TODO: FIND IMAGES AND LINK TO EVENTS...
 
         //Find Background Images for Toggles
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
@@ -322,6 +376,27 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object, Execute button and add event listner for on click method
         FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
+        //Find Objects for active robot selection
+        RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
+        RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
+        RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
+        List<TMP_Dropdown.OptionData> robotOptions = SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisulizer.RobotURDFList);
+        RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
+        if(RobotSelectionControlObjects == null)
+        {
+            Debug.Log("Robot Selection Control Objects is null.");
+
+        }
+        else if (RobotSelectionDropdownObject == null)
+        {
+            Debug.Log("Robot Selection Dropdown Object is null.");
+        }
+        else
+        {
+            RobotSelectionDropdown.options = robotOptions;
+        }
+        //Find Object, Execute button and add event listner for on click method
+        FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
     }
     public void SetUIObjectColor(GameObject Button, Color color)
     {
@@ -424,6 +499,13 @@ public class UIFunctionalities : MonoBehaviour
                 ReloadButtonObject.SetActive(true);
                 CommunicationToggleObject.SetActive(true);
                 EditorToggleObject.SetActive(true);
+                LoadFromROSToggleObject.SetActive(true);
+
+                //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
+                if(currentOperatingSystem == OperatingSystem.iOS)
+                {
+                    OcclusionToggleObject.SetActive(true);
+                }
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, Yellow);
@@ -441,12 +523,22 @@ public class UIFunctionalities : MonoBehaviour
                 if(CommunicationToggleObject.GetComponent<Toggle>().isOn){
                     CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
                 }
+                if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn){
+                    LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
+                }
                 //Set Visibility of buttons
                 MenuBackground.SetActive(false);
                 InfoToggleObject.SetActive(false);
                 ReloadButtonObject.SetActive(false);
                 CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
+                LoadFromROSToggleObject.SetActive(false);
+
+                //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
+                if(currentOperatingSystem == OperatingSystem.iOS)
+                {
+                    OcclusionToggleObject.SetActive(false);
+                }
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -456,6 +548,21 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
+    }
+    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    {
+        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
+        if(currentOperatingSystem == OperatingSystem.iOS)
+        {
+            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+            occlusionManager.enabled = true;
+
+            Debug.Log("AROcclusion: will be activated because current platform is ios");
+        }
+        else
+        {
+            Debug.Log("AROcclusion: will not be activated because current system is not ios");
+        }
     }
 
     /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
@@ -556,7 +663,30 @@ public class UIFunctionalities : MonoBehaviour
         if(RobotToggleObject.GetComponent<Toggle>().isOn)
         {
             //Set interaction based on current step.
-            SetTrajectoryRequestUIFromKey(CurrentStep);
+            SetRoboticUIElementsFromKey(CurrentStep);
+
+            //If the current robot is not null then set visibility
+            if(trajectoryVisulizer.ActiveRobot != null)
+            {
+                if(step.data.actor == "ROBOT")
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(true);
+                    trajectoryVisulizer.ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
+                }
+                else
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(false);
+                }
+                //If the Active Trajectory child count is greater the 0 then destroy children
+                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                {
+                    trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("SetCurrentStep: Active Robot is null.");
+            }
         }
 
         //Update Preview Geometry the visulization is remapped correctly
@@ -992,7 +1122,7 @@ public class UIFunctionalities : MonoBehaviour
         if(RobotToggleObject.GetComponent<Toggle>().isOn)
         {
             //Set interaction based on current step.
-            SetTrajectoryRequestUIFromKey(CurrentStep);
+            SetRoboticUIElementsFromKey(CurrentStep);
         }
         
         //Set On Screen Text
@@ -1001,17 +1131,133 @@ public class UIFunctionalities : MonoBehaviour
         //Print setting current priority
         Debug.Log($"Setting Current Priority to {Priority} ");
     }
+    public List<TMP_Dropdown.OptionData> SetDropDownOptionsFromStringList(TMP_Dropdown dropDown, List<string> stringList)
+    {
+        //Create a new list of option data
+        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
+
+        //Iterate through the robot list and add them to the option data list
+        foreach(string stringItem in stringList)
+        {
+            options.Add(new TMP_Dropdown.OptionData(stringItem));
+        }
+
+        Debug.Log($"SetDropDownOptionsFromStringList: Added Options {options} to Dropdown {dropDown.name}");
+        
+        //Return the options list
+        return options;
+    }
+    public TMP_Dropdown.OptionData AddOptionDataToDropdown(string option, TMP_Dropdown dropDown)
+    {
+        Debug.Log($"AddOptionDataToDropdown: Adding Option {option} to Dropdown {dropDown.name}");
+        
+        //Create a new option data
+        TMP_Dropdown.OptionData newOption = new TMP_Dropdown.OptionData(option);
+
+        //Add the option to the dropdown
+        dropDown.options.Add(newOption);
+
+        //Return the new option
+        return newOption;
+    }
+    public void SetActiveRobotToggleMethod(Toggle toggle)
+    {
+        if(toggle!=null && toggle.isOn)
+        {
+            Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {RobotSelectionDropdown.options[RobotSelectionDropdown.value].text}");
+            
+            //Robot name from dropdown and visibility based on current visibility of active robot if it is on.
+            string robotName = RobotSelectionDropdown.options[RobotSelectionDropdown.value].text;
+            
+            //Set active robot visibility based on the CurrentStep
+            bool visibility = false;
+            if(CurrentStep != null && RobotToggleObject.GetComponent<Toggle>().isOn)
+            {
+                if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.actor == "ROBOT")
+                {
+                    visibility = true;
+                }
+            }
+
+            //Set Active Robot
+            trajectoryVisulizer.SetActiveRobotFromDropdown(robotName, true, visibility);
+
+            //Turn on the check mark image on
+            SetActiveRobotToggleObject.FindObject("Image").SetActive(true);
+        }
+        else
+        {
+            Debug.Log("SettingActiveRobotButtonMethod: Destroying Current Active Robot");
+
+            //If the active robot is not null destroy it.
+            if(trajectoryVisulizer.ActiveRobotObjects.transform.childCount > 0)
+            {
+                trajectoryVisulizer.DestroyActiveRobotObjects();
+            }
+
+            //Change My Active Robot to null for MQTT Service Manager
+            mqttTrajectoryManager.serviceManager.ActiveRobotName = null;
+
+            //Turn on the check mark image off
+            SetActiveRobotToggleObject.FindObject("Image").SetActive(false);           
+        }
+    }
+    public void RobotSelectionDropdownValueChanged(int dropDownValue)
+    {
+        Debug.Log($"RobotSelectionDropdownValueChanged: Robot Selection Dropdown Value Changed to {dropDownValue}. Setting Current Active Robot to False.");
+
+        //Set Active Robot Toggle to False
+        SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+    }
 
     /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
-    public void SignalTrajectoryReviewRequest(string key)
+    public void SignalTrajectoryReviewRequest(string key, string robotName, string activeRobotName, Action visualizeRobotMethod)
     {
-        Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key}.");
+        Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key} .");
 
         //Find text component for on screen message
-        TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("TrajectoryReviewRequestText").GetComponent<TMP_Text>();
+        TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
 
         //Define message for the onscreen text
-        string message = $"REQUEST : Trajectory Review requested by other user for step : {key}";
+        string message = null;
+        if(activeRobotName != robotName)
+        {
+            //Set message to notify that the active robot has been updated
+            message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}. YOUR ACTIVE ROBOT UPDATED.";
+
+            //Update Active robot usign the dropdown.
+            int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
+
+            //If the robot is in the dropdown options then update the active robot
+            if(robotSelection != -1)
+            {            
+                if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+
+                //Set the dropdown value to the robot selection
+                RobotSelectionDropdown.value = robotSelection;
+
+                //Set Active Robot
+                SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
+            }
+            else
+            {
+                Debug.LogError("Trajectory Review Request Message: Could not find robot in dropdown options.");
+            }
+        }
+        else
+        {
+            message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}.";
+        }
+
+        //If the transaction lock message is active turn it off
+        if(TransactionLockActiveWarningMessageObject.activeSelf)
+        {
+            //Set visibility of transaction lock active warning message
+            TransactionLockActiveWarningMessageObject.SetActive(false);
+        }
         
         if(messageComponent != null && message != null && TrajectoryReviewRequestMessageObject != null)
         {
@@ -1042,12 +1288,77 @@ public class UIFunctionalities : MonoBehaviour
                 }
             });
 
+            //Add Listner for Acknowledge Button of this message to visualize robot
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => visualizeRobotMethod());
+
             //Add Listner for Acknowledge Button of this to set interactibility of review trajectory buttons
             AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => TrajectoryServicesUIControler(false, false, true, true, false, false));
         }
         else
         {
             Debug.LogWarning("Trajectory Review Request Message: Something Is messed up with on click event listner.");
+        }
+
+    }
+    public void SignalActiveRobotUpdateFromPlanner(string key, string robotName, string activeRobotName, Action visualizeRobotMethod)
+    {
+        Debug.Log($"SignalActiveRobotUpdateFromPlanner: Other User is Requesting review of Trajectory for Step {key} .");
+
+        //Find text component for on screen message
+        TMP_Text messageComponent = ActiveRobotUpdatedFromPlannerMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
+
+
+        //Set message to notify that the active robot has been updated
+        string message = $"WARNING: You requested for {activeRobotName} but reply Trajectory is for {robotName}. ACTIVE ROBOT UPDATED.";
+
+        //Update Active robot usign the dropdown.
+        int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
+
+        //If the robot is in the dropdown options then update the active robot
+        if(robotSelection != -1)
+        {            
+            if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
+            {
+                SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+            }
+
+            //Set the dropdown value to the robot selection
+            RobotSelectionDropdown.value = robotSelection;
+
+            //Set Active Robot
+            SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
+        }
+        else
+        {
+            Debug.LogError("SignalActiveRobotUpdateFromPlanner: Could not find robot in dropdown options.");
+        }
+        
+        //Check Messaging componenets
+        if(messageComponent != null && message != null && ActiveRobotUpdatedFromPlannerMessageObject != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(ActiveRobotUpdatedFromPlannerMessageObject, messageComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning("SignalActiveRobotUpdateFromPlanner: Could not find message object or message component.");
+        }
+
+        //Add additional for acknolwedge button to acknowledge button if they are not already there.
+        GameObject AcknowledgeButton = ActiveRobotUpdatedFromPlannerMessageObject.FindObject("AcknowledgeButton");
+
+        //Check if this item already has a listner or not.
+        if (AcknowledgeButton!= null && AcknowledgeButton.GetComponent<Button>().onClick.GetPersistentEventCount() <= 1)
+        {
+            //Add Listner for Acknowledge Button of this message to visualize robot
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => visualizeRobotMethod());
+
+            //Add Listner for Acknowledge Button of this to set interactibility of review trajectory buttons //TODO: CAN GET RID OF THIS.
+            AcknowledgeButton.GetComponent<Button>().onClick.AddListener(() => TrajectoryServicesUIControler(false, false, true, true, false, false));
+        }
+        else
+        {
+            Debug.LogWarning("SignalActiveRobotUpdateFromPlanner: Something Is messed up with on click event listner.");
         }
 
     }
@@ -1216,18 +1527,38 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Request Trajectory Button Pressed: Requesting Trajectory for Step {CurrentStep}");
 
-        //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep).GetData());
+        if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
+        {
+            Debug.Log("RequestTrajectoryButtonMethod : You cannot request because transaction lock is active");
 
-        //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
-        mqttTrajectoryManager.serviceManager.PrimaryUser = true;
-        mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
+            //If the active robot is null signal On Screen Message
+            SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
+            
+            return;
+        }
+        else if (trajectoryVisulizer.ActiveRobot == null)
+        {
+            Debug.Log("RequestTrajectoryButtonMethod : Active Robot is null");
+         
+            //If the active robot is null signal On Screen Message
+            SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
 
-        //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.... THIS IS A BIT DIFFICULT BECAUSE I CANNOT PROVIDE CANCELATION LIKE OTHER MESSAGE.
+            return;
+        }
+        else
+        {    
+            //Publish new GetTrajectoryRequest message to the GetTrajectoryRequestTopic for CurrentStep
+            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName).GetData());
 
-        //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
-        //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
-        TrajectoryServicesUIControler(true, false, false, false, false, false);
+            //Set mqttTrajectoryManager.serviceManager.PrimaryUser to true && Set Current Service to GetTrajectory
+            mqttTrajectoryManager.serviceManager.PrimaryUser = true;
+            mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
+
+            //TODO: INCLUDE TIMEOUT FOR WAITING ON REPLY FROM CONTROLER.... THIS IS A BIT DIFFICULT BECAUSE I CANNOT PROVIDE CANCELATION LIKE OTHER MESSAGE.
+
+            //Make the request button not interactable to prevent sending multiple requests.. Message Handler will set it back to true if trajectory is null.
+            TrajectoryServicesUIControler(true, false, false, false, false, false);
+        }
     }
     public void ApproveTrajectoryButtonMethod()
     {
@@ -1238,17 +1569,17 @@ public class UIFunctionalities : MonoBehaviour
         TrajectoryServicesUIControler(false, false, true, false, false, false);
         
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
     }
     public void RejectTrajectoryButtonMethod()
     {
         Debug.Log($"Reject Trajectory Button Pressed: Rejecting Trajectory for Step {CurrentStep}");
 
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
 
         //Make the approval and disapproval button not interactable to prevent sending multiple approvals and disapprovals....
-        TrajectoryServicesUIControler(false, false, true, false, false, false); //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+        TrajectoryServicesUIControler(false, false, true, false, false, false);
     }
     public void TrajectorySliderReviewMethod(float value)
     {
@@ -1261,15 +1592,16 @@ public class UIFunctionalities : MonoBehaviour
                 //Remap input value to the count of the trajectory
                 float SliderValue = value;
                 int TrajectoryConfigurationsCount = mqttTrajectoryManager.serviceManager.CurrentTrajectory.Count; 
-                float SliderMax = 1; //Input Slider Max Value == 1
-                float SliderMin = 0; // Input Slider Min Value == 0
+                float SliderMax = 1;
+                float SliderMin = 0;
                 
-                float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount); 
+                float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount-1); 
 
                 //Print list item at the index of the remapped value //TODO: SERILIZE CONFIGURATION TO STRING SO YOU CAN READ IT.
                 Debug.Log($"Trajectory Review: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
 
-                //TODO: Color Static Robot Image based on SliderRemapedValue
+                //Color Static Robot Image based on SliderRemapedValue
+                trajectoryVisulizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisulizer.previousSliderValue);
             }
             else
             {
@@ -1285,14 +1617,18 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log($"Execute Trajectory Button Pressed: Executing Trajectory for Step {CurrentStep}");
 
+        //Send Trajectory message as dictionary
+        Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
+        Debug.Log("Send Trajectory Message: " + JsonConvert.SerializeObject(sendTrajectoryMessage));
+
         //Publish new SendTrajectoryMessage to the trajectory execution topic for current step
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, sendTrajectoryMessage);
 
         //Make the execute button not interactable to prevent sending multiple just a precaustion, should be handled by message handler anyway.
-        TrajectoryServicesUIControler(false, false, false, false, true, false); //TODO: CHECK THIS BASED ON THE SPEED OF THE MESSAGE HANDLER.
+        TrajectoryServicesUIControler(false, false, false, false, true, false);
 
         //Publish new ApproveTrajectoryMessage for CONSENSUS APPROVAL
-        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
+        mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
     }
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
@@ -1436,13 +1772,25 @@ public class UIFunctionalities : MonoBehaviour
 
         if(toggle.isOn && RequestTrajectoryButtonObject != null)
         {
-            //TODO: Set robot URDF OBJECT TO ACTIVE AT ZERO CONFIGURATION.
+            //Set Visibility of Request Trajectory Button
+            if(trajectoryVisulizer.ActiveRobot && CurrentStep != null)
+            {
+                trajectoryVisulizer.ActiveRobot.SetActive(true);
+            }
+            else
+            {
+                Debug.Log("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
+            }
+
+            //Set Robot Selection Objects to visible
+            RobotSelectionDropdownObject.SetActive(true);
+            SetActiveRobotToggleObject.SetActive(true);
 
             //Check current step data to set visibility and interactibility of request trajectory button.
             if(CurrentStep != null)
             {
                 //Set interaction based on current step.
-                SetTrajectoryRequestUIFromKey(CurrentStep);
+                SetRoboticUIElementsFromKey(CurrentStep);
             }
             else
             {
@@ -1453,21 +1801,36 @@ public class UIFunctionalities : MonoBehaviour
             SetUIObjectColor(RobotToggleObject, Yellow);
         }
         else
-        {
-            //TODO: Set robot URDF OBJECT TO INACTIVE//DESTROY STATIC ROBOT IMAGES IF THEY EXIST.
-            
+        {            
             //If the request trajectory button is visable then set everything to not visable.
             if (RequestTrajectoryButtonObject.activeSelf)
             {
                 //Set Visibility of Request Trajectory Button
                 TrajectoryServicesUIControler(false, false, false, false, false, false);
             }
+                        
+            //Set Visibility of Robot Selection Objects
+            RobotSelectionDropdownObject.SetActive(false);
+            SetActiveRobotToggleObject.SetActive(false);
+                        
+            //Set Visibility of Robot.
+            if(trajectoryVisulizer.ActiveRobotObjects.transform.childCount > 0)
+            {
+                if(trajectoryVisulizer.ActiveRobot.activeSelf)
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(false);
+                }
+                else if(trajectoryVisulizer.ActiveTrajectory.activeSelf) //TODO: SHOULD THIS DESTROY?
+                {
+                    trajectoryVisulizer.ActiveTrajectory.SetActive(false);
+                }
+            }
 
             //Set the color of the Robot toggle button to white.
             SetUIObjectColor(RobotToggleObject, White);
         }
     }
-    public void SetTrajectoryRequestUIFromKey(string key)
+    public void SetRoboticUIElementsFromKey(string key)
     {
         Step step = databaseManager.BuildingPlanDataItem.steps[key];
 
@@ -1489,6 +1852,10 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
+            //Set Robot Selection Objects to visible
+            RobotSelectionDropdownObject.SetActive(true);
+            SetActiveRobotToggleObject.SetActive(true);
+
             //Set Visibility of Request Trajectory Button
             TrajectoryServicesUIControler(false, false, false, false, false, false);
         }
@@ -1656,12 +2023,18 @@ public class UIFunctionalities : MonoBehaviour
     {
         if(InfoPanelObject != null)
         {
+            Debug.Log("Info Toggle Pressed");
+
             if (toggle.isOn)
             {             
                 //Check if communication toggle is on and if it is turn it off
                 if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
                 {
                     CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                else if (LoadFromROSToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
                 }
                 
                 //Set Visibility of Information panel
@@ -1689,6 +2062,8 @@ public class UIFunctionalities : MonoBehaviour
     {
         if(CommunicationPanelObject != null)
         {
+            Debug.Log("Communication Toggle Pressed");
+
             if (toggle.isOn)
             {             
                 //Check if info toggle is on and if it is turn it off
@@ -1696,7 +2071,11 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     InfoToggleObject.GetComponent<Toggle>().isOn = false;
                 }
-                
+                else if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+
                 //Set Visibility of Information panel
                 CommunicationPanelObject.SetActive(true);
 
@@ -1783,6 +2162,8 @@ public class UIFunctionalities : MonoBehaviour
     {
         if (EditorBackground != null && BuilderEditorButtonObject != null && BuildStatusButtonObject != null)
         {    
+            Debug.Log("Editor Toggle Pressed");
+            
             if (toggle.isOn)
             {             
                 //Set Visibility of buttons
@@ -1845,6 +2226,74 @@ public class UIFunctionalities : MonoBehaviour
         {
             Debug.LogWarning("Could not find one of the buttons in the Editor Menu.");
         }  
+    }
+    public void ToggleLoadFromROS(Toggle toggle)
+    {
+       if(LoadURDFFromROSPannelObject != null)
+        {
+            Debug.Log("Load URDF From ROS Toggle Pressed");
+
+            if (toggle.isOn)
+            {             
+                //Check if info toggle is on and if it is turn it off
+                if(InfoToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    InfoToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                else if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+                }
+                //Set Visibility of Information panel
+                LoadURDFFromROSPannelObject.SetActive(true);
+
+                //Set color of toggle
+                SetUIObjectColor(LoadFromROSToggleObject, Yellow);
+
+            }
+            else
+            {
+                //TODO: TURN OFF IMAGES.
+
+                //Set Visibility of Information panel
+                LoadURDFFromROSPannelObject.SetActive(false);
+
+                //Set color of toggle
+                SetUIObjectColor(LoadFromROSToggleObject, White);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Communication Panel.");
+        }
+    }
+    public void ToggleAROcclusion(Toggle toggle)
+    {
+        if (OcclusionToggleObject != null && occlusionManager != null)
+        {
+            Debug.Log("Occlusion Toggle Pressed");
+
+            if (toggle.isOn)
+            { 
+                //Enable Occlusion
+                occlusionManager.enabled = true;            
+
+                //Set color of the toggle
+                SetUIObjectColor(OcclusionToggleObject, Yellow);
+            }
+            else
+            {
+                //Disable Occlusion Manager
+                occlusionManager.enabled = false;
+
+                //Set color of the toggle
+                SetUIObjectColor(OcclusionToggleObject, White);            
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find Occlusion Toggle Object.");
+        }
     }
 
     ////////////////////////////////////////// Editor Buttons /////////////////////////////////////////////////

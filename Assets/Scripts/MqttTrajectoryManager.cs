@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Security.Claims;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using System.Threading;
 
 public class MqttTrajectoryManager : M2MqttUnityClient
 {
@@ -46,6 +47,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
     //Other Scripts
     public UIFunctionalities UIFunctionalities;
     public DatabaseManager databaseManager;
+    public TrajectoryVisulizer trajectoryVisulizer;
 
     protected override void Start()
     {
@@ -61,9 +63,15 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         //Calling Base Update is a property of Inheritance from M2MqttUnityClient. Ensures that the base class is called First.
         base.Update();
     }
-
     public void OnDestroy()
     {
+        //Unsubscribe from Compas XR Topics
+        UnsubscribeFromCompasXRTopics();
+
+        //Remove event listners
+        RemoveConnectionEventListners();
+
+        //Disconnect from MQTT
         Disconnect();
     }
     
@@ -76,6 +84,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Find UI Functionalities
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
+            trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
         }
 
         //Connect to MQTT Broker on start with default settings.
@@ -229,27 +238,10 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.Log("MQTT: GetTrajectoryRequest Message Handeling");
 
             //Deserialize the message usign parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
-            GetTrajectoryRequest getTrajectoryResultmessage = GetTrajectoryRequest.Parse(message);
+            GetTrajectoryRequest getTrajectoryRequestmessage = GetTrajectoryRequest.Parse(message);
 
-            //Check the device ID to see if it is mine, and if it is not apply Get Trajectory Request Transaction lock.
-            if (getTrajectoryResultmessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
-            {
-                Debug.Log($"MQTT: GetTrajectoryRequest from user {getTrajectoryResultmessage.Header.DeviceID}");
-
-                //Set Service Manager Transaction lock
-                serviceManager.TrajectoryRequestTransactionLock = true; //TODO: MAKE ME FALSE WHERE I NEED TO BE FALSE.... ALSO NEED TO UPDATE UI.
-
-                //If the request button is active make it not interactable.
-                if (UIFunctionalities.RequestTrajectoryButtonObject.activeSelf)
-                {
-                    //Set interactibility to false
-                    UIFunctionalities.TrajectoryServicesUIControler(true, false, false, false, false, false);
-                }
-            }
-            else
-            {
-                Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
-            }
+            //Get Trajectory Request Message Handler
+            GetTrajectoryRequestReceivedMessageHandler(getTrajectoryRequestmessage);
         }
 
         //Get Trajectory Result Message.
@@ -259,81 +251,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
 
             //Deserialize the message using parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
-            
-            //TODO: NEED SOME SORT OF SAFETY CHECK OF HEADER RESPONSEID OR SOMETHING TO DEAL WITH MESSAGES THAT ARE SENT FROM CONTROLER, BUT ARE INCORRECT.
-            //TODO: IT WILL CAUSE A BIG PROBLEM IF I DON'T REQUEST A TRAJECTORY BUT I RECEIVE ONE.... This fix cannot happen until I test the header and responseID back and forth.
 
-            //If I am not the primary user checks
-            if (!serviceManager.PrimaryUser)
-            {
-                //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
-                if (getTrajectoryResultmessage.Trajectory.Count > 0)
-                {
-                    //Release Trajectory Request Transaction lock
-                    serviceManager.TrajectoryRequestTransactionLock = false;
-
-                    //Signal On Screen Message for 
-                    UIFunctionalities.SignalTrajectoryReviewRequest(getTrajectoryResultmessage.ElementID);
-
-                    //Set curent trajectory of the Service Manager
-                    serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
-
-                    //Set current Service to Approve Trajectory
-                    serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
-                }
-                else
-                {
-                    //Set Service Manager Request Transaction lock
-                    serviceManager.TrajectoryRequestTransactionLock = false;
-
-                    //If the robot toggle is on set the TrajectoryRequest UI From my current step.
-                    if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
-                    {
-                        //Set interactibility based on my current element.
-                        UIFunctionalities.SetTrajectoryRequestUIFromKey(UIFunctionalities.CurrentStep);
-                    }
-
-                    Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
-                }
-            }
-            //I am the primary user
-            else
-            {
-                //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
-                if (getTrajectoryResultmessage.Trajectory.Count > 0)
-                {
-                    //Subscribe to Approval Counter Result topic
-                    SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
-
-                    //Set visibility and interactibility of trajectory review elements
-                    UIFunctionalities.TrajectoryServicesUIControler(false, false, true, true, false, false);
-
-                    //Set the current trajectory of the Service Manager && Set current Service to Approve Trajectory
-                    serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
-                    serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
-
-                    //Publish request for approval counter and do not input header.
-                    PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
-
-                    // Trajectory approval time out //TODO: CHECK TIMEOUT DURATION WHEN BUILDING. //TODO: INCREASE TIME OUT DURATION AFTER MEETING.
-                    _= TrajectoryApprovalTimeout(UIFunctionalities.CurrentStep, 120);
-
-                }
-                //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
-                else
-                {
-                    Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Trajectory count is zero. Resetting Service Manager and returning to Request Trajectory Service.");
-
-                    //Set Primary user back to false
-                    serviceManager.PrimaryUser = false;
-
-                    //Set Current Service to None
-                    serviceManager.currentService = ServiceManager.CurrentService.None;
-
-                    //Set visibility and interactibility of request trajectory button
-                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
-                }
-            }
+            //Get Trajectory Result Message Handler
+            GetTrajectoryResultReceivedMessageHandler(getTrajectoryResultmessage); 
         }
 
         //Approve Trajectory Message
@@ -344,126 +264,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Deserialize the message usign parse method //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             ApproveTrajectory trajectoryApprovalMessage = ApproveTrajectory.Parse(message);
 
-            //Approve trajectory approvalStatus rejction message received 
-            /*//TODO: I think the is the most error prone area of the code...
-            Returns all users back to the Request Trajectory topic, but it can cause a condition where we all request a trajectory at the same time, so each phone thinks it is the primary user.
-            This will be complex to fix, and Gonzalo said we should just be honest about this and inform people.....
-            I think I could come up with a solution (Transactional when someone else requests a trajectory... it somehow informs the other phones and prevents them from requesting one until that person is back on service request.)
-            This may include another topic or something like that, but I am not sure and would take some more additional thought.
-            //TODO: I have an idea... I subscribe to request topic, and when a request message is sent, I add a requestTransactionLock for devicesID's that are not mine.... Only problem is still depends on the speed of the messages.
-            */
-            if (trajectoryApprovalMessage.ApprovalStatus == 0)
-            {
-                //If I am primary user reset service manager items and unsubscribe from Approval Counter Result topic
-                if (serviceManager.PrimaryUser)
-                {
-                    //Unsubsribe from Approval Counter Result topic
-                    UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
-
-                    //Set Primary user back to false
-                    serviceManager.PrimaryUser = false;
-                }
-
-                //Reset ApprovalCount and UserCount This could be done inside of the PrimaryUser, but Also safe way of error catching
-                serviceManager.ApprovalCount.Reset();
-                serviceManager.UserCount.Reset();
-
-                //Set Current Trajectory to null && Current Service to None
-                serviceManager.CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
-                serviceManager.currentService = ServiceManager.CurrentService.None;
-
-                //No matter if I am Primary user or not: Set visibility and interactibility of Request Trajectory Button
-                UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
-            }
-            //ApproveTrajectoryMessage ApprovalStatus Trajectory approved message received
-            else if (trajectoryApprovalMessage.ApprovalStatus == 1)
-            {
-                Debug.Log($"MQTT: ApproveTrajectory User {trajectoryApprovalMessage.Header.DeviceID} approved trajectory {trajectoryApprovalMessage.TrajectoryID}");
-
-                //If I am the primary user...
-                if (serviceManager.PrimaryUser)
-                {
-                    //Increment the approval count
-                    serviceManager.ApprovalCount.Increment();
-
-                    Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
-
-                    //If the approval count is equal to the user count then move me on to service 3 as the primary User. //TODO: THINK ABOUT HOW THIS CAN BE SET DYNAMICALLY IN THE APPLICATION SETTINGS.
-                    if (serviceManager.ApprovalCount.Value == serviceManager.UserCount.Value)
-                    {
-                        Debug.Log("MQTT: ApprovalCount == UserCount. Moving to Service 3 as Primary User.");
-                        
-                        //Unsubsribe from Approval Counter Result topic
-                        UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
-
-                        //Set Current Service to Execute Trajectory
-                        serviceManager.currentService = ServiceManager.CurrentService.ExacuteTrajectory;
-
-                        //Set visibility and interactibility of Execute Trajectory Button
-                        UIFunctionalities.TrajectoryServicesUIControler(false, false, true, false, true, true);
-                    }
-                    else
-                    {
-                        Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
-                    }
-                }
-            }
-            //ApproveTrajectoryMessage ApprovalStatus Consensus message received
-            else if (trajectoryApprovalMessage.ApprovalStatus == 2)
-            {
-                Debug.Log($"MQTT: ApproveTrajectory Consensus message received for trajectory {trajectoryApprovalMessage.TrajectoryID}");
-
-                //If I am the primary user...
-                if (serviceManager.PrimaryUser)
-                {
-                    //Unsubsribe from Approval Counter Result topic
-                    UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
-
-                    //Set Primary user back to false
-                    serviceManager.PrimaryUser = false;
-                }
-
-                //Just as a safety precaution reset approval counter, user count, current trajectory, and currentService to none for everyone
-                serviceManager.ApprovalCount.Reset();
-                serviceManager.UserCount.Reset();
-                serviceManager.CurrentTrajectory = null; //TODO: Maybe should be empty list? Would prevent weird scenario where it is null and I request .Count
-                serviceManager.currentService = ServiceManager.CurrentService.None;
-
-                //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
-                UIFunctionalities.TrajectoryServicesUIControler(true, false, false, false, false, false);
-            }
-            
-            //ApproveTrajectoryMessage ApprovalStatus Cancelation message received
-            else if (trajectoryApprovalMessage.ApprovalStatus == 3)
-            {
-                Debug.Log($"MQTT: ApproveTrajectory Cancelation message received for trajectory {trajectoryApprovalMessage.TrajectoryID}");
-
-                //If I am not the primary user and should be reset to the request trajectory service
-                if (!serviceManager.PrimaryUser)
-                {
-                    //Just as a safety precaution reset approval counter, user count, current trajectory, and currentService to none for everyone
-                    serviceManager.ApprovalCount.Reset();
-                    serviceManager.UserCount.Reset();
-                    serviceManager.CurrentTrajectory = null;
-                    serviceManager.currentService = ServiceManager.CurrentService.None;
-
-                    //Signal OnScreen message for Trajectory Approval Canceled
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
-
-                    //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
-                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
-                }
-                else
-                {
-                    Debug.Log("MQTT: ApproveTrajectory Cancelation message received for trajectory, but I am the primary user. No action taken.");
-                }
-            }
-            
-            //ApprovalStatus not recognized.
-            else
-            {
-                Debug.LogWarning("MQTT: Approval Status is not recognized. Approval Status: " + trajectoryApprovalMessage.ApprovalStatus);
-            }
+            //Approve Trajectory Message Handler
+            ApproveTrajectoryMessageReceivedHandler(trajectoryApprovalMessage);
         }
 
         //Approval Counter Request Message
@@ -471,12 +273,9 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         {
             //Deserialize the message //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             ApprovalCounterRequest approvalCounterRequestMessage = ApprovalCounterRequest.Parse(message);
-
-            Debug.Log($"MQTT: ApprovalCounterRequset Message Received from User {approvalCounterRequestMessage.Header.DeviceID}");
-
-            //No matter what publish with a reply on the approval counter result topic
-            //TODO: I am replying with the same element ID, not sure If I should reply with my current element... could be a good chance for a priority check of other people.
-            PublishToTopic(compasXRTopics.publishers.approvalCounterResultTopic, new ApprovalCounterResult(approvalCounterRequestMessage.ElementID).GetData());
+            
+            //Approval Counter Request Message Handler
+            ApprovalCounterRequestMessageReceivedHandler(approvalCounterRequestMessage);
         }
 
         //Approval Counter Result Message
@@ -485,14 +284,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             //Deserialize the message //TODO: INCLUDE TRY EXCEPT BLOCK HERE?
             ApprovalCounterResult approvalCounterResultMessage = ApprovalCounterResult.Parse(message);
 
-            Debug.Log($"MQTT: ApprovalCounterResult Message Received from User{approvalCounterResultMessage.Header.DeviceID} for step {approvalCounterResultMessage.ElementID}");
-
-            //If I am the primary user...
-            if (serviceManager.PrimaryUser)
-            {
-                //Increment the user count
-                serviceManager.UserCount.Increment();
-            }
+            //Approval Counter Result Message Handler
+            ApprovalCounterResultMessageReceivedHandler(approvalCounterResultMessage);
         }
 
         //Default
@@ -502,50 +295,486 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         }
 
     }
+    private void GetTrajectoryRequestReceivedMessageHandler(GetTrajectoryRequest getTrajectoryRequestmessage)
+    {
+        //Set last request message of the Service Manager
+        serviceManager.LastGetTrajectoryRequestMessage = getTrajectoryRequestmessage;
+
+        //Check the device ID to see if it is mine, and if it is not apply Get Trajectory Request Transaction lock.
+        if (getTrajectoryRequestmessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
+        {
+            Debug.Log($"MQTT: GetTrajectoryRequest from user {getTrajectoryRequestmessage.Header.DeviceID}");
+
+            //Set Service Manager Transaction lock
+            serviceManager.TrajectoryRequestTransactionLock = true;
+
+        }
+        else
+        {
+            Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
+        }
+    }
+    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY RESPONSE.
+    {
+
+        // Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
+        // if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
+        // {
+        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID + 1)
+        //     {
+        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
+        //         return;
+        //     }
+        //     else
+        //     {
+        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+        //         serviceManager.IsDirty = false;
+        //     }
+        // }
+
+        //Set last result message of the Service Manager
+        serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
+        
+        if(serviceManager.LastGetTrajectoryRequestMessage != null)
+        {
+            //First Check if the message is the same as the last request message and if the trajectory count is greater then zero
+            if(getTrajectoryResultmessage.Header.ResponseID != serviceManager.LastGetTrajectoryRequestMessage.Header.ResponseID 
+            || getTrajectoryResultmessage.Header.SequenceID != serviceManager.LastGetTrajectoryRequestMessage.Header.SequenceID + 1
+            || getTrajectoryResultmessage.ElementID != serviceManager.LastGetTrajectoryRequestMessage.ElementID)
+            {
+                if(serviceManager.PrimaryUser)
+                {                    
+                    Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
+                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
+
+                    //Set Primary user back to false
+                    serviceManager.PrimaryUser = false;
+
+                    //Set Current Service to None
+                    serviceManager.currentService = ServiceManager.CurrentService.None;
+
+                    //Set visibility and interactibility of request trajectory button
+                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+
+                    return;
+                }
+                else
+                {
+                    //Release Trajectory Request Transaction lock
+                    serviceManager.TrajectoryRequestTransactionLock = false;
+
+                    //If the robot toggle is on set the TrajectoryRequest UI From my current step (allows me to freely request if I am on a robot element).
+                    if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        //Set interactibility based on my current element.
+                        UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
+                    }
+
+                    Debug.LogWarning("MQTT: GetTrajectoryResult (!PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. Ignoring Message.");
+                    return;
+                }
+            }
+            //The message is the same as the last request messsage
+            else
+            {    
+                
+                //Check if the count is greater then Zero and start the time out dependant on if I am primary user or not.
+                if(getTrajectoryResultmessage.Trajectory.Count > 0)
+                {
+                    //Create a new cancellation token source and storing it in the service manager
+                    serviceManager.ApprovalTimeOutCancelationToken = new CancellationTokenSource();
+                    
+                    //Float duration dependent on if I am Primary user or not
+                    float duration = 120; //TODO: DURATION FOR PRIMARY USER WAITING FOR APPROVALS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
+                    if(!serviceManager.PrimaryUser)
+                    {
+                        duration = 240; //TODO: DURATION FOR NON PRIMARY USER WAITING FOR CONSENSUS.... NEEDS TO BE ADJUSTED W/ FABRICATION TIME.
+                    }
+
+                    // Trajectory approval time out
+                    _= TrajectoryApprovalTimeout(getTrajectoryResultmessage.ElementID, duration, serviceManager.ApprovalTimeOutCancelationToken.Token);
+                }
+                else
+                {
+                    Debug.Log("MQTT: GetTrajectoryResult: Trajectory count is zero. No time out started.");
+                }
+                
+                //If I am not the primary user checks
+                if (!serviceManager.PrimaryUser)
+                {
+                    //If the trajectory count is greater then zero signal on screen message to request my review of trajectory
+                    if (getTrajectoryResultmessage.Trajectory.Count > 0)
+                    {
+                        //Release Trajectory Request Transaction lock
+                        serviceManager.TrajectoryRequestTransactionLock = false;
+
+                        //Signal On Screen Message for trajectory review
+                        UIFunctionalities.SignalTrajectoryReviewRequest(
+                            getTrajectoryResultmessage.ElementID,
+                            getTrajectoryResultmessage.RobotName,
+                            serviceManager.ActiveRobotName,
+                            () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                                getTrajectoryResultmessage.Trajectory,
+                                trajectoryVisulizer.URDFLinkNames,
+                                getTrajectoryResultmessage.RobotBaseFrame,
+                                getTrajectoryResultmessage.TrajectoryID,
+                                trajectoryVisulizer.ActiveRobot,
+                                trajectoryVisulizer.ActiveTrajectory,
+                                true));
+
+                        //Set curent trajectory of the Service Manager
+                        serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
+
+                        //Set current Service to Approve Trajectory
+                        serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
+
+                        Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is greater then zero. I am moving on to trajectory review.");
+                    }
+                    else
+                    {
+                        //Set Service Manager Request Transaction lock
+                        serviceManager.TrajectoryRequestTransactionLock = false;
+
+                        //If the robot toggle is on set the TrajectoryRequest UI From my current step (allows me to freely request if I am on a robot element).
+                        if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //Set interactibility based on my current element.
+                            UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
+                        }
+
+                        Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
+                    }
+                }
+                //I am the primary user
+                else
+                {           
+                    //If the trajectory count is greater then zero move to trajectory review set Review Options to true.
+                    if (getTrajectoryResultmessage.Trajectory.Count > 0)
+                    {
+                        //Subscribe to Approval Counter Result topic
+                        SubscribeToTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                        //Set visibility and interactibility of trajectory review elements
+                        UIFunctionalities.TrajectoryServicesUIControler(false, false, true, true, false, false);
+
+                        //Set the current trajectory of the Service Manager && Set current Service to Approve Trajectory
+                        serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
+                        serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
+
+                        //If the requested robot is not the same as mine update mine.
+                        if(getTrajectoryResultmessage.RobotName != serviceManager.ActiveRobotName)
+                        {
+                            UIFunctionalities.SignalActiveRobotUpdateFromPlanner(
+                                getTrajectoryResultmessage.ElementID,
+                                getTrajectoryResultmessage.RobotName,
+                                serviceManager.ActiveRobotName,
+                                () => trajectoryVisulizer.VisulizeRobotTrajectory(
+                                    getTrajectoryResultmessage.Trajectory,
+                                    trajectoryVisulizer.URDFLinkNames,
+                                    getTrajectoryResultmessage.RobotBaseFrame,
+                                    getTrajectoryResultmessage.TrajectoryID,
+                                    trajectoryVisulizer.ActiveRobot,
+                                    trajectoryVisulizer.ActiveTrajectory,
+                                    true));
+                            
+                            Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is not the same as the active robot name signaling on screen control.");
+
+                        }
+                        else
+                        {
+                            trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectory, true);
+                            Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
+                        }
+                        
+                        //Publish request for approval counter and do not input header.
+                        PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
+                    }
+                    //If the trajectory count is zero reset Service Manger elements, and Return to Request Trajectory Service (Maybe should signal Onscreen Message?)
+                    else
+                    {
+                        Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Trajectory count is zero resetting Service Manager and returning to Request Trajectory Service.");
+
+                        //Set Primary user back to false
+                        serviceManager.PrimaryUser = false;
+
+                        //Set Current Service to None
+                        serviceManager.currentService = ServiceManager.CurrentService.None;
+
+                        //Set visibility and interactibility of request trajectory button
+                        UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+
+                        //Set on screen message and return to trajectory request service
+                        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryNullWarningMessageObject);
+                    }
+                }
+            }
+        }
+        else
+        {
+            //TODO: Should this send a cancelation.... Basically the only time this could happen is if a user joins in the moments between the request and result.
+            Debug.LogWarning("MQTT: GetTrajectoryResult LastGetTrajectoryRequestMessage is null. A request must be made before this code works.");
+        }
+    }
+    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage) //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL?
+    {
+        //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
+        if(serviceManager.IsDirtyApproval)
+        {
+            if(serviceManager.IsDirtyApprovalHeader.ResponseID == trajectoryApprovalMessage.Header.ResponseID && trajectoryApprovalMessage.ApprovalStatus != 3)
+            {
+                Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true and the message is the same as the dirty message. No action taken.");
+                return;
+            }
+            else
+            {
+                Debug.Log("MQTT: ApproveTrajectoryMessage: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
+                serviceManager.IsDirtyApproval = false;
+            }
+        }
+
+        //Approve trajectory approvalStatus rejction message received 
+        if (trajectoryApprovalMessage.ApprovalStatus == 0)
+        {
+            //If I am primary user reset service manager items and unsubscribe from Approval Counter Result topic
+            if (serviceManager.PrimaryUser)
+            {
+                //Unsubsribe from Approval Counter Result topic
+                UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                //Set Primary user back to false
+                serviceManager.PrimaryUser = false;
+            }
+
+            //Time out Cancelation Token Update
+            if(serviceManager.ApprovalTimeOutCancelationToken != null)
+            {
+                Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR REJECTION.");
+                serviceManager.ApprovalTimeOutCancelationToken.Cancel();
+            }
+            
+            //If the Active Trajectory child count is greater the 0 then destroy children
+            if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+            {
+                trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+            }
+            //If the Active Robot is not active set it to active
+            if(!trajectoryVisulizer.ActiveRobot.activeSelf)
+            {
+                trajectoryVisulizer.ActiveRobot.SetActive(true);
+            }
+
+            //Reset ApprovalCount and UserCount This could be done inside of the PrimaryUser, but Also safe way of error catching
+            serviceManager.ApprovalCount.Reset();
+            serviceManager.UserCount.Reset();
+
+            //Set Current Trajectory to null && Current Service to None
+            serviceManager.CurrentTrajectory = null;
+            serviceManager.currentService = ServiceManager.CurrentService.None;
+
+            //No matter if I am Primary user or not: Set visibility and interactibility of Request Trajectory Button
+            UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+        }
+        //ApproveTrajectoryMessage ApprovalStatus Trajectory approved message received
+        else if (trajectoryApprovalMessage.ApprovalStatus == 1)
+        {
+            Debug.Log($"MQTT: ApproveTrajectory User {trajectoryApprovalMessage.Header.DeviceID} approved trajectory {trajectoryApprovalMessage.TrajectoryID}");
+
+            //If I am the primary user...
+            if (serviceManager.PrimaryUser)
+            {
+                //Increment the approval count
+                serviceManager.ApprovalCount.Increment();
+
+                Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
+
+                //If the approval count is equal to the user count then move me on to service 3 as the primary User. //TODO: THINK ABOUT HOW THIS CAN BE SET DYNAMICALLY IN THE APPLICATION SETTINGS.
+                if (serviceManager.ApprovalCount.Value == serviceManager.UserCount.Value)
+                {
+                    Debug.Log("MQTT: ApprovalCount == UserCount. Moving to Service 3 as Primary User.");
+                    
+                    //Unsubsribe from Approval Counter Result topic
+                    UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                    //Set Current Service to Execute Trajectory
+                    serviceManager.currentService = ServiceManager.CurrentService.ExacuteTrajectory;
+
+                    //Set visibility and interactibility of Execute Trajectory Button
+                    UIFunctionalities.TrajectoryServicesUIControler(false, false, true, false, true, true);
+                }
+                else
+                {
+                    Debug.Log($"MQTT: Message Handeling Counters UserCount == {serviceManager.UserCount.Value} and ApprovalCount == {serviceManager.ApprovalCount.Value}");
+                }
+            }
+        }
+        //ApproveTrajectoryMessage ApprovalStatus Consensus message received
+        else if (trajectoryApprovalMessage.ApprovalStatus == 2)
+        {
+            Debug.Log($"MQTT: ApproveTrajectory Consensus message received for trajectory {trajectoryApprovalMessage.TrajectoryID}");
+
+            //If I am the primary user...
+            if (serviceManager.PrimaryUser)
+            {
+                //Unsubsribe from Approval Counter Result topic
+                UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+
+                //Set Primary user back to false
+                serviceManager.PrimaryUser = false;
+            }
+
+            //Time out Cancelation Token: Cancel the time out because of consensus
+            if(serviceManager.ApprovalTimeOutCancelationToken != null)
+            {
+                Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR CONSENSUS.");
+                serviceManager.ApprovalTimeOutCancelationToken.Cancel();
+            }
+
+            //Just as a safety precaution reset approval counter, user count, current trajectory, and currentService to none for everyone
+            serviceManager.ApprovalCount.Reset();
+            serviceManager.UserCount.Reset();
+            serviceManager.CurrentTrajectory = null;
+            serviceManager.currentService = ServiceManager.CurrentService.None;
+
+            //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
+            UIFunctionalities.TrajectoryServicesUIControler(true, false, false, false, false, false);
+        }
+        
+        //ApproveTrajectoryMessage ApprovalStatus Cancelation message received
+        else if (trajectoryApprovalMessage.ApprovalStatus == 3)
+        {
+            Debug.Log($"MQTT: ApproveTrajectory Cancelation message received for trajectory {trajectoryApprovalMessage.TrajectoryID}");
+
+            //Time out Cancelation Token: Cancel the time out because of consensus
+            if(serviceManager.ApprovalTimeOutCancelationToken != null)
+            {
+                Debug.Log("ApproveTrajectoryMessageReceivedHandler: I SHOULD CANCLE THE TIME OUT. FOR TRAJECTORY CANCELATION FROM SOMEONE ELSE.");
+                serviceManager.ApprovalTimeOutCancelationToken.Cancel();
+            }
+
+            //If I am not the primary user and should be reset to the request trajectory service
+            if (!serviceManager.PrimaryUser)
+            {
+                //Just as a safety precaution reset approval counter, user count, current trajectory, and currentService to none for everyone
+                serviceManager.ApprovalCount.Reset();
+                serviceManager.UserCount.Reset();
+                serviceManager.CurrentTrajectory = null;
+                serviceManager.currentService = ServiceManager.CurrentService.None;
+                            
+                //If the Active Trajectory child count is greater the 0 then destroy children
+                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                {
+                    trajectoryVisulizer.DestroyActiveTrajectoryChildren();
+                }
+                //If the Active Robot is not active set it to active
+                if(!trajectoryVisulizer.ActiveRobot.activeSelf)
+                {
+                    trajectoryVisulizer.ActiveRobot.SetActive(true);
+                }
+
+                //Signal OnScreen message for Trajectory Approval Canceled
+                UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+
+                //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
+                UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+            }
+            else
+            {
+                Debug.Log("MQTT: ApproveTrajectory Cancelation message received for trajectory, but I am the primary user. No action taken.");
+            }
+        }
+        
+        //ApprovalStatus not recognized.
+        else
+        {
+            Debug.LogWarning("MQTT: Approval Status is not recognized. Approval Status: " + trajectoryApprovalMessage.ApprovalStatus);
+        }
+    }
+    private void ApprovalCounterRequestMessageReceivedHandler(ApprovalCounterRequest approvalCounterRequestMessage)
+    {
+        Debug.Log($"MQTT: ApprovalCounterRequset Message Received from User {approvalCounterRequestMessage.Header.DeviceID}");
+
+        //No matter what publish with a reply on the approval counter result topic
+        PublishToTopic(compasXRTopics.publishers.approvalCounterResultTopic, new ApprovalCounterResult(approvalCounterRequestMessage.ElementID).GetData());
+    }
+    private void ApprovalCounterResultMessageReceivedHandler(ApprovalCounterResult approvalCounterResultMessage)
+    {
+        Debug.Log($"MQTT: ApprovalCounterResult Message Received from User{approvalCounterResultMessage.Header.DeviceID} for step {approvalCounterResultMessage.ElementID}");
+
+        //If I am the primary user...
+        if (serviceManager.PrimaryUser)
+        {
+            //Increment the user count
+            serviceManager.UserCount.Increment();
+        }
+    }
     private void StoreMessage(string eventMsg)
     {
         if (eventMessages.Count > 50) eventMessages.Clear();
         eventMessages.Add(eventMsg);
     }
-    async Task TrajectoryApprovalTimeout(string elementID, float timeDurationSeconds)
+    async Task TrajectoryApprovalTimeout(string elementID, float timeDurationSeconds, CancellationToken cancellationToken)
     {
-        Debug.Log("MQTT: Trajectory Approval Timeout");
+        Debug.Log($"MQTT: TrajectoryApprovalTimeout: Started with a duration of {timeDurationSeconds} seconds.");
         
-        await Task.Delay(TimeSpan.FromSeconds(timeDurationSeconds));
-
-        //If I am the Primary User
-        if (serviceManager.PrimaryUser)
+        //Time out controled by try and except block in order to catch the TaskCanceledException on completed
+        try
         {
-            if (!serviceManager.currentService.Equals(ServiceManager.CurrentService.ExacuteTrajectory))
+            //Wait for the time duration
+            await Task.Delay(TimeSpan.FromSeconds(timeDurationSeconds), cancellationToken);
+
+            //Throwing away if the cancelation is called.
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (serviceManager.CurrentTrajectory != null)
             {
-                Debug.Log("MQTT: Trajectory Approval Timeout: Primary User has not moved on to service 3: Services will be reset.");
+                //If I am the Primary User
+                if (serviceManager.PrimaryUser && serviceManager.currentService.Equals(ServiceManager.CurrentService.ExacuteTrajectory))
+                {
+                    Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has already moved on to Service 3.");
+                    return;
+                }
+                else
+                {
+                    Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
 
-                //Publish cancelation on ApproveTrajectory Topic
-                PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.CurrentTrajectory, 3).GetData());
-                
-                //Unsubsribe from Approval Counter Result topic
-                UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+                    //Publish cancelation on ApproveTrajectory Topic
+                    PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.ActiveRobotName, serviceManager.CurrentTrajectory, 3).GetData());
+                    
+                    //Unsubsribe from Approval Counter Result topic
+                    if (serviceManager.PrimaryUser)
+                    {
+                        UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);
+                    }
 
-                //Set Primary user back to false && Current Service to None
-                serviceManager.PrimaryUser = false;
-                serviceManager.currentService = ServiceManager.CurrentService.None;
+                    //Set Primary user back to false && Current Service to None
+                    serviceManager.PrimaryUser = false;
+                    serviceManager.currentService = ServiceManager.CurrentService.None;
 
-                //Reset ApprovalCount and UserCount
-                serviceManager.ApprovalCount.Reset();
-                serviceManager.UserCount.Reset();
+                    //Reset ApprovalCount and UserCount
+                    serviceManager.ApprovalCount.Reset();
+                    serviceManager.UserCount.Reset();
 
-                //Signal On Screen Message for Trajectory Approval Timeout
-                UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+                    //Signal On Screen Message for Trajectory Approval Timeout
+                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
 
-                //Set visibility and interactibility of Request Trajectory Button
-                UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
+                    //Set visibility and interactibility of Request Trajectory Button
+                    UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
 
-                //TODO: ADD IS DIRTY BOOL AND SET TO FALSE HERE
+                    //Set is dirty to true and store the message header for comparison
+                    serviceManager.IsDirtyApproval = true;
+                    serviceManager.IsDirtyApprovalHeader = serviceManager.LastGetTrajectoryResultMessage.Header;
+                }
             }
             else
             {
-                Debug.Log("MQTT: Trajectory Approval Timeout: Primary User has already moved on to Service 3.");
+                Debug.Log("MQTT: TrajectoryApprovalTimeout: Current Trajectory is null and this method should not have been called. Either Cancelation did not happen properly, or there is a null trajectory on timeout.");
             }
+
+        }
+
+        catch (TaskCanceledException)
+        {
+            Debug.Log("MQTT: TrajectoryApprovalTimeout: Task was cancled before the time out duration meaning everything proved to be successful or was purposfully cancled.");
         }
     }
 
