@@ -69,7 +69,6 @@ public class Eventmanager : MonoBehaviour
         Debug.Log("Database Initilized: Safe to Fetch Settings Data.");
         databaseManager.FetchSettingsData(settings_reference);
     }  
-    
-    //TODO: ULTIMATE ERROR HANDELING... LISTEN TO LOGS AND WHEN ERROR OCURRS, DISPLAY ONSCREEN MESSAGE.
+
 }
 

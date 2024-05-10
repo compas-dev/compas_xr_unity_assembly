@@ -100,18 +100,23 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         base.OnConnected();
         Debug.Log("MQTT: ON CONNECTED INTERNAL METHOD");
 
-        //Set UI Object Color to green if the communication toggle is on.
+        //Set UI Object Color to green & connected if the communication toggle is on.
         if (UIFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
         {
             UIFunctionalities.SetUIObjectColor(UIFunctionalities.MqttConnectButtonObject, Color.green);
+            UIFunctionalities.UpdateConnectionStatusText(UIFunctionalities.MqttConnectionStatusObject, true);
         }
     }
     protected override void OnDisconnected()
     {
         base.OnDisconnected();
         Debug.Log("MQTT: ON DISCONNECTED INTERNAL METHOD.");
-        //I dont think we need the is connected bool.
-        // isConnected=false;
+
+        //Set UI Object Connection Status
+        if (UIFunctionalities.CommunicationToggleObject.GetComponent<Toggle>().isOn)
+        {
+            UIFunctionalities.UpdateConnectionStatusText(UIFunctionalities.MqttConnectionStatusObject, false);
+        }
 
     }
     protected override void OnConnectionLost()
@@ -120,7 +125,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
         base.OnConnectionLost();
 
         //Signal On screen message that connection has been lost
-        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.MQTTConnectionLostMessageObject);
+        string message = "WARNING: MQTT connection has been lost. Please check your internet connection and restart the application.";
+        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.MQTTConnectionLostMessageObject, "MQTTConnectionLostMessage", UIFunctionalities.MessagesParent, message, "OnConnectionLost: MQTT Connection Lost");
 
         Debug.Log("MQTT: CONNECTION LOST INTERNAL METHOD!");
     }
@@ -314,24 +320,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.Log("MQTT: GetTrajectoryRequest this request came from me");
         }
     }
-    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)  //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL? AND TIME OUT FOR WAITNG FOR TRAJECTORY RESPONSE.
+    private void GetTrajectoryResultReceivedMessageHandler(GetTrajectoryResult getTrajectoryResultmessage)
     {
-
-        // Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
-        // if(serviceManager.IsDirty) //TODO: I THINK THIS SHOULD BE SPECIFIC TO SERVICE TIMEOUT... ex. serviceManager.IsDirtyGetTrajectoryResult vs. serviceManager.IsDirtyApproval
-        // {
-        //     if(serviceManager.IsDirtyMessageHeader.ResponseID == getTrajectoryResultmessage.Header.ResponseID && serviceManager.IsDirtyMessageHeader.SequenceID == getTrajectoryResultmessage.Header.SequenceID + 1)
-        //     {
-        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true and the message is the same as the dirty message. No action taken.");
-        //         return;
-        //     }
-        //     else
-        //     {
-        //         Debug.Log("MQTT: GetTrajectoryResult: IsDirty is true but the message is not the same as the dirty message. Resetting IsDirty to false.");
-        //         serviceManager.IsDirty = false;
-        //     }
-        // }
-
         //Set last result message of the Service Manager
         serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
         
@@ -345,7 +335,11 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 if(serviceManager.PrimaryUser)
                 {                    
                     Debug.LogWarning("MQTT: GetTrajectoryResult (PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. No action taken.");
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
+
+                    string message = "WARNING: Trajectory Response did not match expectations. Returning to Request Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject, "TrajectoryResponseIncorrectWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Message Structure incorrect.");
+                    //TODO: MAKE SURE THIS WORKS.
+                    // UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryResponseIncorrectWarningMessageObject);
 
                     //Set Primary user back to false
                     serviceManager.PrimaryUser = false;
@@ -419,7 +413,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                                 getTrajectoryResultmessage.RobotBaseFrame,
                                 getTrajectoryResultmessage.TrajectoryID,
                                 trajectoryVisulizer.ActiveRobot,
-                                trajectoryVisulizer.ActiveTrajectory,
+                                trajectoryVisulizer.ActiveTrajectoryParentObject,
                                 true));
 
                         //Set curent trajectory of the Service Manager
@@ -474,7 +468,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                                     getTrajectoryResultmessage.RobotBaseFrame,
                                     getTrajectoryResultmessage.TrajectoryID,
                                     trajectoryVisulizer.ActiveRobot,
-                                    trajectoryVisulizer.ActiveTrajectory,
+                                    trajectoryVisulizer.ActiveTrajectoryParentObject,
                                     true));
                             
                             Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is not the same as the active robot name signaling on screen control.");
@@ -482,7 +476,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                         }
                         else
                         {
-                            trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectory, true);
+                            trajectoryVisulizer.VisulizeRobotTrajectory(getTrajectoryResultmessage.Trajectory, trajectoryVisulizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisulizer.ActiveRobot, trajectoryVisulizer.ActiveTrajectoryParentObject, true);
                             Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
                         }
                         
@@ -504,7 +498,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                         UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
 
                         //Set on screen message and return to trajectory request service
-                        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryNullWarningMessageObject);
+                        string message = "WARNING: The robotic controler replied with a Null trajectory. You will be returned to trajectory request.";
+                        UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.TrajectoryNullWarningMessageObject, "TrajectoryNullWarningMessage", UIFunctionalities.MessagesParent, message, "GetTrajectoryResultReceivedMessageHandler: Received trajectory is null");
                     }
                 }
             }
@@ -515,7 +510,7 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             Debug.LogWarning("MQTT: GetTrajectoryResult LastGetTrajectoryRequestMessage is null. A request must be made before this code works.");
         }
     }
-    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage) //TODO: IS DIRTY BOOL SPECIFIC TO APPROVAL?
+    private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage)
     {
         //Is dirty bool that is set when the for time outs and is used to ignore messages that are not needed.
         if(serviceManager.IsDirtyApproval)
@@ -553,16 +548,20 @@ public class MqttTrajectoryManager : M2MqttUnityClient
             }
             
             //If the Active Trajectory child count is greater the 0 then destroy children
-            if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+            if(trajectoryVisulizer.ActiveTrajectoryParentObject != null && trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
             {
                 trajectoryVisulizer.DestroyActiveTrajectoryChildren();
             }
+            else
+            {
+                Debug.LogWarning("ApproveTrajectoryMessageReceivedHandler: ActiveTrajectoryParentObject is null or has no children.");
+            }
             //If the Active Robot is not active set it to active
-            if(!trajectoryVisulizer.ActiveRobot.activeSelf)
+            if(trajectoryVisulizer.ActiveRobot != null && !trajectoryVisulizer.ActiveRobot.activeSelf)
             {
                 trajectoryVisulizer.ActiveRobot.SetActive(true);
             }
-
+            
             //Reset ApprovalCount and UserCount This could be done inside of the PrimaryUser, but Also safe way of error catching
             serviceManager.ApprovalCount.Reset();
             serviceManager.UserCount.Reset();
@@ -661,18 +660,22 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                 serviceManager.currentService = ServiceManager.CurrentService.None;
                             
                 //If the Active Trajectory child count is greater the 0 then destroy children
-                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                if(trajectoryVisulizer.ActiveTrajectoryParentObject != null && trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                 {
                     trajectoryVisulizer.DestroyActiveTrajectoryChildren();
                 }
                 //If the Active Robot is not active set it to active
-                if(!trajectoryVisulizer.ActiveRobot.activeSelf)
+                if(trajectoryVisulizer.ActiveRobot != null && !trajectoryVisulizer.ActiveRobot.activeSelf)
                 {
                     trajectoryVisulizer.ActiveRobot.SetActive(true);
                 }
 
                 //Signal OnScreen message for Trajectory Approval Canceled
-                UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+                if (trajectoryApprovalMessage.Header.DeviceID != SystemInfo.deviceUniqueIdentifier)
+                {
+                    string message = "WARNING : The trajectory approval has been canceled by another user. Returning to Request Trajectory Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "ApproveTrajectoryMessageReceivedHandler: Trajectory Cancled by another user.");
+                }
 
                 //Set visibilty and interactibility of Request Trajectory Button... visible but not interactable
                 UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);
@@ -755,7 +758,8 @@ public class MqttTrajectoryManager : M2MqttUnityClient
                     serviceManager.UserCount.Reset();
 
                     //Signal On Screen Message for Trajectory Approval Timeout
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.TrajectoryApprovalTimedOutMessageObject);
+                    string message = "WARNING : Trajectory Approval has timed out. Returning to Request Trajectory Service.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref  UIFunctionalities.TrajectoryCancledMessage, "TrajectoryCancledMessage", UIFunctionalities.MessagesParent, message, "TrajectoryApprovalTimeout: Trajectory Approval Cancled by Timeout.");
 
                     //Set visibility and interactibility of Request Trajectory Button
                     UIFunctionalities.TrajectoryServicesUIControler(true, true, false, false, false, false);

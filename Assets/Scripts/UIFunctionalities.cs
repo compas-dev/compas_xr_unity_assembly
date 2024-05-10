@@ -29,12 +29,21 @@ public class UIFunctionalities : MonoBehaviour
     public Eventmanager eventManager;
     public MqttTrajectoryManager mqttTrajectoryManager;
     public TrajectoryVisulizer trajectoryVisulizer;
+    public RosConnectionManager rosConnectionManager;
+    public ScrollSearchManager scrollSearchManager;
     
     //Primary UI Objects
     private GameObject VisibilityMenuObject;
     private GameObject MenuButtonObject;
     private GameObject EditorToggleObject;
     private GameObject ElementSearchToggleObject;
+
+    //todo: TEMPORARY OBJECTS
+    public GameObject ScrollSearchToggleObject;
+    private GameObject ScrollSearchObjects;
+
+    //todo: TEMPORARY OBJECTS
+
     public GameObject CanvasObject;
     public GameObject ConstantUIPanelObjects;
     public GameObject NextGeometryButtonObject;
@@ -45,11 +54,14 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject IsBuiltButtonObject;
     public GameObject IsbuiltButtonImage;
     public GameObject IsbuiltPriorityLockedImage;
-    private TMP_InputField ElementSearchInputField;
-    private GameObject ElementSearchObjects;
+    // private TMP_InputField ElementSearchInputField;
+    // private GameObject ElementSearchObjects;
     private GameObject SearchElementButtonObject;
 
     //On Screen Messages
+    public GameObject MessagesParent;
+    public GameObject OnScreenErrorMessagePrefab;
+    public GameObject OnScreenInfoMessagePrefab;
     private GameObject PriorityIncompleteWarningMessageObject;
     private GameObject PriorityIncorrectWarningMessageObject;
     private GameObject PriorityCompleteMessageObject;
@@ -58,7 +70,7 @@ public class UIFunctionalities : MonoBehaviour
     public GameObject ErrorFetchingDownloadUriMessageObject;
     public GameObject ErrorDownloadingObjectMessageObject;
     public GameObject TrajectoryReviewRequestMessageObject;
-    public GameObject TrajectoryApprovalTimedOutMessageObject;
+    public GameObject TrajectoryCancledMessage;
     public GameObject SearchItemNotFoundWarningMessageObject;
     public GameObject ActiveRobotIsNullWarningMessageObject;
     public GameObject TransactionLockActiveWarningMessageObject;
@@ -70,11 +82,12 @@ public class UIFunctionalities : MonoBehaviour
 
     //Visualizer Menu Objects
     private GameObject VisualzierBackground;
-    private GameObject PreviewBuilderButtonObject;
+    private GameObject PreviewActorToggleObject;
     public GameObject IDToggleObject;
     public GameObject RobotToggleObject;
     public GameObject ObjectLengthsToggleObject;
     private GameObject ObjectLengthsUIPanelObjects;
+    private Vector3 ObjectLengthsUIPanelPosition;
     private TMP_Text ObjectLengthsText;
     private GameObject ObjectLengthsTags;
     public GameObject PriorityViewerToggleObject;
@@ -91,7 +104,7 @@ public class UIFunctionalities : MonoBehaviour
     private GameObject LoadFromROSToggleObject;
     private GameObject InfoPanelObject;
     public GameObject CommunicationToggleObject;
-    private GameObject OcclusionToggleObject;
+    // private GameObject OcclusionToggleObject;
     private GameObject CommunicationPanelObject;
     private GameObject LoadURDFFromROSPannelObject;
 
@@ -110,11 +123,13 @@ public class UIFunctionalities : MonoBehaviour
     private TMP_InputField MqttBrokerInputField;
     private TMP_InputField MqttPortInputField;
     private GameObject MqttUpdateConnectionMessage;
+    public GameObject MqttConnectionStatusObject;
     public GameObject MqttConnectButtonObject;
     public GameObject RosConnectButtonObject;
     private TMP_InputField RosHostInputField;
     private TMP_InputField RosPortInputField;
     private GameObject RosUpdateConnectionMessage;
+    public GameObject RosConnectionStatusObject;
 
     //Trajectory Review UI Controls
     public GameObject ReviewTrajectoryObjects;
@@ -147,6 +162,7 @@ public class UIFunctionalities : MonoBehaviour
     private ARRaycastManager rayManager;
     public OperatingSystem currentOperatingSystem;
     private AROcclusionManager occlusionManager;
+    private GameObject OcclusionToggleObject;
 
     //On Screen Text
     public GameObject CurrentStepTextObject;
@@ -158,9 +174,11 @@ public class UIFunctionalities : MonoBehaviour
 
     //In script use variables
     public string CurrentStep = null;
-    public string SearchedElement = "None";
+    // public string SearchedElement = "None";
     public string SearchedElementStepID;
     public string SelectedPriority = "None";
+    public bool IDTagIsOffset = false;
+    public bool PriorityTagIsOffset = false;
     
     void Start()
     {
@@ -170,19 +188,21 @@ public class UIFunctionalities : MonoBehaviour
 
     void Update()
     {
+        //Control Touch Search
         TouchSearchControler();
     }
 
-    /////////////////////////////////////////// UI Control ////////////////////////////////////////////////////
+    /////////////////////////////////// UI Control & OnStart methods ////////////////////////////////////////////////////
     private void OnAwakeInitilization()
     {
-        /////////////////////////////////////////// Initial Elements ////////////////////////////////////////////
         //Find Other Scripts
         databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
         instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
         eventManager = GameObject.Find("EventManager").GetComponent<Eventmanager>();
         mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
         trajectoryVisulizer = GameObject.Find("TrajectoryVisulizer").GetComponent<TrajectoryVisulizer>();
+        rosConnectionManager = GameObject.Find("RosManager").GetComponent<RosConnectionManager>();
+        scrollSearchManager = GameObject.Find("ScrollSearchManager").GetComponent<ScrollSearchManager>();
 
         //Find Specific GameObjects
         Elements = GameObject.Find("Elements");
@@ -199,14 +219,17 @@ public class UIFunctionalities : MonoBehaviour
         //Find and set current operating system
         currentOperatingSystem = OperatingSystemManager.GetCurrentOS();
 
-        //Set occlusion manager based on the current operating system.
-        SetOcclusionFromOS(ref occlusionManager, currentOperatingSystem);
-
         //Find Constant UI Pannel
         ConstantUIPanelObjects = GameObject.Find("ConstantUIPanel");
-
-        /////////////////////////////////////////// Primary UI Buttons ////////////////////////////////////////////
        
+        //Set up UI Objects and buttons on start
+        SetPrimaryUIItemsOnStart();
+        SetVisulizerMenuItemsOnStart();
+        SetMenuItemsOnStart();
+        SetCommunicationItemsOnStart();
+    }
+    private void SetPrimaryUIItemsOnStart()
+    {
         //Find Next Object, Button, and Add Listener for OnClick method
         FindButtonandSetOnClickAction(ConstantUIPanelObjects, ref NextGeometryButtonObject, "Next_Geometry", NextStepButton);
 
@@ -222,15 +245,6 @@ public class UIFunctionalities : MonoBehaviour
         IsbuiltButtonImage = IsBuiltButtonObject.FindObject("Image");
         IsbuiltPriorityLockedImage = IsBuiltButtonObject.FindObject("PriorityLockedImage");
 
-        //Find toggle for element search
-        FindToggleandSetOnValueChangedAction(ConstantUIPanelObjects, ref ElementSearchToggleObject, "ElementSearchToggle", ToggleElementSearch);
-        
-        //Find Element Search Button & Objects
-        ElementSearchObjects = ConstantUIPanelObjects.FindObject("ElementSearchObjects");
-        ElementSearchInputField = ElementSearchObjects.FindObject("ElementSearchInputField").GetComponent<TMP_InputField>();
-        FindButtonandSetOnClickAction(ElementSearchObjects, ref SearchElementButtonObject, "SearchForElementButton", SearchElementButton);
-        SearchedElement = "None";
-
         //Find toggles for menu & Add on value changed event
         FindToggleandSetOnValueChangedAction(CanvasObject, ref MenuButtonObject, "Menu_Toggle", ToggleMenu);
 
@@ -241,7 +255,7 @@ public class UIFunctionalities : MonoBehaviour
         CurrentStepTextObject = GameObject.Find("Current_Index_Text");
         CurrentStepText = CurrentStepTextObject.GetComponent<TMPro.TMP_Text>();
 
-        GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltIndex_Text");
+        GameObject LastBuiltIndexTextObject = GameObject.Find("LastBuiltElement_Text");
         LastBuiltIndexText = LastBuiltIndexTextObject.GetComponent<TMPro.TMP_Text>();
 
         GameObject CurrentPriorityTextObject = GameObject.Find("CurrentPriority_Text");
@@ -254,36 +268,29 @@ public class UIFunctionalities : MonoBehaviour
         VisualzierBackground = VisibilityMenuObject.FindObject("Background_Visualizer");
         MenuBackground = MenuButtonObject.FindObject("Background_Menu");
 
-        //Find OnScreeen Messages
-        GameObject MessagesParent = CanvasObject.FindObject("OnScreenMessages");
-        PriorityIncompleteWarningMessageObject = MessagesParent.FindObject("PriorityIncompleteWarningMessage");
-        PriorityIncorrectWarningMessageObject = MessagesParent.FindObject("PriorityIncorrectWarningMessage");
-        PriorityCompleteMessageObject = MessagesParent.FindObject("PriorityCompleteMessage");
-        SearchItemNotFoundWarningMessageObject = MessagesParent.FindObject("SearchItemNotFoundWarningMessage");
-        MQTTFailedToConnectMessageObject = MessagesParent.FindObject("MQTTConnectionFailedMessage");
-        MQTTConnectionLostMessageObject = MessagesParent.FindObject("MQTTConnectionLostMessage");
-        ErrorFetchingDownloadUriMessageObject = MessagesParent.FindObject("ErrorFetchingDownloadUriMessage");
-        ErrorDownloadingObjectMessageObject = MessagesParent.FindObject("ObjectFailedToDownloadMessage");
-        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("TrajectoryReviewRequestReceivedMessage");
-        TrajectoryApprovalTimedOutMessageObject = MessagesParent.FindObject("TrajectoryApprovalTimedOutMessage");
-        ActiveRobotIsNullWarningMessageObject = MessagesParent.FindObject("ActiveRobotisNullWarningMessage");
-        TransactionLockActiveWarningMessageObject = MessagesParent.FindObject("TransactionLockActiveWarningMessage");
-        ActiveRobotCouldNotBeFoundWarningMessage = MessagesParent.FindObject("ActiveRobotCouldNotBeFoundWarningMessage");
-        ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("ActiveRobotUpdatedFromPlannerMessage");
-        TrajectoryResponseIncorrectWarningMessageObject = MessagesParent.FindObject("TrajectoryResponseIncorrectWarningMessage");
-        ConfigDoesNotMatchURDFStructureWarningMessageObject = MessagesParent.FindObject("ConfigDoesNotMatchURDFStructureWarningMessage");
-        TrajectoryNullWarningMessageObject = MessagesParent.FindObject("TrajectoryNullWarningMessage");
-        
-        /////////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
+        //Find OnScreeen Message Prefabs
+        MessagesParent = CanvasObject.FindObject("OnScreenMessages");
+        OnScreenErrorMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenErrorMessagePrefab");
+        OnScreenInfoMessagePrefab = MessagesParent.FindObject("Prefabs").FindObject("OnScreenInfoMessagePrefab");
 
+        //OnScreen Messages with custom acknowledgement events.
+        ActiveRobotUpdatedFromPlannerMessageObject = MessagesParent.FindObject("Prefabs").FindObject("ActiveRobotUpdatedFromPlannerMessage");
+        TrajectoryReviewRequestMessageObject = MessagesParent.FindObject("Prefabs").FindObject("TrajectoryReviewRequestReceivedMessage");
+    }
+    private void SetVisulizerMenuItemsOnStart()
+    {
         //Find PreviewBuilder Object, Button, and Add Listener for OnClick method
-        FindButtonandSetOnClickAction(VisibilityMenuObject, ref PreviewBuilderButtonObject, "Preview_Builder", ChangeVisualizationMode);
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PreviewActorToggleObject, "PreviewActorToggle", TogglePreviewActor);
 
         //Find IDToggle Object, Button, and Add Listener for OnClick method
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID); //TODO: TOGGLES LIKE THIS.
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref IDToggleObject, "ID_Toggle", ToggleID);
 
         //Find Robot toggle and Objects
-        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "Robot_Button", ToggleRobot);
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref RobotToggleObject, "RobotToggle", ToggleRobot);
+
+        //Find toggle for element search
+        FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ScrollSearchToggleObject, "ScrollSearchToggle", ToggleScrollSearch);
+        ScrollSearchObjects = ScrollSearchToggleObject.FindObject("ScrollSearchObjects");
 
         //Find Robot toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref PriorityViewerToggleObject, "PriorityViewer", TogglePriority);
@@ -296,11 +303,12 @@ public class UIFunctionalities : MonoBehaviour
         //Find Object Lengths Toggle and Objects
         FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref ObjectLengthsToggleObject, "ObjectLength_Button", ToggleObjectLengths);
         ObjectLengthsUIPanelObjects = CanvasObject.FindObject("ObjectLengthsPanel");
+        ObjectLengthsUIPanelPosition = ObjectLengthsUIPanelObjects.transform.localPosition;
         ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
         ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
-
-        /////////////////////////////////////////// Menu Buttons //////////////////////////////////////////////////////
-        
+    }
+    private void SetMenuItemsOnStart()
+    {
         //Find Info Toggle, and Add Listener for OnValueChanged method
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref LoadFromROSToggleObject, "LoadURDFFromROSButton", ToggleLoadFromROS);
 
@@ -325,9 +333,6 @@ public class UIFunctionalities : MonoBehaviour
         //Find communication toggle objects
         FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
-        //Find Occlusion toggle objects should be found every time, but only turned on if the device is an iOS device
-        FindToggleandSetOnValueChangedAction(MenuButtonObject, ref OcclusionToggleObject, "OcclusionToggle", ToggleAROcclusion);
-
         //Find Panel Objects used for Info and communication
         InfoPanelObject = CanvasObject.FindObject("InfoPanel");
         CommunicationPanelObject = CanvasObject.FindObject("CommunicationPanel");
@@ -342,20 +347,22 @@ public class UIFunctionalities : MonoBehaviour
 
         //Find Background Images for Toggles
         EditorBackground = EditorToggleObject.FindObject("Background_Editor");
-
-        /////////////////////////////////////////// Communication Buttons ////////////////////////////////////////////
-
+    }
+    private void SetCommunicationItemsOnStart()
+    {
         //Find Pannel Objects used for connecting to a different MQTT broker
         MqttBrokerInputField = CommunicationPanelObject.FindObject("MqttBrokerInputField").GetComponent<TMP_InputField>();
         MqttPortInputField = CommunicationPanelObject.FindObject("MqttPortInputField").GetComponent<TMP_InputField>();
         MqttUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
+        MqttConnectionStatusObject = CommunicationPanelObject.FindObject("MqttConnectionStatusObject");
         FindButtonandSetOnClickAction(CommunicationPanelObject, ref MqttConnectButtonObject, "MqttConnectButton", UpdateMqttConnectionFromUserInputs);
 
         //Find Pannel Objects used for connecting to a different ROS host
         RosHostInputField = CommunicationPanelObject.FindObject("ROSHostInputField").GetComponent<TMP_InputField>();
         RosPortInputField = CommunicationPanelObject.FindObject("ROSPortInputField").GetComponent<TMP_InputField>();
-        RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsMQTTReconnectMessage");
-        FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", () => print_string_on_click("ROS CONNECT BUTTONPRESSED"));
+        RosUpdateConnectionMessage = CommunicationPanelObject.FindObject("UpdateInputsROSReconnectMessage");
+        RosConnectionStatusObject = CommunicationPanelObject.FindObject("ROSConnectionStatusObject");
+        FindButtonandSetOnClickAction(CommunicationPanelObject, ref RosConnectButtonObject, "ROSConnectButton", UpdateRosConnectionFromUserInputs);
 
         //Find Control Objects and set up events
         GameObject TrajectoryControlObjects = GameObject.Find("TrajectoryReviewUIControls");
@@ -395,6 +402,7 @@ public class UIFunctionalities : MonoBehaviour
         {
             RobotSelectionDropdown.options = robotOptions;
         }
+
         //Find Object, Execute button and add event listner for on click method
         FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
     }
@@ -450,19 +458,37 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.Log(Text);
     }
+    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
+    {
+        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
+        if(currentOperatingSystem == OperatingSystem.iOS)
+        {
+            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
+            occlusionManager.enabled = true;
+
+            Debug.Log("AROcclusion: will be activated because current platform is ios");
+        }
+        else
+        {
+            Debug.Log("AROcclusion: will not be activated because current system is not ios");
+        }
+    }
+
+    /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void ToggleVisibilityMenu(Toggle toggle)
     {
-        if (VisualzierBackground != null && PreviewBuilderButtonObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDToggleObject != null && PriorityViewerToggleObject != null)
+        if (VisualzierBackground != null && PreviewActorToggleObject != null && RobotToggleObject != null && ObjectLengthsToggleObject != null && IDToggleObject != null && PriorityViewerToggleObject != null)
         {    
             if (toggle.isOn)
             {             
                 //Set Visibility of buttons
                 VisualzierBackground.SetActive(true);
-                PreviewBuilderButtonObject.SetActive(true);
+                PreviewActorToggleObject.SetActive(true);
                 RobotToggleObject.SetActive(true);
                 ObjectLengthsToggleObject.SetActive(true);
                 IDToggleObject.SetActive(true);
                 PriorityViewerToggleObject.SetActive(true);
+                ScrollSearchToggleObject.SetActive(true);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, Yellow);
@@ -472,11 +498,12 @@ public class UIFunctionalities : MonoBehaviour
             {
                 //Set Visibility of buttons
                 VisualzierBackground.SetActive(false);
-                PreviewBuilderButtonObject.SetActive(false);
+                PreviewActorToggleObject.SetActive(false);
                 RobotToggleObject.SetActive(false);
                 ObjectLengthsToggleObject.SetActive(false);
                 IDToggleObject.SetActive(false);
                 PriorityViewerToggleObject.SetActive(false);
+                ScrollSearchToggleObject.SetActive(false);
 
                 //Set color of toggle
                 SetUIObjectColor(VisibilityMenuObject, White);
@@ -501,12 +528,6 @@ public class UIFunctionalities : MonoBehaviour
                 EditorToggleObject.SetActive(true);
                 LoadFromROSToggleObject.SetActive(true);
 
-                //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
-                if(currentOperatingSystem == OperatingSystem.iOS)
-                {
-                    OcclusionToggleObject.SetActive(true);
-                }
-
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, Yellow);
 
@@ -526,6 +547,7 @@ public class UIFunctionalities : MonoBehaviour
                 if(LoadFromROSToggleObject.GetComponent<Toggle>().isOn){
                     LoadFromROSToggleObject.GetComponent<Toggle>().isOn = false;
                 }
+
                 //Set Visibility of buttons
                 MenuBackground.SetActive(false);
                 InfoToggleObject.SetActive(false);
@@ -533,12 +555,6 @@ public class UIFunctionalities : MonoBehaviour
                 CommunicationToggleObject.SetActive(false);
                 EditorToggleObject.SetActive(false);
                 LoadFromROSToggleObject.SetActive(false);
-
-                //If the currentOperatingSystem is IOS then turn on the Occlusion Toggle
-                if(currentOperatingSystem == OperatingSystem.iOS)
-                {
-                    OcclusionToggleObject.SetActive(false);
-                }
 
                 //Set color of toggle
                 SetUIObjectColor(MenuButtonObject, White);
@@ -549,23 +565,6 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find one of the buttons in the Menu.");
         }   
     }
-    public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, OperatingSystem currentOperatingSystem)
-    {
-        Debug.Log($"SetOcclusionFromOS: Current Operating System is {currentOperatingSystem}");
-        if(currentOperatingSystem == OperatingSystem.iOS)
-        {
-            occlusionManager = FindObjectOfType<AROcclusionManager>(true);
-            occlusionManager.enabled = true;
-
-            Debug.Log("AROcclusion: will be activated because current platform is ios");
-        }
-        else
-        {
-            Debug.Log("AROcclusion: will not be activated because current system is not ios");
-        }
-    }
-
-    /////////////////////////////////////// Primary UI Functions //////////////////////////////////////////////
     public void NextStepButton()
     {
         //Press Next Element Button
@@ -678,7 +677,7 @@ public class UIFunctionalities : MonoBehaviour
                     trajectoryVisulizer.ActiveRobot.SetActive(false);
                 }
                 //If the Active Trajectory child count is greater the 0 then destroy children
-                if(trajectoryVisulizer.ActiveTrajectory.transform.childCount > 0)
+                if(trajectoryVisulizer.ActiveTrajectoryParentObject.transform.childCount > 0)
                 {
                     trajectoryVisulizer.DestroyActiveTrajectoryChildren();
                 }
@@ -694,107 +693,6 @@ public class UIFunctionalities : MonoBehaviour
         
         //Update Is Built Button
         IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
-    }
-    public void ToggleElementSearch(Toggle toggle)
-    {
-        if (ElementSearchObjects != null && IsBuiltPanelObjects != null)
-        {    
-            if (toggle.isOn)
-            {             
-                //Set Visibility of buttons
-                IsBuiltPanelObjects.SetActive(false);
-                ElementSearchObjects.SetActive(true);
-                
-                //Set color of toggle
-                SetUIObjectColor(ElementSearchToggleObject, Yellow);
-
-            }
-            else
-            {
-                //If searched step is not null color it built or unbuilt
-                if(SearchedElement != null)
-                {
-                    GameObject searchedElement = Elements.FindObject(SearchedElement + " Geometry");
-
-                    if(searchedElement != null)
-                    {
-                        //TODO: ADD IF STATEMENT FOR IF IT IS CURRENT STEP or over arching color and colider controler.
-
-                        //Color Previous one if it is not null
-                        instantiateObjects.ColorBuiltOrUnbuilt(databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID].data.is_built, searchedElement);
-                    }
-                }
-                
-                //Set Visibility of buttons
-                ElementSearchObjects.SetActive(false);
-                IsBuiltPanelObjects.SetActive(true);
-
-                //Set color of toggle
-                SetUIObjectColor(ElementSearchToggleObject, White);
-
-                //Update Is Built Button
-                Step currentStep = databaseManager.BuildingPlanDataItem.steps[CurrentStep];
-                IsBuiltButtonGraphicsControler(currentStep.data.is_built, currentStep.data.priority);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Could not find Step Search Objects or Is Built Panel.");
-        }  
-    }  
-    public void SearchElementButton()
-    {
-        //Search for step button clicked
-        Debug.Log("Search for Step Button Pressed");
-
-        //GameObject that the search is looking for
-        GameObject UserSearchedElement = null;
-        
-        //If current step is not null and greater then Zero add subtract 1
-        if(ElementSearchInputField.text != null)
-        {
-            UserSearchedElement = Elements.FindObject(ElementSearchInputField.text + " Geometry");
-        }
-
-        //If the element was found color the previous object built or unbuilt and replace the variable
-        if(UserSearchedElement != null)
-        {
-            //Color Previous one if it is not null
-            if(SearchedElement != "None")
-            {
-                //Find Gameobject Associated with that step
-                GameObject previousElement = Elements.FindObject(SearchedElementStepID);
-                Step PreviousStep = databaseManager.BuildingPlanDataItem.steps[SearchedElementStepID];
-
-                if(previousElement != null)
-                {
-                    //Color based on current mode
-                    instantiateObjects.ObjectColorandTouchEvaluater(instantiateObjects.visulizationController.VisulizationMode, instantiateObjects.visulizationController.TouchMode, PreviousStep, SearchedElementStepID, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
-
-                    //if it is equal to current step color it human or robot
-                    if(SearchedElementStepID == CurrentStep)
-                    {
-                        instantiateObjects.ColorHumanOrRobot(PreviousStep.data.actor, PreviousStep.data.is_built, previousElement.FindObject(PreviousStep.data.element_ids[0] + " Geometry"));
-                    }
-                }
-            }
-            
-            //Set Searched Step
-            SearchedElement = ElementSearchInputField.text;
-
-            //Color it by the searched object color
-            UserSearchedElement.GetComponent<MeshRenderer>().material = instantiateObjects.SearchedObjectMaterial;
-
-            //Find the parent name so I can set that as my searched element stepID
-            SearchedElementStepID = UserSearchedElement.transform.parent.name;
-            Debug.Log("Searched Element Step ID: " + SearchedElementStepID);
-
-        }
-        else
-        {
-            string message = $"WARNING: The item {ElementSearchInputField.text} could not be found. Please retype information and try search again.";
-            SignalOnScreenMessageFromReference(ref SearchItemNotFoundWarningMessageObject, message, "Search Object Not Found");
-        }     
     }
     public void PreviousStepButton()
     {
@@ -948,8 +846,9 @@ public class UIFunctionalities : MonoBehaviour
 
                 //Signal on screen message for priority incorrect
                 string message = $"WARNING: This elements priority is incorrect. It is priority {step.data.priority.ToString()} and next priority to build is {Convert.ToInt16(databaseManager.CurrentPriority) + 1}";
-                SignalOnScreenMessageFromReference(ref PriorityIncorrectWarningMessageObject, message, "Priority Incorrect Warning");
-
+                // SignalOnScreenMessageFromReference(ref PriorityIncorrectWarningMessageObject, message, "Priority Incorrect Warning");
+                
+                SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncorrectWarningMessageObject, "PriorityIncorrectWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incorrect Warning");
                 //Return false to not push data.
                 return false;
             }
@@ -983,8 +882,9 @@ public class UIFunctionalities : MonoBehaviour
 
                     //Signal on screen message for priority complete
                     string message = $"The previous priority {databaseManager.CurrentPriority} is complete you are now moving on to priority {step.data.priority.ToString()}.";
-                    SignalOnScreenMessageFromReference(ref PriorityCompleteMessageObject, message ,"Priority Complete Message");
-
+                    // SignalOnScreenMessageFromReference(ref PriorityCompleteMessageObject, message ,"Priority Complete Message");
+                    SignalOnScreenMessageFromPrefab(ref OnScreenInfoMessagePrefab, ref PriorityCompleteMessageObject, "PriorityCompleteMessage", MessagesParent, message, "LocalPriorityChecker: Priority Complete Message");
+                    
                     //Set Current Priority
                     SetCurrentPriority(step.data.priority.ToString());
 
@@ -1003,7 +903,7 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     //Signal on screen message for priority incomplete
                     string message = $"WARNING: This element cannot build because the following elements from Current Priority {databaseManager.CurrentPriority} are not built: {string.Join(", ", UnbuiltElements)}";
-                    SignalOnScreenMessageFromReference(ref PriorityIncompleteWarningMessageObject, message, "Priority Incomplete Warning");
+                    SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref PriorityIncompleteWarningMessageObject, "PriorityIncompleteWarningMessage", MessagesParent, message, "LocalPriorityChecker: Priority Incomplete Warning");
 
                     //Return true to not push data.
                     return false;
@@ -1095,7 +995,7 @@ public class UIFunctionalities : MonoBehaviour
     public void SetLastBuiltText(string key)
     {
         //Set Last Built Text
-        LastBuiltIndexText.text = $"Last Built Step : {key}";
+        LastBuiltIndexText.text = $"Last Built Element : {key}";
     }
     public void SetCurrentPriority(string Priority)
     {        
@@ -1253,7 +1153,7 @@ public class UIFunctionalities : MonoBehaviour
         }
 
         //If the transaction lock message is active turn it off
-        if(TransactionLockActiveWarningMessageObject.activeSelf)
+        if(TransactionLockActiveWarningMessageObject != null && TransactionLockActiveWarningMessageObject.activeSelf)
         {
             //Set visibility of transaction lock active warning message
             TransactionLockActiveWarningMessageObject.SetActive(false);
@@ -1366,25 +1266,31 @@ public class UIFunctionalities : MonoBehaviour
     {
         Debug.LogWarning("MQTT: MQTT Connection Failed.");
         
-        if(MQTTFailedToConnectMessageObject != null)
+        //Check if the Connectoin Toggle is on and if it is turn it off.
+        if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
         {
-            //Check if the Connectoin Toggle is on and if it is turn it off.
-            if(CommunicationToggleObject.GetComponent<Toggle>().isOn)
-            {
-                CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
-            }
-            
-            //Signal On Screen Message with Acknowledge Button
-            SignalOnScreenMessageWithButton(MQTTFailedToConnectMessageObject);
+            CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
         }
-        else
-        {
-            Debug.LogWarning("MQTT Message: Could not find message object or message component.");
-        }
+        
+        //Signal On Screen Message with Acknowledge Button
+        string message = $"WARNING: MQTT Failed to connect to broker: {mqttTrajectoryManager.brokerAddress} on port: {mqttTrajectoryManager.brokerPort}. Please check your internet and try again.";
+        SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref MQTTFailedToConnectMessageObject, "MQTTConnectionFailedMessage", MessagesParent, message, "SignalMQTTConnectionFailed: MQTT Connection Failed.");
+    
     }
-    public void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
+    public void SignalOnScreenMessageFromPrefab(ref GameObject prefabReference, ref GameObject messageObjectReference, string activeMessageGameObjectName, GameObject activeMessageParent, string message, string logMessageName)
     {
-        Debug.Log($"{logMessageName}: Signal On Screen Message.");
+        Debug.Log($"SignalOnScreenMessageFromPrefab: {logMessageName}: Signal On Screen Message.");
+
+        //If the message object reference is null then create it from the prefab
+        if(messageObjectReference == null)
+        {
+            //Instantiate the prefab
+            messageObjectReference = Instantiate(prefabReference);
+            messageObjectReference.transform.SetParent(activeMessageParent.transform, false);
+
+            //Set the name of the message object
+            messageObjectReference.name = activeMessageGameObjectName;
+        }
 
         //Find text component for on screen message
         TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
@@ -1396,7 +1302,24 @@ public class UIFunctionalities : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{logMessageName}: Could not find message object or message component.");
+            Debug.LogWarning($"SignalOnScreenMessageFromPrefab: {logMessageName}: Could not find message object or message component.");
+        }
+    }
+    public void SignalOnScreenMessageFromReference(ref GameObject messageObjectReference, string message, string logMessageName)
+    {
+        Debug.Log($"SignalOnScreenMessageFromReference: {logMessageName}: Signal On Screen Message.");
+
+        //Find text component for on screen message
+        TMP_Text messageTextComponent = messageObjectReference.FindObject("MessageText").GetComponent<TMP_Text>();
+
+        if(messageTextComponent != null && message != null && messageObjectReference != null)
+        {
+            //Signal On Screen Message with Acknowledge Button
+            SignalOnScreenMessageWithButton(messageObjectReference, messageTextComponent, message);
+        }
+        else
+        {
+            Debug.LogWarning($"SignalOnScreenMessageFromReference: {logMessageName}: Could not find message object or message component.");
         }
     }
     public void SignalOnScreenMessageWithButton(GameObject messageGameObject, TMP_Text messageComponent = null, string message = "None")
@@ -1434,6 +1357,28 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     /////////////////////////////////////// Communication Buttons //////////////////////////////////////////////
+    public void UpdateConnectionStatusText(GameObject connectionStatusObject, bool connectionStatus)
+    {
+        //Find the text component in the children
+        TMP_Text connectionStatusText = connectionStatusObject.FindObject("StatusText").GetComponent<TMP_Text>();
+        
+        if(RosConnectionStatusObject == null)
+        {
+            Debug.LogWarning("ConnectionStatusText is null for " + connectionStatusObject.name);
+        }
+
+        //If connected set the text and color
+        if(connectionStatus)
+        {
+            connectionStatusText.text = "CONNECTED";
+            connectionStatusText.color = Color.green;
+        }
+        else
+        {
+            connectionStatusText.text = "DISCONNECTED";
+            connectionStatusText.color = Color.red;
+        }
+    }
     public void UpdateMqttConnectionFromUserInputs()
     {
         //Set UI Color
@@ -1477,6 +1422,53 @@ public class UIFunctionalities : MonoBehaviour
 
         }
     }
+    public void UpdateRosConnectionFromUserInputs()
+    {
+        Debug.Log($"UpdateRosConnectionFromUserInputs: Attempting ROS Connection to ws://{RosHostInputField.text}:{RosPortInputField.text} from User Inputs.");
+        
+        //Set UI Color
+        SetUIObjectColor(RosConnectButtonObject, White);
+        
+        //Check inputs and if they are not null update the connection if they are null leave the default.
+        string rosHostInput = RosHostInputField.text;
+        string rosPortInput = RosPortInputField.text;
+
+        if (string.IsNullOrWhiteSpace(rosHostInput) || string.IsNullOrWhiteSpace(rosPortInput))
+        {
+            rosHostInput = "localhost";
+            rosPortInput = "9090";
+        }
+
+        //Ross bridge connection address
+        string newRosBridgeAddress = $"ws://{rosHostInput}:{rosPortInput}";
+
+        Debug.Log("UpdateRosConnectionFromUserInputs: New ROS Bridge Address: " + newRosBridgeAddress);
+        
+        //Check if the manual the port or broker is different then the current one.
+        if (newRosBridgeAddress != rosConnectionManager.RosBridgeServerUrl || !rosConnectionManager.IsConnectedToRos)
+        {
+            //If we are connected to ros then disconnect
+            if(rosConnectionManager.IsConnectedToRos)
+            {
+                //Disconnect from current ros bridge socket
+                rosConnectionManager.RosSocket.Close();
+            }
+            
+            //Update rosBridgeServerUrl from the inputs
+            rosConnectionManager.RosBridgeServerUrl = newRosBridgeAddress;
+
+            //Disconnect from current broker
+            rosConnectionManager.ConnectAndWait();
+        }
+        else
+        {
+            Debug.Log("UpdateRosConnectionFromUserInputs: ROS Host and Port are the same as our current and we are connected. Not updating connection.");
+            
+            //Signal Manual Input text
+            RosUpdateConnectionMessage.SetActive(true);
+
+        }
+    }
     public void TrajectoryServicesUIControler(bool requestTrajectoryVisability, bool requestTrajectoryInteractable, bool trajectoryReviewVisibility, bool trajectoryReviewInteractable, bool executeTrajectoryVisability, bool executeTrajectoryInteractable)
     {
         //Set Visability and Interactable of Trajectory Request Button.
@@ -1491,6 +1483,12 @@ public class UIFunctionalities : MonoBehaviour
         //Set Visability and Interactable of Execute Trajectory Button.
         ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
         ExecuteTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
+
+        //Set interactablity of reject button if the exacute trajectory is interactable.
+        if (executeTrajectoryInteractable)
+        {
+            RejectTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
+        }
 
         //Adjust interactibility of Robot toggle based on visibility of other services controls
         if ( trajectoryReviewVisibility || executeTrajectoryVisability)
@@ -1513,14 +1511,14 @@ public class UIFunctionalities : MonoBehaviour
             PreviousGeometryButtonObject.GetComponent<Button>().interactable = true;
         }
 
-        //Check transaction lock to see if someone else made a request and set my interactibility based on that.
-        if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
-        {
-            Debug.Log("Trajectory UI Controller: You cannot request because transaction lock is active");
+        // //Check transaction lock to see if someone else made a request and set my interactibility based on that.
+        // if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
+        // {
+        //     Debug.Log("Trajectory UI Controller: You cannot request because transaction lock is active");
 
-            //Set request interactibility of trajectory request button to false
-            RequestTrajectoryButtonObject.GetComponent<Button>().interactable = false;
-        }
+        //     //Set request interactibility of trajectory request button to false
+        //     RequestTrajectoryButtonObject.GetComponent<Button>().interactable = false;
+        // }
 
     }
     public void RequestTrajectoryButtonMethod()
@@ -1532,7 +1530,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log("RequestTrajectoryButtonMethod : You cannot request because transaction lock is active");
 
             //If the active robot is null signal On Screen Message
-            SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
+            // SignalOnScreenMessageWithButton(TransactionLockActiveWarningMessageObject);
+            string message = "WARNING: You are currently prevented from requesting because another active user is awaiting a Trajectory Result.";
+            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
             
             return;
         }
@@ -1541,7 +1541,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.Log("RequestTrajectoryButtonMethod : Active Robot is null");
          
             //If the active robot is null signal On Screen Message
-            SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
+            // SignalOnScreenMessageWithButton(ActiveRobotIsNullWarningMessageObject);
+            string message = "WARNING: Active Robot is currently null. An active robot must be set before visulizing robotic information.";
+            SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref ActiveRobotIsNullWarningMessageObject, "ActiveRobotNullWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Active Robot is null.");
 
             return;
         }
@@ -1573,7 +1575,7 @@ public class UIFunctionalities : MonoBehaviour
     }
     public void RejectTrajectoryButtonMethod()
     {
-        Debug.Log($"Reject Trajectory Button Pressed: Rejecting Trajectory for Step {CurrentStep}");
+        Debug.Log($"RejectTrajectoryButtonMethod: Rejecting Trajectory for Step {CurrentStep}");
 
         //Publish new ApproveTrajectoryMessage to the trajectory approval topic for current step
         mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
@@ -1632,35 +1634,31 @@ public class UIFunctionalities : MonoBehaviour
     }
 
     ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
-    public void ChangeVisualizationMode()
+    public void TogglePreviewActor(Toggle toggle)
     {
-        Debug.Log("Builder View Button Pressed");
+        Debug.Log("TogglePreviewActor: Preview Builder Toggle Pressed");
 
-        // Check the current mode and toggle it
-        if (instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.ActorView)
+        if(toggle.isOn)
         {
-            // If current mode is BuiltUnbuilt, switch to ActorView
+            //Turn on the Preview Builder
             instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.ActorView;
-         
+            
+            //Apply color to the objects based on actor
             instantiateObjects.ApplyColorBasedOnActor();
-
-            // Color the button if it is on
-            SetUIObjectColor(PreviewBuilderButtonObject, Yellow);
-
-        }
-        else if(instantiateObjects.visulizationController.VisulizationMode != VisulizationMode.BuiltUnbuilt)
-        {
-            // If current mode is not BuiltUnbuilt switch to BuiltUnbuilt
-            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
-
-            instantiateObjects.ApplyColorBasedOnBuildState();
-
-            // Color the button if it is on
-            SetUIObjectColor(PreviewBuilderButtonObject, White);
+            
+            //Color the button if it is on
+            SetUIObjectColor(PreviewActorToggleObject, Yellow);
         }
         else
         {
-            Debug.LogWarning("Error: Visulization Mode does not exist.");
+            //Turn off the Preview Builder
+            instantiateObjects.visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
+
+            //Apply color to the objects based on actor
+            instantiateObjects.ApplyColorBasedOnBuildState();
+
+            //Color the button if it is off
+            SetUIObjectColor(PreviewActorToggleObject, White);
         }
     }
     public void ToggleID(Toggle toggle)
@@ -1671,12 +1669,24 @@ public class UIFunctionalities : MonoBehaviour
         {
             if(toggle.isOn)
             {
-                ARSpaceTextControler(true, "IdxText", "IdxImage");
+                //Turn on the ID Tags
+                ARSpaceTextControler(true, "IdxText", ref IDTagIsOffset, "IdxImage", PriorityViewerToggleObject.GetComponent<Toggle>().isOn, 0.155f); //bool verticlReposition, float distance
+                
+                //Set color of toggle
                 SetUIObjectColor(IDToggleObject, Yellow);
             }
             else
             {
-                ARSpaceTextControler(false, "IdxText", "IdxImage");
+                //Turn of the ID Tags
+                ARSpaceTextControler(false, "IdxText", ref IDTagIsOffset, "IdxImage");
+
+                //If Priority viewer is on and the tag is offset then position the tag back to the priority tags back to original position
+                if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && PriorityTagIsOffset)
+                {
+                    ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage");
+                }
+
+                //Set color of toggle
                 SetUIObjectColor(IDToggleObject, White);
             }
         }
@@ -1685,9 +1695,9 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("Could not find ID Toggle or ID Toggle Object.");
         }
     }
-    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, string imageObjectBaseName = null)
+    public void ARSpaceTextControler(bool Visibility, string textObjectBaseName, ref bool tagIsOffset, string imageObjectBaseName = null, bool verticalReposition = false, float? verticalOffset = null)
     {
-        Debug.Log("AR Space Text Controler Pressed");
+        Debug.Log($"ARSpaceTextControler: Toggling Text Objects {textObjectBaseName}.");
 
         if (instantiateObjects != null && instantiateObjects.Elements != null)
         {
@@ -1701,13 +1711,43 @@ public class UIFunctionalities : MonoBehaviour
                     textChild.gameObject.SetActive(Visibility);
                 }
 
+                // If vertical reposition is true then reposition the text object
+                if (verticalReposition)
+                {
+                    Vector3 objectposition = textChild.transform.position;
+                    Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
+                    textChild.position = newPosition;
+                }
+                else
+                {
+                    //Set the position of the text object to the original position
+                    HelpersExtensions.ObjectPositionInfo instantiationPosition = textChild.GetComponent<HelpersExtensions.ObjectPositionInfo>();
+                    textChild.localPosition = instantiationPosition.position;
+                }
+
                 if(imageObjectBaseName != null)
                 {
                     // Toggle background Image Object
-                    Transform circleImageChild = child.Find(child.name + imageObjectBaseName);
-                    if (circleImageChild != null)
+                    Transform imageChild = child.Find(child.name + imageObjectBaseName);
+                    if (imageChild != null)
                     {
-                        circleImageChild.gameObject.SetActive(Visibility);
+                        imageChild.gameObject.SetActive(Visibility);
+                    }
+
+                    // If vertical reposition is true then reposition the text object
+                    if (verticalReposition)
+                    {
+                        Vector3 objectposition = imageChild.transform.position;
+                        Vector3 newPosition = instantiateObjects.OffsetPositionVectorByDistance(objectposition, verticalOffset.GetValueOrDefault(0.0f), "y");
+                        imageChild.position = newPosition;
+                        tagIsOffset = true;
+                    }
+                    else
+                    {
+                        //Set the position of the text object to the original position
+                        HelpersExtensions.ObjectPositionInfo instantiationPosition = imageChild.GetComponent<HelpersExtensions.ObjectPositionInfo>();
+                        imageChild.localPosition = instantiationPosition.position;
+                        tagIsOffset = false;
                     }
                 }
             }
@@ -1725,6 +1765,17 @@ public class UIFunctionalities : MonoBehaviour
         {    
             if (toggle.isOn)
             {             
+                //If the robot toggle is on move the position lower
+                if (RobotToggleObject.GetComponent<Toggle>().isOn)
+                {
+                    Vector3 offsetPosition = new Vector3(ObjectLengthsUIPanelPosition.x, ObjectLengthsUIPanelPosition.y - 300, ObjectLengthsUIPanelPosition.z);
+                    ObjectLengthsUIPanelObjects.transform.localPosition = offsetPosition; 
+                }
+                else
+                {
+                    ObjectLengthsUIPanelObjects.transform.localPosition = ObjectLengthsUIPanelPosition;
+                }
+                
                 //Set Visibility of buttons
                 ObjectLengthsUIPanelObjects.SetActive(true);
                 ObjectLengthsTags.FindObject("P1Tag").SetActive(true);
@@ -1820,9 +1871,9 @@ public class UIFunctionalities : MonoBehaviour
                 {
                     trajectoryVisulizer.ActiveRobot.SetActive(false);
                 }
-                else if(trajectoryVisulizer.ActiveTrajectory.activeSelf) //TODO: SHOULD THIS DESTROY?
+                else if(trajectoryVisulizer.ActiveTrajectoryParentObject.activeSelf) //TODO: SHOULD THIS DESTROY?
                 {
-                    trajectoryVisulizer.ActiveTrajectory.SetActive(false);
+                    trajectoryVisulizer.ActiveTrajectoryParentObject.SetActive(false);
                 }
             }
 
@@ -1867,7 +1918,7 @@ public class UIFunctionalities : MonoBehaviour
         if(toggle.isOn && PriorityViewerToggleObject != null)
         {
             //Turn on Priority Tags in 3D Space
-            ARSpaceTextControler(true, "PriorityText", "PriorityImage");
+            ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
 
             //Set visibility of 3D reference objects
             instantiateObjects.PriorityViewrLineObject.SetActive(true);
@@ -1880,7 +1931,7 @@ public class UIFunctionalities : MonoBehaviour
             SelectedPriority = databaseManager.CurrentPriority;
 
             //Create the priority line
-            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority,ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
+            instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority, ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
 
             // Color Elements Based on Priority
             instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
@@ -1913,7 +1964,13 @@ public class UIFunctionalities : MonoBehaviour
             SelectedPriority = "None";
 
             //Turn off Priority Tags
-            ARSpaceTextControler(false, "PriorityText", "PriorityImage");
+            ARSpaceTextControler(false, "PriorityText", ref PriorityTagIsOffset, "PriorityImage");
+
+            //If the ID tag is on and offset then return it to its origial position
+            if(IDToggleObject.GetComponent<Toggle>().isOn && IDTagIsOffset)
+            {
+                ARSpaceTextControler(true, "IdxText", ref IDTagIsOffset, "IdxImage");
+            }
 
             //Set visibility of onScreen Button Objects
             PriorityViewerObjectsGraphicsController(false);
@@ -2017,6 +2074,31 @@ public class UIFunctionalities : MonoBehaviour
             Debug.LogWarning("SetPreviousPriorityGroup: Selected Priority is null.");
         }
     }
+    public void ToggleScrollSearch(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {             
+            //Set Visibility of buttons
+            ScrollSearchObjects.SetActive(true);
+
+            //Create Cells for the Scroll Search
+            scrollSearchManager.CreateCellsFromPrefab(ref scrollSearchManager.cellPrefab, scrollSearchManager.cellSpacing, scrollSearchManager.cellsParent, databaseManager.BuildingPlanDataItem.steps.Count, ref scrollSearchManager.cellsExist);
+            
+            //Set color of toggle
+            SetUIObjectColor(ScrollSearchToggleObject, Yellow);
+        }
+        else
+        {
+            //Set Visibility of buttons
+            ScrollSearchObjects.SetActive(false);
+
+            //Reset all of the information in the cell search to off
+            scrollSearchManager.ResetScrollSearch(ref scrollSearchManager.cellsExist);
+            
+            //Set color of toggle
+            SetUIObjectColor(ScrollSearchToggleObject, White);
+        }
+    }
 
     ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
     private void ToggleInfo(Toggle toggle)
@@ -2079,6 +2161,11 @@ public class UIFunctionalities : MonoBehaviour
                 //Set Visibility of Information panel
                 CommunicationPanelObject.SetActive(true);
 
+                //Update Connection Status Objects
+                UpdateConnectionStatusText(MqttConnectionStatusObject, mqttTrajectoryManager.mqttClientConnected);
+                UpdateConnectionStatusText(RosConnectionStatusObject, rosConnectionManager.IsConnectedToRos);
+
+
                 //Set color of toggle
                 SetUIObjectColor(CommunicationToggleObject, Yellow);
 
@@ -2105,7 +2192,7 @@ public class UIFunctionalities : MonoBehaviour
     }
     private void ReloadApplication()
     {
-        Debug.Log("Reload Button Pressed");
+        Debug.Log("ReloadApplication: Reload Button Pressed");
         
         //Remove listners - This is important to not add multiple listners in the application
         databaseManager.RemoveListners();
@@ -2152,7 +2239,7 @@ public class UIFunctionalities : MonoBehaviour
         mqttTrajectoryManager.RemoveConnectionEventListners();
 
         //Fetch settings data again
-        databaseManager.FetchSettingsData(eventManager.settings_reference);
+        databaseManager.FetchSettingsData(eventManager.settings_reference); //TODO: Should I await this?
 
         //Disconnect from MQTT and reconnect after new application settings are received.
         mqttTrajectoryManager.DisconnectandReconnectAsyncRoutine();
@@ -2176,7 +2263,7 @@ public class UIFunctionalities : MonoBehaviour
                 EditorSelectedTextObject.SetActive(true);
 
                 //Apply color color based on build state
-                instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority);
+                // instantiateObjects.ApplyColorForHigherPriority(databaseManager.CurrentPriority); //TODO:THIS NEEDS TO GO.... LOOK IF I NEED THIS METHOD OR NOT.
                 // ColliderControler();
 
                 //Update mode so we know to search for touch input
@@ -2211,7 +2298,7 @@ public class UIFunctionalities : MonoBehaviour
                 }
                 else if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
-                    instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority); //TODO: WITH PV UPDATE THIS WOULD CHANGE.
+                    instantiateObjects.ApplyColorBasedOnPriority(SelectedPriority);
                 }
                 else
                 {
@@ -2387,17 +2474,12 @@ public class UIFunctionalities : MonoBehaviour
         else
         {
             Touch touch = Input.GetTouch(0);
-            Debug.Log("TOUCH: Your touch sir :)" + Input.touchCount);
-            Debug.Log("TOUCH: Your Phase sir :)" + (touch.phase == TouchPhase.Ended));
 
             if (Input.touchCount == 1 && touch.phase == TouchPhase.Ended)
             {
                 List<ARRaycastHit> hits = new List<ARRaycastHit>();
-                Debug.Log ("TOUCH: YOU HITS SIR " + hits);
-                Debug.Log ("TOUCH: YOU HITS Count SIR " + hits.Count);
                 rayManager.Raycast(touch.position, hits);
 
-                //TODO: THE PROBLEM IS HERE... HITS IS ALWAYS 0
                 if (hits.Count > 0)
                 {
                     Ray ray = arCamera.ScreenPointToRay(touch.position);
@@ -2497,17 +2579,6 @@ public class UIFunctionalities : MonoBehaviour
             string activeGameObjectParentname = activeGameObject.transform.parent.name;
 
             Debug.Log($"Active Game Object Priority: {databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority}");
-
-            //If active game objects step priority is higher then current step priority then set builder button to inactive else its active
-            // if(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
-            // {
-            //     Debug.Log("Priority is higher then current priority. Setting button to inactive.");
-            //     BuildStatusButtonObject.GetComponent<Button>().interactable = false;
-            // }
-            // else
-            // {
-            //     BuildStatusButtonObject.GetComponent<Button>().interactable = true;
-            // }
             
             //Color the object based on human or robot
             instantiateObjects.ColorHumanOrRobot(databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.actor, databaseManager.BuildingPlanDataItem.steps[activeGameObjectParentname].data.is_built, activeGameObject);

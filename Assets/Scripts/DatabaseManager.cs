@@ -248,10 +248,9 @@ public class DatabaseManager : MonoBehaviour
                 if (task.IsFaulted)
                 {
                     //If there is an error when fetching an object signal and on screen message.
-                    if(!UIFunctionalities.ErrorFetchingDownloadUriMessageObject.activeSelf)
-                    {
-                        UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorFetchingDownloadUriMessageObject);
-                    }
+                    string message = $"ERROR: Application unable to fetch URL for {fileMetadata.name}. Please review the associated file and try again.";
+                    UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorFetchingDownloadUriMessageObject, "ErrorFetchingDownloadUriMessage", UIFunctionalities.MessagesParent, message, "GetDownloadUriFromFilesMedata: Error Fetching Download URL");
+                    
                     Debug.LogError("Error fetching download URL from Firebase Storage");
                     return;
                 }
@@ -305,10 +304,9 @@ public class DatabaseManager : MonoBehaviour
             if (webRequest.result != UnityWebRequest.Result.Success)
             {
                 //If there is an error when downloading an object signal and on screen message.
-                if(!UIFunctionalities.ErrorDownloadingObjectMessageObject.activeSelf)
-                {
-                    UIFunctionalities.SignalOnScreenMessageWithButton(UIFunctionalities.ErrorDownloadingObjectMessageObject);
-                }
+                string message = $"ERROR: Application failed download file for object {Path.GetFileName(filePath)}. Please review the associated file and try again.";
+                UIFunctionalities.SignalOnScreenMessageFromPrefab(ref UIFunctionalities.OnScreenErrorMessagePrefab, ref UIFunctionalities.ErrorDownloadingObjectMessageObject, "ErrorDownloadingObjectMessage", UIFunctionalities.MessagesParent, message, "DownloadFile: Error Downloading Object");
+
                 Debug.LogError("File download error: " + webRequest.error);
             }
             else
@@ -355,19 +353,6 @@ public class DatabaseManager : MonoBehaviour
 
         //Searilize the data for push to firebase
         string data = JsonConvert.SerializeObject(BuildingPlanDataItem);
-        
-        //Push the data to firebase
-        dbreference_buildingplan.SetRawJsonValueAsync(data);
-    }
-    public void PushAllDataAssembly(string key)
-    {
-        //TODO: Add custom device_id to the assembly data structure.
-        //Find step that I changed in the building plan and add my custom device id.
-        // Node specificnode = AssemblyDataDict[key];
-        // specificnode.attributes.device_id = SystemInfo.deviceUniqueIdentifier;
-
-        //Searilize the data for push to firebase
-        string data = JsonConvert.SerializeObject(AssemblyDataDict);
         
         //Push the data to firebase
         dbreference_buildingplan.SetRawJsonValueAsync(data);
@@ -494,12 +479,12 @@ public class DatabaseManager : MonoBehaviour
             node.part != null &&
             node.part.frame != null)
         {
-            if (node.type_data == "4.Joint")
+            if (node.type_data == "5.Joint")
             {
                 Debug.Log("This is a timbers Joint and should be ignored");
                 return false;
             }
-            else if (node.type_data != "3.Frame")
+            else if (node.type_data != "4.Frame" || node.type_data != "3.Mesh")
             {
                 // Check if the required properties are present or have valid values
                 if (node.attributes != null &&
@@ -742,7 +727,7 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("THIS IS THE PRIORITY TREE DICTIONARY: " + JsonConvert.SerializeObject(PriorityTreeDict));
         return buidingPlanData;
     }
-    public Node NodeDeserializer(string key, object jsondata, bool additionalAttributes = false)
+    public Node NodeDeserializer(string key, object jsondata)
     {
         //Generic Dictionary for deserialization     
         Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
@@ -756,7 +741,7 @@ public class DatabaseManager : MonoBehaviour
         Node node = new Node();
         node.part = new Part();
         node.attributes = new Attributes();
-        node.part.frame = new Frame();
+        // node.part.frame = new Frame();
 
         //Set node type_id
         node.type_id = key;
@@ -774,37 +759,26 @@ public class DatabaseManager : MonoBehaviour
             PartDesctiptionSelector(node, dataDict);
         }
 
-        //Convert System.double items to float for use in instantiation
-        List<object> pointslist = frameDataDict["point"] as List<object>;
-        List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
-        List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
+        Debug.Log("I MADE IT HERE!");
+        node.part.frame = Frame.Parse(frameDataDict);
+        Debug.Log("I MADE IT HERE! 2");
+        // //Convert System.double items to float for use in instantiation
+        // List<object> pointslist = frameDataDict["point"] as List<object>;
+        // List<object> xaxislist = frameDataDict["xaxis"] as List<object>;
+        // List<object> yaxislist = frameDataDict["yaxis"] as List<object>;
 
-        if (pointslist != null && xaxislist != null && yaxislist != null)
-        {
-            node.part.frame.point = pointslist.Select(Convert.ToSingle).ToArray();
-            node.part.frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
-            node.part.frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
-        }
-        else
-        {
-            Debug.Log("One of the Frame lists is null");
-        }
-
-        //If additional Attributes bool then get additional attributes
-        if (additionalAttributes)
-        {
-            GetAdditionalNodeAttributes(node, jsonDataDict);
-        }
+        // if (pointslist != null && xaxislist != null && yaxislist != null)
+        // {
+        //     node.part.frame.point = pointslist.Select(Convert.ToSingle).ToArray();
+        //     node.part.frame.xaxis = xaxislist.Select(Convert.ToSingle).ToArray();
+        //     node.part.frame.yaxis = yaxislist.Select(Convert.ToSingle).ToArray();
+        // }
+        // else
+        // {
+        //     Debug.Log("One of the Frame lists is null");
+        // }
 
         return node;
-    }
-    private void GetAdditionalNodeAttributes(Node node, Dictionary<string, object> jsonDataDict)
-    {
-        //Set Attributes Class Values for extra assembly processes
-        node.attributes.is_built = (bool)jsonDataDict["is_built"];
-        node.attributes.is_planned =  (bool)jsonDataDict["is_planned"];
-        node.attributes.placed_by = (string)jsonDataDict["placed_by"];
-       
     }
     private void DtypeGeometryDesctiptionSelector(Node node, string dtype, Dictionary<string, object> jsonDataDict)
     {
@@ -815,7 +789,7 @@ public class DatabaseManager : MonoBehaviour
         {
             case "compas.geometry/Cylinder":
                 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                //Set node type_data
                 node.type_data = "0.Cylinder";
                 
                 // Accessing different parts of json data to make common attributes dictionary
@@ -830,7 +804,7 @@ public class DatabaseManager : MonoBehaviour
 
             case "compas.geometry/Box":
                 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                //Set node type_data
                 node.type_data = "1.Box";
 
                 // Accessing different parts of json data to make common attributes dictionary
@@ -846,33 +820,33 @@ public class DatabaseManager : MonoBehaviour
             
             case "compas.datastructures/Mesh":
 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
-                node.type_data = "2.ObjFile";
+                //Set node type_data
+                node.type_data = "3.Mesh"; //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
 
-                /* TODO: OBJ FILE OPTIONS
-                 I think we need a clearer plan for handling OBJ files.
-                 I think I should make a generic component for them on the python side that takes a list of frames & a list of (breps or meshs)
-                 This componenet should either converts it to a mesh assembly or a frame assembly and Export the proper obj files.
-                */
+                // Set Node Length width height to 0 because it does not contain definitions for this information.
+                node.attributes.length = 0.00f;
+                node.attributes.width = 0.00f;
+                node.attributes.height = 0.00f;
+
                 Debug.Log("This is a Mesh assembly");
                 break;
 
             case "compas.geometry/Frame":
                 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
-                node.type_data = "3.Frame";
+                //Set node type_data //TODO: SET LWH to 0 (Doesn't solve, but also prevents errors for objectLengthButton.)
+                node.type_data = "4.Frame";
 
-                /* TODO: OBJ FILE OPTIONS
-                 I think we need a clearer plan for handling OBJ files.
-                 I think I should make a generic component for them on the python side that takes a list of frames & a list of (breps or meshs)
-                 This componenet should either converts it to a mesh assembly or a frame assembly and Export the proper obj files.
-                */
+                // Set Node Length width height to 0 because it does not contain definitions for this information.
+                node.attributes.length = 0.00f;
+                node.attributes.width = 0.00f;
+                node.attributes.height = 0.00f;
+
                 Debug.Log("This is a frame assembly");
                 break;
 
             case "compas_timber.parts/Beam":
 
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
+                //Set node type_data
                 node.type_data = "2.ObjFile";
 
                 // Accessing different parts of json data to make common attributes dictionary
@@ -889,11 +863,10 @@ public class DatabaseManager : MonoBehaviour
 
             case string connectionType when connectionType.StartsWith("compas_timber.connections"):
         
-                //Set node type_data (THIS IS FOR INTERNAL USE... IN any scenario where I am pushing data it should contain this information)
-                node.type_data = "4.Joint";
+                //Set node type_data
+                node.type_data = "5.Joint";
 
-                // This actually serves as a great oppertunity to split off for joints and use the information.
-                //......
+                // Do not update attributes because this is not interactable.
 
                 Debug.Log("This is a timbers connection");
                 break;
@@ -1073,7 +1046,6 @@ public class DatabaseManager : MonoBehaviour
                     Debug.Log($"The key '{key}' does not exist in the dictionary");
                     BuildingPlanDataItem.steps.Add(key, newValue);
 
-                    //TODO: Remove Temporary Building Plan Priority Tree Dictionary
                     //Check if the steps priority is one that I already have in the priority tree dictionary
                     if (PriorityTreeDict.ContainsKey(newValue.data.priority.ToString()))
                     {
@@ -1088,7 +1060,6 @@ public class DatabaseManager : MonoBehaviour
                         PriorityTreeDict[newValue.data.priority.ToString()].Add(key);
                         Debug.Log($"Step {key} added a new priority {newValue.data.priority.ToString()} to the priority tree dictionary");
                     }
-                    //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                     //Instantiate new object
                     OnDatabaseUpdate(newValue, key);
@@ -1145,7 +1116,7 @@ public class DatabaseManager : MonoBehaviour
                     {    
                         if(IsValidStep(newValue))
                         {
-                            //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+
                             //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                             if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                             {
@@ -1177,7 +1148,6 @@ public class DatabaseManager : MonoBehaviour
                             {
                                 Debug.Log($"The priority of the step {key} did not change");
                             }
-                            //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                             //Add the new value to the Building plan dictionary
                             BuildingPlanDataItem.steps[key] = newValue;
@@ -1201,7 +1171,7 @@ public class DatabaseManager : MonoBehaviour
 
                     if(IsValidStep(newValue))
                     {
-                        //TODO: Remove Temporary Building Plan Priority Tree Dictionary
+
                         //First check if the new steps priorty is different from the old one then remove the old one and add a new one.
                         if (newValue.data.priority != BuildingPlanDataItem.steps[key].data.priority)
                         {                            
@@ -1235,7 +1205,6 @@ public class DatabaseManager : MonoBehaviour
                         {
                             Debug.Log($"The priority of the step {key} did not change");
                         }
-                        //TODO: Remove Temporary Building Plan Priority Tree Dictionary
 
                     }
                     else
@@ -1276,7 +1245,6 @@ public class DatabaseManager : MonoBehaviour
                 Step newValue = null;
                 Debug.Log("The key exists in the dictionary and is going to be removed");
                 
-                //TODO: Remove Temporary Building Plan Priority Tree Dictionary
                 //First check thee steps priorty Remove the steps key from the priority tree dictionary
                 PriorityTreeDict[BuildingPlanDataItem.steps[key].data.priority.ToString()].Remove(key);
 
@@ -1285,7 +1253,6 @@ public class DatabaseManager : MonoBehaviour
                 {
                     PriorityTreeDict.Remove(BuildingPlanDataItem.steps[key].data.priority.ToString());
                 }
-                //TODO: Remove Temporary Building Plan Priority Tree Dictionary
                 
                 //Remove the step from the building plan dictionary
                 BuildingPlanDataItem.steps.Remove(key);

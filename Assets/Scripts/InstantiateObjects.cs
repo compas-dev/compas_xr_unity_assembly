@@ -31,6 +31,7 @@ namespace Instantiate
         //Other Sript Objects
         public DatabaseManager databaseManager;
         public UIFunctionalities UIFunctionalities;
+        public ScrollSearchManager scrollSearchManager;
 
         //Object Materials
         public Material BuiltMaterial;
@@ -43,6 +44,7 @@ namespace Instantiate
         public Material SearchedObjectMaterial;
         public Material ActiveRobotMaterial;
         public Material InactiveRobotMaterial;
+        public Material OutlineMaterial;
 
         //Parent Objects
         public GameObject QRMarkers; 
@@ -85,6 +87,12 @@ namespace Instantiate
             //Find Additional Scripts.
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
+            scrollSearchManager = GameObject.Find("ScrollSearchManager").GetComponent<ScrollSearchManager>();
+
+            if (scrollSearchManager == null)
+            {
+                Debug.LogWarning("ScrollSearchManager is null");
+            }
 
             //Find Parent Object to Store Our Items in.
             Elements = GameObject.Find("Elements");
@@ -102,6 +110,7 @@ namespace Instantiate
             SearchedObjectMaterial = GameObject.Find("Materials").FindObject("SearchedObjects").GetComponentInChildren<Renderer>().material;
             ActiveRobotMaterial = GameObject.Find("Materials").FindObject("ActiveRobot").GetComponentInChildren<Renderer>().material;
             InactiveRobotMaterial = GameObject.Find("Materials").FindObject("InactiveRobot").GetComponentInChildren<Renderer>().material;
+            OutlineMaterial = GameObject.Find("Materials").FindObject("OutlineMaterial").GetComponentInChildren<Renderer>().material;
             
             //Find GameObjects fo internal use
             IdxImage = GameObject.Find("ImageTagTemplates").FindObject("Circle");
@@ -115,16 +124,6 @@ namespace Instantiate
             //Set Initial Visulization Modes
             visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
             visulizationController.TouchMode = TouchMode.None;
-        }
-        public void placeElements(List<Step> DataItems) 
-        {
-            int i = 0;
-            foreach (Step step in DataItems)
-                {
-                    placeElement(i.ToString(), step);
-                    i++;
-                }
-
         }
         public void placeElement(string Key, Step step)
         {
@@ -167,7 +166,7 @@ namespace Instantiate
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
             
             //Create 3D Index Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key} | {step.data.element_ids[0]}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
             CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
 
             //Create Priority Text
@@ -201,49 +200,6 @@ namespace Instantiate
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                 UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
             }
-        }
-        public void placeElementAssembly(string Key, Node node)
-        {
-            Debug.Log($"Placing element {node.type_id}");
-
-            //get position
-            Vector3 positionData = getPosition(node.part.frame.point);
-            
-            //get rotation
-            Rotation rotationData = getRotation(node.part.frame.xaxis, node.part.frame.yaxis);
-            
-            //Define Object Rotation
-            Quaternion rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
-
-            //instantiate a geometry at this position and rotation
-            GameObject geometry_object = gameobjectTypeSelectorAssembly(node);
-
-            if (geometry_object == null)
-            {
-                Debug.Log($"This key is null {node.type_id}");
-                return;
-            }
-
-            //Instantiate new gameObject from the existing selected gameobjects.
-            GameObject elementPrefab = Instantiate(geometry_object, positionData, rotationQuaternion);
-            
-            // Destroy Initial gameobject that is made.
-            if (geometry_object != null)
-            {
-                Destroy(geometry_object);
-            }
-
-            //Set parent and name
-            elementPrefab.transform.SetParent(Elements.transform, false);
-            
-            //Name the object after the node number
-            elementPrefab.name = node.type_id;
-
-            //Get the nested Object from the .Obj so we can adapt colors only the first object
-            GameObject child_object = elementPrefab.transform.GetChild(0).gameObject;
-
-            //Color it Built or Unbuilt
-            ColorBuiltOrUnbuilt(node.attributes.is_built, child_object);
         }
         public void placeElementsDict(Dictionary<string, Step> BuildingPlanDataDict)
         {
@@ -369,11 +325,6 @@ namespace Instantiate
                         
                         break;
 
-                    case "3.Mesh":
-                        //TODO: CONFIRM FETCH OBJECT AS OBJ OR CREATE OBJECT FROM PROVIDED DATA.
-                        element = null;
-                        break;
-
                     default:
                         Debug.LogWarning($"No element type found for type {step.data.geometry}");
                         return null;
@@ -383,74 +334,7 @@ namespace Instantiate
                 return element;
             
         }
-        public GameObject gameobjectTypeSelectorAssembly(Node node)
-        {
-
-            if (node == null)
-            {
-                Debug.LogWarning("Node is null. Cannot determine GameObject type.");
-                return null;
-            }
-
-            GameObject element;
-
-            switch (node.type_data)
-                {
-                    //TODO:REVIEW THE SIZE AND SCALE OF THESE 
-                    case "0.Cylinder":
-                        //Define the Size of the Cylinder from the data values
-                        float cylinderRadius = node.attributes.width;
-                        float cylinderHeight = node.attributes.height;
-                        Vector3 cylindersize = new Vector3(cylinderRadius*2, cylinderHeight, cylinderRadius*2);
-                        
-                        //Create and Scale Element
-                        element = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                        element.transform.localScale = cylindersize;
-                        break;
-
-                    case "1.Box":                    
-                        //Define the Size of the Cube from the data values
-                        Vector3 cubesize = new Vector3(node.attributes.width, node.attributes.height, node.attributes.length);
-                        
-                        //Create and Scale Element
-                        element = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        element.transform.localScale = cubesize;
-                        break;
-
-                    case "2.ObjFile":
-
-                        string basepath = Application.persistentDataPath;
-                        string folderpath = Path.Combine(basepath, "Object_Storage");
-                        string filepath = Path.Combine(folderpath, node.type_id+".obj");
-
-                        if (File.Exists(filepath))
-                        {
-                            element =  new OBJLoader().Load(filepath);
-                            
-                        }
-                        else
-                        {
-                            element = null;
-                            Debug.Log ("ObjPrefab is null");
-                        }
-                        
-                        break;
-
-                    case "3.Mesh":
-                        //TODO: CONFIRM FETCH OBJECT AS OBJ OR CREATE OBJECT FROM PROVIDED DATA.
-                        element = null;
-                        break;
-
-                    default:
-                        Debug.LogWarning($"No element type found for type node: {node.type_id} of type: {node.type_data}");
-                        return null;
-                }
-
-                Debug.Log($"Element: {node.type_id} type: {node.type_data}");
-                return element;
-            
-        }      
-        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null)
+        public GameObject Create3DTextAsGameObject(string text, string gameObjectName, float fontSize, TextAlignmentOptions textAlignment, Color textColor, Vector3 position, Quaternion rotation, bool isBillboard, bool isVisible, GameObject parentObject=null, bool storePositionData=true)
         {
             // Create a new GameObject for the text
             GameObject textContainer = new GameObject(gameObjectName);
@@ -477,6 +361,13 @@ namespace Instantiate
             if (parentObject != null)
             {
                 textContainer.transform.SetParent(parentObject.transform);
+            }
+            
+            // Add Position data class on the object
+            if (storePositionData)
+            {
+                HelpersExtensions.ObjectPositionInfo positionData = textContainer.AddComponent<HelpersExtensions.ObjectPositionInfo>();
+                positionData.StorePositionRotationScale(textContainer.transform.localPosition, textContainer.transform.localRotation, textContainer.transform.localScale);
             }
 
             // Set the visiblity based on the input
@@ -517,7 +408,7 @@ namespace Instantiate
                 TextAlignmentOptions.Center, Color.white, offsetPosition,
                 Quaternion.identity, true, false, gameObject);
         }
-        private void CreateBackgroundImageForText(ref GameObject inputImg, GameObject parentObject, float verticalOffset,string imgObjectName, bool isVisible=true, bool isBillboard=true)
+        private void CreateBackgroundImageForText(ref GameObject inputImg, GameObject parentObject, float verticalOffset,string imgObjectName, bool isVisible=true, bool isBillboard=true, bool storePositionData=true)
         {            
             //Find the element ID from the step associated with this geometry
             string elementID = databaseManager.BuildingPlanDataItem.steps[parentObject.name].data.element_ids[0];
@@ -535,6 +426,13 @@ namespace Instantiate
             if (isBillboard)
             {
                 HelpersExtensions.Billboard billboard = imgObject.AddComponent<HelpersExtensions.Billboard>();
+            }
+
+            // Add Position data class on the object
+            if (storePositionData)
+            {
+                HelpersExtensions.ObjectPositionInfo positionData = imgObject.AddComponent<HelpersExtensions.ObjectPositionInfo>();
+                positionData.StorePositionRotationScale(imgObject.transform.localPosition, imgObject.transform.localRotation, imgObject.transform.localScale);
             }
 
             //set visibility on instantiation
@@ -562,13 +460,17 @@ namespace Instantiate
             Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, 0.13f, "y");
 
             //Define rotation for the gameObject.
-            Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
+            Quaternion rotationQuaternion = Quaternion.identity;
+            // Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
 
             //Set new arrow item
             GameObject newArrow = null;
 
             // Instantiate arrow at the offset position
             newArrow = InstantiateObjectFromPrefabRefrence(ref UserIndicator, namingBase+" Arrow", arrowOffset, rotationQuaternion, parentObject);
+
+            //Add billboard effect to the indicator
+            newArrow.AddComponent<HelpersExtensions.Billboard>();
 
             //Create 3D Text
             GameObject IndexTextContainer = Create3DTextAsGameObject(
@@ -1074,15 +976,19 @@ namespace Instantiate
                     //Do nothing
                     break;
                 case TouchMode.ElementEditSelection:
-                    //Color the object if it is a lower priority then the current one.
-                    if (step.data.priority > Convert.ToInt16(databaseManager.CurrentPriority))
-                    {    
-                        ColorObjectByLowerPriority(key, databaseManager.CurrentPriority, geometryObject);
-                    }
+                    //Do nothing because we currently don't need any additional control
                     break;
             }
         }
-        public void ColorBuiltOrUnbuilt (bool built, GameObject gamobj)
+        public void ColorObjectbyInputMaterial(GameObject gamobj, Material material)
+        {
+            //Get Object Renderer
+            Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
+                      
+            //Color object by input material
+            m_renderer.material = material; 
+        }
+        public void ColorBuiltOrUnbuilt(bool built, GameObject gamobj)
         {
             //Get Object Renderer
             Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
@@ -1099,15 +1005,15 @@ namespace Instantiate
                 m_renderer.material = UnbuiltMaterial;
             }
         }
-        public void ColorHumanOrRobot (string placed_by, bool Built, GameObject gamobj)
+        public void ColorHumanOrRobot(string actor, bool builtStatus, GameObject gamobj)
         {
             
             //Get Object Renderer
             Renderer m_renderer= gamobj.GetComponentInChildren<Renderer>();
             
-            if (placed_by == "HUMAN")
+            if (actor == "HUMAN")
             {
-                if(Built)
+                if(builtStatus)
                 {
                     //Color For Built Human Objects
                     m_renderer.material = HumanBuiltMaterial;
@@ -1120,7 +1026,7 @@ namespace Instantiate
             }
             else
             {
-                if(Built)
+                if(builtStatus)
                 {
                     //Color For Built Robot Objects
                     m_renderer.material = RobotBuiltMaterial;
@@ -1140,11 +1046,10 @@ namespace Instantiate
             //If the steps priority is not the same as the selected priority then color it grey
             if (StepPriority != SelectedPriority)
             {
-                //Create a new color for the object based on its current color, and add a greyscale blend factor
-                Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
 
-                //Set the object to the new color
-                m_renderer.material.color = objectAdjustedColor;
+                //Color the object with only outline material
+                m_renderer.material = OutlineMaterial;
+
             }
             else
             {
@@ -1156,38 +1061,6 @@ namespace Instantiate
                 ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, gamobj.FindObject(elementID + " Geometry"));
             }
         }
-        public void ColorObjectByLowerPriority(string key, string currentPriority, GameObject gameObject)
-        {
-            //Get Object Renderer
-            Renderer m_renderer= gameObject.GetComponentInChildren<Renderer>();
-
-            //Step for the for key
-            Step step = databaseManager.BuildingPlanDataItem.steps[key];
-
-            if(currentPriority != null)
-            {
-                //Color based if it is lower then current priority
-                if (step.data.priority > Convert.ToInt16(currentPriority))
-                {
-                    //If the steps priority is not the same as the selected priority then color it grey
-                    Debug.Log($"ColorObjectByLowerPriority: Coloring object {gameObject.name} grey");
-
-                    //Create a new color for the object based on its current color, and add a greyscale blend factor
-                    Color objectAdjustedColor = AdjustColorByGreyscale(m_renderer.material.color, 0.45f);
-
-                    //Set the object to the new color
-                    m_renderer.material.color = objectAdjustedColor;
-                }
-                else
-                {
-                    Debug.Log($"ColorObjectByLowerPriority: Gameobject {key} is of a lower priority then current step.");
-                }
-            }
-            else
-            {
-                Debug.Log("ColorObjectByLowerPriority: Current Priority is null.");
-            }
-        }
         public void ApplyColorBasedOnBuildState()
         {
             if (databaseManager.BuildingPlanDataItem.steps != null)
@@ -1195,16 +1068,24 @@ namespace Instantiate
                 foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
                 {
                     GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
 
-                    if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                        ColorBuiltOrUnbuilt(entry.Value.data.is_built, geometryObject);
 
                         //Check if Priority Viewer is on and color based on priority also if it is.
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on Priority
-                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
                         }
                     }
                 }
@@ -1217,16 +1098,24 @@ namespace Instantiate
                 foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                 {
                     GameObject gameObject = GameObject.Find(entry.Key);
-                    
-                    if (gameObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
+
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
                     {
-                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                        ColorHumanOrRobot(entry.Value.data.actor, entry.Value.data.is_built, geometryObject);
 
                         //Check if Priority Viewer is on and color based on priority if it is.
                         if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             //Color based on priority
-                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0]));
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
                         }
                     }
                 }
@@ -1240,12 +1129,23 @@ namespace Instantiate
                 foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
                 {
                     GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
                     
                     //If the objects are not null color by priority function.
-                    if (gameObject != null && entry.Key != UIFunctionalities.CurrentStep)
+                    if (gameObject != null && geometryObject != null)
                     {
-                        //Color based on priority
-                        ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
+                        if (entry.Key != UIFunctionalities.CurrentStep)
+                        {
+                            //Color based on priority
+                            ColorObjectByPriority(SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry"));
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                        }
                     }
                     else
                     {
@@ -1263,8 +1163,9 @@ namespace Instantiate
             foreach (string key in priorityList)
             {
                 GameObject gameObject = GameObject.Find(key);
+                GameObject geometryObject = gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0] + " Geometry");
 
-                if (gameObject != null)
+                if (gameObject != null && geometryObject != null)
                 {
                     if (key != UIFunctionalities.CurrentStep)
                     {
@@ -1272,12 +1173,26 @@ namespace Instantiate
                         {
                             //Color the object based on current app settings
                             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, databaseManager.BuildingPlanDataItem.steps[key], key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+
+                            //Check if the scroll Search is on and color selected cell if it is
+                            if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && key == scrollSearchManager.selectedCellStepIndex)
+                            {
+                                //Color based on search
+                                ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                            }
                         }
                         else
                         {
                             //Color the object based on the priority group
                             Debug.Log("SetPriority" + selectedPriorityGroup + "Priority of selected item: " + databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString() + " Key: " + key + " GameObject: " + gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]) + " PriorityGroup: ");
                             ColorObjectByPriority(newPriorityGroup, databaseManager.BuildingPlanDataItem.steps[key].data.priority.ToString(), key, gameObject.FindObject(databaseManager.BuildingPlanDataItem.steps[key].data.element_ids[0]));
+                        
+                            //Check if the scroll Search is on and color selected cell if it is
+                            if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && key == scrollSearchManager.selectedCellStepIndex)
+                            {
+                                //Color based on search
+                                ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                            }
                         }
                     }
                 }
@@ -1285,62 +1200,6 @@ namespace Instantiate
                 {
                     Debug.LogWarning($"Could not find object with key: {key}");
                 }
-            }
-        }
-        public void ApplyColorForHigherPriority(string CurrentPriority)
-        {
-            Debug.Log($"Applying color for touch : {CurrentPriority}.");
-            if (databaseManager.BuildingPlanDataItem.steps != null)
-            {
-                foreach (var entry in databaseManager.BuildingPlanDataItem.steps)
-                {
-                    GameObject gameObject = GameObject.Find(entry.Key);
-                    
-                    //If the objects are not null color by priority function.
-                    if (gameObject != null)
-                    {
-                        //Color object if it is of a higher priority then the current priority
-                        ColorObjectByLowerPriority(entry.Key, CurrentPriority, gameObject);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Could not find object with key: {entry.Key}");
-                    }
-                }
-            }
-        }
-        public Color AdjustColorByGreyscale(Color originalColor, float factor)
-        {
-            //If Color is not white (Built and Unbuilt Colors)
-            if (originalColor.r != 1.000f && originalColor.g != 1.000f && originalColor.b != 1.000f)
-            {
-                // Factor should be between 0 and 1, where 0 is unchanged and 1 is fully gray
-                factor = Mathf.Clamp01(factor);
-
-                // Convert the original color to grayscale
-                float grayscaleValue = originalColor.r * 0.3f + originalColor.g * 0.59f + originalColor.b * 0.11f;
-
-                // Blend the grayscale color with the original color based on the factor
-                float blendedR = originalColor.r * (1 - factor) + grayscaleValue * factor;
-                float blendedG = originalColor.g * (1 - factor) + grayscaleValue * factor;
-                float blendedB = originalColor.b * (1 - factor) + grayscaleValue * factor;
-
-                // Ensure color values are in the valid range (0 to 1)
-                blendedR = Mathf.Clamp01(blendedR);
-                blendedG = Mathf.Clamp01(blendedG);
-                blendedB = Mathf.Clamp01(blendedB);
-
-                // Create and return the new color
-                Color newColor = new Color(blendedR, blendedG, blendedB, originalColor.a);
-                
-                Debug.Log($"Original Color: {originalColor} New Color: {newColor}");
-                
-                return newColor;
-            }
-            else
-            {
-                Color newColor = new Color(originalColor.r * factor, originalColor.g * factor, originalColor.b * factor, originalColor.a);
-                return newColor;
             }
         }
     

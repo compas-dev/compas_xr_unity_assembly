@@ -22,7 +22,7 @@ public class TrajectoryVisulizer : MonoBehaviour
     //GameObjects for storing the active robot objects in the scene
     public GameObject ActiveRobotObjects;
     public GameObject ActiveRobot;
-    public GameObject ActiveTrajectory;
+    public GameObject ActiveTrajectoryParentObject;
     private GameObject BuiltInRobotsParent;
 
     //Dictionary for storing URDFLinkNames associated with JointNames. Updated by recursive method from updating robot.
@@ -68,9 +68,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
         
         //Instantiate the active robot in the ActiveRobotObjectsParent
-        SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectory, instantiateObjects.InactiveRobotMaterial, visibility);
+        SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, visibility);
     }
-    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectory, Material material, bool visibility)
+    private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility)
     {
         //Set the active robot in the scene
         GameObject selectedRobot = BuiltInRobotsParent.FindObject(robotName);
@@ -82,27 +82,27 @@ public class TrajectoryVisulizer : MonoBehaviour
             {
                 Destroy(ActiveRobot);
             }
-            if(ActiveTrajectory != null)
+            if(ActiveTrajectoryParentObject != null)
             {
-                Destroy(ActiveTrajectory);
+                Destroy(ActiveTrajectoryParentObject);
             }
             
-            //Instantiate a new robot object in the ActiveRobotObjectsParent //TODO: CHECK THIS.
+            //Instantiate a new robot object in the ActiveRobotObjectsParent
             GameObject temporaryRobot = Instantiate(selectedRobot, ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
 
             //If extra rotation is needed then rotate the URDF.
             if(yRotation)
             {
-                temporaryRobot.transform.Rotate(0, 90, 0); //TODO: CHECK THIS.
+                temporaryRobot.transform.Rotate(0, 90, 0);
             }
 
             //Create the active robot parent object and Active trajectory 
             ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
             ActiveRobot.name = "ActiveRobot";
             ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
-            ActiveTrajectory = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
-            ActiveTrajectory.name = "ActiveTrajectory";
-            ActiveTrajectory.transform.SetParent(ActiveRobotObjectsParent.transform);
+            ActiveTrajectoryParentObject = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
+            ActiveTrajectoryParentObject.name = "ActiveTrajectory";
+            ActiveTrajectoryParentObject.transform.SetParent(ActiveRobotObjectsParent.transform);
 
             //Updating Service Manager with My active Robot Name
             mqttTrajectoryManager.serviceManager.ActiveRobotName = robotName;
@@ -119,7 +119,9 @@ public class TrajectoryVisulizer : MonoBehaviour
         else
         {
             Debug.Log($"SetActiveRobot: Robot {robotName} not found in the BuiltInRobotsParent.");
-            uiFunctionalities.SignalOnScreenMessageWithButton(uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage);
+
+            string message = "WARNING: Active Robot could not be found. Confirm with planner which Robot is in use, or load robot.";
+            uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage, "ActiveRobotCouldNotBeFoundWarningMessage", uiFunctionalities.MessagesParent, message, $"SetActiveRobot: Robot {robotName} could not be found");
         }
     }
 
@@ -181,17 +183,17 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             Destroy(ActiveRobot);
         }
-        if(ActiveTrajectory != null)
+        if(ActiveTrajectoryParentObject != null)
         {
-            Destroy(ActiveTrajectory);
+            Destroy(ActiveTrajectoryParentObject);
         }
     }
     public void DestroyActiveTrajectoryChildren()
     {
         //Destroy the active robot in the scene
-        if(ActiveTrajectory != null)
+        if(ActiveTrajectoryParentObject != null)
         {
-            foreach (Transform child in ActiveTrajectory.transform)
+            foreach (Transform child in ActiveTrajectoryParentObject.transform)
             {
                 Destroy(child.gameObject);
             }
@@ -217,12 +219,18 @@ public class TrajectoryVisulizer : MonoBehaviour
         }
         else
         {
-            //If the warning message is not active, signal the warning message that the config structure does not match the URDF Structure.
-            if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject.activeSelf == false)
+            //If the warning message is null create it, if it is not null then just set it active to true. This helps from duplication and overlaying the same message.
+            if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject == null)
             {
                 string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
-                uiFunctionalities.SignalOnScreenMessageFromReference(ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, message, "SetRobotConfigfromDictWrapper");
+                uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, "ConfigDoesNotMatchURDFStructureWarningMessage", uiFunctionalities.MessagesParent, message, "SetRobotConfigfromDictWrapper: Config does not match URDF");
             }
+            else if(uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject.activeSelf == false)
+            {
+                string message = $"WARNING: {configName} structure does not match the URDF structure and will not be visulized.";
+                uiFunctionalities.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ConfigDoesNotMatchURDFStructureWarningMessageObject, "ConfigDoesNotMatchURDFStructureWarningMessage", uiFunctionalities.MessagesParent, message, "SetRobotConfigfromDictWrapper: Config does not match URDF");
+            }
+
             Debug.LogWarning($"SetRobotConfigfromDictWrapper: Config dict {config.Count} (Count) and LinkNames dict {urdfLinkNames.Count} (Count) for search do not match.");
         }
     }
@@ -325,14 +333,14 @@ public class TrajectoryVisulizer : MonoBehaviour
         {
             Debug.Log ("ColorRobotConfigfromSlider: Previous slider value is not null.");
             //Find the parent associated with the slider value
-            GameObject previousRobotGameObject = ActiveTrajectory.FindObject($"Config {previousSliderValue}");
+            GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
 
             //Color the robot active robot
             ColorRobot(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
         }
         
         //Find the parent associated with the slider value
-        GameObject robotGameObject = ActiveTrajectory.FindObject($"Config {sliderValue}");
+        GameObject robotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {sliderValue}");
 
         if (robotGameObject == null)
         {
