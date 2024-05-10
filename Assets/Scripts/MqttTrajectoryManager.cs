@@ -240,6 +240,7 @@ namespace CompasXR.Robots
             {
                 Debug.Log("MQTT: GetTrajectoryResult Message Handeling");
                 GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
+                Debug.Log("MQTT: Pick and place bool: " + getTrajectoryResultmessage.PickAndPlace.ToString());
                 GetTrajectoryResultReceivedMessageHandler(getTrajectoryResultmessage); 
             }
             else if (topic == compasXRTopics.subscribers.approveTrajectoryTopic)
@@ -364,11 +365,9 @@ namespace CompasXR.Robots
                                 getTrajectoryResultmessage.ElementID,
                                 getTrajectoryResultmessage.RobotName,
                                 serviceManager.ActiveRobotName,
-                                () => trajectoryVisualizer.VisualizeRobotTrajectoryFromJointsDict(
-                                    getTrajectoryResultmessage.Trajectory,
+                                () => trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(
+                                    getTrajectoryResultmessage,
                                     trajectoryVisualizer.URDFLinkNames,
-                                    getTrajectoryResultmessage.RobotBaseFrame,
-                                    getTrajectoryResultmessage.TrajectoryID,
                                     trajectoryVisualizer.ActiveRobot,
                                     trajectoryVisualizer.ActiveTrajectoryParentObject,
                                     true));
@@ -406,11 +405,9 @@ namespace CompasXR.Robots
                                     getTrajectoryResultmessage.ElementID,
                                     getTrajectoryResultmessage.RobotName,
                                     serviceManager.ActiveRobotName,
-                                    () => trajectoryVisualizer.VisualizeRobotTrajectoryFromJointsDict(
-                                        getTrajectoryResultmessage.Trajectory,
+                                    () => trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(
+                                        getTrajectoryResultmessage,
                                         trajectoryVisualizer.URDFLinkNames,
-                                        getTrajectoryResultmessage.RobotBaseFrame,
-                                        getTrajectoryResultmessage.TrajectoryID,
                                         trajectoryVisualizer.ActiveRobot,
                                         trajectoryVisualizer.ActiveTrajectoryParentObject,
                                         true));
@@ -420,7 +417,7 @@ namespace CompasXR.Robots
                             }
                             else
                             {
-                                trajectoryVisualizer.VisualizeRobotTrajectoryFromJointsDict(getTrajectoryResultmessage.Trajectory, trajectoryVisualizer.URDFLinkNames, getTrajectoryResultmessage.RobotBaseFrame, getTrajectoryResultmessage.TrajectoryID, trajectoryVisualizer.ActiveRobot, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
+                                trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(getTrajectoryResultmessage, trajectoryVisualizer.URDFLinkNames, trajectoryVisualizer.ActiveRobot, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
                                 Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
                             }
 

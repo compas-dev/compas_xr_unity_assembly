@@ -509,8 +509,11 @@ namespace CompasXR.Robots.MqttData
         public string RobotName { get; private set; }
         public Frame RobotBaseFrame { get; private set; }
         public string TrajectoryID { get; private set; }
+        public bool PickAndPlace { get; private set; }
+        public int? PickIndex { get; private set; }
+        public string? EndEffectorLinkName { get; private set; }
         public List<Dictionary<string, float>> Trajectory { get; private set; } 
-        public GetTrajectoryResult(string elementID, string robotName, Frame robotBaseFrame, List<Dictionary<string, float>> trajectory, Header header=null) 
+        public GetTrajectoryResult(string elementID, string robotName, Frame robotBaseFrame, List<Dictionary<string, float>> trajectory, bool pickAndPlace=false, int? pickIndex=null, string? endEffectorLinkName = null, Header header=null) 
         {
             Header = header ?? new Header();
             ElementID = elementID;
@@ -518,6 +521,9 @@ namespace CompasXR.Robots.MqttData
             RobotBaseFrame = robotBaseFrame;
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
+            PickAndPlace = pickAndPlace;
+            PickIndex = pickIndex; //TODO: MAKE THIS A CONFIG?
+            EndEffectorLinkName = endEffectorLinkName;
         }
         public Dictionary<string, object> GetData()
         {
@@ -531,7 +537,10 @@ namespace CompasXR.Robots.MqttData
                 { "robot_name", RobotName },
                 { "robot_base_frame", RobotBaseFrame.GetData() },
                 { "trajectory_id", TrajectoryID },
-                { "trajectory", Trajectory }
+                { "trajectory", Trajectory },
+                { "pick_and_place", PickAndPlace },
+                { "pick_index", PickIndex },
+                { "end_effector_link_name", EndEffectorLinkName }
             };
         }
         public static GetTrajectoryResult Parse(string jsonString)
@@ -556,9 +565,21 @@ namespace CompasXR.Robots.MqttData
             {
                 throw new Exception("Trajectory is null");
             }
-
             var trajectory = JsonConvert.DeserializeObject<List<Dictionary<string, float>>>(jsonObject["trajectory"].ToString());
-            return new GetTrajectoryResult(elementID, robotName, robotBaseFrame, trajectory, header);
+
+            var pickAndPlace = Convert.ToBoolean(jsonObject["pick_and_place"]);
+            if (pickAndPlace)
+            {
+                var pickIndex = Convert.ToInt32(jsonObject["pick_index"]);
+                var endEffectorLinkName = jsonObject["end_effector_link_name"].ToString();
+                return new GetTrajectoryResult(elementID, robotName, robotBaseFrame, trajectory, pickAndPlace, pickIndex, endEffectorLinkName, header);
+            }
+            else
+            {
+                int? pickIndex = null;
+                string? endEffectorLinkName = null;
+                return new GetTrajectoryResult(elementID, robotName, robotBaseFrame, trajectory, pickAndPlace=false, pickIndex, endEffectorLinkName, header);
+            }
         }
     }
 

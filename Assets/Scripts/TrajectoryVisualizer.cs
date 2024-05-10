@@ -7,6 +7,8 @@ using CompasXR.Core;
 using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
+using Unity.Android.Gradle.Manifest;
+using CompasXR.Robots.MqttData;
 
 namespace CompasXR.Robots
 {
@@ -150,18 +152,52 @@ namespace CompasXR.Robots
                 Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
         }
-        public void VisualizeRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Dictionary<string,string> URDFLinkNames, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, GameObject parentObject, bool visibility)
+        public void VisualizeRobotTrajectoryFromResultMessage(GetTrajectoryResult result, Dictionary<string,string> URDFLinkNames, GameObject robotToConfigure, GameObject parentObject, bool visibility)
         {
             /*
             VisualizeRobotTrajectoryFromJointsDict is responsible for visualizing the robot trajectory in the scene.
             */
-            Debug.Log($"VisualizeRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
+            Debug.Log($"VisualizeRobotTrajectory: For {result.TrajectoryID} with {result.Trajectory} configurations.");
             if(!ActiveRobot.transform.GetChild(0).gameObject.activeSelf)
             {
                 ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
             }
             ActiveRobot.SetActive(false);
-            InstantiateRobotTrajectoryFromJointsDict(TrajectoryConfigs, robotBaseFrame, trajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);  
+            InstantiateRobotTrajectoryFromJointsDict(result.Trajectory, result.RobotBaseFrame, result.TrajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);     
+
+            if(result.PickAndPlace)
+            {
+                Debug.Log($"VisualizeRobotTrajectory: Attaching element to end effector link for {result.TrajectoryID}.");
+                AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
+            }
+        }
+
+        public void AttachElementToTrajectoryEndEffectorLinks(string stepID, GameObject trajectoryParent, string endEffectorLinkName, int pickIndex, int trajectoryCount)
+        {
+            /*
+            AttachElementToTrajectoryEndEffectorLinks is responsible for attaching an element to the end effector link in the trajectory GameObject.
+            */
+
+            int lastConfigIndex = trajectoryCount - 1;
+            GameObject stepElement = GameObject.Find(stepID);
+            Debug.Log($"AttachElementToTrajectoryEndEffectorLinks: GameObject Position {stepElement.transform.position} and Rotation {stepElement.transform.rotation}.");
+            GameObject endEffectorLink = trajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
+            GameObject newStepElment = Instantiate(stepElement, stepElement.transform.localPosition, stepElement.transform.localRotation);
+            newStepElment.transform.SetParent(endEffectorLink.transform, true);
+
+            //Locla roation of the object to the end effector link
+            // Vector3 position = newStepElment.transform.localPosition;
+            // Quaternion rotation = newStepElment.transform.localRotation;
+
+            // for(int i = lastConfigIndex-1; i >= pickIndex; i--)
+            // {
+                // GameObject currentEndEffectorLink = trajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
+                // GameObject newStepElmentCopy = Instantiate(stepElement, stepElement.transform.position, stepElement.transform.rotation);
+                // newStepElmentCopy.transform.SetParent(currentEndEffectorLink.transform, true);
+                // newStepElmentCopy.transform.localPosition = position;
+                // newStepElmentCopy.transform.localRotation = rotation;
+            // }
+
         }
         public void DestroyActiveRobotObjects()
         {
