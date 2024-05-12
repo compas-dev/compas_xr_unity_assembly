@@ -498,9 +498,7 @@ namespace CompasXR.Core.Data
             return buidingPlanData;
         }
     }
-    
 
-    //TODO: THIS HAS BEEN EXTENDED TO INCLUDE Necessisary Information for RobArch2024
     [System.Serializable]
     public class Step
     {
@@ -580,7 +578,7 @@ namespace CompasXR.Core.Data
 
     }
 
-    //TODO: THIS HAS BEEN EXTENDED TO INCLUDE Necessisary Information for RobArch2024
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
     [System.Serializable]
     public class Data
     {
@@ -660,7 +658,6 @@ namespace CompasXR.Core.Data
 
     }
 
-    //TODO: EXTENDED CLASSES FOR ROBARCH2024 JOINTS
     [System.Serializable]
     public class Joint
     {
@@ -742,6 +739,8 @@ namespace CompasXR.Core.Data
             return element;
         }
     }
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+
 
     ////////////////Classes for User Current Informatoin/////////////////////
     

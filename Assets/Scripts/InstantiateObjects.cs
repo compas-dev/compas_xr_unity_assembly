@@ -47,8 +47,12 @@ namespace CompasXR.Core
         public GameObject Elements;
         public GameObject ActiveUserObjects;
 
-        //TODO: Extended for RobArch2024
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public GameObject Joints;
         public GameObject JointPrefab;
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+
 
         //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
@@ -95,8 +99,10 @@ namespace CompasXR.Core
             QRMarkers = GameObject.Find("QRMarkers");
             ActiveUserObjects = GameObject.Find("ActiveUserObjects");
 
-            //TODO: Extended for RobArch2024
-            JointPrefab = GameObject.Find("Joints").FindObject("JointPrefab");
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            Joints = GameObject.Find("Joints");
+            JointPrefab = GameObject.Find("JointObjects").FindObject("JointPrefab");
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
             //Find Initial Materials
             BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
@@ -121,6 +127,54 @@ namespace CompasXR.Core
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
         }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public void placeJointsDict(Dictionary<string, Data.Joint> JointsDataDict)
+        {
+            /*
+            * Method is used to place all the joints in the AR space
+            * based on the joints data dictionary.
+            */
+            if (JointsDataDict != null)
+            {
+                Debug.Log($"placeJointsDict: Number of key-value pairs in the dictionary = {JointsDataDict.Count}");
+                foreach (KeyValuePair<string, Data.Joint> entry in JointsDataDict)
+                {
+                    if (entry.Value != null)
+                    {
+                        PlaceJoint(entry.Value);
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning("The dictionary is null");
+            }
+        }
+        public void PlaceJoint(Data.Joint joint)
+        {
+            /*
+            * Method is used to place a joint in the AR space
+            * based on the joint data.
+            */
+            GameObject jointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(JointPrefab,
+             joint.element.frame.point, joint.element.frame.xaxis,
+             joint.element.frame.yaxis, false, false);
+
+            jointObject.transform.SetParent(Elements.transform, false);
+            jointObject.name = $"Joint_{joint.Key}";
+            jointObject.SetActive(true);
+
+            if (joint.is_mirrored)
+            {
+                //TODO: CHECK ROTATION AXIS
+                Vector3 rotationAxis = jointObject.transform.right;
+                jointObject.transform.Rotate(rotationAxis, 180.0f);               
+            }
+
+        }
+        
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void PlaceElementFromStep(string Key, Step step)
         {
             /*
@@ -1018,9 +1072,10 @@ namespace CompasXR.Core
         public void OnJointsInformationReceived(object source, JointsDataDictEventArgs e)
         {
             /*
-            * Method is used to handle the event when the database is initialized
+            * Method is used to handle the event when joints data has been received
             */
             Debug.Log("OnJointsInformationReceived: Database is loaded." + " " + "total number of joints = " + e.JointsDataDict.Count);
+            placeJointsDict(e.JointsDataDict);
             // placeElementsDict(e.BuildingPlanDataItem.steps);
         }
     }

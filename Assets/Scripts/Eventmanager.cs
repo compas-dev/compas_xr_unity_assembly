@@ -54,8 +54,9 @@ namespace CompasXR.Core
             databaseManager.ApplicationSettingUpdate += mqttTrajectoryReceiver.SetCompasXRTopics;
             databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;
 
-            //TODO: Extended for RobARCH 2024
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             databaseManager.JointsDataDictReceived += instantiateObjects.OnJointsInformationReceived;
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
             databaseManager.TrackingDictReceived += qrLocalization.OnTrackingInformationReceived;
             instantiateObjects.PlacedInitialElements += databaseManager.AddListeners;

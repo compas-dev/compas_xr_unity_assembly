@@ -41,7 +41,7 @@ namespace CompasXR.Core
         public Dictionary<string, Node> QRCodeDataDict { get; set; }
     }
 
-    //TODO: Extended for RobArch2024 Joints
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
     public class JointsDataDictEventArgs : EventArgs
     {
         /*
@@ -50,6 +50,8 @@ namespace CompasXR.Core
         */
         public Dictionary<string, Data.Joint> JointsDataDict { get; set; }
     }
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+
 
     public class UpdateDataItemsDictEventArgs : EventArgs
     {
@@ -103,14 +105,14 @@ namespace CompasXR.Core
         public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
         public Dictionary<string, Node> QRCodeDataDict { get; private set; } = new Dictionary<string, Node>();
 
-        //TODO: Extended Data structure for RobArch2024 Joints
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public Dictionary<string, Data.Joint> JointsDataDict { get; private set; } = new Dictionary<string, Data.Joint>();
         DatabaseReference dbReferenceJoints;
 
         public delegate void JointsDataDictEventHandler(object source, JointsDataDictEventArgs e); 
         public event JointsDataDictEventHandler JointsDataDictReceived;
 
-        //TODO: Extended Data structure for RobArch2024 Joints
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
         public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
 
@@ -193,7 +195,9 @@ namespace CompasXR.Core
                     DeserializeSettingsData(snapshot);
                 }
             });
-        }    
+        }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public async void FetchData(object source, ApplicationSettingsEventArgs e)
         {
             /*
@@ -208,7 +212,7 @@ namespace CompasXR.Core
             dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("QRFrames").Child("graph").Child("node");
             dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("UsersCurrentStep");
 
-            //TODO: Extended for RobArch2024 Joints
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             dbReferenceJoints = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("joints");
 
             if (e.Settings.storage_folder == "None")
@@ -217,7 +221,6 @@ namespace CompasXR.Core
                 await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
                 await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
-                //TODO: Extended for RobArch2024 Joints
                 await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
             }
             else
@@ -248,7 +251,6 @@ namespace CompasXR.Core
             await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
             await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
-            //TODO: Extended for RobArch2024 Joints
             await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
 
         }
@@ -269,12 +271,14 @@ namespace CompasXR.Core
                 OnTrackingDataReceived(QRCodeDataDict);
             }
 
-            //TODO: Extended for RobArch2024 Joints
             if (eventname != null && eventname == "JointsDataDict")
             {
                 OnJointsDataDictReceived(JointsDataDict);
             }
         }      
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+
         public void PushAllDataBuildingPlan(string key)
         {        
             /*
@@ -340,6 +344,7 @@ namespace CompasXR.Core
             Debug.Log($"DeserializeAssemblyDataSnapshot: The number of nodes stored in the Assembly Dict is {dataDict.Count}");
         }
 
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         private void DeserializeJointDataSnapshot(DataSnapshot snapshot, Dictionary<string, Data.Joint> dataDict)
         {
             /*
@@ -365,6 +370,9 @@ namespace CompasXR.Core
 
             Debug.Log($"DeserializeAssemblyDataSnapshot: The number of Joints stored in Dict is {dataDict.Count}");
         }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+
         private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
         {  
             /*
@@ -958,7 +966,7 @@ namespace CompasXR.Core
             TrackingDictReceived(this, new TrackingDataDictEventArgs() {QRCodeDataDict = QRCodeDataDict});
         }
 
-        //TODO: Extended for RobArch2024 Joints
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         protected virtual void OnJointsDataDictReceived(Dictionary<string, Data.Joint> inputJointsDataDict)
         {
             /*
@@ -969,6 +977,7 @@ namespace CompasXR.Core
             Debug.Log("OnTrackingDataReceived: Tracking Data Received");
             JointsDataDictReceived(this, new JointsDataDictEventArgs() {JointsDataDict = inputJointsDataDict});
         }
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         protected virtual void OnDatabaseUpdate(Step newValue, string key)
         {
             /*
