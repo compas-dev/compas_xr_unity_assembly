@@ -47,6 +47,9 @@ namespace CompasXR.Core
         public GameObject Elements;
         public GameObject ActiveUserObjects;
 
+        //TODO: Extended for RobArch2024
+        public GameObject JointPrefab;
+
         //Events
         public delegate void InitialElementsPlaced(object source, EventArgs e);
         public event InitialElementsPlaced PlacedInitialElements;
@@ -91,6 +94,9 @@ namespace CompasXR.Core
             Elements = GameObject.Find("Elements");
             QRMarkers = GameObject.Find("QRMarkers");
             ActiveUserObjects = GameObject.Find("ActiveUserObjects");
+
+            //TODO: Extended for RobArch2024
+            JointPrefab = GameObject.Find("Joints").FindObject("JointPrefab");
 
             //Find Initial Materials
             BuiltMaterial = GameObject.Find("Materials").FindObject("Built").GetComponentInChildren<Renderer>().material;
@@ -1006,6 +1012,16 @@ namespace CompasXR.Core
             */
             PlacedInitialElements(this, EventArgs.Empty);
             databaseManager.FindInitialElement();
+        }
+
+        //TODO: Extended for RobArch 2024
+        public void OnJointsInformationReceived(object source, JointsDataDictEventArgs e)
+        {
+            /*
+            * Method is used to handle the event when the database is initialized
+            */
+            Debug.Log("OnJointsInformationReceived: Database is loaded." + " " + "total number of joints = " + e.JointsDataDict.Count);
+            // placeElementsDict(e.BuildingPlanDataItem.steps);
         }
     }
 

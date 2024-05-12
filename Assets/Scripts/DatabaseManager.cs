@@ -41,6 +41,16 @@ namespace CompasXR.Core
         public Dictionary<string, Node> QRCodeDataDict { get; set; }
     }
 
+    //TODO: Extended for RobArch2024 Joints
+    public class JointsDataDictEventArgs : EventArgs
+    {
+        /*
+        * JointsDataDictEventArgs : Class inherits from EventArgs &
+        * it is used to send the JointsDataDict on events.
+        */
+        public Dictionary<string, Data.Joint> JointsDataDict { get; set; }
+    }
+
     public class UpdateDataItemsDictEventArgs : EventArgs
     {
         /*
@@ -96,6 +106,9 @@ namespace CompasXR.Core
         //TODO: Extended Data structure for RobArch2024 Joints
         public Dictionary<string, Data.Joint> JointsDataDict { get; private set; } = new Dictionary<string, Data.Joint>();
         DatabaseReference dbReferenceJoints;
+
+        public delegate void JointsDataDictEventHandler(object source, JointsDataDictEventArgs e); 
+        public event JointsDataDictEventHandler JointsDataDictReceived;
 
         //TODO: Extended Data structure for RobArch2024 Joints
 
@@ -205,7 +218,7 @@ namespace CompasXR.Core
                 await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
                 //TODO: Extended for RobArch2024 Joints
-                await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict));
+                await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
             }
             else
             {
@@ -236,7 +249,7 @@ namespace CompasXR.Core
             await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
 
             //TODO: Extended for RobArch2024 Joints
-            await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict));
+            await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
 
         }
         public async Task FetchRTDDatawithEventHandler(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null)
@@ -254,6 +267,12 @@ namespace CompasXR.Core
             if (eventname != null && eventname == "TrackingDict")
             {
                 OnTrackingDataReceived(QRCodeDataDict);
+            }
+
+            //TODO: Extended for RobArch2024 Joints
+            if (eventname != null && eventname == "JointsDataDict")
+            {
+                OnJointsDataDictReceived(JointsDataDict);
             }
         }      
         public void PushAllDataBuildingPlan(string key)
@@ -937,6 +956,18 @@ namespace CompasXR.Core
             UnityEngine.Assertions.Assert.IsNotNull(TrackingDictReceived, "Tracking Dict is null!");
             Debug.Log("OnTrackingDataReceived: Tracking Data Received");
             TrackingDictReceived(this, new TrackingDataDictEventArgs() {QRCodeDataDict = QRCodeDataDict});
+        }
+
+        //TODO: Extended for RobArch2024 Joints
+        protected virtual void OnJointsDataDictReceived(Dictionary<string, Data.Joint> inputJointsDataDict)
+        {
+            /*
+            * Method is used to trigger the Tracking Data Received Event.
+            * It is designed to trigger the event and send the Tracking Data to the respective classes.
+            */
+            UnityEngine.Assertions.Assert.IsNotNull(JointsDataDictReceived, "Joints Dict is null!");
+            Debug.Log("OnTrackingDataReceived: Tracking Data Received");
+            JointsDataDictReceived(this, new JointsDataDictEventArgs() {JointsDataDict = inputJointsDataDict});
         }
         protected virtual void OnDatabaseUpdate(Step newValue, string key)
         {

@@ -700,7 +700,6 @@ namespace CompasXR.Core.Data
 
             return joint;
         }
-
         public bool IsValidJoint()
         {
             /*
@@ -714,6 +713,7 @@ namespace CompasXR.Core.Data
             }
             return false;
         }
+
     }
 
     [System.Serializable]
