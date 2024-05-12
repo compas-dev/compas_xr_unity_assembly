@@ -238,6 +238,8 @@ namespace CompasXR.Core
                 {
                     GameObject jointObject = Joints.FindObject($"Joint_{jointData.Key}");
                     Destroy(jointObject);
+
+                    jointData.adjacency.Remove(deletedStepKey);
                 }
             }
         }
