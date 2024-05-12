@@ -168,10 +168,10 @@ namespace CompasXR.Robots
             if(result.PickAndPlace)
             {
                 Debug.Log($"VisualizeRobotTrajectory: Attaching element to end effector link for {result.TrajectoryID}.");
-                AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
+                Debug.Log("ATTACHMENT TO END EFFECTOR LINKS NOT IMPLEMENTED YET.");
+                // AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
             }
         }
-
         public void AttachElementToTrajectoryEndEffectorLinks(string stepID, GameObject trajectoryParent, string endEffectorLinkName, int pickIndex, int trajectoryCount)
         {
             /*
@@ -182,21 +182,61 @@ namespace CompasXR.Robots
             GameObject stepElement = GameObject.Find(stepID);
             Debug.Log($"AttachElementToTrajectoryEndEffectorLinks: GameObject Position {stepElement.transform.position} and Rotation {stepElement.transform.rotation}.");
             GameObject endEffectorLink = trajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
+            Debug.Log("EndEffectorPosition: " + endEffectorLink.transform.position);
+            Debug.Log("EndEffectorLocalPosition: " + endEffectorLink.transform.localPosition);
+            Vector3 relativePosition = endEffectorLink.transform.InverseTransformPoint(stepElement.transform.position);
+            Quaternion relativeRotation = Quaternion.Inverse(endEffectorLink.transform.rotation) * stepElement.transform.rotation;
             GameObject newStepElment = Instantiate(stepElement, stepElement.transform.localPosition, stepElement.transform.localRotation);
-            newStepElment.transform.SetParent(endEffectorLink.transform, true);
+            // newStepElment.transform.SetParent(endEffectorLink.transform, true);
 
-            //Locla roation of the object to the end effector link
+            // // Locla roation of the object to the end effector link
             // Vector3 position = newStepElment.transform.localPosition;
             // Quaternion rotation = newStepElment.transform.localRotation;
 
             // for(int i = lastConfigIndex-1; i >= pickIndex; i--)
             // {
-                // GameObject currentEndEffectorLink = trajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
-                // GameObject newStepElmentCopy = Instantiate(stepElement, stepElement.transform.position, stepElement.transform.rotation);
-                // newStepElmentCopy.transform.SetParent(currentEndEffectorLink.transform, true);
-                // newStepElmentCopy.transform.localPosition = position;
-                // newStepElmentCopy.transform.localRotation = rotation;
+            //     GameObject currentEndEffectorLink = trajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
+            //     GameObject newStepElmentCopy = Instantiate(stepElement, stepElement.transform.position, stepElement.transform.rotation);
+            //     currentEndEffectorLink.GetComponentInChildren<MeshRenderer>().material.color = Color.blue;
+
+            //     Debug.Log("JOINT POSITION? " + currentEndEffectorLink.GetComponent<UrdfJointRevolute>().GetPosition());
+            //     Debug.Log("EndEffectors: Renderer Center" + currentEndEffectorLink.GetComponentInChildren<Renderer>().bounds.center);
+            //     Debug.Log("EndEffectorPosition: " + currentEndEffectorLink.transform.position + " EndEffectorRotation: " + currentEndEffectorLink.transform.rotation.eulerAngles);
+            //     Debug.Log("EndEffectorLocalPosition: " + currentEndEffectorLink.transform.localPosition + " EndEffectorLocalRotation: " + currentEndEffectorLink.transform.localRotation.eulerAngles);
+
+            //     newStepElmentCopy.transform.SetParent(currentEndEffectorLink.transform, true);
+            //     newStepElmentCopy.transform.localPosition = position;
+            //     newStepElmentCopy.transform.localRotation = rotation;
             // }
+
+            // Debug.Log($"AttachElementToTrajectoryEndEffectorLinks: GameObject Position {stepElement.transform.position} and Rotation {stepElement.transform.rotation}.");
+            // GameObject endEffectorLink = trajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
+
+            // GameObject newStepElement = Instantiate(stepElement);
+            // newStepElement.GetComponentInChildren<MeshRenderer>().material.color = Color.red;
+            // GameObject BASELINERandomCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+            // for(int i = lastConfigIndex-1; i >= pickIndex; i--)
+            // {
+            //     GameObject currentEndEffectorLink = trajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
+            //     Debug.Log("FOUNDOBJECTS NAME" + trajectoryParent.FindObject($"Config {i}").name);
+            //     currentEndEffectorLink.GetComponentInChildren<MeshRenderer>().material.color = Color.blue;
+            //     Debug.Log("EndEffectorPosition: " + currentEndEffectorLink.transform.position + " EndEffectorRotation: " + currentEndEffectorLink.transform.rotation.eulerAngles);
+            //     Debug.Log("EndEffectorLocalPosition: " + currentEndEffectorLink.transform.localPosition + " EndEffectorLocalRotation: " + currentEndEffectorLink.transform.localRotation.eulerAngles);
+            //     // GameObject newStepElmentCopy = Instantiate(stepElement, stepElement.transform.position, stepElement.transform.rotation);
+            //     GameObject RandomCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            //     RandomCube.transform.position = currentEndEffectorLink.transform.localPosition;
+            //     RandomCube.transform.rotation = currentEndEffectorLink.transform.localRotation;
+            //     Debug.Log("EndEffectorPosition: " + RandomCube.transform.position + " EndEffectorRotation: " + RandomCube.transform.rotation.eulerAngles);
+            //     RandomCube.name = $"EndEffectorPosition {i}";
+            //     RandomCube.GetComponent<MeshRenderer>().material.color = Color.green;
+
+            //     // newStepElmentCopy.transform.SetParent(currentEndEffectorLink.transform, true);
+            //     // newStepElmentCopy.transform.localPosition = position;
+            //     // newStepElmentCopy.transform.localRotation = rotation;
+            // }
+
+        // }
 
         }
         public void DestroyActiveRobotObjects()
