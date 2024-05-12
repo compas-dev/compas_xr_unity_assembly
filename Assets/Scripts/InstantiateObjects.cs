@@ -9,6 +9,7 @@ using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
 using CompasXR.AppSettings;
+using UnityEngine.InputSystem;
 
 namespace CompasXR.Core
 {
@@ -161,7 +162,7 @@ namespace CompasXR.Core
              joint.element.frame.point, joint.element.frame.xaxis,
              joint.element.frame.yaxis, false, false);
 
-            jointObject.transform.SetParent(Elements.transform, false);
+            jointObject.transform.SetParent(Joints.transform, false);
             jointObject.name = $"Joint_{joint.Key}";
             jointObject.SetActive(true);
 
@@ -172,8 +173,75 @@ namespace CompasXR.Core
                 jointObject.transform.Rotate(rotationAxis, 180.0f);               
             }
 
+            ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
+
         }
-        
+        public void ColorJointFromAdjacentStepsBuildStatus(GameObject joint, Data.Joint jointData)
+        {
+            /*
+            * Method is used to color the joint based on the adjacency of the joint
+            * in the AR space.
+            */
+            
+            List<bool> adjacentStepsBuiltStatus = new List<bool>();
+
+            foreach (string key in jointData.adjacency)
+            {
+                adjacentStepsBuiltStatus.Add(databaseManager.BuildingPlanDataItem.steps[key].data.is_built);
+            }
+
+            if (adjacentStepsBuiltStatus.Contains(false))
+            {
+                joint.GetComponentInChildren<Renderer>().material = UnbuiltMaterial;
+            }
+            else
+            {
+                joint.GetComponentInChildren<Renderer>().material = BuiltMaterial;
+            }
+
+        }
+        public void ColorAllJointsByBuildState()
+        {
+            /*
+            * Method is used to color all the joints in the AR space
+            * based on the build state of the adjacent steps.
+            */
+            foreach (Transform child in Joints.transform)
+            {
+                Data.Joint jointData = databaseManager.JointsDataDict[child.name.Replace("Joint_", "")];
+                ColorJointFromAdjacentStepsBuildStatus(child.gameObject, jointData);
+            }
+        }
+        public void DestroyAllJoints()
+        {
+            /*
+            * Method is used to destroy all the joints in the AR space.
+            */
+            foreach (Transform child in Joints.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+        public void FindandDeleteJointsFromDeletedStep(string deletedStepKey)
+        {
+            /*
+            * Method is used to find the deleted joints in the AR space
+            * and destroy them.
+            */
+
+            foreach (var jointItem in databaseManager.JointsDataDict)
+            {
+                string key = jointItem.Key;
+                Data.Joint jointData = jointItem.Value;
+                
+                if (jointData.adjacency.Contains(deletedStepKey))
+                {
+                    GameObject jointObject = Joints.FindObject($"Joint_{jointData.Key}");
+                    Destroy(jointObject);
+                }
+            }
+        }
+
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void PlaceElementFromStep(string Key, Step step)
         {
@@ -1010,10 +1078,16 @@ namespace CompasXR.Core
             if (eventArgs.NewValue == null)
             {
                 ObjectInstantiaion.DestroyGameObjectByName(eventArgs.Key);
+
+                //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                FindandDeleteJointsFromDeletedStep(eventArgs.Key);
             }
             else
             {
                 InstantiateChangedKeys(eventArgs.NewValue, eventArgs.Key);
+
+                //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                ColorAllJointsByBuildState();
             }
 
         }
@@ -1068,7 +1142,7 @@ namespace CompasXR.Core
             databaseManager.FindInitialElement();
         }
 
-        //TODO: Extended for RobArch 2024
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void OnJointsInformationReceived(object source, JointsDataDictEventArgs e)
         {
             /*
@@ -1076,8 +1150,8 @@ namespace CompasXR.Core
             */
             Debug.Log("OnJointsInformationReceived: Database is loaded." + " " + "total number of joints = " + e.JointsDataDict.Count);
             placeJointsDict(e.JointsDataDict);
-            // placeElementsDict(e.BuildingPlanDataItem.steps);
         }
+
     }
 
     public static class ObjectInstantiaion

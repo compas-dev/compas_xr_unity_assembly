@@ -925,6 +925,21 @@ namespace CompasXR.Core
                 }
                 else if(key == "joints")
                 {
+                    // InstantiateObjects instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+                    // if (JointsDataDict != null)
+                    // {
+                    //     JointsDataDict.Clear();
+                    // }
+                    // if(instantiateObjects != null && instantiateObjects.Joints.transform.childCount > 0)
+                    // {
+                    //     instantiateObjects.DestroyAllJoints();
+                    // }
+                    // else
+                    // {
+                    //     Debug.LogWarning("OnProjectInfoChangedUpdate: Joints Data Dict is null or Instantiate Objects is null");
+                    // }
+
+                    // await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
                     Debug.Log("OnProjectInfoChangedUpdate: Joints Changed");
                 }
                 else if(key == "parts")
@@ -977,6 +992,7 @@ namespace CompasXR.Core
             Debug.Log("OnTrackingDataReceived: Tracking Data Received");
             JointsDataDictReceived(this, new JointsDataDictEventArgs() {JointsDataDict = inputJointsDataDict});
         }
+
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         protected virtual void OnDatabaseUpdate(Step newValue, string key)
         {

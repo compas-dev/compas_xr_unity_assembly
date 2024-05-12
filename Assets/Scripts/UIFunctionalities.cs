@@ -755,6 +755,9 @@ namespace CompasXR.UI
                     IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
                 }
                 databaseManager.PushAllDataBuildingPlan(key);
+
+                //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                instantiateObjects.ColorAllJointsByBuildState();
             }
             else
             {
@@ -1646,7 +1649,12 @@ namespace CompasXR.UI
                 {
                     Destroy(child.gameObject);
                 }
-            }        
+            }
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            instantiateObjects.DestroyAllJoints();     
+            databaseManager.JointsDataDict.Clear();
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
             databaseManager.BuildingPlanDataItem.steps.Clear();
             databaseManager.AssemblyDataDict.Clear();

@@ -29,6 +29,9 @@ namespace CompasXR.Core
         private GameObject PriorityViewerObjects;
         private GameObject ActiveRobotObjects;
 
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        private GameObject JointsParent;
+
         //Public Scripts
         public InstantiateObjects instantiateObjects;
         public UIFunctionalities uiFunctionalities;
@@ -60,6 +63,9 @@ namespace CompasXR.Core
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
             PriorityViewerObjects = GameObject.Find("PriorityViewerObjects");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            JointsParent = GameObject.Find("Joints");
         }
         void Update()
         {
@@ -97,6 +103,9 @@ namespace CompasXR.Core
                         ObjectTransformations.TranslateGameObjectByImageTarget(ObjectLengthsTags, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                         ObjectTransformations.TranslateGameObjectByImageTarget(PriorityViewerObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                         ObjectTransformations.TranslateGameObjectByImageTarget(ActiveRobotObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+
+                        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                        ObjectTransformations.TranslateGameObjectByImageTarget(JointsParent, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
 
                         //Update position of line objects in the scene
                         if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
