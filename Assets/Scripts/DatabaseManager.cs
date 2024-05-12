@@ -92,6 +92,13 @@ namespace CompasXR.Core
         public Dictionary<string, Node> AssemblyDataDict { get; private set; } = new Dictionary<string, Node>();
         public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
         public Dictionary<string, Node> QRCodeDataDict { get; private set; } = new Dictionary<string, Node>();
+
+        //TODO: Extended Data structure for RobArch2024 Joints
+        public Dictionary<string, Data.Joint> JointsDataDict { get; private set; } = new Dictionary<string, Data.Joint>();
+        DatabaseReference dbReferenceJoints;
+
+        //TODO: Extended Data structure for RobArch2024 Joints
+
         public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
 
         //Data Structure to Store Application Settings
@@ -188,11 +195,17 @@ namespace CompasXR.Core
             dbReferenceQRCodes = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("QRFrames").Child("graph").Child("node");
             dbReferenceUsersCurrentSteps = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("UsersCurrentStep");
 
+            //TODO: Extended for RobArch2024 Joints
+            dbReferenceJoints = FirebaseDatabase.DefaultInstance.GetReference(e.Settings.project_name).Child("joints");
+
             if (e.Settings.storage_folder == "None")
             {
                 await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
                 await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
                 await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
+
+                //TODO: Extended for RobArch2024 Joints
+                await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict));
             }
             else
             {
@@ -221,6 +234,10 @@ namespace CompasXR.Core
             await FetchRTDDatawithEventHandler(dbReferenceQRCodes, snapshot => DeserializeAssemblyDataSnapshot(snapshot, QRCodeDataDict), "TrackingDict");
             await FetchRTDDatawithEventHandler(dbReferenceAssembly, snapshot => DeserializeAssemblyDataSnapshot(snapshot, AssemblyDataDict));
             await FetchRTDDatawithEventHandler(dbReferenceBuildingPlan, snapshot => DesearializeBuildingPlanDataSnapshot(snapshot), "BuildingPlanDataDict");
+
+            //TODO: Extended for RobArch2024 Joints
+            await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict));
+
         }
         public async Task FetchRTDDatawithEventHandler(DatabaseReference dbreference, Action<DataSnapshot> deserilizationMethod, string eventname = null)
         {
@@ -302,6 +319,32 @@ namespace CompasXR.Core
                 }
             }
             Debug.Log($"DeserializeAssemblyDataSnapshot: The number of nodes stored in the Assembly Dict is {dataDict.Count}");
+        }
+
+        private void DeserializeJointDataSnapshot(DataSnapshot snapshot, Dictionary<string, Data.Joint> dataDict)
+        {
+            /*
+            * Method is used to deserialize the Assembly Node data from the Firebase Realtime Database.
+            * It is designed to take a snapshot of the Node data reference and iterate through them parsing the information.
+            */
+            dataDict.Clear();
+            foreach (DataSnapshot childSnapshot in snapshot.Children)
+            {
+                string key = childSnapshot.Key;
+                var json_data = childSnapshot.GetValue(true);
+                Data.Joint joint_data = Data.Joint.Parse(key, json_data);
+                if (joint_data.IsValidJoint())
+                {
+                    dataDict[key] = joint_data;
+                    dataDict[key].Key = key;
+                }
+                else
+                {
+                    Debug.LogWarning($"DeserializeJointDataSnapshot: Invalid Joint structure for key '{key}'. Not added to the dictionary.");
+                }
+            }
+
+            Debug.Log($"DeserializeAssemblyDataSnapshot: The number of Joints stored in Dict is {dataDict.Count}");
         }
         private void DesearializeStringItem(DataSnapshot snapshot, ref string tempStringStorage)
         {  

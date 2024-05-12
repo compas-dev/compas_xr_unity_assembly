@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Unity.Android.Gradle;
 
 namespace CompasXR.Core.Data
 {   
@@ -332,6 +333,7 @@ namespace CompasXR.Core.Data
             }
             return false;
         }
+
     }
 
     [System.Serializable]
@@ -497,6 +499,8 @@ namespace CompasXR.Core.Data
         }
     }
     
+
+    //TODO: THIS HAS BEEN EXTENDED TO INCLUDE Necessisary Information for RobArch2024
     [System.Serializable]
     public class Step
     {
@@ -508,7 +512,6 @@ namespace CompasXR.Core.Data
         public Data data { get; set; }
         public string dtype { get; set; }
         public string guid { get; set; }
-
         public static Step Parse(object jsondata)
         {
             /*
@@ -577,6 +580,7 @@ namespace CompasXR.Core.Data
 
     }
 
+    //TODO: THIS HAS BEEN EXTENDED TO INCLUDE Necessisary Information for RobArch2024
     [System.Serializable]
     public class Data
     {
@@ -594,6 +598,9 @@ namespace CompasXR.Core.Data
         public bool is_planned { get; set; }
         public int[] elements_held { get; set; }
         public int priority { get; set; }
+        public Frame robot_AA_base_frame { get; set; }
+        public Frame robot_AB_base_frame { get; set; }
+        public string robot_name { get; set; }
 
         public static Data Parse(object jsondata)
         {
@@ -641,9 +648,99 @@ namespace CompasXR.Core.Data
             {
                 Debug.Log("FromData (Data): One of the lists is null or improperly casted.");
             }
+
+            //PARSING ADDITIONAL ROBARCH DATA
+            Dictionary<string, object> robotAABaseframeDataDict = dataDict["robot_AA_base_frame"] as Dictionary<string, object>;
+            data.robot_AA_base_frame = Frame.FromData(robotAABaseframeDataDict);
+            Dictionary<string, object> robotABBaseframeDataDict = dataDict["robot_AB_base_frame"] as Dictionary<string, object>;
+            data.robot_AB_base_frame = Frame.FromData(robotABBaseframeDataDict);
+            data.robot_name = (string)dataDict["robot_name"];
             return data;
         }
 
+    }
+
+    //TODO: EXTENDED CLASSES FOR ROBARCH2024 JOINTS
+    [System.Serializable]
+    public class Joint
+    {
+        /*
+        * Joint : A class to define the structure of a joint in the building plan data structure.
+        * Joint contains the information required for coordinating the building process
+        */
+        public List<string> adjacency { get; set; }
+        public Element element { get; set; }
+        public bool is_mirrored { get; set; }
+        public string Key { get; set; }
+        public static Joint Parse(string key, object jsondata)
+        {
+            /*
+            * Method to create an instance of a the Joint class from a json string.
+            */
+            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
+            return FromData(key, jsonDataDict);
+        }
+        public static Joint FromData(string key, Dictionary<string, object> dataDict)
+        {
+            /*
+            * Method to create an instance of a the Joint class from a dictionary.
+            */
+            Joint joint = new Joint();
+            joint.Key = key;
+
+            //Parse adjacency and convert to string list
+            List<object> adjacencyList = dataDict["adjacency"] as List<object>;
+            joint.adjacency = adjacencyList.Select(x => x.ToString()).ToList();
+
+            //Parse element
+            joint.element = Element.Parse(dataDict["element"]);
+
+            //Parse is_mirrored
+            joint.is_mirrored = (bool)dataDict["is_mirrored"];
+
+            return joint;
+        }
+
+        public bool IsValidJoint()
+        {
+            /*
+            * Method to check if the joint contains all valid information.
+            */
+            if (adjacency != null &&
+                element != null &&
+                is_mirrored != null)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    [System.Serializable]
+    public class Element
+    {
+        /*
+        * Element : A class to define the structure of a element in the joints.
+        * Element contains the information required for coordinating joint positions the building process
+        */
+        public Frame frame { get; set; }
+        public static Element Parse(object jsondata)
+        {
+            /*
+            * Method to create an instance of a the Element class from a json string.
+            */
+            Dictionary<string, object> jsonDataDict = jsondata as Dictionary<string, object>;
+            return FromData(jsonDataDict);
+        }
+        public static Element FromData(Dictionary<string, object> jsonDataDict)
+        {
+            /*
+            * Method to create an instance of a the Element class from a dictionary.
+            */
+            Element element = new Element();
+            element.frame = Frame.FromData(jsonDataDict["frame"] as Dictionary<string, object>);
+            return element;
+        }
     }
 
     ////////////////Classes for User Current Informatoin/////////////////////
