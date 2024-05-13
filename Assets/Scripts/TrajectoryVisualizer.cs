@@ -145,7 +145,8 @@ namespace CompasXR.Robots
             if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && URDFLinks.Count > 0 || parentObject != null)
             {
                 int trajectoryCount = TrajectoryConfigs.Count;
-                for (int i = trajectoryCount-1; i > 0; i--)
+                // for (int i = trajectoryCount-1; i >= 0; i--)
+                for (int i = 0; i < trajectoryCount; i++)
                 {
                     Debug.Log($"InstantiateRobotTrajectory: Config {i} with {TrajectoryConfigs[i].Count} joints.");
 
@@ -284,7 +285,6 @@ namespace CompasXR.Robots
             }
             if(URDFManagement.ConfigJointsEqualURDFLinks(config, urdfLinkNames))
             {
-                // await URDFManagement.SetRobotConfigfromJointsDict(config, robotToConfigure, urdfLinkNames);
                 URDFManagement.SetRobotConfigfromJointsDict(config, robotToConfigure, urdfLinkNames);
             }
             else
@@ -361,8 +361,6 @@ namespace CompasXR.Robots
             }
 
         }
-
-        // public static async Task SetRobotConfigfromJointsDict(Dictionary<string, float> config, GameObject URDFGameObject, Dictionary<string, string> linkNamesStorageDict)
         public static void SetRobotConfigfromJointsDict(Dictionary<string, float> config, GameObject URDFGameObject, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
@@ -386,7 +384,6 @@ namespace CompasXR.Robots
                     {
                         jointStateWriter = urdfLinkObject.AddComponent<JointStateWriter>(); 
                     }
-                    // setConfigTaskList.Add(jointStateWriter.WriteAsync(jointValue));
                     jointStateWriter.Write(jointValue);
                 }  
                 else
@@ -394,8 +391,6 @@ namespace CompasXR.Robots
                     Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {urdfLinkObject.name} not found in the robotToConfigure.");
                 }
             }
-
-            // await Task.WhenAll(setConfigTaskList);
         }
         public static void FindAllMeshRenderersInURDFGameObject(Transform currentTransform, Dictionary<string,string> URDFRenderComponents)
         {
