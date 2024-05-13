@@ -576,8 +576,8 @@ namespace CompasXR.UI
                 }
             }
 
-            //Update preview geometry and is built graphics
-            PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
+            //Update preview geometry and is built graphics)
+                PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
             IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
         }
         public void PreviousStepButton()
@@ -627,6 +627,9 @@ namespace CompasXR.UI
                     }
                 }
             }
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            instantiateObjects.SetAllJointsVisibilityFromAdjacency();
         }
         public void IsBuiltButtonGraphicsControler(bool builtStatus, int stepPriority)
         {

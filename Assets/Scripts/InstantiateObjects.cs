@@ -256,6 +256,40 @@ namespace CompasXR.Core
                 child.gameObject.SetActive(isVisible);
             }
         }
+        public void SetAllJointsVisibilityFromAdjacency()
+        {
+            /*
+            * Method is used to set the visibility of the joints in the AR space
+            * based on the visibility of the adjacent steps.
+            */
+            foreach (var jointItem in databaseManager.JointsDataDict)
+            {
+                Data.Joint jointData = jointItem.Value;
+                SetJointVisibilityFromAdjacencyVisibility(jointData);
+            }
+        }
+        public void SetJointVisibilityFromAdjacencyVisibility(Data.Joint jointEntry)
+        {
+            /*
+            * Method is used to set the visibility of the joint in the AR space
+            * based on the visibility of the adjacent steps.
+            */
+
+            List<bool> adjacentStepsVisibility = new List<bool>();
+            bool isVisible = false;           
+            foreach (string key in jointEntry.adjacency)
+            {
+                GameObject element = Elements.FindObject(key);
+
+            }
+
+            if(adjacentStepsVisibility.Contains(true))
+            {
+                isVisible = true;
+            }
+            GameObject jointObject = Joints.FindObject($"Joint_{jointEntry.Key}");
+            jointObject.SetActive(isVisible);
+        }
 
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void PlaceElementFromStep(string Key, Step step)
