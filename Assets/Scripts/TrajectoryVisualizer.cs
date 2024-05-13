@@ -198,21 +198,15 @@ namespace CompasXR.Robots
             GameObject TrajectoryParent = GameObject.Find(trajectoryParentName);
             GameObject endEffectorLink = TrajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(robotName).FindObject(endEffectorLinkName);
             GameObject newStepElement = Instantiate(stepElement);
-            newStepElement.transform.SetParent(endEffectorLink.transform, true);
-            newStepElement.transform.position = stepElement.transform.position;
-            newStepElement.transform.rotation = stepElement.transform.rotation;
 
             //Remove all children from the stepElement
             Renderer stepChildRenderer = newStepElement.GetComponentInChildren<MeshRenderer>();
             stepChildRenderer.material = instantiateObjects.InactiveRobotMaterial;
-            GameObject geometryObject = stepChildRenderer.gameObject;
-            foreach (Transform child in newStepElement.transform)
-            {
-                if(child.gameObject != geometryObject)
-                {
-                    Destroy(child.gameObject);
-                }
-            }
+            instantiateObjects.DestroyChildrenWithOutGeometryName(newStepElement);
+
+            newStepElement.transform.SetParent(endEffectorLink.transform, true);
+            newStepElement.transform.position = stepElement.transform.position;
+            newStepElement.transform.rotation = stepElement.transform.rotation;
 
             Vector3 position = newStepElement.transform.localPosition;
             Quaternion rotation = newStepElement.transform.localRotation;
@@ -222,6 +216,7 @@ namespace CompasXR.Robots
                 GameObject currentEndEffectorLink = TrajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
                 GameObject attachedStepElement = Instantiate(newStepElement);
                 attachedStepElement.transform.SetParent(currentEndEffectorLink.transform, true);
+                instantiateObjects.DestroyChildrenWithOutGeometryName(attachedStepElement);
                 attachedStepElement.transform.localPosition = position;
                 attachedStepElement.transform.localRotation = rotation;
             }
