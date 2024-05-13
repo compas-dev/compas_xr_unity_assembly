@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+using System.Threading.Tasks;
 using RosSharp.Urdf;
 using UnityEngine;
 using Joint = UnityEngine.Joint;
@@ -49,6 +50,12 @@ namespace RosSharp.RosBridgeClient
         }
 
         public void Write(float state)
+        {
+            newState = state;
+            isNewStateReceived = true;
+        }
+    
+        public async Task WriteTask(float state)
         {
             newState = state;
             isNewStateReceived = true;
