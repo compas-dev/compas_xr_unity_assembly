@@ -576,8 +576,11 @@ namespace CompasXR.UI
                 }
             }
 
-            //Update preview geometry and is built graphics)
+            if(PreviewGeometrySlider.value != 1)
+            {
                 PreviewGeometrySliderSetVisibilty(PreviewGeometrySlider.value);
+            }
+
             IsBuiltButtonGraphicsControler(step.data.is_built, step.data.priority);
         }
         public void PreviousStepButton()
@@ -629,7 +632,10 @@ namespace CompasXR.UI
             }
 
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-            instantiateObjects.SetAllJointsVisibilityFromAdjacency();
+            if(JointsToggleObject.GetComponent<Toggle>().isOn)
+            {
+                instantiateObjects.SetAllJointsVisibilityFromAdjacency();
+            }
         }
         public void IsBuiltButtonGraphicsControler(bool builtStatus, int stepPriority)
         {
@@ -1568,7 +1574,6 @@ namespace CompasXR.UI
                 UserInterface.SetUIObjectColor(ScrollSearchToggleObject, White);
             }
         }
-
         public void ToggleJoints(Toggle toggle)
         {
             /*
@@ -1578,7 +1583,15 @@ namespace CompasXR.UI
             Debug.Log($"ToggleJoints: Joints Toggle Pressed value set to {toggle.GetComponent<Toggle>().isOn}");
             if(toggle.isOn)
             {
-                instantiateObjects.SetVisibilityOfAllJoints(true);
+                if(PreviewGeometrySlider.value != 1)
+                {
+                    instantiateObjects.SetAllJointsVisibilityFromAdjacency();
+                }
+                else
+                {
+                    instantiateObjects.SetVisibilityOfAllJoints(true);
+                }
+
                 UserInterface.SetUIObjectColor(JointsToggleObject, Yellow);
             }
             else
@@ -1587,6 +1600,7 @@ namespace CompasXR.UI
                 UserInterface.SetUIObjectColor(JointsToggleObject, White);
             }
         }
+
         ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
         private void ToggleInfo(Toggle toggle)
         {

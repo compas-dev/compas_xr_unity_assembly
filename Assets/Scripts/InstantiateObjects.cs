@@ -280,7 +280,14 @@ namespace CompasXR.Core
             foreach (string key in jointEntry.adjacency)
             {
                 GameObject element = Elements.FindObject(key);
-
+                if (element.activeSelf)
+                {
+                    adjacentStepsVisibility.Add(true);
+                }
+                else
+                {
+                    adjacentStepsVisibility.Add(false);
+                }
             }
 
             if(adjacentStepsVisibility.Contains(true))
