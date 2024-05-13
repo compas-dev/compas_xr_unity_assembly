@@ -145,7 +145,6 @@ namespace CompasXR.Robots
             if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && URDFLinks.Count > 0 || parentObject != null)
             {
                 int trajectoryCount = TrajectoryConfigs.Count;
-                // for (int i = trajectoryCount-1; i >= 0; i--)
                 for (int i = 0; i < trajectoryCount; i++)
                 {
                     Debug.Log($"InstantiateRobotTrajectory: Config {i} with {TrajectoryConfigs[i].Count} joints.");
@@ -154,7 +153,6 @@ namespace CompasXR.Robots
                     temporaryRobot.name = $"Config {i}";
 
                     SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, URDFLinkNames);
-
                     temporaryRobot.transform.SetParent(parentObject.transform);
                     
                     URDFManagement.SetRobotLocalPositionandRotationFromFrame(robotBaseFrame, temporaryRobot);
