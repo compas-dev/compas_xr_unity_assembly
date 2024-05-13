@@ -129,6 +129,9 @@ namespace CompasXR.Robots
         }
 
         ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
+
+        //TODO: Pass event or call back to this method so that when it is done with instantiation it will attach the element.
+        //TODO: RANDOM COMMENTS
         public async Task InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
         {
             /*
@@ -145,7 +148,7 @@ namespace CompasXR.Robots
                     GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                     temporaryRobot.name = $"Config {i}";
 
-                    await SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, URDFLinkNames);
+                    SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, URDFLinkNames);
 
                     temporaryRobot.transform.SetParent(parentObject.transform);
                     
@@ -177,7 +180,7 @@ namespace CompasXR.Robots
             {
                 Debug.Log($"VisualizeRobotTrajectory: Attaching element to end effector link for {result.TrajectoryID}.");
                 // Debug.Log("ATTACHMENT TO END EFFECTOR LINKS NOT IMPLEMENTED YET.");
-                // AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject.name, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
+                AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject.name, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
             }
         }
 
@@ -305,7 +308,7 @@ namespace CompasXR.Robots
                 }
             }
         }
-        public async Task SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure, Dictionary<string, string> urdfLinkNames)
+        public void SetRobotConfigfromDictWrapper(Dictionary<string, float> config, string configName, GameObject robotToConfigure, Dictionary<string, string> urdfLinkNames)
         {
             /*
             SetRobotConfigfromDictWrapper is responsible for setting the robot configuration from a dictionary.
@@ -319,7 +322,7 @@ namespace CompasXR.Robots
             }
             if(URDFManagement.ConfigJointsEqualURDFLinks(config, urdfLinkNames))
             {
-                await URDFManagement.SetRobotConfigfromJointsDict(config, robotToConfigure, urdfLinkNames);
+                URDFManagement.SetRobotConfigfromJointsDict(config, robotToConfigure, urdfLinkNames);
             }
             else
             {
@@ -395,7 +398,7 @@ namespace CompasXR.Robots
             }
 
         }
-        public static async Task SetRobotConfigfromJointsDict(Dictionary<string, float> config, GameObject URDFGameObject, Dictionary<string, string> linkNamesStorageDict)
+        public static void SetRobotConfigfromJointsDict(Dictionary<string, float> config, GameObject URDFGameObject, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
             SetRobotConfigfromJointsDict is responsible for setting the robot configuration to the URDF from a dictionary of joint values.
@@ -416,7 +419,7 @@ namespace CompasXR.Robots
                     {
                         jointStateWriter = urdfLinkObject.AddComponent<JointStateWriter>(); 
                     }
-                    await jointStateWriter.WriteTask(jointValue);
+                    jointStateWriter.Write(jointValue);
                 }  
                 else
                 {
