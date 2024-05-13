@@ -203,6 +203,7 @@ namespace CompasXR.Robots
             Renderer stepChildRenderer = newStepElement.GetComponentInChildren<MeshRenderer>();
             stepChildRenderer.material = instantiateObjects.InactiveRobotMaterial;
             instantiateObjects.DestroyChildrenWithOutGeometryName(newStepElement);
+            newStepElement.name = $"AttachedElement{lastConfigIndex}";
 
             newStepElement.transform.SetParent(endEffectorLink.transform, true);
             newStepElement.transform.position = stepElement.transform.position;
@@ -217,6 +218,7 @@ namespace CompasXR.Robots
                 GameObject attachedStepElement = Instantiate(newStepElement);
                 attachedStepElement.transform.SetParent(currentEndEffectorLink.transform, true);
                 instantiateObjects.DestroyChildrenWithOutGeometryName(attachedStepElement);
+                attachedStepElement.name = $"AttachedElement{i}";
                 attachedStepElement.transform.localPosition = position;
                 attachedStepElement.transform.localRotation = rotation;
             }
@@ -292,6 +294,13 @@ namespace CompasXR.Robots
             {
                 GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
                 URDFManagement.ColorURDFGameObject(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
+
+                //Attached GameObject
+                GameObject previousAttachedGameObject = previousRobotGameObject.FindObject($"AttachedElement{previousSliderValue}");
+                if(previousAttachedGameObject != null)
+                {
+                    previousAttachedGameObject.GetComponentInChildren<Renderer>().material = inactiveMaterial;
+                }
             }
 
             GameObject robotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {sliderValue}");
@@ -300,6 +309,14 @@ namespace CompasXR.Robots
                 Debug.Log($"ColorRobotConfigfromSlider: Robot GameObject not found for Config {sliderValue}.");
             }
             URDFManagement.ColorURDFGameObject(robotGameObject, activeMaterial, ref URDFRenderComponents);
+
+            //Attached GameObject
+            GameObject attachedGameObject = robotGameObject.FindObject($"AttachedElement{sliderValue}");
+            if(attachedGameObject != null)
+            {
+                attachedGameObject.GetComponentInChildren<Renderer>().material = activeMaterial;
+            }
+
             previousSliderValue = sliderValue;
         }
 
