@@ -433,7 +433,7 @@ namespace CompasXR.UI
                     ScrollSearchToggleObject.SetActive(false);
 
                     //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-                    JointsToggleObject.SetActive(true);
+                    JointsToggleObject.SetActive(false);
                     
                     
                     UserInterface.SetUIObjectColor(VisibilityMenuObject, White);

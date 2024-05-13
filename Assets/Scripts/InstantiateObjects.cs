@@ -167,7 +167,7 @@ namespace CompasXR.Core
 
             jointObject.transform.SetParent(Joints.transform, false);
             jointObject.name = $"Joint_{joint.Key}";
-            jointObject.SetActive(true);
+            jointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
 
             if (joint.is_mirrored)
             {
