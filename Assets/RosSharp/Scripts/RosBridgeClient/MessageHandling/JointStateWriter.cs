@@ -54,6 +54,11 @@ namespace RosSharp.RosBridgeClient
             newState = state;
             isNewStateReceived = true;
         }
+
+        public async Task WriteAsync(float state)
+        {
+            await Task.Run(() => Write(state));
+        }
     
     }
 }
