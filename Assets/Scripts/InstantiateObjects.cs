@@ -158,7 +158,10 @@ namespace CompasXR.Core
             * Method is used to place a joint in the AR space
             * based on the joint data.
             */
-            GameObject jointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(JointPrefab,
+
+            GameObject jointExtra = Instantiate(JointPrefab, JointPrefab.transform.position, JointPrefab.transform.rotation);
+
+            GameObject jointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(jointExtra,
              joint.element.frame.point, joint.element.frame.xaxis,
              joint.element.frame.yaxis, false, false);
 
@@ -241,6 +244,16 @@ namespace CompasXR.Core
 
                     jointData.adjacency.Remove(deletedStepKey);
                 }
+            }
+        }
+        public void SetVisibilityOfAllJoints(bool isVisible)
+        {
+            /*
+            * Method is used to set the visibility of the joints in the AR space.
+            */
+            foreach (Transform child in Joints.transform)
+            {
+                child.gameObject.SetActive(isVisible);
             }
         }
 

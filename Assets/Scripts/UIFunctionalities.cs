@@ -87,6 +87,7 @@ namespace CompasXR.UI
         public GameObject IDToggleObject;
         public GameObject RobotToggleObject;
         public GameObject ObjectLengthsToggleObject;
+        public GameObject JointsToggleObject;
         private GameObject ObjectLengthsUIPanelObjects;
         private Vector3 ObjectLengthsUIPanelPosition;
         private TMP_Text ObjectLengthsText;
@@ -296,6 +297,9 @@ namespace CompasXR.UI
             ObjectLengthsUIPanelPosition = ObjectLengthsUIPanelObjects.transform.localPosition;
             ObjectLengthsText = ObjectLengthsUIPanelObjects.FindObject("LengthsText").GetComponent<TMP_Text>();
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            UserInterface.FindToggleandSetOnValueChangedAction(VisibilityMenuObject, ref JointsToggleObject, "JointsToggle", ToggleJoints);
         }
         private void SetMenuItemsOnStart()
         {
@@ -411,6 +415,10 @@ namespace CompasXR.UI
                     IDToggleObject.SetActive(true);
                     PriorityViewerToggleObject.SetActive(true);
                     ScrollSearchToggleObject.SetActive(true);
+
+                    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                    JointsToggleObject.SetActive(true);
+
                     UserInterface.SetUIObjectColor(VisibilityMenuObject, Yellow);
 
                 }
@@ -423,6 +431,11 @@ namespace CompasXR.UI
                     IDToggleObject.SetActive(false);
                     PriorityViewerToggleObject.SetActive(false);
                     ScrollSearchToggleObject.SetActive(false);
+
+                    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                    JointsToggleObject.SetActive(true);
+                    
+                    
                     UserInterface.SetUIObjectColor(VisibilityMenuObject, White);
                 }
             }
@@ -1553,6 +1566,24 @@ namespace CompasXR.UI
             }
         }
 
+        public void ToggleJoints(Toggle toggle)
+        {
+            /*
+            * Method is used to toggle the joints in the scene.
+            * Additionally it will set the visibility of the joints UI elements based on the toggle value.
+            */
+            Debug.Log($"ToggleJoints: Joints Toggle Pressed value set to {toggle.GetComponent<Toggle>().isOn}");
+            if(toggle.isOn)
+            {
+                instantiateObjects.SetVisibilityOfAllJoints(true);
+                UserInterface.SetUIObjectColor(JointsToggleObject, Yellow);
+            }
+            else
+            {
+                instantiateObjects.SetVisibilityOfAllJoints(false);
+                UserInterface.SetUIObjectColor(JointsToggleObject, White);
+            }
+        }
         ////////////////////////////////////////// Menu Buttons ///////////////////////////////////////////////////
         private void ToggleInfo(Toggle toggle)
         {
@@ -1626,6 +1657,11 @@ namespace CompasXR.UI
             */
             Debug.Log("ReloadApplication: Attempting to reload all information from the database");
             databaseManager.RemoveListners();
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            instantiateObjects.DestroyAllJoints();     
+            databaseManager.JointsDataDict.Clear();
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+
             if (Elements.transform.childCount > 0)
             {
                 foreach (Transform child in Elements.transform)
@@ -1650,11 +1686,6 @@ namespace CompasXR.UI
                     Destroy(child.gameObject);
                 }
             }
-
-            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-            instantiateObjects.DestroyAllJoints();     
-            databaseManager.JointsDataDict.Clear();
-            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
             databaseManager.BuildingPlanDataItem.steps.Clear();
             databaseManager.AssemblyDataDict.Clear();
