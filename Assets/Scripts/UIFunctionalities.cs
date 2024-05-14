@@ -544,6 +544,11 @@ namespace CompasXR.UI
                 {
                     Debug.LogWarning("SetCurrentStep: Active Robot is null.");
                 }
+
+                if(trajectoryVisualizer.ActiveTrajectoryParentObject.transform.childCount > 0)
+                {
+                    trajectoryVisualizer.DestroyActiveTrajectoryChildren();
+                }
             }
 
             if(PreviewGeometrySlider.value != 1)
