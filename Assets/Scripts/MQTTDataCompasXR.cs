@@ -53,6 +53,7 @@ namespace CompasXR.Robots.MqttData
         }
     }
 
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
     [System.Serializable]
     public class Publishers
     {
@@ -60,22 +61,33 @@ namespace CompasXR.Robots.MqttData
         * Publishers : Class is used to manage the MQTT publishers for Compas XR communication.
         * It is designed to store the specific topics to publish to.
         */
-        public string getTrajectoryRequestTopic { get; set; }
+        public string getTrajectoryRequestTopicAA { get; set; }
+        public string getTrajectoryRequestTopicAB { get; set; }
+
         public string approveTrajectoryTopic { get; set; }
         public string approvalCounterRequestTopic { get; set; }
-        public string sendTrajectoryTopic { get; set; }
+
+        public string sendTrajectoryTopicAA { get; set; }
+        public string sendTrajectoryTopicAB { get; set; }
+
         public string approvalCounterResultTopic { get; set; }
+
         public Publishers(string projectName)
         {
-            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
+            getTrajectoryRequestTopicAA = $"compas_xr/get_trajectory_request/{projectName}/AA";
+            getTrajectoryRequestTopicAB = $"compas_xr/get_trajectory_request/{projectName}/AB";
+
             approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";
             approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}";
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
-            sendTrajectoryTopic = $"compas_xr/send_trajectory/{projectName}";
+
+            sendTrajectoryTopicAA = $"compas_xr/send_trajectory/{projectName}/AA";
+            sendTrajectoryTopicAB = $"compas_xr/send_trajectory/{projectName}/AB";
         }
 
     }
 
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
     [System.Serializable]
     public class Subscribers
     {
@@ -83,8 +95,13 @@ namespace CompasXR.Robots.MqttData
         * Subscribers : Class is used to manage the MQTT subscribers for Compas XR communication.
         * It is designed to store the specific topics to subscribe to.
         */
-        public string getTrajectoryRequestTopic { get; set; } 
-        public string getTrajectoryResultTopic { get; set; }
+        public string getTrajectoryRequestTopicAA { get; set; }
+        public string getTrajectoryRequestTopicAB { get; set; }
+
+        public string getTrajectoryResultTopicAA { get; set; }
+        public string getTrajectoryResultTopicAB { get; set; }
+
+
         public string approveTrajectoryTopic { get; set; }
         public string approvalCounterRequestTopic { get; set; }
         public string approvalCounterResultTopic { get; set; }
@@ -92,8 +109,12 @@ namespace CompasXR.Robots.MqttData
         //Constructer for subscribers that takes an input project name
         public Subscribers(string projectName)
         {
-            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
-            getTrajectoryResultTopic = $"compas_xr/get_trajectory_result/{projectName}";
+            getTrajectoryRequestTopicAA = $"compas_xr/get_trajectory_request/{projectName}/AA";
+            getTrajectoryRequestTopicAB = $"compas_xr/get_trajectory_request/{projectName}/AB";
+
+            getTrajectoryResultTopicAA = $"compas_xr/get_trajectory_result/{projectName}/AA";
+            getTrajectoryResultTopicAB = $"compas_xr/get_trajectory_result/{projectName}/AB";
+
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
             approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";
             approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}";

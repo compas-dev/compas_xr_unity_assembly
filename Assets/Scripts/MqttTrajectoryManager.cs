@@ -192,14 +192,18 @@ namespace CompasXR.Robots
                 Debug.LogWarning("MQTT: PublishToTopic: Client is null or not connected. Cannot publish message.");
             }
         }
+
+        //TODO: Extended For RobArch2024 ////////////////////////////////////////////////////////////////////////
         public void SubscribeToCompasXRTopics()
         {
             /*
             * Method is used to subscribe to the custom Compas XR Topics.
             */
             Debug.Log("MQTT: SubscribeToCompasXRTopics: Subscribing to Compas XR Topics");
-            SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryRequestTopic);
-            SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryResultTopic);
+            SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryRequestTopicAA);
+            SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryResultTopicAB);
+            SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryResultTopicAA);
+            SubscribeToTopic(compasXRTopics.subscribers.getTrajectoryRequestTopicAB);
             SubscribeToTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
             SubscribeToTopic(compasXRTopics.subscribers.approvalCounterRequestTopic);
         }
@@ -208,8 +212,10 @@ namespace CompasXR.Robots
             /*
             * Method is used to unsubscribe from the custom Compas XR Topics.
             */
-            UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryRequestTopic);
-            UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryResultTopic);
+            UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryRequestTopicAA);
+            UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryRequestTopicAB);
+            UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryResultTopicAA);
+            UnsubscribeFromTopic(compasXRTopics.subscribers.getTrajectoryResultTopicAB);
             UnsubscribeFromTopic(compasXRTopics.subscribers.approveTrajectoryTopic);
             UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterRequestTopic);
         }  
@@ -231,17 +237,18 @@ namespace CompasXR.Robots
             /*
             * Method is used to handle the incoming messages from the MQTT broker based on the topic.
             */
-            if (topic == compasXRTopics.subscribers.getTrajectoryRequestTopic)
+            if (topic == compasXRTopics.subscribers.getTrajectoryRequestTopicAA ||
+            topic == compasXRTopics.subscribers.getTrajectoryRequestTopicAB)
             {
                 Debug.Log("MQTT: GetTrajectoryRequest Message Handeling");
                 GetTrajectoryRequest getTrajectoryRequestmessage = GetTrajectoryRequest.Parse(message);
                 GetTrajectoryRequestReceivedMessageHandler(getTrajectoryRequestmessage);
             }
-            else if (topic == compasXRTopics.subscribers.getTrajectoryResultTopic)
+            else if (topic == compasXRTopics.subscribers.getTrajectoryResultTopicAA ||
+            topic == compasXRTopics.subscribers.getTrajectoryResultTopicAB)
             {
                 Debug.Log("MQTT: GetTrajectoryResult Message Handeling");
                 GetTrajectoryResult getTrajectoryResultmessage = GetTrajectoryResult.Parse(message);
-                Debug.Log("MQTT: Pick and place bool: " + getTrajectoryResultmessage.PickAndPlace.ToString());
                 GetTrajectoryResultReceivedMessageHandler(getTrajectoryResultmessage); 
             }
             else if (topic == compasXRTopics.subscribers.approveTrajectoryTopic)

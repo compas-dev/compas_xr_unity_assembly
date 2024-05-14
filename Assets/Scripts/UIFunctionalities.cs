@@ -1029,7 +1029,7 @@ namespace CompasXR.UI
                 PreviousGeometryButtonObject.GetComponent<Button>().interactable = true;
             }
         }
-        public void RequestTrajectoryButtonMethod()
+        public void RequestTrajectoryButtonMethod() //TODO: UPDATE WITH TOPIC FOR EACH ROBOT.
         {
             /*
             * Method is used to request a trajectory for the current step.
@@ -1050,7 +1050,25 @@ namespace CompasXR.UI
                 //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
                 string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name;
 
-                mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep, robotName).GetData());
+                string topicToPublishOn;
+                if(robotName == "AA")
+                {
+                    topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopicAA;
+                }
+                else
+                {
+                    topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopicAB;
+                }
+
+                if(topicToPublishOn == null)
+                {
+                    Debug.LogError("RequestTrajectoryButtonMethod: Topic to Publish On is null.");
+                    return;
+                }
+
+                Debug.Log("Publishing Request to Topic: " + topicToPublishOn);
+                
+                mqttTrajectoryManager.PublishToTopic(topicToPublishOn, new GetTrajectoryRequest(CurrentStep, robotName).GetData());
                 mqttTrajectoryManager.serviceManager.PrimaryUser = true;
                 mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
                 TrajectoryServicesUIControler(true, false, false, false, false, false);
@@ -1107,20 +1125,36 @@ namespace CompasXR.UI
                 Debug.Log("TrajectorySliderReviewMethod: Current Trajectory is null.");
             }
         }
-        public void ExecuteTrajectoryButtonMethod()
+        public void ExecuteTrajectoryButtonMethod() //TODO: UPDATE WITH TOPIC FOR EACH ROBOT.
         {
             /*
             * Method is used to execute a trajectory for the current step.
             * It sets UI elements and publish the execution on the particular approval topic to the CAD.
             */
-            Debug.Log($"ExecuteTrajectoryButtonMethod: Executing Trajectory for Step {CurrentStep}");
-            Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
-            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, sendTrajectoryMessage);
-            TrajectoryServicesUIControler(false, false, false, false, true, false);
-
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name; //TODO: Could be also mqttTrajectoryManager.serviceManager.LastGetTrajectoryRequest.elementID (instead of CurrentStep if error occurs)
+            string topicToPublishOn;
+            if(robotName == "AA")
+            {
+                topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopicAA;
+            }
+            else
+            {
+                topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopicAB;
+            }
+
+            if(topicToPublishOn == null)
+            {
+                Debug.LogError("ExecuteTrajectoryButtonMethod: Topic to Publish On is null.");
+                return;
+            }
+
+            Debug.Log($"ExecuteTrajectoryButtonMethod: Executing Trajectory for Step {CurrentStep}");
+            Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
+            mqttTrajectoryManager.PublishToTopic(topicToPublishOn, sendTrajectoryMessage);
+            TrajectoryServicesUIControler(false, false, false, false, true, false);
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
+
         }
 
         ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////
