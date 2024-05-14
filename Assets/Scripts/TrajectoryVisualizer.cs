@@ -102,11 +102,7 @@ namespace CompasXR.Robots
 
             if(selectedRobot != null)
             {
-                //TODO: REMOVE THIS LINE
-                if(ActiveTrajectoryParentObject != null)
-                {
-                    Destroy(ActiveTrajectoryParentObject);
-                }
+
                 GameObject temporaryRobot = Instantiate(selectedRobot, ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
                 temporaryRobot.name = selectedRobot.name;
                 if(yRotation)
@@ -114,7 +110,6 @@ namespace CompasXR.Robots
                     temporaryRobot.transform.Rotate(0, 90, 0);
                 }
 
-                //TODO: MAKE THIS ONLY IF IT DOESN'T EXIST ALREADY
                 if(ActiveRobot==null)
                 {
                     ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
@@ -122,7 +117,6 @@ namespace CompasXR.Robots
                     ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
                 }
 
-                //TODO: MAKE THIS ONLY IF IT DOESNT EXIST ALREADY
                 if(ActiveTrajectoryParentObject == null)
                 {
                     ActiveTrajectoryParentObject = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
@@ -154,7 +148,7 @@ namespace CompasXR.Robots
 
             Debug.Log($"InstantiateRobotTrajectory: For {trajectoryID} with {TrajectoryConfigs.Count} configurations.");
             
-            if (TrajectoryConfigs.Count > 0 && robotToConfigure != null && URDFLinks.Count > 0 || parentObject != null)
+            if (TrajectoryConfigs.Count > 0 && robotToConfigure != null || parentObject != null)
             {
                 int trajectoryCount = TrajectoryConfigs.Count;
                 for (int i = 0; i < trajectoryCount; i++)
@@ -173,12 +167,27 @@ namespace CompasXR.Robots
 
                 if(result.PickAndPlace)
                 {    
-                    StartCoroutine(AttachElementAfterDelay(result, parentObject, 0.2f));
+                    StartCoroutine(AttachElementAfterDelay(result, parentObject, 1.0f));
                 }
             }
             else
             {
-                
+                if(parentObject != null)
+                {
+                    Debug.LogError("ParentObject is not equal to null.");
+                }
+                if(URDFLinks.Count == 0)
+                {
+                    Debug.LogError("URDFLinks is empty.");
+                }
+                if(TrajectoryConfigs.Count == 0)
+                {
+                    Debug.LogError("Trajectory is empty.");
+                }
+                if(robotToConfigure == null)
+                {
+                    Debug.LogError("RobotToConfigure is null.");
+                }
                 Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
             
@@ -199,6 +208,7 @@ namespace CompasXR.Robots
                 }
             }
             ActiveRobot.SetActive(false);
+            URDFManagement.ColorURDFGameObject(robotToConfigure, instantiateObjects.InactiveRobotMaterial, ref URDFRenderComponents);
             InstantiateRobotTrajectoryFromJointsDict(result, result.Trajectory, result.RobotBaseFrame, result.TrajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);     
         }
         IEnumerator AttachElementAfterDelay(GetTrajectoryResult result, GameObject parentObject, float delay = 0.1f)
@@ -216,7 +226,7 @@ namespace CompasXR.Robots
             GameObject stepElement = GameObject.Find(stepID);
 
             GameObject TrajectoryParent = GameObject.Find(trajectoryParentName);
-            GameObject endEffectorLink = TrajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(robotName).FindObject(endEffectorLinkName);
+            GameObject endEffectorLink = TrajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
             GameObject newStepElement = Instantiate(stepElement);
 
             //Remove all children from the stepElement

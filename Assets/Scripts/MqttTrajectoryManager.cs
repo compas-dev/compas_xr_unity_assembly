@@ -408,6 +408,7 @@ namespace CompasXR.Robots
 
                             //TODO: Extended For RobArch2024
                             GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject(getTrajectoryResultmessage.RobotName);
+
                             trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(getTrajectoryResultmessage, 
                                 trajectoryVisualizer.URDFLinkNames, robotToConfigure, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
 
