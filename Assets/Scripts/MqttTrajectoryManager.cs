@@ -440,6 +440,8 @@ namespace CompasXR.Robots
                 Debug.LogWarning("MQTT: GetTrajectoryResult LastGetTrajectoryRequestMessage is null. A request must be made before this code works.");
             }
         }
+
+        //TODO: COLOR ACTIVE ROBOT AFTER REJECTON.
         private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage)
         {
             /*
