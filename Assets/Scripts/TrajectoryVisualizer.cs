@@ -38,7 +38,7 @@ namespace CompasXR.Robots
         //Dictionary for storing URDFLinkNames associated with JointNames. Updated by recursive method from updating robot.
         public Dictionary<string, string> URDFLinkNames = new Dictionary<string, string>();
         public int? previousSliderValue;
-        public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
+        public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();  //TODO: IF THE URDF STRUCTURE IS DIFFERENT THIS WILL CAUSE A PROBLEM
 
         //List of available robots
         public List<string> RobotURDFList = new List<string> {"UR3", "UR5", "UR10e", "ETHZurichRFL"};
@@ -61,21 +61,53 @@ namespace CompasXR.Robots
             mqttTrajectoryManager = GameObject.Find("MQTTTrajectoryManager").GetComponent<MqttTrajectoryManager>();
             BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent);
         }
-        public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
+
+        // public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
+        // {
+        //     /*
+        //     SetActiveRobotFromDropdown is called from the UI Dropdown and is responsible for setting the active robot in the scene.
+        //     */
+        //     if(URDFLinkNames.Count > 0)
+        //     {
+        //         URDFLinkNames.Clear();
+        //     }
+        //     if(URDFRenderComponents.Count > 0)
+        //     {
+        //         URDFRenderComponents.Clear();
+        //     }
+        //     SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, visibility);
+        // }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent)
         {
             /*
-            SetActiveRobotFromDropdown is called from the UI Dropdown and is responsible for setting the active robot in the scene.
+                SetActiveRobot is responsible for setting the active robots in the scene.
             */
-            if(URDFLinkNames.Count > 0)
+            GameObject robotAA = BuiltInRobotsParent.FindObject("AA");
+            GameObject robotAB = BuiltInRobotsParent.FindObject("AB");
+
+            if(robotAA != null)
             {
-                URDFLinkNames.Clear();
+                SetActiveRobot(BuiltInRobotsParent, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);
             }
-            if(URDFRenderComponents.Count > 0)
+            else
             {
-                URDFRenderComponents.Clear();
+                Debug.Log($"SetActiveRobot: Robot AA not found in the BuiltInRobotsParent.");
             }
-            SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, visibility);
+
+            if(robotAB != null)
+            {
+                SetActiveRobot(BuiltInRobotsParent, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);
+            }
+            else
+            {
+                Debug.Log($"SetActiveRobot: Robot AB not found in the BuiltInRobotsParent.");
+            }
         }
         private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility)
         {
@@ -86,10 +118,7 @@ namespace CompasXR.Robots
 
             if(selectedRobot != null)
             {
-                if(ActiveRobot != null)
-                {
-                    Destroy(ActiveRobot);
-                }
+                //TODO: REMOVE THIS LINE
                 if(ActiveTrajectoryParentObject != null)
                 {
                     Destroy(ActiveTrajectoryParentObject);
@@ -101,14 +130,21 @@ namespace CompasXR.Robots
                     temporaryRobot.transform.Rotate(0, 90, 0);
                 }
 
-                ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
-                ActiveRobot.name = "ActiveRobot";
-                ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
-                ActiveTrajectoryParentObject = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
-                ActiveTrajectoryParentObject.name = "ActiveTrajectory";
-                ActiveTrajectoryParentObject.transform.SetParent(ActiveRobotObjectsParent.transform);
+                //TODO: MAKE THIS ONLY IF IT DOESN'T EXIST ALREADY
+                if(ActiveRobot==null)
+                {
+                    ActiveRobot = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
+                    ActiveRobot.name = "ActiveRobot";
+                    ActiveRobot.transform.SetParent(ActiveRobotObjectsParent.transform);
+                }
 
-                mqttTrajectoryManager.serviceManager.ActiveRobotName = robotName;
+                //TODO: MAKE THIS ONLY IF IT DOESNT EXIST ALREADY
+                if(ActiveTrajectoryParentObject == null)
+                {
+                    ActiveTrajectoryParentObject = Instantiate(new GameObject(), ActiveRobot.transform.position, ActiveRobot.transform.rotation);
+                    ActiveTrajectoryParentObject.name = "ActiveTrajectory";
+                    ActiveTrajectoryParentObject.transform.SetParent(ActiveRobotObjectsParent.transform);
+                }
 
                 temporaryRobot.transform.SetParent(ActiveRobot.transform);
                 URDFManagement.ColorURDFGameObject(temporaryRobot, material, ref URDFRenderComponents);

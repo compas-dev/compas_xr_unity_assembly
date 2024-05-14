@@ -328,7 +328,7 @@ namespace CompasXR.Robots
                         serviceManager.TrajectoryRequestTransactionLock = false;
                         if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
                         {
-                            UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
+                            UIFunctionalities.SetRequestUIFromKey(UIFunctionalities.CurrentStep);
                         }
 
                         Debug.LogWarning("MQTT: GetTrajectoryResult (!PrimaryUser): ResponseID, SequenceID, or ElementID do not match the last GetTrajectoryRequestMessage. Ignoring Message.");
@@ -364,7 +364,7 @@ namespace CompasXR.Robots
                             UIFunctionalities.SignalTrajectoryReviewRequest(
                                 getTrajectoryResultmessage.ElementID,
                                 getTrajectoryResultmessage.RobotName,
-                                serviceManager.ActiveRobotName,
+                                serviceManager.ActiveRobotName, //TODO: REMOVE THIS
                                 () => trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(
                                     getTrajectoryResultmessage,
                                     trajectoryVisualizer.URDFLinkNames,
@@ -382,7 +382,7 @@ namespace CompasXR.Robots
                             serviceManager.TrajectoryRequestTransactionLock = false;
                             if(UIFunctionalities.RobotToggleObject.GetComponent<Toggle>().isOn)
                             {
-                                UIFunctionalities.SetRoboticUIElementsFromKey(UIFunctionalities.CurrentStep);
+                                UIFunctionalities.SetRequestUIFromKey(UIFunctionalities.CurrentStep);
                             }
 
                             Debug.Log("GetTrajectoryResult (!PrimaryUser): Trajectory count is zero. I am free to request.");
@@ -399,7 +399,7 @@ namespace CompasXR.Robots
                             serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                             serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
-                            if(getTrajectoryResultmessage.RobotName != serviceManager.ActiveRobotName)
+                            if(getTrajectoryResultmessage.RobotName != serviceManager.ActiveRobotName) //TODO: REMOVE THIS
                             {
                                 UIFunctionalities.SignalActiveRobotUpdateFromPlanner(
                                     getTrajectoryResultmessage.ElementID,
@@ -622,6 +622,7 @@ namespace CompasXR.Robots
                     else
                     {
                         Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
+                                                                                                                        //TODO: THIS BECOMES CURRENT STEP.ROBOT_NAME
                         PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.ActiveRobotName, serviceManager.CurrentTrajectory, 3).GetData());
                         if (serviceManager.PrimaryUser)
                         {

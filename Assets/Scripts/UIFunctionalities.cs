@@ -359,25 +359,25 @@ namespace CompasXR.UI
             UserInterface.FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
             //Find Objects for active robot selection
-            RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
-            RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
-            RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> robotOptions = UserInterface.SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisualizer.RobotURDFList);
-            RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
-            if(RobotSelectionControlObjects == null)
-            {
-                Debug.Log("Robot Selection Control Objects is null.");
+            // RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
+            // RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
+            // RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
+            // List<TMP_Dropdown.OptionData> robotOptions = UserInterface.SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisualizer.RobotURDFList);
+            // RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
+            // if(RobotSelectionControlObjects == null)
+            // {
+            //     Debug.Log("Robot Selection Control Objects is null.");
 
-            }
-            else if (RobotSelectionDropdownObject == null)
-            {
-                Debug.Log("Robot Selection Dropdown Object is null.");
-            }
-            else
-            {
-                RobotSelectionDropdown.options = robotOptions;
-            }
-            UserInterface.FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
+            // }
+            // else if (RobotSelectionDropdownObject == null)
+            // {
+            //     Debug.Log("Robot Selection Dropdown Object is null.");
+            // }
+            // else
+            // {
+            //     RobotSelectionDropdown.options = robotOptions;
+            // }
+            // UserInterface.FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
         }
         public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, CompasXR.Systems.OperatingSystem currentOperatingSystem)
         {
@@ -553,7 +553,7 @@ namespace CompasXR.UI
             }
             if(RobotToggleObject.GetComponent<Toggle>().isOn)
             {
-                SetRoboticUIElementsFromKey(CurrentStep);
+                SetRequestUIFromKey(CurrentStep);
                 if(trajectoryVisualizer.ActiveRobot != null)
                 {
                     if(step.data.actor == "ROBOT")
@@ -811,43 +811,44 @@ namespace CompasXR.UI
 
             if(RobotToggleObject.GetComponent<Toggle>().isOn)
             {
-                SetRoboticUIElementsFromKey(CurrentStep);
+                SetRequestUIFromKey(CurrentStep);
             }
             CurrentPriorityText.text = $"Current Priority : {Priority}";
             Debug.Log($"SetCurrentPriority: Current Priority set to {Priority} ");
         }
-        public void SetActiveRobotToggleMethod(Toggle toggle)
-        {
-            /*
-            * Method is used to set the active robot based on the toggle value.
-            * Additionally it controls UI elements based on the toggle value.
-            */
-            if(toggle!=null && toggle.isOn)
-            {
-                Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {RobotSelectionDropdown.options[RobotSelectionDropdown.value].text}");
-                string robotName = RobotSelectionDropdown.options[RobotSelectionDropdown.value].text;
-                bool visibility = false;
-                if(CurrentStep != null && RobotToggleObject.GetComponent<Toggle>().isOn)
-                {
-                    if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.actor == "ROBOT")
-                    {
-                        visibility = true;
-                    }
-                }
-                trajectoryVisualizer.SetActiveRobotFromDropdown(robotName, true, visibility);
-                SetActiveRobotToggleObject.FindObject("Image").SetActive(true);
-            }
-            else
-            {
-                Debug.Log("SettingActiveRobotButtonMethod: Destroying Current Active Robot");
-                if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
-                {
-                    trajectoryVisualizer.DestroyActiveRobotObjects();
-                }
-                mqttTrajectoryManager.serviceManager.ActiveRobotName = null;
-                SetActiveRobotToggleObject.FindObject("Image").SetActive(false);           
-            }
-        }
+
+        // public void SetActiveRobotToggleMethod(Toggle toggle) //TODO: REMOVE THIS.
+        // {
+        //     /*
+        //     * Method is used to set the active robot based on the toggle value.
+        //     * Additionally it controls UI elements based on the toggle value.
+        //     */
+        //     if(toggle!=null && toggle.isOn)
+        //     {
+        //         Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {RobotSelectionDropdown.options[RobotSelectionDropdown.value].text}");
+        //         string robotName = RobotSelectionDropdown.options[RobotSelectionDropdown.value].text;
+        //         bool visibility = false;
+        //         if(CurrentStep != null && RobotToggleObject.GetComponent<Toggle>().isOn)
+        //         {
+        //             if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.actor == "ROBOT")
+        //             {
+        //                 visibility = true;
+        //             }
+        //         }
+        //         trajectoryVisualizer.SetActiveRobotFromDropdown(robotName, true, visibility);
+        //         SetActiveRobotToggleObject.FindObject("Image").SetActive(true);
+        //     }
+        //     else
+        //     {
+        //         Debug.Log("SettingActiveRobotButtonMethod: Destroying Current Active Robot");
+        //         if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
+        //         {
+        //             trajectoryVisualizer.DestroyActiveRobotObjects();
+        //         }
+        //         mqttTrajectoryManager.serviceManager.ActiveRobotName = null;
+        //         SetActiveRobotToggleObject.FindObject("Image").SetActive(false);           
+        //     }
+        // }
         public void RobotSelectionDropdownValueChanged(int dropDownValue)
         {
             /*
@@ -1123,7 +1124,7 @@ namespace CompasXR.UI
                 UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
                 return;
             }
-            else if (trajectoryVisualizer.ActiveRobot == null)
+            else if (trajectoryVisualizer.ActiveRobot == null) //TODO: REMOVE THIS
             {
                 Debug.Log("RequestTrajectoryButtonMethod: Active Robot is null");
                 string message = "WARNING: Active Robot is currently null. An active robot must be set before visulizing robotic information.";
@@ -1132,6 +1133,7 @@ namespace CompasXR.UI
             }
             else
             {    
+                                                                                                                                //TODO: THIS BECOMES STEP.ROBOT_NAME
                 mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName).GetData());
                 mqttTrajectoryManager.serviceManager.PrimaryUser = true;
                 mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
@@ -1147,6 +1149,7 @@ namespace CompasXR.UI
             */
             Debug.Log($"ApproveTrajectoryButtonMethod: Approving Trajectory for Step {CurrentStep}");
             TrajectoryServicesUIControler(false, false, true, false, false, false);
+                                                                                                                        //TODO: THIS BECOMEs STEP.ROBOT_NAME
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
         }
         public void RejectTrajectoryButtonMethod()
@@ -1157,6 +1160,7 @@ namespace CompasXR.UI
             * set UI elements and publish the rejection on the particular approval topic.
             */
             Debug.Log($"RejectTrajectoryButtonMethod: Rejecting Trajectory for Step {CurrentStep}");
+                                                                                                                                    //TODO: THIS BECOMEs STEP.ROBOT_NAME
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
             TrajectoryServicesUIControler(false, false, true, false, false, false);
         }
@@ -1194,6 +1198,7 @@ namespace CompasXR.UI
             Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, sendTrajectoryMessage);
             TrajectoryServicesUIControler(false, false, false, false, true, false);
+                                                                                                                                    //TODO: THIS BECOMEs STEP.ROBOT_NAME
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
         }
 
@@ -1376,17 +1381,16 @@ namespace CompasXR.UI
                 if(trajectoryVisualizer.ActiveRobot && CurrentStep != null)
                 {
                     trajectoryVisualizer.ActiveRobot.SetActive(true);
+
+                    //TODO: COLOR ROBOT BASED ON ROBOT NAME
                 }
                 else
                 {
                     Debug.Log("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
                 }
-
-                RobotSelectionDropdownObject.SetActive(true);
-                SetActiveRobotToggleObject.SetActive(true);
                 if(CurrentStep != null)
                 {
-                    SetRoboticUIElementsFromKey(CurrentStep);
+                    SetRequestUIFromKey(CurrentStep);
                 }
                 else
                 {
@@ -1417,7 +1421,7 @@ namespace CompasXR.UI
                 UserInterface.SetUIObjectColor(RobotToggleObject, White);
             }
         }
-        public void SetRoboticUIElementsFromKey(string key)
+        public void SetRequestUIFromKey(string key)
         {
             /*
             * Method is used to set the robotic UI elements based on the key.
