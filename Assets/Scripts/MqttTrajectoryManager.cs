@@ -11,6 +11,7 @@ using System.Threading;
 using CompasXR.Core;
 using CompasXR.UI;
 using CompasXR.Robots.MqttData;
+using CompasXR.Core.Extentions;
 
 namespace CompasXR.Robots
 {
@@ -360,15 +361,21 @@ namespace CompasXR.Robots
                         if (getTrajectoryResultmessage.Trajectory.Count > 0)
                         {
                             serviceManager.TrajectoryRequestTransactionLock = false;
+                            GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject(getTrajectoryResultmessage.RobotName);
+
+                            if(robotToConfigure == null)
+                            {
+                                Debug.LogError("GetTrajectoryResult (!PrimaryUser): Robot to configure is null. No action taken.");
+                                return;
+                            }
 
                             UIFunctionalities.SignalTrajectoryReviewRequest(
                                 getTrajectoryResultmessage.ElementID,
                                 getTrajectoryResultmessage.RobotName,
-                                serviceManager.ActiveRobotName, //TODO: REMOVE THIS
                                 () => trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(
                                     getTrajectoryResultmessage,
                                     trajectoryVisualizer.URDFLinkNames,
-                                    trajectoryVisualizer.ActiveRobot,
+                                    robotToConfigure,
                                     trajectoryVisualizer.ActiveTrajectoryParentObject,
                                     true));
 
@@ -399,28 +406,12 @@ namespace CompasXR.Robots
                             serviceManager.CurrentTrajectory = getTrajectoryResultmessage.Trajectory;
                             serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
-                            if(getTrajectoryResultmessage.RobotName != serviceManager.ActiveRobotName) //TODO: REMOVE THIS
-                            {
-                                UIFunctionalities.SignalActiveRobotUpdateFromPlanner(
-                                    getTrajectoryResultmessage.ElementID,
-                                    getTrajectoryResultmessage.RobotName,
-                                    serviceManager.ActiveRobotName,
-                                    () => trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(
-                                        getTrajectoryResultmessage,
-                                        trajectoryVisualizer.URDFLinkNames,
-                                        trajectoryVisualizer.ActiveRobot,
-                                        trajectoryVisualizer.ActiveTrajectoryParentObject,
-                                        true));
-                                
-                                Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is not the same as the active robot name signaling on screen control.");
+                            //TODO: Extended For RobArch2024
+                            GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject(getTrajectoryResultmessage.RobotName);
+                            trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(getTrajectoryResultmessage, 
+                                trajectoryVisualizer.URDFLinkNames, robotToConfigure, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
 
-                            }
-                            else
-                            {
-                                trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(getTrajectoryResultmessage, trajectoryVisualizer.URDFLinkNames, trajectoryVisualizer.ActiveRobot, trajectoryVisualizer.ActiveTrajectoryParentObject, true);
-                                Debug.Log("MQTT: GetTrajectoryResult (PrimaryUser): Robot Name in the message is the same as the active robot name.");
-                            }
-
+                            Debug.Log("GetTrajectoryResult (PrimaryUser): Trajectory count is greater then zero. I am moving on to trajectory approval Service.");
                             PublishToTopic(compasXRTopics.publishers.approvalCounterRequestTopic, new ApprovalCounterRequest(UIFunctionalities.CurrentStep).GetData());
                         }
                         //If the trajectory count is zero reset Service Manger and Return to Request Trajectory Service
@@ -622,8 +613,8 @@ namespace CompasXR.Robots
                     else
                     {
                         Debug.Log("MQTT: TrajectoryApprovalTimeout: Primary User has not moved on to service 3 or Other user reached time out : Services will be reset.");
-                                                                                                                        //TODO: THIS BECOMES CURRENT STEP.ROBOT_NAME
-                        PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, serviceManager.ActiveRobotName, serviceManager.CurrentTrajectory, 3).GetData());
+                        string robot_name = databaseManager.BuildingPlanDataItem.steps[elementID].data.robot_name;
+                        PublishToTopic(compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(elementID, robot_name, serviceManager.CurrentTrajectory, 3).GetData());
                         if (serviceManager.PrimaryUser)
                         {
                             UnsubscribeFromTopic(compasXRTopics.subscribers.approvalCounterResultTopic);

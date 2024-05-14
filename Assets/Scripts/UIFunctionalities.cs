@@ -135,9 +135,6 @@ namespace CompasXR.UI
         public Slider TrajectoryReviewSlider;
         public GameObject ExecuteTrajectoryButtonObject;
 
-        // public GameObject RobotSelectionControlObjects;
-        // public GameObject RobotSelectionDropdownObject;
-
         public TMP_Text ActiveRobotText;
         public TMP_Dropdown RobotSelectionDropdown;
         public GameObject SetActiveRobotToggleObject;
@@ -362,26 +359,6 @@ namespace CompasXR.UI
             UserInterface.FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
             ActiveRobotText = CanvasObject.FindObject("CurrentRobotText").GetComponent<TMP_Text>();
-            //Find Objects for active robot selection
-            // RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
-            // RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
-            // RobotSelectionDropdown = RobotSelectionDropdownObject.GetComponent<TMP_Dropdown>();
-            // List<TMP_Dropdown.OptionData> robotOptions = UserInterface.SetDropDownOptionsFromStringList(RobotSelectionDropdown ,trajectoryVisualizer.RobotURDFList);
-            // RobotSelectionDropdown.onValueChanged.AddListener(RobotSelectionDropdownValueChanged);
-            // if(RobotSelectionControlObjects == null)
-            // {
-            //     Debug.Log("Robot Selection Control Objects is null.");
-
-            // }
-            // else if (RobotSelectionDropdownObject == null)
-            // {
-            //     Debug.Log("Robot Selection Dropdown Object is null.");
-            // }
-            // else
-            // {
-            //     RobotSelectionDropdown.options = robotOptions;
-            // }
-            // UserInterface.FindToggleandSetOnValueChangedAction(RobotSelectionControlObjects, ref SetActiveRobotToggleObject, "SetActiveRobotToggle", SetActiveRobotToggleMethod);
         }
         public void SetOcclusionFromOS(ref AROcclusionManager occlusionManager, CompasXR.Systems.OperatingSystem currentOperatingSystem)
         {
@@ -809,39 +786,6 @@ namespace CompasXR.UI
             CurrentPriorityText.text = $"Current Priority : {Priority}";
             Debug.Log($"SetCurrentPriority: Current Priority set to {Priority} ");
         }
-
-        // public void SetActiveRobotToggleMethod(Toggle toggle) //TODO: REMOVE THIS.
-        // {
-        //     /*
-        //     * Method is used to set the active robot based on the toggle value.
-        //     * Additionally it controls UI elements based on the toggle value.
-        //     */
-        //     if(toggle!=null && toggle.isOn)
-        //     {
-        //         Debug.Log($"SettingActiveRobotButtonMethod: Setting Active Robot based on input {RobotSelectionDropdown.options[RobotSelectionDropdown.value].text}");
-        //         string robotName = RobotSelectionDropdown.options[RobotSelectionDropdown.value].text;
-        //         bool visibility = false;
-        //         if(CurrentStep != null && RobotToggleObject.GetComponent<Toggle>().isOn)
-        //         {
-        //             if(databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.actor == "ROBOT")
-        //             {
-        //                 visibility = true;
-        //             }
-        //         }
-        //         trajectoryVisualizer.SetActiveRobotFromDropdown(robotName, true, visibility);
-        //         SetActiveRobotToggleObject.FindObject("Image").SetActive(true);
-        //     }
-        //     else
-        //     {
-        //         Debug.Log("SettingActiveRobotButtonMethod: Destroying Current Active Robot");
-        //         if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
-        //         {
-        //             trajectoryVisualizer.DestroyActiveRobotObjects();
-        //         }
-        //         mqttTrajectoryManager.serviceManager.ActiveRobotName = null;
-        //         SetActiveRobotToggleObject.FindObject("Image").SetActive(false);           
-        //     }
-        // }
         public void RobotSelectionDropdownValueChanged(int dropDownValue)
         {
             /*
@@ -853,7 +797,7 @@ namespace CompasXR.UI
         }
 
         /////////////////////////////////////// On Screen Message Functions //////////////////////////////////////////////
-        public void SignalTrajectoryReviewRequest(string key, string robotName, string activeRobotName, Action visualizeRobotMethod)
+        public void SignalTrajectoryReviewRequest(string key, string robotName, Action visualizeRobotMethod)
         {
             /*
             * Method is used to signal a trajectory review request from another user.
@@ -862,29 +806,29 @@ namespace CompasXR.UI
             */
             Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key} .");
             TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
-            string message = null;
-            if(activeRobotName != robotName)
-            {
-                message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}. YOUR ACTIVE ROBOT UPDATED.";
-                int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
-                if(robotSelection != -1)
-                {            
-                    if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
-                    {
-                        SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
-                    }
-                    RobotSelectionDropdown.value = robotSelection;
-                    SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
-                }
-                else
-                {
-                    Debug.LogError($"Trajectory Review Request Message: Could not find robot {robotName} in dropdown options.");
-                }
-            }
-            else
-            {
-                message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}.";
-            }
+            // string message = null;
+            // if(activeRobotName != robotName)
+            // {
+            //     message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}. YOUR ACTIVE ROBOT UPDATED.";
+            //     int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
+            //     if(robotSelection != -1)
+            //     {            
+            //         if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
+            //         {
+            //             SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
+            //         }
+            //         RobotSelectionDropdown.value = robotSelection;
+            //         SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
+            //     }
+            //     else
+            //     {
+            //         Debug.LogError($"Trajectory Review Request Message: Could not find robot {robotName} in dropdown options.");
+            //     }
+            // }
+            // else
+            // {
+            string message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}.";
+            // }
             
             if(TransactionLockActiveWarningMessageObject != null && TransactionLockActiveWarningMessageObject.activeSelf)
             {
@@ -1117,17 +1061,12 @@ namespace CompasXR.UI
                 UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref TransactionLockActiveWarningMessageObject, "TransactionLockActiveWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Transaction Lock Active Warning.");
                 return;
             }
-            else if (trajectoryVisualizer.ActiveRobot == null) //TODO: REMOVE THIS
-            {
-                Debug.Log("RequestTrajectoryButtonMethod: Active Robot is null");
-                string message = "WARNING: Active Robot is currently null. An active robot must be set before visulizing robotic information.";
-                UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref ActiveRobotIsNullWarningMessageObject, "ActiveRobotNullWarningMessage", MessagesParent, message, "RequestTrajectoryButtonMethod: Active Robot is null.");
-                return;
-            }
             else
             {    
-                                                                                                                                //TODO: THIS BECOMES STEP.ROBOT_NAME
-                mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName).GetData());
+                //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name;
+
+                mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopic, new GetTrajectoryRequest(CurrentStep, robotName).GetData());
                 mqttTrajectoryManager.serviceManager.PrimaryUser = true;
                 mqttTrajectoryManager.serviceManager.currentService = ServiceManager.CurrentService.GetTrajectory;
                 TrajectoryServicesUIControler(true, false, false, false, false, false);
@@ -1142,8 +1081,10 @@ namespace CompasXR.UI
             */
             Debug.Log($"ApproveTrajectoryButtonMethod: Approving Trajectory for Step {CurrentStep}");
             TrajectoryServicesUIControler(false, false, true, false, false, false);
-                                                                                                                        //TODO: THIS BECOMEs STEP.ROBOT_NAME
-            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
+            
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name; //TODO: Could be also mqttTrajectoryManager.serviceManager.LastGetTrajectoryRequest.elementID (instead of CurrentStep if error occurs)
+            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 1).GetData());
         }
         public void RejectTrajectoryButtonMethod()
         {
@@ -1153,8 +1094,8 @@ namespace CompasXR.UI
             * set UI elements and publish the rejection on the particular approval topic.
             */
             Debug.Log($"RejectTrajectoryButtonMethod: Rejecting Trajectory for Step {CurrentStep}");
-                                                                                                                                    //TODO: THIS BECOMEs STEP.ROBOT_NAME
-            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
+            string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name; //TODO: Could be also mqttTrajectoryManager.serviceManager.LastGetTrajectoryRequest.elementID (instead of CurrentStep if error occurs)
+            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
             TrajectoryServicesUIControler(false, false, true, false, false, false);
         }
         public void TrajectorySliderReviewMethod(float value)
@@ -1191,8 +1132,10 @@ namespace CompasXR.UI
             Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopic, sendTrajectoryMessage);
             TrajectoryServicesUIControler(false, false, false, false, true, false);
-                                                                                                                                    //TODO: THIS BECOMEs STEP.ROBOT_NAME
-            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, mqttTrajectoryManager.serviceManager.ActiveRobotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name; //TODO: Could be also mqttTrajectoryManager.serviceManager.LastGetTrajectoryRequest.elementID (instead of CurrentStep if error occurs)
+            mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 2).GetData());
         }
 
         ////////////////////////////////////// Visualizer Menu Buttons ////////////////////////////////////////////

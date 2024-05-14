@@ -189,9 +189,14 @@ namespace CompasXR.Robots
             VisualizeRobotTrajectoryFromJointsDict is responsible for visualizing the robot trajectory in the scene.
             */
             Debug.Log($"VisualizeRobotTrajectory: For {result.TrajectoryID} with {result.Trajectory} configurations.");
-            if(!ActiveRobot.transform.GetChild(0).gameObject.activeSelf)
+
+            //This is a fix, when the object gets instantiated from the child is off, and this fixes the one time that this happens.
+            foreach (Transform child in ActiveRobot.transform)
             {
-                ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
+                if(!child.gameObject.activeSelf)
+                {
+                    child.gameObject.SetActive(true);
+                }
             }
             ActiveRobot.SetActive(false);
             InstantiateRobotTrajectoryFromJointsDict(result, result.Trajectory, result.RobotBaseFrame, result.TrajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);     
