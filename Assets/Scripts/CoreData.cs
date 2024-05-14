@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Unity.Android.Gradle;
 
 namespace CompasXR.Core.Data
 {   

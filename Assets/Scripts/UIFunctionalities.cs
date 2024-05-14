@@ -537,6 +537,10 @@ namespace CompasXR.UI
                 SetRequestUIFromKey(CurrentStep);
                 if(trajectoryVisualizer.ActiveRobot != null)
                 {
+                    if(!trajectoryVisualizer.ActiveRobot.activeSelf)
+                    {
+                        trajectoryVisualizer.ActiveRobot.SetActive(true);
+                    }
                     SetRobotObjectFromStep(CurrentStep);
                     SetActiveRobotTextFromKey(CurrentStep);
                 }
@@ -1029,7 +1033,7 @@ namespace CompasXR.UI
                 PreviousGeometryButtonObject.GetComponent<Button>().interactable = true;
             }
         }
-        public void RequestTrajectoryButtonMethod() //TODO: UPDATE WITH TOPIC FOR EACH ROBOT.
+        public void RequestTrajectoryButtonMethod()
         {
             /*
             * Method is used to request a trajectory for the current step.
@@ -1125,7 +1129,7 @@ namespace CompasXR.UI
                 Debug.Log("TrajectorySliderReviewMethod: Current Trajectory is null.");
             }
         }
-        public void ExecuteTrajectoryButtonMethod() //TODO: UPDATE WITH TOPIC FOR EACH ROBOT.
+        public void ExecuteTrajectoryButtonMethod()
         {
             /*
             * Method is used to execute a trajectory for the current step.
@@ -1136,11 +1140,11 @@ namespace CompasXR.UI
             string topicToPublishOn;
             if(robotName == "AA")
             {
-                topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopicAA;
+                topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopicAA;
             }
             else
             {
-                topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.getTrajectoryRequestTopicAB;
+                topicToPublishOn = mqttTrajectoryManager.compasXRTopics.publishers.sendTrajectoryTopicAB;
             }
 
             if(topicToPublishOn == null)
@@ -1149,7 +1153,7 @@ namespace CompasXR.UI
                 return;
             }
 
-            Debug.Log($"ExecuteTrajectoryButtonMethod: Executing Trajectory for Step {CurrentStep}");
+            Debug.Log($"ExecuteTrajectoryButtonMethod: Executing Trajectory for Step {CurrentStep} by publishing to topic {topicToPublishOn}.");
             Dictionary<string, object> sendTrajectoryMessage = new SendTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory).GetData();
             mqttTrajectoryManager.PublishToTopic(topicToPublishOn, sendTrajectoryMessage);
             TrajectoryServicesUIControler(false, false, false, false, true, false);
@@ -2146,6 +2150,7 @@ namespace CompasXR.UI
                 ModifyStepActor(activeGameObject.transform.parent.name);
             }
         }
+
     }
 
     public static class UserInterface

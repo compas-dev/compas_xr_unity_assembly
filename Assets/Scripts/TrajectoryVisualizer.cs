@@ -7,7 +7,6 @@ using CompasXR.Core;
 using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
-using Unity.Android.Gradle.Manifest;
 using CompasXR.Robots.MqttData;
 
 namespace CompasXR.Robots

@@ -51,6 +51,7 @@ namespace CompasXR.Core
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public GameObject Joints;
         public GameObject JointPrefab;
+        public GameObject MirroredJointPrefab;
 
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
@@ -103,6 +104,7 @@ namespace CompasXR.Core
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             Joints = GameObject.Find("Joints");
             JointPrefab = GameObject.Find("JointObjects").FindObject("JointPrefab");
+            MirroredJointPrefab = GameObject.Find("JointObjects").FindObject("MirroredJointPrefab");
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
             //Find Initial Materials
@@ -158,8 +160,22 @@ namespace CompasXR.Core
             * Method is used to place a joint in the AR space
             * based on the joint data.
             */
+            GameObject jointToPlace;
+            if(joint.is_mirrored)
+            {
+                jointToPlace = MirroredJointPrefab;
+            }
+            else
+            {
+                jointToPlace = JointPrefab;
+            }
 
-            GameObject jointExtra = Instantiate(JointPrefab, JointPrefab.transform.position, JointPrefab.transform.rotation);
+            if (jointToPlace == null)
+            {
+                Debug.LogError("PlaceJoint: Joint to place is null");
+                return;
+            }
+            GameObject jointExtra = Instantiate(jointToPlace, JointPrefab.transform.position, JointPrefab.transform.rotation);
 
             GameObject jointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(jointExtra,
              joint.element.frame.point, joint.element.frame.xaxis,
@@ -168,13 +184,6 @@ namespace CompasXR.Core
             jointObject.transform.SetParent(Joints.transform, false);
             jointObject.name = $"Joint_{joint.Key}";
             jointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
-
-            if (joint.is_mirrored)
-            {
-                //TODO: CHECK ROTATION AXIS
-                Vector3 rotationAxis = jointObject.transform.right;
-                jointObject.transform.Rotate(rotationAxis, 180.0f);               
-            }
 
             ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
 
