@@ -134,8 +134,10 @@ namespace CompasXR.UI
         public GameObject TrajectoryReviewSliderObject;
         public Slider TrajectoryReviewSlider;
         public GameObject ExecuteTrajectoryButtonObject;
-        public GameObject RobotSelectionControlObjects;
-        public GameObject RobotSelectionDropdownObject;
+
+        // public GameObject RobotSelectionControlObjects;
+        // public GameObject RobotSelectionDropdownObject;
+
         public TMP_Text ActiveRobotText;
         public TMP_Dropdown RobotSelectionDropdown;
         public GameObject SetActiveRobotToggleObject;
