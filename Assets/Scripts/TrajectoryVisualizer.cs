@@ -66,22 +66,6 @@ namespace CompasXR.Robots
             SetRobArchActiveRobotsOnStart(BuiltInRobotsParent);
         }
 
-        // public void SetActiveRobotFromDropdown(string robotName, bool yRotation, bool visibility = true)
-        // {
-        //     /*
-        //     SetActiveRobotFromDropdown is called from the UI Dropdown and is responsible for setting the active robot in the scene.
-        //     */
-        //     if(URDFLinkNames.Count > 0)
-        //     {
-        //         URDFLinkNames.Clear();
-        //     }
-        //     if(URDFRenderComponents.Count > 0)
-        //     {
-        //         URDFRenderComponents.Clear();
-        //     }
-        //     SetActiveRobot(BuiltInRobotsParent, robotName, yRotation, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, visibility);
-        // }
-
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent)
         {
@@ -158,6 +142,8 @@ namespace CompasXR.Robots
                 UserInterface.SignalOnScreenMessageFromPrefab(ref uiFunctionalities.OnScreenErrorMessagePrefab, ref uiFunctionalities.ActiveRobotCouldNotBeFoundWarningMessage, "ActiveRobotCouldNotBeFoundWarningMessage", uiFunctionalities.MessagesParent, message, $"SetActiveRobot: Robot {robotName} could not be found");
             }
         }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
         public void InstantiateRobotTrajectoryFromJointsDict(GetTrajectoryResult result, List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)

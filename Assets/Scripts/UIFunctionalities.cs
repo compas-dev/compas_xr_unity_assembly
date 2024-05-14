@@ -136,6 +136,7 @@ namespace CompasXR.UI
         public GameObject ExecuteTrajectoryButtonObject;
         public GameObject RobotSelectionControlObjects;
         public GameObject RobotSelectionDropdownObject;
+        public TMP_Text ActiveRobotText;
         public TMP_Dropdown RobotSelectionDropdown;
         public GameObject SetActiveRobotToggleObject;
 
@@ -358,6 +359,7 @@ namespace CompasXR.UI
             UserInterface.FindSliderandSetOnValueChangeAction(ReviewTrajectoryObjects, ref TrajectoryReviewSliderObject, ref TrajectoryReviewSlider, "TrajectoryReviewSlider", TrajectorySliderReviewMethod);
             UserInterface.FindButtonandSetOnClickAction(TrajectoryControlObjects, ref ExecuteTrajectoryButtonObject, "ExecuteTrajectoryButton", ExecuteTrajectoryButtonMethod);
 
+            ActiveRobotText = CanvasObject.FindObject("CurrentRobotText").GetComponent<TMP_Text>();
             //Find Objects for active robot selection
             // RobotSelectionControlObjects = GameObject.Find("RobotSelectionControls");
             // RobotSelectionDropdownObject = RobotSelectionControlObjects.FindObject("RobotSelectionDropdown");
@@ -556,19 +558,8 @@ namespace CompasXR.UI
                 SetRequestUIFromKey(CurrentStep);
                 if(trajectoryVisualizer.ActiveRobot != null)
                 {
-                    if(step.data.actor == "ROBOT")
-                    {
-                        trajectoryVisualizer.ActiveRobot.SetActive(true);
-                        trajectoryVisualizer.ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        trajectoryVisualizer.ActiveRobot.SetActive(false);
-                    }
-                    if(trajectoryVisualizer.ActiveTrajectoryParentObject.transform.childCount > 0)
-                    {
-                        trajectoryVisualizer.DestroyActiveTrajectoryChildren();
-                    }
+                    SetRobotObjectFromStep(CurrentStep);
+                    SetActiveRobotTextFromKey(CurrentStep);
                 }
                 else
                 {
@@ -1362,6 +1353,8 @@ namespace CompasXR.UI
             */
             ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)}     P2 | {(float)Math.Round(P2distance, 2)}";
         }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void ToggleRobot(Toggle toggle)
         {
             /*
@@ -1378,11 +1371,9 @@ namespace CompasXR.UI
                     ObjectLengthsUIPanelObjects.transform.localPosition = offsetPosition; 
                 }
 
-                if(trajectoryVisualizer.ActiveRobot && CurrentStep != null)
+                if(trajectoryVisualizer.ActiveRobot.transform.childCount > 0 && CurrentStep != null)
                 {
-                    trajectoryVisualizer.ActiveRobot.SetActive(true);
-
-                    //TODO: COLOR ROBOT BASED ON ROBOT NAME
+                    SetRobotObjectFromStep(CurrentStep);
                 }
                 else
                 {
@@ -1421,6 +1412,77 @@ namespace CompasXR.UI
                 UserInterface.SetUIObjectColor(RobotToggleObject, White);
             }
         }
+
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public void SetActiveRobotTextFromKey(string key)
+        {
+            /*
+            * Method is used to set the active robot text in the scene based on the key.
+            */
+
+                Step step = databaseManager.BuildingPlanDataItem.steps[key];
+         
+                if(step.data.actor == "ROBOT")
+                {
+                    string robotName = step.data.robot_name;
+                    ActiveRobotText.gameObject.SetActive(true);
+                    ActiveRobotText.text = robotName;
+
+                }
+                else
+                {
+                    ActiveRobotText.gameObject.SetActive(false);
+                }
+        }
+        public void SetRobotObjectFromStep(string key)
+        {
+            /*
+            * Method is used to set the robot object in the scene based on the step information.
+            */
+            GameObject robotObjectAA = trajectoryVisualizer.ActiveRobot.FindObject("AA");
+            GameObject robotObjectAB = trajectoryVisualizer.ActiveRobot.FindObject("AB");
+            Step step = databaseManager.BuildingPlanDataItem.steps[key];
+
+            if(step.data.actor == "ROBOT")
+            {
+                Frame robotAAFrame = step.data.robot_AA_base_frame;
+                if(!robotObjectAA.activeSelf)
+                {
+                    robotObjectAA.SetActive(true);
+                }
+                URDFManagement.SetRobotLocalPositionandRotationFromFrame(robotAAFrame, robotObjectAA);
+
+                Frame robotABFrame = step.data.robot_AB_base_frame;
+                URDFManagement.SetRobotLocalPositionandRotationFromFrame(robotABFrame, robotObjectAB);
+                if(!robotObjectAB.activeSelf)
+                {
+                    robotObjectAB.SetActive(true);
+                }
+                string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name;
+                GameObject robotToColor = trajectoryVisualizer.ActiveRobot.FindObject(robotName);
+                if (robotToColor != null)
+                {
+                    URDFManagement.ColorURDFGameObject(robotToColor, instantiateObjects.ActiveRobotMaterial, ref trajectoryVisualizer.URDFRenderComponents);
+                }
+                else
+                {
+                    Debug.LogWarning("SetRobotObjectFromStep: Could not find robot object to color.");
+                }
+            }
+            else
+            {
+                if(robotObjectAA.activeSelf)
+                {
+                    robotObjectAA.SetActive(false);
+                }
+                if(robotObjectAB.activeSelf)
+                {
+                    robotObjectAB.SetActive(false);
+                }
+            }
+        }
+
+    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void SetRequestUIFromKey(string key)
         {
             /*
@@ -1442,8 +1504,8 @@ namespace CompasXR.UI
             }
             else
             {
-                RobotSelectionDropdownObject.SetActive(true);
-                SetActiveRobotToggleObject.SetActive(true);
+                // RobotSelectionDropdownObject.SetActive(true);
+                // SetActiveRobotToggleObject.SetActive(true);
                 TrajectoryServicesUIControler(false, false, false, false, false, false);
             }
         }
