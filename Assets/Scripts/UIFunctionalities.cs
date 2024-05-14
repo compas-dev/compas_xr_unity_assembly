@@ -1403,7 +1403,7 @@ namespace CompasXR.UI
                     ActiveRobotText.gameObject.SetActive(false);
                 }
         }
-        public void SetRobotObjectFromStep(string key) //TODO: MOVE TO TRAJECTORY VISUALIZER
+        public void SetRobotObjectFromStep(string key)
         {
             /*
             * Method is used to set the robot object in the scene based on the step information.

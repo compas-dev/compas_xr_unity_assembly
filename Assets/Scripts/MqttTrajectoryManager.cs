@@ -441,7 +441,6 @@ namespace CompasXR.Robots
             }
         }
 
-        //TODO: COLOR ACTIVE ROBOT AFTER REJECTON.
         private void ApproveTrajectoryMessageReceivedHandler(ApproveTrajectory trajectoryApprovalMessage)
         {
             /*
@@ -477,6 +476,7 @@ namespace CompasXR.Robots
                 if(trajectoryVisualizer.ActiveRobot != null && !trajectoryVisualizer.ActiveRobot.activeSelf)
                 {
                     trajectoryVisualizer.ActiveRobot.SetActive(true);
+                    UIFunctionalities.SetRobotObjectFromStep(UIFunctionalities.CurrentStep);
                 }
                 
                 serviceManager.ApprovalCount.Reset();
