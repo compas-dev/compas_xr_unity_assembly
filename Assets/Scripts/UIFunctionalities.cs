@@ -1374,10 +1374,11 @@ namespace CompasXR.UI
                 if(trajectoryVisualizer.ActiveRobot.transform.childCount > 0 && CurrentStep != null)
                 {
                     SetRobotObjectFromStep(CurrentStep);
+                    SetActiveRobotTextFromKey(CurrentStep);
                 }
                 else
                 {
-                    Debug.Log("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
+                    Debug.LogError("ToggleRobot: Active Robot or CurrentStep is null not setting any visibility.");
                 }
                 if(CurrentStep != null)
                 {
@@ -1395,8 +1396,8 @@ namespace CompasXR.UI
                 {
                     TrajectoryServicesUIControler(false, false, false, false, false, false);
                 }
-                RobotSelectionDropdownObject.SetActive(false);
-                SetActiveRobotToggleObject.SetActive(false);
+                // RobotSelectionDropdownObject.SetActive(false);
+                // SetActiveRobotToggleObject.SetActive(false);
                             
                 if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
                 {
@@ -1413,7 +1414,7 @@ namespace CompasXR.UI
             }
         }
 
-    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void SetActiveRobotTextFromKey(string key)
         {
             /*
@@ -1482,7 +1483,7 @@ namespace CompasXR.UI
             }
         }
 
-    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void SetRequestUIFromKey(string key)
         {
             /*
