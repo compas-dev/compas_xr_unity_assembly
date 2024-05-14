@@ -430,10 +430,11 @@ namespace CompasXR.Robots
             if (meshRenderer != null)
             {
                 int instanceID = meshRenderer.GetInstanceID();
-                if (!URDFRenderComponents.ContainsKey(instanceID.ToString()))
+                if (!URDFRenderComponents.ContainsKey(meshRenderer.gameObject.name))
                 {
-                    meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
-                    URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
+                    // meshRenderer.gameObject.name = meshRenderer.gameObject.name + $"_{instanceID.ToString()}";
+                    URDFRenderComponents.Add(meshRenderer.gameObject.name, meshRenderer.gameObject.name);
+                    // URDFRenderComponents.Add(instanceID.ToString(), meshRenderer.gameObject.name);
                 }
             }
             if (currentTransform.childCount > 0)

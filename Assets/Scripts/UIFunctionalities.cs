@@ -806,29 +806,8 @@ namespace CompasXR.UI
             */
             Debug.Log($"Trajectory Review Request: Other User is Requesting review of Trajectory for Step {key} .");
             TMP_Text messageComponent = TrajectoryReviewRequestMessageObject.FindObject("MessageText").GetComponent<TMP_Text>();
-            // string message = null;
-            // if(activeRobotName != robotName)
-            // {
-            //     message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}. YOUR ACTIVE ROBOT UPDATED.";
-            //     int robotSelection = RobotSelectionDropdown.options.FindIndex(option => option.text == robotName);
-            //     if(robotSelection != -1)
-            //     {            
-            //         if(SetActiveRobotToggleObject.GetComponent<Toggle>().isOn)
-            //         {
-            //             SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = false;
-            //         }
-            //         RobotSelectionDropdown.value = robotSelection;
-            //         SetActiveRobotToggleObject.GetComponent<Toggle>().isOn = true;
-            //     }
-            //     else
-            //     {
-            //         Debug.LogError($"Trajectory Review Request Message: Could not find robot {robotName} in dropdown options.");
-            //     }
-            // }
-            // else
-            // {
+
             string message = $"REQUEST : Trajectory Review requested for step: {key} with Robot: {robotName}.";
-            // }
             
             if(TransactionLockActiveWarningMessageObject != null && TransactionLockActiveWarningMessageObject.activeSelf)
             {
@@ -1094,6 +1073,7 @@ namespace CompasXR.UI
             * set UI elements and publish the rejection on the particular approval topic.
             */
             Debug.Log($"RejectTrajectoryButtonMethod: Rejecting Trajectory for Step {CurrentStep}");
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name; //TODO: Could be also mqttTrajectoryManager.serviceManager.LastGetTrajectoryRequest.elementID (instead of CurrentStep if error occurs)
             mqttTrajectoryManager.PublishToTopic(mqttTrajectoryManager.compasXRTopics.publishers.approveTrajectoryTopic, new ApproveTrajectory(CurrentStep, robotName, mqttTrajectoryManager.serviceManager.CurrentTrajectory, 0).GetData());
             TrajectoryServicesUIControler(false, false, true, false, false, false);
@@ -1380,7 +1360,7 @@ namespace CompasXR.UI
                     ActiveRobotText.gameObject.SetActive(false);
                 }
         }
-        public void SetRobotObjectFromStep(string key)
+        public void SetRobotObjectFromStep(string key) //TODO: MOVE TO TRAJECTORY VISUALIZER
         {
             /*
             * Method is used to set the robot object in the scene based on the step information.
@@ -1388,6 +1368,7 @@ namespace CompasXR.UI
             GameObject robotObjectAA = trajectoryVisualizer.ActiveRobot.FindObject("AA");
             GameObject robotObjectAB = trajectoryVisualizer.ActiveRobot.FindObject("AB");
             Step step = databaseManager.BuildingPlanDataItem.steps[key];
+            string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name;
 
             if(step.data.actor == "ROBOT")
             {
@@ -1404,15 +1385,16 @@ namespace CompasXR.UI
                 {
                     robotObjectAB.SetActive(true);
                 }
-                string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name;
-                GameObject robotToColor = trajectoryVisualizer.ActiveRobot.FindObject(robotName);
-                if (robotToColor != null)
+
+                if(robotName == "AA")
                 {
-                    URDFManagement.ColorURDFGameObject(robotToColor, instantiateObjects.ActiveRobotMaterial, ref trajectoryVisualizer.URDFRenderComponents);
+                    URDFManagement.ColorURDFGameObject(robotObjectAA, instantiateObjects.ActiveRobotMaterial, ref trajectoryVisualizer.URDFRenderComponents);
+                    URDFManagement.ColorURDFGameObject(robotObjectAB, instantiateObjects.InactiveRobotMaterial, ref trajectoryVisualizer.URDFRenderComponents);
                 }
                 else
                 {
-                    Debug.LogWarning("SetRobotObjectFromStep: Could not find robot object to color.");
+                    URDFManagement.ColorURDFGameObject(robotObjectAA, instantiateObjects.InactiveRobotMaterial, ref trajectoryVisualizer.URDFRenderComponents);
+                    URDFManagement.ColorURDFGameObject(robotObjectAB, instantiateObjects.ActiveRobotMaterial, ref trajectoryVisualizer.URDFRenderComponents);
                 }
             }
             else
