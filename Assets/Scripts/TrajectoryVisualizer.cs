@@ -95,6 +95,7 @@ namespace CompasXR.Robots
                     Destroy(ActiveTrajectoryParentObject);
                 }
                 GameObject temporaryRobot = Instantiate(selectedRobot, ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
+                temporaryRobot.name = selectedRobot.name;
                 if(yRotation)
                 {
                     temporaryRobot.transform.Rotate(0, 90, 0);
@@ -123,7 +124,7 @@ namespace CompasXR.Robots
         }
 
         ////////////////////////////////////////// Robot Object Management ////////////////////////////////////////////////////////
-        public void InstantiateRobotTrajectoryFromJointsDict(List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
+        public void InstantiateRobotTrajectoryFromJointsDict(GetTrajectoryResult result, List<Dictionary<string, float>> TrajectoryConfigs, Frame robotBaseFrame, string trajectoryID, GameObject robotToConfigure, Dictionary<string, string> URDFLinks, GameObject parentObject, bool visibility)
         {
             /*
             InstantiateRobotTrajectoryFromJointsDict is responsible for instantiating the robot trajectory in the scene.
@@ -136,14 +137,21 @@ namespace CompasXR.Robots
                 int trajectoryCount = TrajectoryConfigs.Count;
                 for (int i = 0; i < trajectoryCount; i++)
                 {
+                    Debug.Log($"InstantiateRobotTrajectory: Config {i} with {TrajectoryConfigs[i].Count} joints.");
+
                     GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                     temporaryRobot.name = $"Config {i}";
 
                     SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames);
-
                     temporaryRobot.transform.SetParent(parentObject.transform);
+                    
                     URDFManagement.SetRobotLocalPositionandRotationFromFrame(robotBaseFrame, temporaryRobot);
                     temporaryRobot.SetActive(visibility);
+                }
+
+                if(result.PickAndPlace)
+                {    
+                    StartCoroutine(AttachElementAfterDelay(result, parentObject, 0.2f));
                 }
             }
             else
@@ -151,6 +159,7 @@ namespace CompasXR.Robots
                 
                 Debug.LogError("InstantiateRobotTrajectory: Trajectory is empty, robotToConfigure is null, or joint_names is empty.");
             }
+            
         }
         public void VisualizeRobotTrajectoryFromResultMessage(GetTrajectoryResult result, Dictionary<string,string> URDFLinkNames, GameObject robotToConfigure, GameObject parentObject, bool visibility)
         {
@@ -163,16 +172,14 @@ namespace CompasXR.Robots
                 ActiveRobot.transform.GetChild(0).gameObject.SetActive(true);
             }
             ActiveRobot.SetActive(false);
-            InstantiateRobotTrajectoryFromJointsDict(result.Trajectory, result.RobotBaseFrame, result.TrajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);     
-
-            if(result.PickAndPlace)
-            {
-                Debug.Log($"VisualizeRobotTrajectory: Attaching element to end effector link for {result.TrajectoryID}.");
-                Debug.Log("ATTACHMENT TO END EFFECTOR LINKS NOT IMPLEMENTED YET.");
-                // AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
-            }
+            InstantiateRobotTrajectoryFromJointsDict(result, result.Trajectory, result.RobotBaseFrame, result.TrajectoryID, robotToConfigure, URDFLinkNames, parentObject, visibility);     
         }
-        public void AttachElementToTrajectoryEndEffectorLinks(string stepID, GameObject trajectoryParent, string endEffectorLinkName, int pickIndex, int trajectoryCount)
+        IEnumerator AttachElementAfterDelay(GetTrajectoryResult result, GameObject parentObject, float delay = 0.1f)
+        {
+            yield return new WaitForSeconds(delay);
+            AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject.name, result.RobotName, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
+        }
+        public void AttachElementToTrajectoryEndEffectorLinks(string stepID, string trajectoryParentName, string robotName, string endEffectorLinkName, int pickIndex, int trajectoryCount)
         {
             /*
             AttachElementToTrajectoryEndEffectorLinks is responsible for attaching an element to the end effector link in the trajectory GameObject.
@@ -180,63 +187,34 @@ namespace CompasXR.Robots
 
             int lastConfigIndex = trajectoryCount - 1;
             GameObject stepElement = GameObject.Find(stepID);
-            Debug.Log($"AttachElementToTrajectoryEndEffectorLinks: GameObject Position {stepElement.transform.position} and Rotation {stepElement.transform.rotation}.");
-            GameObject endEffectorLink = trajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
-            Debug.Log("EndEffectorPosition: " + endEffectorLink.transform.position);
-            Debug.Log("EndEffectorLocalPosition: " + endEffectorLink.transform.localPosition);
-            Vector3 relativePosition = endEffectorLink.transform.InverseTransformPoint(stepElement.transform.position);
-            Quaternion relativeRotation = Quaternion.Inverse(endEffectorLink.transform.rotation) * stepElement.transform.rotation;
-            GameObject newStepElment = Instantiate(stepElement, stepElement.transform.localPosition, stepElement.transform.localRotation);
-            // newStepElment.transform.SetParent(endEffectorLink.transform, true);
 
-            // // Locla roation of the object to the end effector link
-            // Vector3 position = newStepElment.transform.localPosition;
-            // Quaternion rotation = newStepElment.transform.localRotation;
+            GameObject TrajectoryParent = GameObject.Find(trajectoryParentName);
+            GameObject endEffectorLink = TrajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(robotName).FindObject(endEffectorLinkName);
+            GameObject newStepElement = Instantiate(stepElement);
 
-            // for(int i = lastConfigIndex-1; i >= pickIndex; i--)
-            // {
-            //     GameObject currentEndEffectorLink = trajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
-            //     GameObject newStepElmentCopy = Instantiate(stepElement, stepElement.transform.position, stepElement.transform.rotation);
-            //     currentEndEffectorLink.GetComponentInChildren<MeshRenderer>().material.color = Color.blue;
+            //Remove all children from the stepElement
+            Renderer stepChildRenderer = newStepElement.GetComponentInChildren<MeshRenderer>();
+            stepChildRenderer.material = instantiateObjects.InactiveRobotMaterial;
+            instantiateObjects.DestroyChildrenWithOutGeometryName(newStepElement);
+            newStepElement.name = $"AttachedElement{lastConfigIndex}";
 
-            //     Debug.Log("JOINT POSITION? " + currentEndEffectorLink.GetComponent<UrdfJointRevolute>().GetPosition());
-            //     Debug.Log("EndEffectors: Renderer Center" + currentEndEffectorLink.GetComponentInChildren<Renderer>().bounds.center);
-            //     Debug.Log("EndEffectorPosition: " + currentEndEffectorLink.transform.position + " EndEffectorRotation: " + currentEndEffectorLink.transform.rotation.eulerAngles);
-            //     Debug.Log("EndEffectorLocalPosition: " + currentEndEffectorLink.transform.localPosition + " EndEffectorLocalRotation: " + currentEndEffectorLink.transform.localRotation.eulerAngles);
+            newStepElement.transform.SetParent(endEffectorLink.transform, true);
+            newStepElement.transform.position = stepElement.transform.position;
+            newStepElement.transform.rotation = stepElement.transform.rotation;
 
-            //     newStepElmentCopy.transform.SetParent(currentEndEffectorLink.transform, true);
-            //     newStepElmentCopy.transform.localPosition = position;
-            //     newStepElmentCopy.transform.localRotation = rotation;
-            // }
+            Vector3 position = newStepElement.transform.localPosition;
+            Quaternion rotation = newStepElement.transform.localRotation;
 
-            // Debug.Log($"AttachElementToTrajectoryEndEffectorLinks: GameObject Position {stepElement.transform.position} and Rotation {stepElement.transform.rotation}.");
-            // GameObject endEffectorLink = trajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
-
-            // GameObject newStepElement = Instantiate(stepElement);
-            // newStepElement.GetComponentInChildren<MeshRenderer>().material.color = Color.red;
-            // GameObject BASELINERandomCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-            // for(int i = lastConfigIndex-1; i >= pickIndex; i--)
-            // {
-            //     GameObject currentEndEffectorLink = trajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
-            //     Debug.Log("FOUNDOBJECTS NAME" + trajectoryParent.FindObject($"Config {i}").name);
-            //     currentEndEffectorLink.GetComponentInChildren<MeshRenderer>().material.color = Color.blue;
-            //     Debug.Log("EndEffectorPosition: " + currentEndEffectorLink.transform.position + " EndEffectorRotation: " + currentEndEffectorLink.transform.rotation.eulerAngles);
-            //     Debug.Log("EndEffectorLocalPosition: " + currentEndEffectorLink.transform.localPosition + " EndEffectorLocalRotation: " + currentEndEffectorLink.transform.localRotation.eulerAngles);
-            //     // GameObject newStepElmentCopy = Instantiate(stepElement, stepElement.transform.position, stepElement.transform.rotation);
-            //     GameObject RandomCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            //     RandomCube.transform.position = currentEndEffectorLink.transform.localPosition;
-            //     RandomCube.transform.rotation = currentEndEffectorLink.transform.localRotation;
-            //     Debug.Log("EndEffectorPosition: " + RandomCube.transform.position + " EndEffectorRotation: " + RandomCube.transform.rotation.eulerAngles);
-            //     RandomCube.name = $"EndEffectorPosition {i}";
-            //     RandomCube.GetComponent<MeshRenderer>().material.color = Color.green;
-
-            //     // newStepElmentCopy.transform.SetParent(currentEndEffectorLink.transform, true);
-            //     // newStepElmentCopy.transform.localPosition = position;
-            //     // newStepElmentCopy.transform.localRotation = rotation;
-            // }
-
-        // }
+            for (int i = lastConfigIndex - 1; i >= pickIndex; i--)
+            {
+                GameObject currentEndEffectorLink = TrajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
+                GameObject attachedStepElement = Instantiate(newStepElement);
+                attachedStepElement.transform.SetParent(currentEndEffectorLink.transform, true);
+                instantiateObjects.DestroyChildrenWithOutGeometryName(attachedStepElement);
+                attachedStepElement.name = $"AttachedElement{i}";
+                attachedStepElement.transform.localPosition = position;
+                attachedStepElement.transform.localRotation = rotation;
+            }
 
         }
         public void DestroyActiveRobotObjects()
@@ -309,6 +287,13 @@ namespace CompasXR.Robots
             {
                 GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
                 URDFManagement.ColorURDFGameObject(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
+
+                //Attached GameObject
+                GameObject previousAttachedGameObject = previousRobotGameObject.FindObject($"AttachedElement{previousSliderValue}");
+                if(previousAttachedGameObject != null)
+                {
+                    previousAttachedGameObject.GetComponentInChildren<Renderer>().material = inactiveMaterial;
+                }
             }
 
             GameObject robotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {sliderValue}");
@@ -317,6 +302,14 @@ namespace CompasXR.Robots
                 Debug.Log($"ColorRobotConfigfromSlider: Robot GameObject not found for Config {sliderValue}.");
             }
             URDFManagement.ColorURDFGameObject(robotGameObject, activeMaterial, ref URDFRenderComponents);
+
+            //Attached GameObject
+            GameObject attachedGameObject = robotGameObject.FindObject($"AttachedElement{sliderValue}");
+            if(attachedGameObject != null)
+            {
+                attachedGameObject.GetComponentInChildren<Renderer>().material = activeMaterial;
+            }
+
             previousSliderValue = sliderValue;
         }
 

@@ -837,6 +837,21 @@ namespace CompasXR.Core
             }
             return sphere;
         }
+        public void DestroyChildrenWithOutGeometryName(GameObject gameObject)
+        {
+            /*
+            * Method is used to destroy the children of the game object without
+            * name including "Geometry".
+            */
+
+            foreach (Transform child in gameObject.transform)
+            {
+                if (child.gameObject.name.Contains("Geometry") == false)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+        }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
         public Quaternion GetQuaternionFromStepKey(string key)
