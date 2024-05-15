@@ -1276,16 +1276,7 @@ namespace CompasXR.UI
             if (ObjectLengthsUIPanelObjects != null && ObjectLengthsText != null && ObjectLengthsTags != null)
             {    
                 if (toggle.isOn)
-                {             
-                    if (RobotToggleObject.GetComponent<Toggle>().isOn)
-                    {
-                        Vector3 offsetPosition = new Vector3(ObjectLengthsUIPanelPosition.x, ObjectLengthsUIPanelPosition.y - 300, ObjectLengthsUIPanelPosition.z);
-                        ObjectLengthsUIPanelObjects.transform.localPosition = offsetPosition; 
-                    }
-                    else
-                    {
-                        ObjectLengthsUIPanelObjects.transform.localPosition = ObjectLengthsUIPanelPosition;
-                    }
+                {
                     ObjectLengthsUIPanelObjects.SetActive(true);
                     ObjectLengthsTags.FindObject("P1Tag").SetActive(true);
                     ObjectLengthsTags.FindObject("P2Tag").SetActive(true);
