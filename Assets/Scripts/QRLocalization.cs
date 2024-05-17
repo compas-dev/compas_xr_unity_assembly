@@ -28,6 +28,7 @@ namespace CompasXR.Core
         private GameObject ObjectLengthsTags;
         private GameObject PriorityViewerObjects;
         private GameObject ActiveRobotObjects;
+        private GameObject BaseGeometryObject;
 
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         private GameObject JointsParent;
@@ -63,6 +64,7 @@ namespace CompasXR.Core
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
             PriorityViewerObjects = GameObject.Find("PriorityViewerObjects");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
+            BaseGeometryObject = GameObject.Find("BaseGeometry");
 
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             JointsParent = GameObject.Find("Joints");
@@ -106,6 +108,7 @@ namespace CompasXR.Core
 
                         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
                         ObjectTransformations.TranslateGameObjectByImageTarget(JointsParent, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(BaseGeometryObject, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
 
                         //Update position of line objects in the scene
                         if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)

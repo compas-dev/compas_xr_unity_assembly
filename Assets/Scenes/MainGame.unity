@@ -4796,6 +4796,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9090ae501ff9cd459bec5271d40249c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &153089919
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 153089920}
+  m_Layer: 0
+  m_Name: BaseGeometry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &153089920
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153089919}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2561732184003725983}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &153780300
 GameObject:
   m_ObjectHideFlags: 8
@@ -71372,6 +71404,14 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1465979388}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &227997718966256269
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146008957974046972}
+  m_Mesh: {fileID: -2432090755550338912, guid: fb34cd21bdf74f34198ab6c9f739373b, type: 3}
 --- !u!1 &240306111394807361
 GameObject:
   m_ObjectHideFlags: 0
@@ -79038,6 +79078,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!4 &2561732184003725983
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2938257315004551205}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3169740204168149959}
+  m_Father: {fileID: 153089920}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!23 &2564869114995997951
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -80820,6 +80876,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd106a313d5413140853feb5b10409c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &2938257315004551205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2561732184003725983}
+  m_Layer: 0
+  m_Name: BaseObjects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &2957104766120956574
 GameObject:
   m_ObjectHideFlags: 0
@@ -81703,6 +81775,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46398bc5d6905ad429a6d2d973afe002, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &3169740204168149959
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146008957974046972}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2561732184003725983}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!222 &3178311101136892731
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -82996,6 +83083,50 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 7.4}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!23 &3607304784122897945
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146008957974046972}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 64b7dfcd638e4d541bc748dfdaf9b395, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &3613319797492812085
 GameObject:
   m_ObjectHideFlags: 0
@@ -88743,8 +88874,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mObserverBehaviour: {fileID: 5585594460748503412}
   mHiddenRoot: {fileID: 0}
-  mTargetName: QR21
-  mDatasetName: Vuforia/CompasXR.xml
+  mTargetName: marker_21_7x7_84-87
+  mDatasetName: Vuforia/RobArchTargets.xml
   mCastedBehaviour: {fileID: 5585594460748503412}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
@@ -90242,6 +90373,24 @@ MonoBehaviour:
   mCastedBehaviour: {fileID: 6140167634966617601}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
+--- !u!1 &6146008957974046972
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3169740204168149959}
+  - component: {fileID: 227997718966256269}
+  - component: {fileID: 3607304784122897945}
+  m_Layer: 0
+  m_Name: default
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &6161569060024076251
 GameObject:
   m_ObjectHideFlags: 0
@@ -91270,8 +91419,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mObserverBehaviour: {fileID: 1395102308743553998}
   mHiddenRoot: {fileID: 0}
-  mTargetName: QR24
-  mDatasetName: Vuforia/CompasXR.xml
+  mTargetName: marker_24_7x7_96-99
+  mDatasetName: Vuforia/RobArchTargets.xml
   mCastedBehaviour: {fileID: 1395102308743553998}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
@@ -94439,8 +94588,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mObserverBehaviour: {fileID: 7662377745534565689}
   mHiddenRoot: {fileID: 0}
-  mTargetName: QR17
-  mDatasetName: Vuforia/CompasXR.xml
+  mTargetName: marker_17_7x7_68-71
+  mDatasetName: Vuforia/RobArchTargets.xml
   mCastedBehaviour: {fileID: 7662377745534565689}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
@@ -94485,8 +94634,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mObserverBehaviour: {fileID: 7668524545813261104}
   mHiddenRoot: {fileID: 0}
-  mTargetName: QR22
-  mDatasetName: Vuforia/CompasXR.xml
+  mTargetName: marker_22_7x7_88-91
+  mDatasetName: Vuforia/RobArchTargets.xml
   mCastedBehaviour: {fileID: 7668524545813261104}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
@@ -96460,8 +96609,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mObserverBehaviour: {fileID: 7609628056088414267}
   mHiddenRoot: {fileID: 0}
-  mTargetName: QR16
-  mDatasetName: Vuforia/CompasXR.xml
+  mTargetName: marker_16_7x7_64-67
+  mDatasetName: Vuforia/RobArchTargets.xml
   mCastedBehaviour: {fileID: 7609628056088414267}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
@@ -97087,8 +97236,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mObserverBehaviour: {fileID: 8556744202145016919}
   mHiddenRoot: {fileID: 0}
-  mTargetName: QR23
-  mDatasetName: Vuforia/CompasXR.xml
+  mTargetName: marker_23_7x7_92-95
+  mDatasetName: Vuforia/RobArchTargets.xml
   mCastedBehaviour: {fileID: 8556744202145016919}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
@@ -99309,3 +99458,4 @@ SceneRoots:
   - {fileID: 1324088153}
   - {fileID: 3377408315014968198}
   - {fileID: 664389695}
+  - {fileID: 153089920}
