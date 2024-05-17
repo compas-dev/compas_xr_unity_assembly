@@ -443,6 +443,16 @@ namespace CompasXR.Core
                         cylinderObject.transform.localScale = cylindersize;
                         cylinderObject.name = step.data.element_ids[0].ToString() + " Geometry";
 
+                        // Access the Renderer component of the cylinder object
+                        Renderer renderer = cylinderObject.GetComponent<Renderer>();
+
+                        // Get the bounds of the renderer
+                        Bounds bounds = renderer.bounds;
+
+                        // Print the size of the bounds along the y-axis
+                        Debug.Log($"gameobjectTypeSelector: Cylinder Created. Length along Y-axis: {bounds.size.y}");
+
+
                         BoxCollider cylinderCollider = cylinderObject.AddComponent<BoxCollider>();
                         Vector3 cylinderColliderSize = new Vector3(cylinderCollider.size.x*1.1f, cylinderCollider.size.y*1.2f, cylinderCollider.size.z*1.2f);
                         cylinderCollider.size = cylinderColliderSize;
