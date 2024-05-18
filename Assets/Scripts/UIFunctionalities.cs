@@ -1313,6 +1313,7 @@ namespace CompasXR.UI
             ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)}     P2 | {(float)Math.Round(P2distance, 2)}";
         }
 
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
         public void SetObjectLengthsTextFromStoredKey(string key)
         {
             /*
@@ -1321,7 +1322,6 @@ namespace CompasXR.UI
             List<float> objectLengths = instantiateObjects.ObjectLengthsDictionary[key];
             float p1Distance = (float)Math.Round(objectLengths[0], 2);
             float p2Distance = (float)Math.Round(objectLengths[1], 2);
-            Debug.Log($"SetObjectsLengthsTextFromStoredKeyValue: Setting Object Lengths Text. Value: {JsonConvert.SerializeObject(instantiateObjects.ObjectLengthsDictionary[key])}");
             ObjectLengthsText.text = $"P1 | {p1Distance}     P2 | {p2Distance}";
         }
 

@@ -672,7 +672,6 @@ namespace CompasXR.Core
 
             return (ptPosition, ptPositionAdjusted);
         }
-
         public (Vector3, Vector3) FindP1orP2Positions(string key, bool isP2)
         {
             /*
