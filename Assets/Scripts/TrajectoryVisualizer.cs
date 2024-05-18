@@ -61,12 +61,32 @@ namespace CompasXR.Robots
             BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
+
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent);
+            Dictionary<string, float> initialConfigDict = new Dictionary<string, float>();
+            initialConfigDict.Add("liftkit_joint", 0.050000000000000003f);
+            initialConfigDict.Add("elbow_joint", 2.629f);
+            initialConfigDict.Add("wrist_3_joint", -2.117f);
+            initialConfigDict.Add("shoulder_pan_joint", -2.117f);
+            initialConfigDict.Add("shoulder_lift_joint", -1.736f);
+            initialConfigDict.Add("wrist_1_joint", -2.4649999999999999f);
+            initialConfigDict.Add("wrist_2_joint", -1.571f);
+
+            Dictionary<string, string> linkNamesStorageDict = new Dictionary<string, string>();
+            linkNamesStorageDict.Add("liftkit_joint", "liftkit_600mm");
+            linkNamesStorageDict.Add("shoulder_pan_joint", "shoulder_link");
+            linkNamesStorageDict.Add("shoulder_lift_joint", "upper_arm_link");
+            linkNamesStorageDict.Add("elbow_joint", "forearm_link");
+            linkNamesStorageDict.Add("wrist_1_joint", "wrist_1_link");
+            linkNamesStorageDict.Add("wrist_2_joint", "wrist_2_link");
+            linkNamesStorageDict.Add("wrist_3_joint", "wrist_3_link");
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent, initialConfigDict, linkNamesStorageDict);
         }
 
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent)
+        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
                 SetActiveRobot is responsible for setting the active robots in the scene.
@@ -76,7 +96,8 @@ namespace CompasXR.Robots
 
             if(robotAA != null)
             {
-                SetActiveRobot(BuiltInRobotsParent, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);
+                SetActiveRobot(BuiltInRobotsParent, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
+                // URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, ActiveRobot, linkNamesStorageDict);
             }
             else
             {
@@ -85,14 +106,14 @@ namespace CompasXR.Robots
 
             if(robotAB != null)
             {
-                SetActiveRobot(BuiltInRobotsParent, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);
+                SetActiveRobot(BuiltInRobotsParent, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
             }
             else
             {
                 Debug.Log($"SetActiveRobot: Robot AB not found in the BuiltInRobotsParent.");
             }
         }
-        private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility)
+        private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
             SetActiveRobot is responsible for setting the active robot in the scene.
@@ -125,6 +146,7 @@ namespace CompasXR.Robots
 
                 temporaryRobot.transform.SetParent(ActiveRobot.transform);
                 URDFManagement.ColorURDFGameObject(temporaryRobot, material, ref URDFRenderComponents);
+                URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, temporaryRobot, linkNamesStorageDict);
                 temporaryRobot.SetActive(visibility);
             }
             else
@@ -411,7 +433,7 @@ namespace CompasXR.Robots
                 }  
                 else
                 {
-                    Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {urdfLinkObject.name} not found in the robotToConfigure.");
+                    Debug.LogWarning($"SetRobotConfigfromDict: URDF Link {urdfLinkName} not found in the robotToConfigure.");
                 }
             }
 
