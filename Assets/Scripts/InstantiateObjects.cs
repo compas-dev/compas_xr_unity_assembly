@@ -187,7 +187,7 @@ namespace CompasXR.Core
             jointObject.name = $"Joint_{joint.Key}";
             jointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
 
-            // ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
+            ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
 
         }
         public void ColorJointFromAdjacentStepsBuildStatus(GameObject joint, Data.Joint jointData)
@@ -206,11 +206,19 @@ namespace CompasXR.Core
 
             if (adjacentStepsBuiltStatus.Contains(false))
             {
-                joint.GetComponentInChildren<Renderer>().material = UnbuiltMaterial;
+                Renderer[] renderers = joint.GetComponentsInChildren<Renderer>();
+                foreach(Renderer rendererObject in renderers)
+                {
+                    rendererObject.material = UnbuiltMaterial;
+                }
             }
             else
             {
-                joint.GetComponentInChildren<Renderer>().material = BuiltMaterial;
+                Renderer[] renderers = joint.GetComponentsInChildren<Renderer>();
+                foreach(Renderer rendererObject in renderers)
+                {
+                    rendererObject.material = BuiltMaterial;
+                }
             }
 
         }
