@@ -73,7 +73,7 @@ namespace CompasXR.Core
         public GameObject PriorityViewerPointsObject;
 
         //Dictionary for storing the p1 & p2 positions of elements from initial instantiation
-        public Dictionary<string, List<float>> ObjectLenthsDictionary = new Dictionary<string, List<float>>();
+        public Dictionary<string, List<float>> ObjectLengthsDictionary = new Dictionary<string, List<float>>();
 
     /////////////////////////////// Monobehaviour Methods //////////////////////////////////////////
         public void Awake()
@@ -339,19 +339,8 @@ namespace CompasXR.Core
             GameObject elementPrefab = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(geometry_object, step.data.location.point, step.data.location.xaxis, step.data.location.yaxis, isObj, databaseManager.z_remapped);
 
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-            if(ObjectLenthsDictionary.ContainsKey(Key))
-            {
-                ObjectLenthsDictionary.Remove(Key);
-            }
-            (Vector3 P1Position, Vector3 P1Adjusted) = FindP1orP2PositionsFromGameObjectStepKey(elementPrefab, Key, false);
-            (Vector3 P2Position, Vector3 P2Adjusted) = FindP1orP2PositionsFromGameObjectStepKey(elementPrefab, Key, true);
-            ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
-            ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
-            float P1distance = Vector3.Distance(P1Position, P1Adjusted);
-            float P2distance = Vector3.Distance(P2Position, P2Adjusted);
-            Debug.Log($"PlaceElementFromStep Key {Key}: P1Distance: {P1distance} P2Distance: {P2distance}");
-            ObjectLenthsDictionary.Add(Key, new List<float> {P1distance, P2distance});
-            //TODO: Extended for RobArch2024//////////////////////////////////////////////////MAKE THIS A METHOD
+            StoreObjectLengthsPositionsOnInstantiation(Key, elementPrefab, ObjectLengthsDictionary);
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
 
             elementPrefab.transform.SetParent(Elements.transform, false);
             elementPrefab.name = Key;
@@ -617,14 +606,33 @@ namespace CompasXR.Core
             UserIndicatorInstantiator(ref OtherUserIndacator, userObject, itemKey, UserInfoname, UserInfoname, 0.15f);
         }
 
-        public (Vector3, Vector3) FindP1orP2PositionsFromGameObjectStepKey(GameObject objectToMeasure, string key, bool isP2)
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public void StoreObjectLengthsPositionsOnInstantiation(string Key, GameObject gameObject, Dictionary<string, List<float>> ObjectLenthsDictionary)
+        {
+            /*
+                Method is used to store the P1 and P2 positions of the element in the AR space
+                Based on world Zero.
+            */
+
+            if(ObjectLenthsDictionary.ContainsKey(Key))
+            {
+                ObjectLenthsDictionary.Remove(Key);
+            }
+            (Vector3 P1Position, Vector3 P1Adjusted) = FindP1orP2PositionsFromGameObjectStepKeyToWorldZero(gameObject, Key, false);
+            (Vector3 P2Position, Vector3 P2Adjusted) = FindP1orP2PositionsFromGameObjectStepKeyToWorldZero(gameObject, Key, true);
+            ObjectLengthsTags.FindObject("P1Tag").transform.position = P1Position;
+            ObjectLengthsTags.FindObject("P2Tag").transform.position = P2Position;
+            float P1distance = Vector3.Distance(P1Position, P1Adjusted);
+            float P2distance = Vector3.Distance(P2Position, P2Adjusted);
+            ObjectLenthsDictionary.Add(Key, new List<float> {P1distance, P2distance});
+        }
+        public (Vector3, Vector3) FindP1orP2PositionsFromGameObjectStepKeyToWorldZero(GameObject objectToMeasure, string key, bool isP2)
         {
             /*
             * Method is used to find the P1 or P2 positions of the element in the AR space
             * P1 is the center of the element - half of the height or length of the element
             * P2 is the center of the element + half of the height or length of the element
             */
-;
             Step step = databaseManager.BuildingPlanDataItem.steps[key];
             Vector3 center = ObjectTransformations.FindGameObjectCenter(objectToMeasure);
 
@@ -1245,9 +1253,9 @@ namespace CompasXR.Core
 
                 //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
                 //Remove Object Measurements from the deleted step
-                if(ObjectLenthsDictionary.ContainsKey(eventArgs.Key))
+                if(ObjectLengthsDictionary.ContainsKey(eventArgs.Key))
                 {
-                    ObjectLenthsDictionary.Remove(eventArgs.Key);
+                    ObjectLengthsDictionary.Remove(eventArgs.Key);
                 }
             }
             else

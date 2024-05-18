@@ -1318,10 +1318,10 @@ namespace CompasXR.UI
             /*
             * Method is used to set the object lengths text in the scene.
             */
-            List<float> objectLengths = instantiateObjects.ObjectLenthsDictionary[key];
+            List<float> objectLengths = instantiateObjects.ObjectLengthsDictionary[key];
             float p1Distance = (float)Math.Round(objectLengths[0], 2);
             float p2Distance = (float)Math.Round(objectLengths[1], 2);
-            Debug.Log($"SetObjectsLengthsTextFromStoredKeyValue: Setting Object Lengths Text. Value: {JsonConvert.SerializeObject(instantiateObjects.ObjectLenthsDictionary[key])}");
+            Debug.Log($"SetObjectsLengthsTextFromStoredKeyValue: Setting Object Lengths Text. Value: {JsonConvert.SerializeObject(instantiateObjects.ObjectLengthsDictionary[key])}");
             ObjectLengthsText.text = $"P1 | {p1Distance}     P2 | {p2Distance}";
         }
 
