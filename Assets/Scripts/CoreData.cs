@@ -690,10 +690,6 @@ namespace CompasXR.Core.Data
 
             //Parse element
             joint.element = Element.Parse(dataDict["element"]);
-
-            // //Parse is_mirrored
-            // joint.is_mirrored = (bool)dataDict["is_mirrored"];
-
             return joint;
         }
         public bool IsValidJoint()
@@ -741,7 +737,6 @@ namespace CompasXR.Core.Data
         }
     }
     //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-
 
     ////////////////Classes for User Current Informatoin/////////////////////
     

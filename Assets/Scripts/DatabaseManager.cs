@@ -15,6 +15,7 @@ using CompasXR.Core.Data;
 using CompasXR.AppSettings;
 using CompasXR.Database.FirebaseManagment;
 using Unity.IO.LowLevel.Unsafe;
+using Unity.XR.CoreUtils.Datums;
 
 namespace CompasXR.Core
 {
@@ -135,6 +136,9 @@ namespace CompasXR.Core
         public delegate void UpdateUserInfoEventHandler(object source, UserInfoDataItemsDictEventArgs e);
         public event UpdateUserInfoEventHandler UserInfoUpdate;
 
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        float StartUpTimeStamp;
+
         //Other Scripts
         public UIFunctionalities UIFunctionalities;
 
@@ -173,6 +177,9 @@ namespace CompasXR.Core
             * Method is used to initialize the DatabaseManager class on Awake.
             * It is used to find dependencies and set data persistence.
             */
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            StartUpTimeStamp = Time.time;
+
             FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
             UIFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
         }
@@ -884,6 +891,16 @@ namespace CompasXR.Core
             }
 
         }
+        
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        bool IsWithinTimeWindow(float currentTime, float startTime, float timeWindow)
+        {
+            /*
+            * Method is used to check if the current time is within a time window.
+            * It is designed to check if the current time is within the time window.
+            */
+            return (currentTime - startTime) <= timeWindow;
+        }
         public async void OnProjectInfoChangedUpdate(object sender, Firebase.Database.ChildChangedEventArgs args)
         {
             /*
@@ -901,6 +918,13 @@ namespace CompasXR.Core
 
             if (args.Snapshot == null) {
                 Debug.LogWarning("OnProjectInfoChangedUpdate: Snapshot is null. Ignoring the child change.");
+                return;
+            }
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            if (IsWithinTimeWindow(Time.time, StartUpTimeStamp, 3.0f))
+            {
+                Debug.Log($"OnProjectInfoChangedUpdate: Time Window is still open. Ignoring the child change on Key {args.Snapshot.Key}.");
                 return;
             }
 
@@ -925,21 +949,21 @@ namespace CompasXR.Core
                 }
                 else if(key == "joints")
                 {
-                    // InstantiateObjects instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
-                    // if (JointsDataDict != null)
-                    // {
-                    //     JointsDataDict.Clear();
-                    // }
-                    // if(instantiateObjects != null && instantiateObjects.Joints.transform.childCount > 0)
-                    // {
-                    //     instantiateObjects.DestroyAllJoints();
-                    // }
-                    // else
-                    // {
-                    //     Debug.LogWarning("OnProjectInfoChangedUpdate: Joints Data Dict is null or Instantiate Objects is null");
-                    // }
+                    InstantiateObjects instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
+                    if (JointsDataDict != null)
+                    {
+                        JointsDataDict.Clear();
+                    }
+                    if(instantiateObjects != null && instantiateObjects.Joints.transform.childCount > 0)
+                    {
+                        instantiateObjects.DestroyAllJoints();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("OnProjectInfoChangedUpdate: Joints Data Dict is null or Instantiate Objects is null");
+                    }
 
-                    // await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
+                    await FetchRTDDatawithEventHandler(dbReferenceJoints, snapshot => DeserializeJointDataSnapshot(snapshot, JointsDataDict), "JointsDataDict");
                     Debug.Log("OnProjectInfoChangedUpdate: Joints Changed");
                 }
                 else if(key == "parts")
