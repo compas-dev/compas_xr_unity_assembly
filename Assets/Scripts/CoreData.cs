@@ -691,8 +691,8 @@ namespace CompasXR.Core.Data
             //Parse element
             joint.element = Element.Parse(dataDict["element"]);
 
-            //Parse is_mirrored
-            joint.is_mirrored = (bool)dataDict["is_mirrored"];
+            // //Parse is_mirrored
+            // joint.is_mirrored = (bool)dataDict["is_mirrored"];
 
             return joint;
         }
@@ -719,7 +719,8 @@ namespace CompasXR.Core.Data
         * Element : A class to define the structure of a element in the joints.
         * Element contains the information required for coordinating joint positions the building process
         */
-        public Frame frame { get; set; }
+        public Frame frame1 { get; set; }
+        public Frame frame2 { get; set; }
         public static Element Parse(object jsondata)
         {
             /*
@@ -734,7 +735,8 @@ namespace CompasXR.Core.Data
             * Method to create an instance of a the Element class from a dictionary.
             */
             Element element = new Element();
-            element.frame = Frame.FromData(jsonDataDict["frame"] as Dictionary<string, object>);
+            element.frame1 = Frame.FromData(jsonDataDict["frame1"] as Dictionary<string, object>);
+            element.frame2 = Frame.FromData(jsonDataDict["frame2"] as Dictionary<string, object>);
             return element;
         }
     }

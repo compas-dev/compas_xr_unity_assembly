@@ -163,32 +163,31 @@ namespace CompasXR.Core
             * Method is used to place a joint in the AR space
             * based on the joint data.
             */
-            GameObject jointToPlace;
-            if(joint.is_mirrored)
-            {
-                jointToPlace = MirroredJointPrefab;
-            }
-            else
-            {
-                jointToPlace = JointPrefab;
-            }
+            
+            GameObject jointToPlace = JointPrefab;
+            GameObject baseJoint = Instantiate(jointToPlace, JointPrefab.transform.position, JointPrefab.transform.rotation);
 
-            if (jointToPlace == null)
-            {
-                Debug.LogError("PlaceJoint: Joint to place is null");
-                return;
-            }
-            GameObject jointExtra = Instantiate(jointToPlace, JointPrefab.transform.position, JointPrefab.transform.rotation);
+            GameObject jointObject = new GameObject();
 
-            GameObject jointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(jointExtra,
-             joint.element.frame.point, joint.element.frame.xaxis,
-             joint.element.frame.yaxis, false, false);
+            GameObject jointHalf1 = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(baseJoint,
+             joint.element.frame1.point, joint.element.frame1.xaxis,
+             joint.element.frame1.yaxis, false, false);
+            jointHalf1.transform.SetParent(jointObject.transform, false);
+            jointHalf1.SetActive(true);
+            jointHalf1.name = "1";
+
+            GameObject jointHalf2 = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(baseJoint,
+             joint.element.frame2.point, joint.element.frame2.xaxis,
+             joint.element.frame2.yaxis, false, false);
+            jointHalf2.transform.SetParent(jointObject.transform, false);
+            jointHalf2.SetActive(true);
+            jointHalf2.name = "2";
 
             jointObject.transform.SetParent(Joints.transform, false);
             jointObject.name = $"Joint_{joint.Key}";
             jointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
 
-            ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
+            // ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
 
         }
         public void ColorJointFromAdjacentStepsBuildStatus(GameObject joint, Data.Joint jointData)
