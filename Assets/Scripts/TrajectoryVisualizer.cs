@@ -102,11 +102,11 @@ namespace CompasXR.Robots
             linkNamesStorageDict.Add("wrist_3_joint", "wrist_3_link");
 
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent, initialConfigDict, linkNamesStorageDict);
+            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent);//, initialConfigDict, linkNamesStorageDict);
         }
 
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
+        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent)//, Dictionary<string, float> initialConfigDict, Dictionary<string, string>? linkNamesStorageDict = nul)
         {
             /*
                 SetActiveRobot is responsible for setting the active robots in the scene.
@@ -116,7 +116,7 @@ namespace CompasXR.Robots
 
             if(robotAA != null)
             {
-                SetActiveRobot(BuiltInRobotsParent, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
+                SetActiveRobot(BuiltInRobotsParent, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);//, initialConfigDict, linkNamesStorageDict);
                 // URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, ActiveRobot, linkNamesStorageDict);
             }
             else
@@ -126,14 +126,14 @@ namespace CompasXR.Robots
 
             if(robotAB != null)
             {
-                SetActiveRobot(BuiltInRobotsParent, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
+                SetActiveRobot(BuiltInRobotsParent, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);//, initialConfigDict, linkNamesStorageDict);
             }
             else
             {
                 Debug.Log($"SetActiveRobot: Robot AB not found in the BuiltInRobotsParent.");
             }
         }
-        private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
+        private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility)//, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
             SetActiveRobot is responsible for setting the active robot in the scene.
@@ -143,8 +143,11 @@ namespace CompasXR.Robots
             if(selectedRobot != null)
             {
 
+                GameObject temporaryRobotParent = Instantiate(new GameObject(), ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
+                temporaryRobotParent.name = robotName;
                 GameObject temporaryRobot = Instantiate(selectedRobot, ActiveRobotObjectsParent.transform.position, ActiveRobotObjectsParent.transform.rotation);
-                temporaryRobot.name = selectedRobot.name;
+                temporaryRobot.name = $"{selectedRobot.name}Child";
+                temporaryRobot.transform.SetParent(temporaryRobotParent.transform);
                 if(yRotation)
                 {
                     temporaryRobot.transform.Rotate(0, 90, 0);
@@ -164,10 +167,11 @@ namespace CompasXR.Robots
                     ActiveTrajectoryParentObject.transform.SetParent(ActiveRobotObjectsParent.transform);
                 }
 
-                temporaryRobot.transform.SetParent(ActiveRobot.transform);
+                temporaryRobotParent.transform.SetParent(ActiveRobot.transform);
                 URDFManagement.ColorURDFGameObject(temporaryRobot, material, ref URDFRenderComponents);
-                URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, temporaryRobot, linkNamesStorageDict);
-                temporaryRobot.SetActive(visibility);
+                // URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, temporaryRobot, linkNamesStorageDict);
+                temporaryRobotParent.SetActive(visibility);
+                temporaryRobot.SetActive(true);
             }
             else
             {
@@ -455,6 +459,7 @@ namespace CompasXR.Robots
                         jointStateWriter = urdfLinkObject.AddComponent<JointStateWriter>();    
                     }
                     jointStateWriter.Write(jointValue);
+                    // Debug.Log($"Joint Values after writing: {urdfLinkObject.GetComponent<UrdfJoint>().Values}.");
                 }  
                 else
                 {
