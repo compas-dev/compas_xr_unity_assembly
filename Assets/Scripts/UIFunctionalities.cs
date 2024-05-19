@@ -75,6 +75,7 @@ namespace CompasXR.UI
         public GameObject SearchItemNotFoundWarningMessageObject;
         public GameObject ActiveRobotIsNullWarningMessageObject;
         public GameObject TransactionLockActiveWarningMessageObject;
+        public GameObject MqttNotConnectedForRequestWarningMessageObject;
         public GameObject ActiveRobotCouldNotBeFoundWarningMessage;
         public GameObject ActiveRobotUpdatedFromPlannerMessageObject;
         public GameObject TrajectoryResponseIncorrectWarningMessageObject;
@@ -1042,6 +1043,14 @@ namespace CompasXR.UI
             */
             Debug.Log($"RequestTrajectoryButtonMethod: Requesting Trajectory for Step {CurrentStep}");
 
+            if(!mqttTrajectoryManager.mqttClientConnected)
+            {
+                Debug.Log("RequestTrajectoryButtonMethod : You are not connected to mqtt broker and canot send request.");
+                string message = "WARNING: You are not connected to MQTT, therefore cannot send a trajectory request. Please restart the app or set connection info.";
+                UserInterface.SignalOnScreenMessageFromPrefab(ref OnScreenErrorMessagePrefab, ref MqttNotConnectedForRequestWarningMessageObject, "MqttNotConnectedOnRequestWarningMessageObject", MessagesParent, message, "RequestTrajectoryButtonMethod: MQTT Connection Incorrect.");
+                return;
+            }         
+            
             if (mqttTrajectoryManager.serviceManager.TrajectoryRequestTransactionLock)
             {
                 Debug.Log("RequestTrajectoryButtonMethod : You cannot request because transaction lock is active");
