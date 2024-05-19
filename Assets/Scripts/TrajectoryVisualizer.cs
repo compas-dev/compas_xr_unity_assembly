@@ -8,6 +8,7 @@ using CompasXR.UI;
 using CompasXR.Core.Data;
 using CompasXR.Core.Extentions;
 using CompasXR.Robots.MqttData;
+using Newtonsoft.Json;
 
 namespace CompasXR.Robots
 {
@@ -62,15 +63,34 @@ namespace CompasXR.Robots
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
 
+            // Dictionary<string, float> initialConfigDict = new Dictionary<string, float>();
+            // initialConfigDict.Add("liftkit_joint", 0.050000000000000003f);
+            // initialConfigDict.Add("elbow_joint", 2.629f);
+            // initialConfigDict.Add("wrist_3_joint", -2.117f);
+            // initialConfigDict.Add("shoulder_pan_joint", -2.117f);
+            // initialConfigDict.Add("shoulder_lift_joint", -1.736f);
+            // initialConfigDict.Add("wrist_1_joint", -2.4649999999999999f);
+            // initialConfigDict.Add("wrist_2_joint", -1.571f);
+
+            // Dictionary<string, string> linkNamesStorageDict = new Dictionary<string, string>();
+            // linkNamesStorageDict.Add("liftkit_joint", "liftkit_600mm");
+            // linkNamesStorageDict.Add("shoulder_pan_joint", "shoulder_link");
+            // linkNamesStorageDict.Add("shoulder_lift_joint", "upper_arm_link");
+            // linkNamesStorageDict.Add("elbow_joint", "forearm_link");
+            // linkNamesStorageDict.Add("wrist_1_joint", "wrist_1_link");
+            // linkNamesStorageDict.Add("wrist_2_joint", "wrist_2_link");
+            // linkNamesStorageDict.Add("wrist_3_joint", "wrist_3_link");
+
+
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             Dictionary<string, float> initialConfigDict = new Dictionary<string, float>();
-            initialConfigDict.Add("liftkit_joint", 0.050000000000000003f);
-            initialConfigDict.Add("elbow_joint", 2.629f);
-            initialConfigDict.Add("wrist_3_joint", -2.117f);
-            initialConfigDict.Add("shoulder_pan_joint", -2.117f);
-            initialConfigDict.Add("shoulder_lift_joint", -1.736f);
-            initialConfigDict.Add("wrist_1_joint", -2.4649999999999999f);
-            initialConfigDict.Add("wrist_2_joint", -1.571f);
+            initialConfigDict.Add("liftkit_joint", 0.00f);
+            initialConfigDict.Add("elbow_joint", 1.841f);
+            initialConfigDict.Add("wrist_3_joint", -0.226f);
+            initialConfigDict.Add("shoulder_pan_joint", 4.541f);
+            initialConfigDict.Add("shoulder_lift_joint", -0.926f);
+            initialConfigDict.Add("wrist_1_joint", 1.884f);
+            initialConfigDict.Add("wrist_2_joint", 4.85f);
 
             Dictionary<string, string> linkNamesStorageDict = new Dictionary<string, string>();
             linkNamesStorageDict.Add("liftkit_joint", "liftkit_600mm");
@@ -179,6 +199,7 @@ namespace CompasXR.Robots
                     GameObject temporaryRobot = Instantiate(robotToConfigure, robotToConfigure.transform.position, robotToConfigure.transform.rotation);
                     temporaryRobot.name = $"Config {i}";
 
+                    Debug.Log($"InstantiateRobotTrajectory: Config {i} Setting joint values: {JsonConvert.SerializeObject(TrajectoryConfigs[i])}.");
                     SetRobotConfigfromDictWrapper(TrajectoryConfigs[i], $"Config {i}", temporaryRobot, ref URDFLinkNames);
                     temporaryRobot.transform.SetParent(parentObject.transform);
                     
@@ -313,6 +334,7 @@ namespace CompasXR.Robots
             
             if (urdfLinkNames.Count == 0)
             {
+                Debug.Log("I Entered Here");
                 URDFManagement.FindLinkNamesFromJointNames(robotToConfigure.transform, config, ref urdfLinkNames);
             }
             if(URDFManagement.ConfigJointsEqualURDFLinks(config, urdfLinkNames))
@@ -421,9 +443,12 @@ namespace CompasXR.Robots
                 float jointValue = jointDescription.Value;
                 string urdfLinkName = linkNamesStorageDict[jointName];
                 GameObject urdfLinkObject = URDFGameObject.FindObject(urdfLinkName);
+                Debug.Log($"SetRobotConfigFromDict: ACTUALLY WRITING: Setting joint {jointName} to value {jointValue} on link {urdfLinkName}.");
 
                 if (urdfLinkObject)
                 {
+                    Debug.Log("SetRobotConfigFromDict: Found URDF Link Object. nameed: " + urdfLinkObject.name);
+                    Debug.Log("SetRobotConfigFromDict: Setting information for : " + jointName + " with value: " + jointValue + " on link: " + urdfLinkName);
                     JointStateWriter jointStateWriter = urdfLinkObject.GetComponent<JointStateWriter>();
                     if (!jointStateWriter)
                     {
@@ -524,6 +549,7 @@ namespace CompasXR.Robots
             {
                 if(config.ContainsKey(urdfJoint.JointName) && !URDFLinkNamesStorageDict.ContainsKey(urdfJoint.JointName))
                 {
+                    Debug.Log($"FindLinkNames: Value associated with {urdfJoint.JointName} is {config[urdfJoint.JointName]} on link {currentTransform.gameObject.name}.");
                     Debug.Log($"FindLinkNames: Found UrdfJointName {urdfJoint.JointName} in URDF on GameObject {currentTransform.gameObject.name}.");
                     URDFLinkNamesStorageDict.Add(urdfJoint.JointName, currentTransform.gameObject.name);
                 }

@@ -1116,7 +1116,7 @@ namespace CompasXR.UI
                     float SliderMax = 1;
                     float SliderMin = 0;
                     float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount-1); 
-                    Debug.Log($"TrajectorySliderReviewMethod: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
+                    Debug.Log($"TrajectorySliderReviewMethod: Slider Value Changed is value {SliderValueRemaped} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
                     trajectoryVisualizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisualizer.previousSliderValue);
                 }
                 else
