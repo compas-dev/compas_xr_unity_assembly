@@ -368,7 +368,7 @@ namespace CompasXR.Robots
                         if (getTrajectoryResultmessage.Trajectory.Count > 0)
                         {
                             serviceManager.TrajectoryRequestTransactionLock = false;
-                            GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject(getTrajectoryResultmessage.RobotName);
+                            GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject("RobotZero");
 
                             if(robotToConfigure == null)
                             {
@@ -414,7 +414,7 @@ namespace CompasXR.Robots
                             serviceManager.currentService = ServiceManager.CurrentService.ApproveTrajectory;
 
                             //TODO: Extended For RobArch2024
-                            GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject(getTrajectoryResultmessage.RobotName);
+                            GameObject robotToConfigure = trajectoryVisualizer.ActiveRobot.FindObject("RobotZero");
 
                             trajectoryVisualizer.VisualizeRobotTrajectoryFromResultMessage(getTrajectoryResultmessage, 
                                 trajectoryVisualizer.URDFLinkNames, robotToConfigure, trajectoryVisualizer.ActiveTrajectoryParentObject, true);

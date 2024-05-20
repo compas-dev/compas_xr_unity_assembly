@@ -82170,7 +82170,7 @@ GameObject:
   - component: {fileID: 580171050879636394}
   - component: {fileID: 8566825969215278203}
   m_Layer: 0
-  m_Name: AA
+  m_Name: MobileRobot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91998,6 +91998,7 @@ MonoBehaviour:
   SearchItemNotFoundWarningMessageObject: {fileID: 0}
   ActiveRobotIsNullWarningMessageObject: {fileID: 0}
   TransactionLockActiveWarningMessageObject: {fileID: 0}
+  MqttNotConnectedForRequestWarningMessageObject: {fileID: 0}
   ActiveRobotCouldNotBeFoundWarningMessage: {fileID: 0}
   ActiveRobotUpdatedFromPlannerMessageObject: {fileID: 0}
   TrajectoryResponseIncorrectWarningMessageObject: {fileID: 0}

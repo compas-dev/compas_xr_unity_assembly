@@ -102,43 +102,49 @@ namespace CompasXR.Robots
             linkNamesStorageDict.Add("wrist_3_joint", "wrist_3_link");
 
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent);//, initialConfigDict, linkNamesStorageDict);
+            SetRobArchActiveRobotsOnStart(BuiltInRobotsParent, initialConfigDict, linkNamesStorageDict);
         }
 
         //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
-        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent)//, Dictionary<string, float> initialConfigDict, Dictionary<string, string>? linkNamesStorageDict = nul)
+        private void SetRobArchActiveRobotsOnStart(GameObject BuiltInRobotsParent, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
                 SetActiveRobot is responsible for setting the active robots in the scene.
             */
-            GameObject robotAA = BuiltInRobotsParent.FindObject("AA");
-            GameObject robotAB = BuiltInRobotsParent.FindObject("AB");
+            GameObject baseUrdfObject = BuiltInRobotsParent.FindObject("MobileRobot");
+            // GameObject robotAB = BuiltInRobotsParent.FindObject("AB");
 
-            if(robotAA != null)
+            if(baseUrdfObject != null)
             {
-                SetActiveRobot(BuiltInRobotsParent, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);//, initialConfigDict, linkNamesStorageDict);
-                // URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, ActiveRobot, linkNamesStorageDict);
+                SetActiveRobot(baseUrdfObject, "AA", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
+                URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, ActiveRobot, linkNamesStorageDict);
             }
             else
             {
                 Debug.Log($"SetActiveRobot: Robot AA not found in the BuiltInRobotsParent.");
             }
 
-            if(robotAB != null)
+            if(baseUrdfObject != null)
             {
-                SetActiveRobot(BuiltInRobotsParent, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false);//, initialConfigDict, linkNamesStorageDict);
+                SetActiveRobot(baseUrdfObject, "AB", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
+                URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, ActiveRobot, linkNamesStorageDict);
+            }
+
+            if(baseUrdfObject != null)
+            {
+                SetActiveRobot(baseUrdfObject, "RobotZero", true, ActiveRobotObjects, ref ActiveRobot, ref ActiveTrajectoryParentObject, instantiateObjects.InactiveRobotMaterial, false, initialConfigDict, linkNamesStorageDict);
             }
             else
             {
                 Debug.Log($"SetActiveRobot: Robot AB not found in the BuiltInRobotsParent.");
             }
         }
-        private void SetActiveRobot(GameObject BuiltInRobotsParent, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility)//, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
+        private void SetActiveRobot(GameObject selectedRobot, string robotName, bool yRotation, GameObject ActiveRobotObjectsParent, ref GameObject ActiveRobot, ref GameObject ActiveTrajectoryParentObject, Material material, bool visibility, Dictionary<string, float> initialConfigDict, Dictionary<string, string> linkNamesStorageDict)
         {
             /*
             SetActiveRobot is responsible for setting the active robot in the scene.
             */
-            GameObject selectedRobot = BuiltInRobotsParent.FindObject(robotName);
+            // GameObject selectedRobot = BuiltInRobotsParent.FindObject(robotName);
 
             if(selectedRobot != null)
             {
@@ -169,7 +175,10 @@ namespace CompasXR.Robots
 
                 temporaryRobotParent.transform.SetParent(ActiveRobot.transform);
                 URDFManagement.ColorURDFGameObject(temporaryRobot, material, ref URDFRenderComponents);
-                // URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, temporaryRobot, linkNamesStorageDict);
+                if(robotName != "RobotZero")
+                {
+                    URDFManagement.SetRobotConfigfromJointsDict(initialConfigDict, temporaryRobot, linkNamesStorageDict);
+                }
                 temporaryRobotParent.SetActive(visibility);
                 temporaryRobot.SetActive(true);
             }
