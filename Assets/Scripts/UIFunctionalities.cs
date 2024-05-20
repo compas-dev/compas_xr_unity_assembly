@@ -157,6 +157,10 @@ namespace CompasXR.UI
         //AR Camera and Touch GameObjects & Occlusion Objects
         public Camera arCamera;
         private GameObject activeGameObject;
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        private GameObject activeJointGameObject;
+
         private GameObject temporaryObject; 
         private ARRaycastManager rayManager;
         public CompasXR.Systems.OperatingSystem currentOperatingSystem;
@@ -1442,6 +1446,15 @@ namespace CompasXR.UI
             Step step = databaseManager.BuildingPlanDataItem.steps[key];
             string robotName = databaseManager.BuildingPlanDataItem.steps[CurrentStep].data.robot_name;
 
+            GameObject zeroConfigurationRobot = trajectoryVisualizer.ActiveRobot.FindObject("RobotZero");
+            if(zeroConfigurationRobot != null)
+            {
+                if(zeroConfigurationRobot.activeSelf)
+                {
+                    zeroConfigurationRobot.SetActive(false);
+                }
+            }
+
             if(step.data.actor == "ROBOT")
             {
                 Frame robotAAFrame = step.data.robot_AA_base_frame;
@@ -1800,6 +1813,11 @@ namespace CompasXR.UI
                     CurrentStepTextObject.SetActive(false);
                     EditorSelectedTextObject.SetActive(true);
 
+                    if(JointScaleToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        JointScaleToggleObject.GetComponent<Toggle>().isOn = false;
+                    }
+
                     //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
                     ControlAllCollidersInChildren(instantiateObjects.Joints, false);
 
@@ -1855,14 +1873,35 @@ namespace CompasXR.UI
                 Debug.Log($"ToggleJointScale: Joint Zoom toggle Pressed value is now set to {toggle.GetComponent<Toggle>().isOn}");
                 if (toggle.isOn)
                 {             
-                    
-                    // TouchSearchModeController(TouchMode.ElementEditSelection);
+                    //If the editor is on, turn it off
+                    if(EditorToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        EditorToggleObject.GetComponent<Toggle>().isOn = false;
+                    }
+                    if(!JointsToggleObject.GetComponent<Toggle>().isOn)
+                    {
+                        JointsToggleObject.GetComponent<Toggle>().isOn = true;
+                    }
+
+                    //Disable the colliders for the elements
+                    ControlAllCollidersInChildren(instantiateObjects.Elements, false);
+
+                    //Set the touch mode to joint selection
+                    TouchSearchModeController(TouchMode.JointSelection);
+
+                    //Set the color of the joint scale toggle to yellow
                     UserInterface.SetUIObjectColor(JointScaleToggleObject, Yellow);
                 }
                 else
                 {
-                    
-                   UserInterface.SetUIObjectColor(JointScaleToggleObject, White);
+                    //Set the touch mode to none
+                    TouchSearchModeController(TouchMode.None);
+
+                    //Enable the colliders for the elements
+                    ControlAllCollidersInChildren(instantiateObjects.Elements, true);
+
+                    //Set the color of the joint scale toggle to white
+                    UserInterface.SetUIObjectColor(JointScaleToggleObject, White);
                 }
             }
             else
@@ -1909,11 +1948,27 @@ namespace CompasXR.UI
             {
                 Debug.Log ("***TouchMode: ELEMENT EDIT MODE***");
             }
+
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            else if(modetype == TouchMode.JointSelection)
+            {
+                Debug.Log ("***TouchMode: JOINT SELECTION MODE***");
+            }
             else if(modetype == TouchMode.None)
             {
-                DestroyBoundingBoxFixElementColor();
-                activeGameObject = null;
-                Debug.Log ("***TouchMode: NONE***");
+                if(activeGameObject != null)
+                {    
+                    DestroyBoundingBoxFixElementColor();
+                    activeGameObject = null;
+                    Debug.Log ("***TouchMode: NONE***");
+                }
+
+                if(activeJointGameObject != null)
+                {
+                    ObjectInstantiaion.DestroyGameObjectByName("ClonedJoint");
+                    activeJointGameObject = null;
+                    Debug.Log ("***TouchMode: NONE***");
+                }
             }
             else
             {
@@ -1930,10 +1985,10 @@ namespace CompasXR.UI
             */
             foreach (Transform child in parent.transform)
             {
-                Collider collider = child.GetComponent<Collider>();
-                if (collider != null)
+                Collider[] collider = child.GetComponentsInChildren<Collider>();
+                foreach (Collider col in collider)
                 {
-                    collider.enabled = enable;
+                    col.enabled = enable;
                 }
             }
         }
@@ -1944,6 +1999,10 @@ namespace CompasXR.UI
             */
             
             if (instantiateObjects.visulizationController.TouchMode == TouchMode.ElementEditSelection)
+            {
+                SearchInput();
+            }
+            else if (instantiateObjects.visulizationController.TouchMode == TouchMode.JointSelection)
             {
                 SearchInput();
             }
@@ -2041,6 +2100,11 @@ namespace CompasXR.UI
                         Debug.Log("*** ELEMENT SELECTION MODE : Editor ***");
                         EditMode();
                     }
+                    else if (instantiateObjects.visulizationController.TouchMode == TouchMode.JointSelection)
+                    {
+                        Debug.Log("*** JOINT SELECTION MODE : Editor ***");
+                        JointSelectionModeActivation();
+                    }
 
                     else
                     {
@@ -2067,6 +2131,11 @@ namespace CompasXR.UI
                     {
                         Debug.Log("*** SearchTouch: ELEMENT SELECTION MODE: Touch ***");
                         EditMode();                     
+                    }
+                    else if (instantiateObjects.visulizationController.TouchMode == TouchMode.JointSelection)
+                    {
+                        Debug.Log("*** SearchTouch: JOINT SELECTION MODE: Touch ***");
+                        JointSelectionModeActivation();
                     }
                     else
                     {
@@ -2099,7 +2168,6 @@ namespace CompasXR.UI
             {
                 activeGameObject = SelectedObject();
             }
-
             if (activeGameObject != null)
             {
                 EditorSelectedText.text = activeGameObject.transform.parent.name;
@@ -2227,6 +2295,59 @@ namespace CompasXR.UI
             {
                 ModifyStepActor(activeGameObject.transform.parent.name);
             }
+        }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        private void JointSelectionModeActivation()
+        {
+            /*
+            * Edit mode is used to control the edit mode for the application.
+            * It will allow you to touch select any object in the screen.
+            */
+
+            if(GameObject.Find("ClonedJoint") != null)
+            {
+                ObjectInstantiaion.DestroyGameObjectByName("ClonedJoint");
+            }
+
+            activeJointGameObject = SelectedObject();
+            
+            if (Input.touchCount == 1)
+            {
+                activeJointGameObject = SelectedObject();
+            }
+
+            if (activeJointGameObject != null)
+            {
+                temporaryObject = activeJointGameObject;
+                CloneAndScaleJointObject(activeJointGameObject);
+            }
+            else
+            {
+                if (GameObject.Find("ClonedJoint") != null)
+                {
+                    ObjectInstantiaion.DestroyGameObjectByName("ClonedJoint");
+                }
+            }
+        }
+
+        private void CloneAndScaleJointObject(GameObject jointToClone)
+        {
+            /*
+            * Clone and scale joint object is used to clone and scale the joint object.
+            */
+                GameObject clonedJoint = Instantiate(jointToClone, jointToClone.transform.position, jointToClone.transform.rotation);
+                clonedJoint.name = "ClonedJoint";
+                clonedJoint.transform.SetParent(jointToClone.transform.parent, true);
+
+                //Set the material of the selected joint
+                Renderer[] renderers = clonedJoint.GetComponentsInChildren<Renderer>();
+                foreach (Renderer renderer in renderers)
+                {
+                    renderer.material = instantiateObjects.SearchedObjectMaterial;
+                }
+                
+                clonedJoint.transform.localScale = new Vector3(3.0f, 3.0f, 3.0f);
         }
 
     }

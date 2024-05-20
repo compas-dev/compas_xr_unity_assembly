@@ -477,7 +477,7 @@ namespace CompasXR.Robots
                     trajectoryVisualizer.ActiveRobot.SetActive(true);
                     UIFunctionalities.SetRobotObjectFromStep(UIFunctionalities.CurrentStep);
                 }
-                
+
                 serviceManager.ApprovalCount.Reset();
                 serviceManager.UserCount.Reset();
                 serviceManager.CurrentTrajectory = null;
