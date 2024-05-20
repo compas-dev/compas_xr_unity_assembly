@@ -426,7 +426,7 @@ namespace CompasXR.Core
             switch (geometryType)
             {
                 case "0.Cylinder":
-                    heightOffset = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width * 3.0f;
+                    heightOffset = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width * 4.0f;
                     break;
                 case "1.Box":
                     heightOffset = databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width;
@@ -951,7 +951,7 @@ namespace CompasXR.Core
             }
             else
             {
-                scaleFactor = 0.2f;
+                scaleFactor = 0.15f;
             }
 
             float scaledRadius = radius * scaleFactor;

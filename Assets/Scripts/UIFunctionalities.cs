@@ -1366,12 +1366,6 @@ namespace CompasXR.UI
             Debug.Log($"ToggleRobot: Robot Toggle Pressed value set to {toggle.GetComponent<Toggle>().isOn}");
             if(toggle.isOn && RequestTrajectoryButtonObject != null)
             {
-                if (ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
-                {
-                    Vector3 offsetPosition = new Vector3(ObjectLengthsUIPanelPosition.x, ObjectLengthsUIPanelPosition.y - 300, ObjectLengthsUIPanelPosition.z);
-                    ObjectLengthsUIPanelObjects.transform.localPosition = offsetPosition; 
-                }
-
                 if(trajectoryVisualizer.ActiveRobot.transform.childCount > 0 && CurrentStep != null)
                 {
                     SetRobotObjectFromStep(CurrentStep);
@@ -1397,8 +1391,6 @@ namespace CompasXR.UI
                 {
                     TrajectoryServicesUIControler(false, false, false, false, false, false);
                 }
-                // RobotSelectionDropdownObject.SetActive(false);
-                // SetActiveRobotToggleObject.SetActive(false);
                             
                 if(trajectoryVisualizer.ActiveRobotObjects.transform.childCount > 0)
                 {
@@ -1531,6 +1523,11 @@ namespace CompasXR.UI
             Debug.Log($"TogglePriority: Priority Toggle Pressed the value is now set to {toggle.GetComponent<Toggle>().isOn}");
             if(toggle.isOn && PriorityViewerToggleObject != null)
             {
+                if(PreviewGeometrySliderObject.GetComponent<Slider>().value != 1)
+                {
+                    PreviewGeometrySliderObject.GetComponent<Slider>().value = 1;
+                }
+                
                 ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
                 instantiateObjects.PriorityViewrLineObject.SetActive(true);
                 instantiateObjects.PriorityViewerPointsObject.SetActive(true);
