@@ -169,7 +169,7 @@ namespace CompasXR.Core
 
             GameObject emptyJointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(new GameObject(),
              joint.element.frame1.point, joint.element.frame1.xaxis,
-             joint.element.frame1.yaxis, false, false);;
+             joint.element.frame1.yaxis, false, false);
 
             GameObject jointHalf1 = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(baseJoint,
              joint.element.frame1.point, joint.element.frame1.xaxis,
@@ -185,7 +185,7 @@ namespace CompasXR.Core
             jointHalf2.SetActive(true);
             jointHalf2.name = "2";
 
-            emptyJointObject.transform.SetParent(Joints.transform, true);
+            emptyJointObject.transform.SetParent(Joints.transform, false);
             emptyJointObject.name = $"Joint_{joint.Key}";
             emptyJointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
 
