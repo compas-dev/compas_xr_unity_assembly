@@ -110,6 +110,9 @@ namespace CompasXR.UI
         public GameObject CommunicationToggleObject;
         private GameObject CommunicationPanelObject;
 
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public GameObject JointScaleToggleObject;
+
         //Editor Toggle Objects
         private GameObject EditorBackground;
         private GameObject BuilderEditorButtonObject;
@@ -319,6 +322,9 @@ namespace CompasXR.UI
             UserInterface.FindButtonandSetOnClickAction(EditorToggleObject, ref BuildStatusButtonObject, "Build_Status_Editor", TouchModifyBuildStatus);
             UserInterface.FindToggleandSetOnValueChangedAction(MenuButtonObject, ref CommunicationToggleObject, "Communication_Button", ToggleCommunication);
 
+            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+            UserInterface.FindToggleandSetOnValueChangedAction(MenuButtonObject, ref JointScaleToggleObject, "JointZoomToggle", ToggleJointScale);
+
             //Find Panel Objects used for Info and communication
             InfoPanelObject = CanvasObject.FindObject("InfoPanel");
             CommunicationPanelObject = CanvasObject.FindObject("CommunicationPanel");
@@ -440,6 +446,10 @@ namespace CompasXR.UI
                     ReloadButtonObject.SetActive(true);
                     CommunicationToggleObject.SetActive(true);
                     EditorToggleObject.SetActive(true);
+                    
+                    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                    JointScaleToggleObject.SetActive(true);
+
                     UserInterface.SetUIObjectColor(MenuButtonObject, Yellow);
 
                 }
@@ -453,6 +463,13 @@ namespace CompasXR.UI
                     }
                     if(CommunicationToggleObject.GetComponent<Toggle>().isOn){
                         CommunicationToggleObject.GetComponent<Toggle>().isOn = false;
+                    }
+
+                    
+                    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                    JointScaleToggleObject.SetActive(false);
+                    if(JointScaleToggleObject.GetComponent<Toggle>().isOn){
+                        JointScaleToggleObject.GetComponent<Toggle>().isOn = false;
                     }
 
                     MenuBackground.SetActive(false);
@@ -1783,6 +1800,9 @@ namespace CompasXR.UI
                     CurrentStepTextObject.SetActive(false);
                     EditorSelectedTextObject.SetActive(true);
 
+                    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                    ControlAllCollidersInChildren(instantiateObjects.Joints, false);
+
                     TouchSearchModeController(TouchMode.ElementEditSelection);
                     UserInterface.SetUIObjectColor(EditorToggleObject, Yellow);
                 }
@@ -1793,6 +1813,9 @@ namespace CompasXR.UI
                     BuildStatusButtonObject.SetActive(false);
                     EditorSelectedTextObject.SetActive(false);
                     CurrentStepTextObject.SetActive(true);
+
+                    //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+                    ControlAllCollidersInChildren(instantiateObjects.Joints, true);
 
                     TouchSearchModeController(TouchMode.None);
 
@@ -1813,6 +1836,33 @@ namespace CompasXR.UI
                         Debug.LogWarning("ToggleEditor: Could not find Visulization Mode.");
                     }
                     UserInterface.SetUIObjectColor(EditorToggleObject, White);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("ToggleEditor: Could not find one of the buttons in the Editor Menu.");
+            }
+        }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public void ToggleJointScale(Toggle toggle)
+        {
+            /*
+            * Method used to touch scale a joint
+            */
+            if (JointScaleToggleObject != null)
+            {    
+                Debug.Log($"ToggleJointScale: Joint Zoom toggle Pressed value is now set to {toggle.GetComponent<Toggle>().isOn}");
+                if (toggle.isOn)
+                {             
+                    
+                    // TouchSearchModeController(TouchMode.ElementEditSelection);
+                    UserInterface.SetUIObjectColor(JointScaleToggleObject, Yellow);
+                }
+                else
+                {
+                    
+                   UserInterface.SetUIObjectColor(JointScaleToggleObject, White);
                 }
             }
             else
@@ -1870,6 +1920,22 @@ namespace CompasXR.UI
                 Debug.LogWarning("TouchSearchModeController: Could not find Touch Mode.");
             }
 
+        }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public void ControlAllCollidersInChildren(GameObject parent, bool enable)
+        {
+            /*
+            * Method is used to control all colliders in the children of a parent object.
+            */
+            foreach (Transform child in parent.transform)
+            {
+                Collider collider = child.GetComponent<Collider>();
+                if (collider != null)
+                {
+                    collider.enabled = enable;
+                }
+            }
         }
         private void TouchSearchControler()
         {

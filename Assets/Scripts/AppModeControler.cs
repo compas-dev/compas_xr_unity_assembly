@@ -37,6 +37,7 @@ namespace CompasXR.AppSettings
     {
         None = 0,
         ElementEditSelection = 1,
+        JointSelection = 2,
 
     }
 

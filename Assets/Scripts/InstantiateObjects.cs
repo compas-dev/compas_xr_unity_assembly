@@ -167,27 +167,45 @@ namespace CompasXR.Core
             GameObject jointToPlace = JointPrefab;
             GameObject baseJoint = Instantiate(jointToPlace, JointPrefab.transform.position, JointPrefab.transform.rotation);
 
-            GameObject jointObject = new GameObject();
+            GameObject emptyJointObject = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(new GameObject(),
+             joint.element.frame1.point, joint.element.frame1.xaxis,
+             joint.element.frame1.yaxis, false, false);;
 
             GameObject jointHalf1 = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(baseJoint,
              joint.element.frame1.point, joint.element.frame1.xaxis,
              joint.element.frame1.yaxis, false, false);
-            jointHalf1.transform.SetParent(jointObject.transform, false);
+            jointHalf1.transform.SetParent(emptyJointObject.transform, true);
             jointHalf1.SetActive(true);
             jointHalf1.name = "1";
 
             GameObject jointHalf2 = ObjectInstantiaion.InstantiateObjectFromRightHandFrameData(baseJoint,
              joint.element.frame2.point, joint.element.frame2.xaxis,
              joint.element.frame2.yaxis, false, false);
-            jointHalf2.transform.SetParent(jointObject.transform, false);
+            jointHalf2.transform.SetParent(emptyJointObject.transform, true);
             jointHalf2.SetActive(true);
             jointHalf2.name = "2";
 
-            jointObject.transform.SetParent(Joints.transform, false);
-            jointObject.name = $"Joint_{joint.Key}";
-            jointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
+            emptyJointObject.transform.SetParent(Joints.transform, true);
+            emptyJointObject.name = $"Joint_{joint.Key}";
+            emptyJointObject.SetActive(UIFunctionalities.JointsToggleObject.GetComponent<Toggle>().isOn);
 
-            ColorJointFromAdjacentStepsBuildStatus(jointObject, joint);
+            BoxCollider jointColider = emptyJointObject.AddComponent<BoxCollider>();
+            Renderer prefabRenderer = jointToPlace.GetComponentInChildren<Renderer>();
+            float jointPrefabYSize = prefabRenderer.bounds.size.y;
+            float jointPrefabXSize = prefabRenderer.bounds.size.x;
+            float jointPrefabZSize = prefabRenderer.bounds.size.z;
+            jointColider.size = new Vector3(jointPrefabXSize*1.1f, jointPrefabYSize*2, jointPrefabZSize*1.2f);
+
+            if(visulizationController.TouchMode == TouchMode.ElementEditSelection)
+            {
+                jointColider.enabled = false;
+            }
+            else
+            {
+                jointColider.enabled = true;
+            }
+
+            ColorJointFromAdjacentStepsBuildStatus(emptyJointObject, joint);
 
         }
         public void ColorJointFromAdjacentStepsBuildStatus(GameObject joint, Data.Joint jointData)
@@ -377,6 +395,15 @@ namespace CompasXR.Core
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
                 UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
+            }
+
+            if (visulizationController.TouchMode == TouchMode.JointSelection)
+            {
+                elementPrefab.GetComponentInChildren<Collider>().enabled = false;
+            }
+            else
+            {
+                elementPrefab.GetComponentInChildren<Collider>().enabled = true;
             }
         }
         public float getHeightOffsetByStepGeometryType(Step step, string geometryType)
