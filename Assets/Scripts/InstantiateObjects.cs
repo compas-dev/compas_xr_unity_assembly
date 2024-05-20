@@ -399,11 +399,21 @@ namespace CompasXR.Core
 
             if (visulizationController.TouchMode == TouchMode.JointSelection)
             {
-                elementPrefab.GetComponentInChildren<Collider>().enabled = false;
+                Collider[] coliders = elementPrefab.GetComponentsInChildren<Collider>();
+
+                foreach (Collider colider in coliders)
+                {
+                    colider.enabled = false;
+                }
             }
             else
             {
-                elementPrefab.GetComponentInChildren<Collider>().enabled = true;
+                Collider[] coliders = elementPrefab.GetComponentsInChildren<Collider>();
+
+                foreach (Collider colider in coliders)
+                {
+                    colider.enabled = true;
+                }
             }
         }
         public float getHeightOffsetByStepGeometryType(Step step, string geometryType)
