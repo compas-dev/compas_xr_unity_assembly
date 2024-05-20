@@ -62,35 +62,15 @@ namespace CompasXR.Robots
             BuiltInRobotsParent = GameObject.Find("RobotPrefabs");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
 
-
-            // Dictionary<string, float> initialConfigDict = new Dictionary<string, float>();
-            // initialConfigDict.Add("liftkit_joint", 0.050000000000000003f);
-            // initialConfigDict.Add("elbow_joint", 2.629f);
-            // initialConfigDict.Add("wrist_3_joint", -2.117f);
-            // initialConfigDict.Add("shoulder_pan_joint", -2.117f);
-            // initialConfigDict.Add("shoulder_lift_joint", -1.736f);
-            // initialConfigDict.Add("wrist_1_joint", -2.4649999999999999f);
-            // initialConfigDict.Add("wrist_2_joint", -1.571f);
-
-            // Dictionary<string, string> linkNamesStorageDict = new Dictionary<string, string>();
-            // linkNamesStorageDict.Add("liftkit_joint", "liftkit_600mm");
-            // linkNamesStorageDict.Add("shoulder_pan_joint", "shoulder_link");
-            // linkNamesStorageDict.Add("shoulder_lift_joint", "upper_arm_link");
-            // linkNamesStorageDict.Add("elbow_joint", "forearm_link");
-            // linkNamesStorageDict.Add("wrist_1_joint", "wrist_1_link");
-            // linkNamesStorageDict.Add("wrist_2_joint", "wrist_2_link");
-            // linkNamesStorageDict.Add("wrist_3_joint", "wrist_3_link");
-
-
             //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             Dictionary<string, float> initialConfigDict = new Dictionary<string, float>();
-            initialConfigDict.Add("liftkit_joint", 0.00f);
-            initialConfigDict.Add("elbow_joint", 1.841f);
-            initialConfigDict.Add("wrist_3_joint", -0.226f);
-            initialConfigDict.Add("shoulder_pan_joint", 4.541f);
-            initialConfigDict.Add("shoulder_lift_joint", -0.926f);
-            initialConfigDict.Add("wrist_1_joint", 1.884f);
-            initialConfigDict.Add("wrist_2_joint", 4.85f);
+            initialConfigDict.Add("liftkit_joint", 0.050000000000000003f);
+            initialConfigDict.Add("elbow_joint", 2.629f);
+            initialConfigDict.Add("wrist_3_joint", -2.117f);
+            initialConfigDict.Add("shoulder_pan_joint", -2.117f);
+            initialConfigDict.Add("shoulder_lift_joint", -1.736f);
+            initialConfigDict.Add("wrist_1_joint", -2.4649999999999999f);
+            initialConfigDict.Add("wrist_2_joint", -1.571f);
 
             Dictionary<string, string> linkNamesStorageDict = new Dictionary<string, string>();
             linkNamesStorageDict.Add("liftkit_joint", "liftkit_600mm");
@@ -101,7 +81,6 @@ namespace CompasXR.Robots
             linkNamesStorageDict.Add("wrist_2_joint", "wrist_2_link");
             linkNamesStorageDict.Add("wrist_3_joint", "wrist_3_link");
 
-            //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
             SetRobArchActiveRobotsOnStart(BuiltInRobotsParent, initialConfigDict, linkNamesStorageDict);
         }
 
@@ -269,7 +248,7 @@ namespace CompasXR.Robots
         IEnumerator AttachElementAfterDelay(GetTrajectoryResult result, GameObject parentObject, float delay = 0.1f)
         {
             yield return new WaitForSeconds(delay);
-            AttachElementToTrajectoryEndEffectorLinks(result.ElementID, parentObject.name, result.RobotName, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
+            AttachStickObjectDirectlyToEndEffector(result.ElementID, parentObject.name, result.RobotName, result.EndEffectorLinkName, result.PickIndex.Value, result.Trajectory.Count);
         }
         public void AttachElementToTrajectoryEndEffectorLinks(string stepID, string trajectoryParentName, string robotName, string endEffectorLinkName, int pickIndex, int trajectoryCount)
         {
@@ -293,6 +272,49 @@ namespace CompasXR.Robots
             newStepElement.transform.SetParent(endEffectorLink.transform, true);
             newStepElement.transform.position = stepElement.transform.position;
             newStepElement.transform.rotation = stepElement.transform.rotation;
+
+            Vector3 position = newStepElement.transform.localPosition;
+            Quaternion rotation = newStepElement.transform.localRotation;
+
+            for (int i = lastConfigIndex - 1; i >= pickIndex; i--)
+            {
+                GameObject currentEndEffectorLink = TrajectoryParent.FindObject($"Config {i}").FindObject(endEffectorLinkName);
+                GameObject attachedStepElement = Instantiate(newStepElement);
+                attachedStepElement.transform.SetParent(currentEndEffectorLink.transform, true);
+                instantiateObjects.DestroyChildrenWithOutGeometryName(attachedStepElement);
+                attachedStepElement.name = $"AttachedElement{i}";
+                attachedStepElement.transform.localPosition = position;
+                attachedStepElement.transform.localRotation = rotation;
+            }
+
+        }
+
+        //TODO: Extended for RobArch2024/////////////////////////////////////////////////////////////////////////////////
+        public void AttachStickObjectDirectlyToEndEffector(string stepID, string trajectoryParentName, string robotName, string endEffectorLinkName, int pickIndex, int trajectoryCount)
+        {
+            /*
+            AttachElementToTrajectoryEndEffectorLinks is responsible for attaching an element 
+            ACHTUNG: This only works for the geometry used for the RobArch Assembly.
+            */
+
+            int lastConfigIndex = trajectoryCount - 1;
+            GameObject stepElement = GameObject.Find(stepID);
+
+            GameObject TrajectoryParent = GameObject.Find(trajectoryParentName);
+            GameObject endEffectorLink = TrajectoryParent.FindObject($"Config {lastConfigIndex}").FindObject(endEffectorLinkName);
+            GameObject newStepElement = Instantiate(stepElement);
+
+            //Remove all children from the stepElement
+            Renderer stepChildRenderer = newStepElement.GetComponentInChildren<MeshRenderer>();
+            stepChildRenderer.material = instantiateObjects.InactiveRobotMaterial;
+            instantiateObjects.DestroyChildrenWithOutGeometryName(newStepElement);
+            newStepElement.name = $"AttachedElement{lastConfigIndex}";
+
+            newStepElement.transform.SetParent(endEffectorLink.transform, true);
+            newStepElement.transform.localPosition = new Vector3(endEffectorLink.transform.localPosition.x, endEffectorLink.transform.localPosition.y + 0.094f, endEffectorLink.transform.localPosition.z);
+            Quaternion endEffectorRemappedRotation = Quaternion.Euler(endEffectorLink.transform.rotation.x, endEffectorLink.transform.rotation.y, endEffectorLink.transform.localRotation.z);
+            newStepElement.transform.localRotation = endEffectorRemappedRotation * Quaternion.Euler(0, 0, 90);
+
 
             Vector3 position = newStepElement.transform.localPosition;
             Quaternion rotation = newStepElement.transform.localRotation;
