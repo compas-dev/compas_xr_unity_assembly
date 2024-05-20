@@ -312,6 +312,7 @@ namespace CompasXR.Robots
             }
 
             serviceManager.LastGetTrajectoryResultMessage = getTrajectoryResultmessage;
+
             if(serviceManager.LastGetTrajectoryRequestMessage != null)
             {
                 //First Check if the message is the same as the last request message and if the trajectory count is greater then zero
