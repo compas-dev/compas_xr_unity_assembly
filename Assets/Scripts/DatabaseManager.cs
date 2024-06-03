@@ -88,11 +88,12 @@ namespace CompasXR.Core
         public StorageReference dbRefrenceStorageDirectory;
         public DatabaseReference dbRefrenceProject;
 
-        // Data structures to store nodes and steps
+        // Data structures for runtime application data storage
         public Dictionary<string, Node> AssemblyDataDict { get; private set; } = new Dictionary<string, Node>();
         public BuildingPlanData BuildingPlanDataItem { get; private set; } = new BuildingPlanData();
         public Dictionary<string, Node> QRCodeDataDict { get; private set; } = new Dictionary<string, Node>();
         public Dictionary<string, UserCurrentInfo> UserCurrentStepDict { get; private set; } = new Dictionary<string, UserCurrentInfo>();
+        public Dictionary<string, List<float>> ObjectLengthsDictionary = new Dictionary<string, List<float>>();
 
         //Data Structure to Store Application Settings
         public ApplicationSettings applicationSettings;
@@ -119,7 +120,6 @@ namespace CompasXR.Core
         //In script use objects.
         public bool z_remapped;
         public string TempDatabaseLastBuiltStep;
-
         public string CurrentPriority = null;
 
     /////////////////////// Monobehaviour Methods /////////////////////////////////

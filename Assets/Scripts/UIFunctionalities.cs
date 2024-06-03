@@ -1332,6 +1332,17 @@ namespace CompasXR.UI
             */
             ObjectLengthsText.text = $"P1 | {(float)Math.Round(P1distance, 2)}     P2 | {(float)Math.Round(P2distance, 2)}";
         }
+        public void SetObjectLengthsTextFromStoredKey(string key)
+        {
+            /*
+            * Method is used to set the object lengths text on the AR Canvas
+            * based on the stored list information in the database.
+            */
+            List<float> objectLengths = databaseManager.ObjectLengthsDictionary[key];
+            float p1Distance = (float)Math.Round(objectLengths[0], 2);
+            float p2Distance = (float)Math.Round(objectLengths[1], 2);
+            ObjectLengthsText.text = $"P1 | {p1Distance}     P2 | {p2Distance}";
+        }
         public void ToggleRobot(Toggle toggle)
         {
             /*
@@ -1653,6 +1664,7 @@ namespace CompasXR.UI
             databaseManager.QRCodeDataDict.Clear();
             databaseManager.UserCurrentStepDict.Clear();
             databaseManager.BuildingPlanDataItem.PriorityTreeDictionary.Clear();
+            databaseManager.ObjectLengthsDictionary.Clear();
 
             mqttTrajectoryManager.UnsubscribeFromCompasXRTopics();
             mqttTrajectoryManager.RemoveConnectionEventListners();
