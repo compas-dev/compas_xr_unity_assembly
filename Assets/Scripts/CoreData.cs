@@ -544,10 +544,8 @@ namespace CompasXR.Core.Data
                 step.data.location.xaxis.SequenceEqual(NewStep.data.location.xaxis) &&
                 step.data.location.yaxis.SequenceEqual(NewStep.data.location.yaxis) &&
                 step.data.geometry == NewStep.data.geometry &&
-                step.data.instructions.SequenceEqual(NewStep.data.instructions) &&
                 step.data.is_built == NewStep.data.is_built &&
                 step.data.is_planned == NewStep.data.is_planned &&
-                step.data.elements_held.SequenceEqual(NewStep.data.elements_held) &&
                 step.data.priority == NewStep.data.priority)
             {
                 return true;
@@ -564,10 +562,8 @@ namespace CompasXR.Core.Data
                 !string.IsNullOrEmpty(data.actor) &&
                 data.location != null &&
                 data.geometry != null &&
-                data.instructions != null &&
                 data.is_built != null &&
                 data.is_planned != null &&
-                data.elements_held != null &&
                 data.priority != null)
             {
                 return true;
@@ -589,10 +585,8 @@ namespace CompasXR.Core.Data
         public string actor { get; set; }
         public Frame location { get; set; }
         public string geometry { get; set; }
-        public string[] instructions { get; set; }
         public bool is_built { get; set; }
         public bool is_planned { get; set; }
-        public int[] elements_held { get; set; }
         public int priority { get; set; }
 
         public static Data Parse(object jsondata)
@@ -627,19 +621,13 @@ namespace CompasXR.Core.Data
             data.priority = (int)(long)dataDict["priority"];
 
             List<object> element_ids = dataDict["element_ids"] as List<object>;
-            List<object> instructions = dataDict["instructions"] as List<object>;
-            List<object> elements_held = dataDict["elements_held"] as List<object>;
-            if (element_ids != null &&
-                instructions != null &&
-                elements_held != null)
+            if (element_ids != null)
             {
-                data.elements_held = elements_held.Select(Convert.ToInt32).ToArray();
                 data.element_ids = element_ids.Select(x => x.ToString()).ToArray();
-                data.instructions = instructions.Select(x => x.ToString()).ToArray();
             }
             else
             {
-                Debug.Log("FromData (Data): One of the lists is null or improperly casted.");
+                Debug.Log("FromData (Data): Element_ID's list is empty.");
             }
             return data;
         }

@@ -85,10 +85,8 @@ namespace CompasXR.Core.Extentions
                         "Actor Type: " + step.data.actor.GetType() +
                         "Location Type: " + step.data.location.GetType() +
                         "Geometry Type: " +step.data.geometry.GetType() +
-                        "Instructions Type: " + step.data.instructions.GetType() +
                         "Is_Bulit type: " + step.data.is_built.GetType() +
                         "Is_Planned type: " + step.data.is_planned.GetType() +
-                        "Elements_held Type: " + step.data.elements_held[0].GetType() + 
                         step.data.priority.GetType());
             
             Debug.Log("Nested Value Types for " + key + " " + step.GetType() + 
