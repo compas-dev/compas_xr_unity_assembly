@@ -60,8 +60,6 @@ namespace CompasXR.Core
         public GameObject MyUserIndacator;
         private GameObject OtherUserIndacator;
         public GameObject ObjectLengthsTags;
-        public GameObject PriorityViewrLineObject;
-        public GameObject PriorityViewerPointsObject;
 
     /////////////////////////////// Monobehaviour Methods //////////////////////////////////////////
         public void Awake()
@@ -111,8 +109,6 @@ namespace CompasXR.Core
             MyUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("MyUserIndicatorPrefab");
             OtherUserIndacator = GameObject.Find("UserIndicatorPrefabs").FindObject("OtherUserIndicatorPrefab");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
-            PriorityViewrLineObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerLine");
-            PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
         }
         public void PlaceElementFromStep(string Key, Step step)
@@ -560,7 +556,7 @@ namespace CompasXR.Core
             UpdateLinePositionsByVectorList(P2Positions, p2LineObject);
 
         }
-        public void CreatePriorityViewerItems(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth, float ptRadius, Color ptColor, GameObject ptsParentObject)
+        public void CreateLineAndPointsForPriorityViewerToggle(string selectedPriority, ref GameObject lineObject, Color lineColor, float lineWidth, float ptRadius, Color ptColor, GameObject ptsParentObject)
         {
             /*
             * Method is used to create the priority viewer items in the AR space

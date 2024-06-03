@@ -26,7 +26,6 @@ namespace CompasXR.Core
         private GameObject Elements;
         private GameObject UserObjects;
         private GameObject ObjectLengthsTags;
-        private GameObject PriorityViewerObjects;
         private GameObject ActiveRobotObjects;
 
         //Public Scripts
@@ -58,7 +57,6 @@ namespace CompasXR.Core
             Elements = GameObject.Find("Elements");
             UserObjects = GameObject.Find("ActiveUserObjects");
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
-            PriorityViewerObjects = GameObject.Find("PriorityViewerObjects");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
         }
         void Update()
@@ -95,14 +93,9 @@ namespace CompasXR.Core
                         ObjectTransformations.TranslateGameObjectByImageTarget(Elements, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                         ObjectTransformations.TranslateGameObjectByImageTarget(UserObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                         ObjectTransformations.TranslateGameObjectByImageTarget(ObjectLengthsTags, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
-                        ObjectTransformations.TranslateGameObjectByImageTarget(PriorityViewerObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
                         ObjectTransformations.TranslateGameObjectByImageTarget(ActiveRobotObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
 
                         //Update position of line objects in the scene
-                        if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
-                        {
-                            instantiateObjects.UpdatePriorityLine(uiFunctionalities.SelectedPriority ,instantiateObjects.PriorityViewrLineObject);
-                        }
                         if (uiFunctionalities.ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
                         {
                             instantiateObjects.UpdateObjectLengthsLines(uiFunctionalities.CurrentStep, instantiateObjects.ObjectLengthsTags.FindObject("P1Tag"), instantiateObjects.ObjectLengthsTags.FindObject("P2Tag"));

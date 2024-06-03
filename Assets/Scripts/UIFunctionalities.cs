@@ -778,9 +778,8 @@ namespace CompasXR.UI
             if(PriorityViewerToggleObject.GetComponent<Toggle>().isOn && databaseManager.CurrentPriority != Priority)
             {
                 instantiateObjects.ApplyColorBasedOnPriority(Priority);
-                instantiateObjects.CreatePriorityViewerItems(Priority, ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.03f, 0.125f, Color.red, instantiateObjects.PriorityViewerPointsObject);
                 SelectedPriority = Priority;
-                PriorityViewerObjectsGraphicsController(true, Priority);
+                PriorityViewerUIGraphicsController(true, Priority);
             }
             databaseManager.CurrentPriority = Priority;
 
@@ -1439,20 +1438,14 @@ namespace CompasXR.UI
             if(toggle.isOn && PriorityViewerToggleObject != null)
             {
                 ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
-                instantiateObjects.PriorityViewrLineObject.SetActive(true);
-                instantiateObjects.PriorityViewerPointsObject.SetActive(true);
-
-                PriorityViewerObjectsGraphicsController(true, databaseManager.CurrentPriority);
+                PriorityViewerUIGraphicsController(true, databaseManager.CurrentPriority);
                 SelectedPriority = databaseManager.CurrentPriority;
-                instantiateObjects.CreatePriorityViewerItems(databaseManager.CurrentPriority, ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
                 instantiateObjects.ApplyColorBasedOnPriority(databaseManager.CurrentPriority);
                 UserInterface.SetUIObjectColor(PriorityViewerToggleObject, Yellow);
             }
             else
             {
                 instantiateObjects.ApplyColorBasedOnAppModes();
-                instantiateObjects.PriorityViewrLineObject.SetActive(false);
-                instantiateObjects.PriorityViewerPointsObject.SetActive(false);
                 SelectedPriority = "None";
                 ARSpaceTextControler(false, "PriorityText", ref PriorityTagIsOffset, "PriorityImage");
 
@@ -1460,11 +1453,11 @@ namespace CompasXR.UI
                 {
                     ARSpaceTextControler(true, "IdxText", ref IDTagIsOffset, "IdxImage");
                 }
-                PriorityViewerObjectsGraphicsController(false);
+                PriorityViewerUIGraphicsController(false);
                 UserInterface.SetUIObjectColor(PriorityViewerToggleObject, White);
             }
         }
-        public void PriorityViewerObjectsGraphicsController(bool? isVisible, string selectedPrioritytext=null)
+        public void PriorityViewerUIGraphicsController(bool? isVisible, string selectedPrioritytext=null)
         {
             /*
             * Method is used to control the updating of the priority viewer UI elements.
@@ -1496,9 +1489,8 @@ namespace CompasXR.UI
                 if(newPriorityGroupInt <= databaseManager.BuildingPlanDataItem.PriorityTreeDictionary.Count - 1)
                 {                
                     instantiateObjects.ApplyColortoPriorityGroup(SelectedPriorityInt.ToString(), newPriorityGroupInt.ToString());
-                    instantiateObjects.CreatePriorityViewerItems(newPriorityGroupInt.ToString(), ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
                     instantiateObjects.ApplyColortoPriorityGroup(newPriorityGroupInt.ToString(), newPriorityGroupInt.ToString(), true);
-                    PriorityViewerObjectsGraphicsController(true, newPriorityGroupInt.ToString());
+                    PriorityViewerUIGraphicsController(true, newPriorityGroupInt.ToString());
                     SelectedPriority = (SelectedPriorityInt + 1).ToString();
                 }
                 else
@@ -1526,9 +1518,8 @@ namespace CompasXR.UI
                 if(newPriorityGroupInt >= 0)
                 {
                     instantiateObjects.ApplyColortoPriorityGroup(SelectedPriorityInt.ToString(), newPriorityGroupInt.ToString());
-                    instantiateObjects.CreatePriorityViewerItems(newPriorityGroupInt.ToString(), ref instantiateObjects.PriorityViewrLineObject, Color.red, 0.02f, 0.10f, Color.red, instantiateObjects.PriorityViewerPointsObject);
                     instantiateObjects.ApplyColortoPriorityGroup(newPriorityGroupInt.ToString(), newPriorityGroupInt.ToString(), true);
-                    PriorityViewerObjectsGraphicsController(true, newPriorityGroupInt.ToString());
+                    PriorityViewerUIGraphicsController(true, newPriorityGroupInt.ToString());
                     SelectedPriority = (SelectedPriorityInt - 1).ToString();
                 }
                 else
