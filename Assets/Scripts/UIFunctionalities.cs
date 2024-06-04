@@ -1437,6 +1437,12 @@ namespace CompasXR.UI
             Debug.Log($"TogglePriority: Priority Toggle Pressed the value is now set to {toggle.GetComponent<Toggle>().isOn}");
             if(toggle.isOn && PriorityViewerToggleObject != null)
             {
+                //Set the preview geometry slider to 1
+                if(PreviewGeometrySlider.value != 1)
+                {
+                    PreviewGeometrySlider.value = 1;
+                }
+                PreviewGeometrySlider.interactable = false;
                 ARSpaceTextControler(true, "PriorityText", ref PriorityTagIsOffset, "PriorityImage", IDToggleObject.GetComponent<Toggle>().isOn, 0.155f);
                 PriorityViewerUIGraphicsController(true, databaseManager.CurrentPriority);
                 SelectedPriority = databaseManager.CurrentPriority;
@@ -1445,6 +1451,8 @@ namespace CompasXR.UI
             }
             else
             {
+                
+                PreviewGeometrySlider.interactable = true;
                 instantiateObjects.ApplyColorBasedOnAppModes();
                 SelectedPriority = "None";
                 ARSpaceTextControler(false, "PriorityText", ref PriorityTagIsOffset, "PriorityImage");
