@@ -41,7 +41,7 @@ namespace CompasXR.Robots
 
         //Dictionary for storing URDFLinkNames associated with JointNames. Updated by recursive method from updating robot.
         public Dictionary<string, string> URDFLinkNames = new Dictionary<string, string>();
-        public int? previousSliderValue;
+        public int? previousTrajectoryReviewSliderValue;
         public Dictionary<string, string> URDFRenderComponents = new Dictionary<string, string>();
 
         //List of available robots
@@ -284,19 +284,19 @@ namespace CompasXR.Robots
                 Debug.LogWarning($"SetRobotConfigfromDictWrapper: Config dict {config.Count} (Count) and LinkNames dict {urdfLinkNames.Count} (Count) for search do not match.");
             }
         }
-        public void ColorRobotConfigfromSliderInput(int sliderValue, Material inactiveMaterial, Material activeMaterial, ref int? previousSliderValue)
+        public void ColorRobotConfigfromSliderInput(int sliderValue, Material inactiveMaterial, Material activeMaterial, ref int? previousTrajectoryReviewSliderValue)
         {
             /*
             ColorRobotConfigfromSlider is responsible for coloring the robot configuration from the slider input for trajectory review.
             */
             Debug.Log($"ColorRobotConfigfromSlider: Coloring robot config {sliderValue} for active trajectory.");
-            if(previousSliderValue != null)
+            if(previousTrajectoryReviewSliderValue != null)
             {
-                GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousSliderValue}");
+                GameObject previousRobotGameObject = ActiveTrajectoryParentObject.FindObject($"Config {previousTrajectoryReviewSliderValue}");
                 URDFManagement.ColorURDFGameObject(previousRobotGameObject, inactiveMaterial, ref URDFRenderComponents);
 
                 //Attached GameObject
-                GameObject previousAttachedGameObject = previousRobotGameObject.FindObject($"AttachedElement{previousSliderValue}");
+                GameObject previousAttachedGameObject = previousRobotGameObject.FindObject($"AttachedElement{previousTrajectoryReviewSliderValue}");
                 if(previousAttachedGameObject != null)
                 {
                     previousAttachedGameObject.GetComponentInChildren<Renderer>().material = inactiveMaterial;
@@ -317,7 +317,7 @@ namespace CompasXR.Robots
                 attachedGameObject.GetComponentInChildren<Renderer>().material = activeMaterial;
             }
 
-            previousSliderValue = sliderValue;
+            previousTrajectoryReviewSliderValue = sliderValue;
         }
 
     }

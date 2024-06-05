@@ -1057,6 +1057,14 @@ namespace CompasXR.UI
             ReviewTrajectoryObjects.SetActive(trajectoryReviewVisibility);
             ApproveTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryReviewInteractable;
             RejectTrajectoryButtonObject.GetComponent<Button>().interactable = trajectoryReviewInteractable;
+            if (trajectoryReviewVisibility)
+            {
+                if(TrajectoryReviewSlider.value != 0)
+                {
+                    TrajectoryReviewSlider.value = 0;
+                    trajectoryVisualizer.previousTrajectoryReviewSliderValue = 0;
+                }
+            }
 
             ExecuteTrajectoryButtonObject.SetActive(executeTrajectoryVisability);
             ExecuteTrajectoryButtonObject.GetComponent<Button>().interactable = executeTrajectoryInteractable;
@@ -1146,7 +1154,7 @@ namespace CompasXR.UI
                     float SliderMin = 0;
                     float SliderValueRemaped = HelpersExtensions.Remap(SliderValue, SliderMin, SliderMax, 0, TrajectoryConfigurationsCount-1); 
                     Debug.Log($"TrajectorySliderReviewMethod: Slider Value Changed is value {value} and the item is {JsonConvert.SerializeObject(mqttTrajectoryManager.serviceManager.CurrentTrajectory[(int)SliderValueRemaped])}"); //TODO:CHECK SLIDER REMAP
-                    trajectoryVisualizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisualizer.previousSliderValue);
+                    trajectoryVisualizer.ColorRobotConfigfromSliderInput((int)SliderValueRemaped, instantiateObjects.InactiveRobotMaterial, instantiateObjects.ActiveRobotMaterial,ref trajectoryVisualizer.previousTrajectoryReviewSliderValue);
                 }
                 else
                 {
