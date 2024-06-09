@@ -24937,7 +24937,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &980625171
 RectTransform:
   m_ObjectHideFlags: 0
@@ -32465,7 +32465,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1266740586
 RectTransform:
   m_ObjectHideFlags: 0
@@ -64836,9 +64836,6 @@ MonoBehaviour:
   MessagesParent: {fileID: 0}
   OnScreenErrorMessagePrefab: {fileID: 0}
   OnScreenInfoMessagePrefab: {fileID: 0}
-  SelectProjectOnScreenMessagePrefab: {fileID: 0}
-  SelectProjectDropdownObject: {fileID: 0}
-  FetchProjectDataButtonObject: {fileID: 0}
   MQTTFailedToConnectMessageObject: {fileID: 0}
   MQTTConnectionLostMessageObject: {fileID: 0}
   ErrorFetchingDownloadUriMessageObject: {fileID: 0}
@@ -70810,7 +70807,6 @@ MonoBehaviour:
   qrLocalizationObject: {fileID: 8767998526698590026}
   mqttTrajectoryReceiverObject: {fileID: 3555920155599777618}
   trajectoryVisualizerObject: {fileID: 3286733832950485788}
-  UIFunctionalities: {fileID: 1727505934624274057}
   databaseManager: {fileID: 0}
 --- !u!4 &5813617637826940773
 Transform:
