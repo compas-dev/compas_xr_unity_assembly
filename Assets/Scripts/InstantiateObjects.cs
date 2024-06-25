@@ -801,12 +801,6 @@ namespace CompasXR.Core
             /*
             * Method is used to color the object based on the built status
             */
-            Debug.Log("ColorBuiltOrUnbuilt: " + built);
-            if(gamobj == null)
-            {
-                Debug.LogWarning("GameObject is null.");
-                return;
-            }
             Renderer m_renderer= gamobj.GetComponentInChildren<MeshRenderer>();
 
             if (built)
@@ -853,28 +847,6 @@ namespace CompasXR.Core
             * Method is used to color the object based on the selected priority
             * and the step priority.
             */
-
-            if (SelectedPriority == null)
-            {
-                Debug.LogWarning("Selected Priority is null.");
-                return;
-            }
-            if (StepPriority == null)
-            {
-                Debug.LogWarning("Step Priority is null.");
-                return;
-            }
-            if (Key == null)
-            {
-                Debug.LogWarning("Key is null.");
-                return;
-            }
-            if (gamobj == null)
-            {
-                Debug.LogWarning($"GameObject is null. {Key}");
-                return;
-            }
-            Debug.Log("HELLO" + SelectedPriority + " " + StepPriority + " " + Key);
             Renderer m_renderer= gamobj.GetComponentInChildren<Renderer>();
             if (StepPriority != SelectedPriority)
             {
