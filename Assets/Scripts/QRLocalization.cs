@@ -10,8 +10,18 @@ using CompasXR.Core.Extentions;
 
 namespace CompasXR.Core
 {
+    /*
+    * CompasXR.Core : Is the Primary namespace for all Classes that
+    * controll the primary functionalities of the CompasXR Application.
+    */
     public class QRLocalization : MonoBehaviour
     {
+        /*
+        * QRLocalization : Class is used to localize the objects in the scene
+        * this localization is all in reference to the world positions of both
+        * the QR codes and the objects in their assebly frames.
+        */
+
         //Public GameObjects
         private GameObject Elements;
         private GameObject UserObjects;
@@ -29,13 +39,17 @@ namespace CompasXR.Core
 
         //In script use variables
         public Vector3 pos;
-
         private string lastQrName = "random";
         
-        // Start is called before the first frame update
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
         void Start()
         {   
-            //Find the Instantiate Objects game object to call methods from inside the script
+            /*
+            * The Start Method is called before the first frame update
+            * and is used to initialize the required variables and objects.
+            */
+
+            //Find Other scripts in the scene
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
             uiFunctionalities = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
@@ -46,11 +60,14 @@ namespace CompasXR.Core
             ObjectLengthsTags = GameObject.Find("ObjectLengthsTags");
             PriorityViewerObjects = GameObject.Find("PriorityViewerObjects");
             ActiveRobotObjects = GameObject.Find("ActiveRobotObjects");
-
         }
-
         void Update()
         {
+
+            /*
+            * The Update Method is called once per frame and is used to update the
+            * position of the objects in the scene based on the QR code data.
+            */
 
             if (QRCodeDataDict.Count > 0 && Elements != null)
             {
@@ -75,64 +92,36 @@ namespace CompasXR.Core
                             lastQrName = qrObject.name;
                         }
                         
-                        //Fetch position data from the dictionary
-                        Vector3 position_data = instantiateObjects.GetPosition(QRCodeDataDict[key].part.frame.point);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(Elements, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(UserObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(ObjectLengthsTags, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(PriorityViewerObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
+                        ObjectTransformations.TranslateGameObjectByImageTarget(ActiveRobotObjects, qrObject, QRCodeDataDict[key].part.frame.point, QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
 
-                        //Fetch rotation data from the dictionary
-                        InstantiateObjects.Rotation rotationData = instantiateObjects.GetRotation(QRCodeDataDict[key].part.frame.xaxis, QRCodeDataDict[key].part.frame.yaxis);
-                        
-                        //Convert Firebase rotation data to Quaternion rotation. Additionally
-                        Quaternion rotationQuaternion = instantiateObjects.FromUnityRotation(rotationData);
-
-                        //Set Design Objects rotation to the rotation based on Observed rotation and Inverse rotation of physical QR
-                        Quaternion rot = qrObject.transform.rotation * Quaternion.Inverse(rotationQuaternion);
-                        
-                        //Transform the rotation of game objects that need to be transformed
-                        Elements.transform.rotation = rot;
-                        UserObjects.transform.rotation = rot;
-                        ObjectLengthsTags.transform.rotation = rot;
-                        PriorityViewerObjects.transform.rotation = rot;
-                        ActiveRobotObjects.transform.rotation = rot;
-
-                        //Translate the position of the object based on the observed position and the inverse rotation of the physical QR
-                        pos = TranslatedPosition(qrObject, position_data, rotationQuaternion);
-
-                        //Set the position of the gameobjects object to the translated position                    
-                        Elements.transform.position = pos;
-                        UserObjects.transform.position = pos;
-                        ObjectLengthsTags.transform.position = pos;
-                        PriorityViewerObjects.transform.position = pos;
-                        ActiveRobotObjects.transform.position = pos;
-
-                        //Update priority viewer objects if it is on
+                        //Update position of line objects in the scene
                         if (uiFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             instantiateObjects.UpdatePriorityLine(uiFunctionalities.SelectedPriority ,instantiateObjects.PriorityViewrLineObject);
                         }
-
-                        //Update Object lenghts lines if the Object Lengths toggle is on
                         if (uiFunctionalities.ObjectLengthsToggleObject.GetComponent<Toggle>().isOn)
                         {
                             instantiateObjects.UpdateObjectLengthsLines(uiFunctionalities.CurrentStep, instantiateObjects.ObjectLengthsTags.FindObject("P1Tag"), instantiateObjects.ObjectLengthsTags.FindObject("P2Tag"));
                         }
-
-                        Debug.Log($"QR: Translation from QR object: {qrObject.name}");
                     }
                 }
             }
 
         }
-        private Vector3 TranslatedPosition(GameObject gobject, Vector3 position, Quaternion Individualrotation)
-        {
-            //Position determined by positioning the QR codes observed position and rotation and translating by position vector and the inverse of the QR rotation
-            Vector3 pos = gobject.transform.position + (gobject.transform.rotation * Quaternion.Inverse(Individualrotation) * -position);
-            return pos;
-        }
+
+        //////////////////////////// Event Methods /////////////////////////////////////
         public void OnTrackingInformationReceived(object source, TrackingDataDictEventArgs e)
         {
-            Debug.Log("Database is loaded." + " " + "Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
+            /*
+            * Method is used to update the QRCodeDataDict
+            * with the data received from the QR code tracking event.
+            */
+            Debug.Log("OnTrackingInformationReceived: Number of QR codes stored as a dict= " + e.QRCodeDataDict.Count);
             QRCodeDataDict = e.QRCodeDataDict;
         }
-
     }
 }

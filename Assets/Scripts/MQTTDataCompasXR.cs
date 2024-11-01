@@ -36,14 +36,16 @@ namespace CompasXR.Robots.MqttData
    
     /////////////////////////////////////////// Classes for Topic Publishers and Subscribers ///////////////////////////////////////////
     
-    //Topics Class for storing specific topics to publish on and subscribe to
     [System.Serializable]
     public class CompasXRTopics
     {
+        /*
+        * CompasXRTopics : Class is used to manage the MQTT topics for Compas XR communication.
+        * It is designed to store the publishers and subscribers for the specific project.
+        */
         public Publishers publishers { get; set; }
         public Subscribers subscribers { get; set; }
 
-        //Constructer for topics that takes an input project name
         public CompasXRTopics(string projectName)
         {
             publishers = new Publishers(projectName);
@@ -51,18 +53,18 @@ namespace CompasXR.Robots.MqttData
         }
     }
 
-    //Publishers class for storing specific topics to publish on
     [System.Serializable]
     public class Publishers
     {
-        //Properties for publishers topics
+        /*
+        * Publishers : Class is used to manage the MQTT publishers for Compas XR communication.
+        * It is designed to store the specific topics to publish to.
+        */
         public string getTrajectoryRequestTopic { get; set; }
         public string approveTrajectoryTopic { get; set; }
         public string approvalCounterRequestTopic { get; set; }
         public string sendTrajectoryTopic { get; set; }
         public string approvalCounterResultTopic { get; set; }
-
-        //Constructer for publishers that takes an input project name
         public Publishers(string projectName)
         {
             getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
@@ -74,11 +76,13 @@ namespace CompasXR.Robots.MqttData
 
     }
 
-    //Subscriber class for storing specific topics to subscribe to
     [System.Serializable]
     public class Subscribers
     {
-        //Properties for subscriber topics
+        /*
+        * Subscribers : Class is used to manage the MQTT subscribers for Compas XR communication.
+        * It is designed to store the specific topics to subscribe to.
+        */
         public string getTrajectoryRequestTopic { get; set; } 
         public string getTrajectoryResultTopic { get; set; }
         public string approveTrajectoryTopic { get; set; }
@@ -98,50 +102,27 @@ namespace CompasXR.Robots.MqttData
 
     /////////////////////////////////////////// Classes for Compas XR Services Management ///////////////////////////////////////////////
     
-    //Service Manager Class for managing primary user and service control conditions.
     [System.Serializable]
     public class ServiceManager
     {
-        //Counter to add to for the approval counter result message.
+        /*
+        * ServiceManager : Class is used to manage the services for Compas XR communication.
+        * It is designed to store the current service state and manage each individual users
+        * connectoin to the trajectory approval services user and approval counters.
+        */
         public SimpleCounter UserCount { get; set; }
-
-        //Counter to increment when approval result of ApproveTrajectoryMessage is true.
         public SimpleCounter ApprovalCount { get; set; }
-        
-        //Bool to control if I am the primary user in this transaction.
         public bool PrimaryUser { get; set; }
-
-        //Active Robot Name as a string
         public string ActiveRobotName { get; set; }
-
-        //List to store current trajectory under review.
         public List<Dictionary<string, float>> CurrentTrajectory { get; set; } 
-
-        //Current Service ennum
         public CurrentService currentService { get; set; }
-
-        //Get Trajectory Request Transaction Lock
         public bool TrajectoryRequestTransactionLock { get; set; }
-
-        //The last GetTrajectoryRequest message sent
         public GetTrajectoryRequest LastGetTrajectoryRequestMessage { get; set; }
-
-        //The last GetTrajectoryResult message received
         public GetTrajectoryResult LastGetTrajectoryResultMessage { get; set; }
-
-        //Approval time out cancelation token source
         public CancellationTokenSource ApprovalTimeOutCancelationToken { get; set; }
-
-        //Cancelation token source for GetTrajectoryRequest time out
         public CancellationTokenSource GetTrajectoryRequestTimeOutCancelationToken { get; set; }
-
-        //Is Dirty Bool used for the GetTrajectoryRequest
         public bool IsDirtyTrajectory { get; set; }
-
-        //Is Dirty Header used for GetTrajectoryRequest time out
         public Header IsDirtyGetTrajectoryRequestHeader { get; set; }
-
-        //Constructer for ServiceManager
         public ServiceManager()
         {
             UserCount = new SimpleCounter();
@@ -155,8 +136,6 @@ namespace CompasXR.Robots.MqttData
             IsDirtyTrajectory = false;            
             TrajectoryRequestTransactionLock = false;
         }
-
-        //Enum for current service
         public enum CurrentService
         {
             None = 0,
@@ -166,13 +145,16 @@ namespace CompasXR.Robots.MqttData
         }
     }
 
-    // Class for simple counter that can be used in the user counter and approval counter instances of the parent ServiceManager class
     [System.Serializable]
     public class SimpleCounter
     {
+        /*
+        * SimpleCounter : Class is used to manage the simple counter for Compas XR communication.
+        * It is designed to work like a traditional counter and store the current value of the counter
+        * and manage the increment and reset operations.
+        */
         private int _value;
         private readonly object _lock = new object();
-
         public SimpleCounter(int start = 0)
         {
             _value = start;
@@ -191,6 +173,9 @@ namespace CompasXR.Robots.MqttData
 
         public int Increment(int num = 1)
         {
+            /*
+            * Method is used to increment the counter value by the given number.
+            */
             lock (_lock)
             {
                 _value += num;
@@ -202,6 +187,9 @@ namespace CompasXR.Robots.MqttData
         {
             lock (_lock)
             {
+                /*
+                * Method is used to reset the counter to zero.
+                */
                 _value = 0;
                 return _value;
             }
@@ -209,11 +197,15 @@ namespace CompasXR.Robots.MqttData
     }
     /////////////////////////////////////////// Classes for Compas XR Custom Messages //////////////////////////////////////////////////
     
-    //TODO: ELEMENT ID SHOULD ACTUALLY BE STEP ID EVERYWHERE.
-    //TODO: IMPLEMENT EXCEPTIONS FOR FETCHING DATA.
     [System.Serializable]
     public class SequenceCounter
     {
+        /*
+        * SequenceCounter : Class is used to manage the sequence counter for Compas XR Header class.
+        * It is designed to work like a traditional counter and store the current value of the counter
+        * and manage the increment and update operations.
+        * Increments with each message.
+        */
         private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
@@ -225,6 +217,9 @@ namespace CompasXR.Robots.MqttData
 
         public int Increment(int num = 1)
         {
+            /*
+            * Method is used to increment the counter value by the given number.
+            */
             lock (_lock)
             {
                 _value += num;
@@ -235,12 +230,14 @@ namespace CompasXR.Robots.MqttData
                 return _value;
             }
         }
-
         public int UpdateFromMsg(int responseValue)
         {
+            /*
+            * Method is used to update the counter value based on the received message.
+            * This is to allow users to correct their sequence counter on app restarts.
+            */
             lock (_lock)
             {
-                //If my response value is greater then my current value update my value
                 if(responseValue > _value)
                 {
                     _value = responseValue;
@@ -250,11 +247,15 @@ namespace CompasXR.Robots.MqttData
         }
     }
 
-    //Class for setting specific response ID's for each message
     [System.Serializable]
     public class ResponseID
     {
-        //Response Attributes.
+        /*
+        * ResponseID : Class is used to manage the response counter for Compas XR Header class.
+        * It is designed to work like a traditional counter and store the current value of the counter
+        * and manage the increment and update operations.
+        * Increments Only with each new request.
+        */
         private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
@@ -276,6 +277,9 @@ namespace CompasXR.Robots.MqttData
         }
         public int Increment(int num = 1)
         {
+            /*
+            * Method is used to increment the counter value by the given number.
+            */
             lock (_lock)
             {
                 _value += num;
@@ -286,12 +290,14 @@ namespace CompasXR.Robots.MqttData
                 return _value;
             }
         }
-
         public int UpdateFromMsg(int responseValue)
         {
+            /*
+            * Method is used to update the counter value based on the received message.
+            * This is to allow users to correct their sequence counter on app restarts.
+            */
             lock (_lock)
             {
-                //If my response value is greater then my current value update my value
                 if(responseValue > _value)
                 {
                     _value = responseValue;
@@ -302,21 +308,19 @@ namespace CompasXR.Robots.MqttData
     }
 
 
-    // Header Compas XR Message specific class : Expected message header for all messages
     [System.Serializable]
     public class Header
     {
-        // Private Properties for each header to build upon itself
+        /*
+        * Header : Class is used to manage the header for Compas XR communication.
+        * It is designed to store the sequence ID, response ID, device ID, and timestamp for each message.
+        */
         private static SequenceCounter _sharedSequenceCounter;
         private static ResponseID _sharedResponseIDCounter;
-        
-        // Accessible properties
         public int SequenceID { get; private set; }
         public int ResponseID { get; private set; }
         public string DeviceID { get; private set; }
         public string TimeStamp { get; private set; }
-
-        //Constructer for header with optional inputs that are used for parsing information from a received message so it does not mess up internal logic of counters.
         public Header(bool incrementResponseID = false, int? sequenceID=null, int? responseID=null, string deviceID=null, string timeStamp=null)
         {   
             if(sequenceID.HasValue && responseID.HasValue && deviceID != null && timeStamp != null)
@@ -334,10 +338,11 @@ namespace CompasXR.Robots.MqttData
                 TimeStamp = GetTimeStamp();
             }
         } 
-
-        // Method to retrieve header data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the header data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "sequence_id", SequenceID },
@@ -346,10 +351,12 @@ namespace CompasXR.Robots.MqttData
                 { "time_stamp", TimeStamp }
             };
         }
-
-        // Method to increment sequenceID for each message
         private static int EnsureSequenceID()
         {
+            /*
+            * Method is used to ensure the Header has a shared instance of the SequenceCounter
+            * and that it is incremented and returned.
+            */
             if (_sharedSequenceCounter == null)
             {
                 _sharedSequenceCounter = new SequenceCounter();
@@ -360,10 +367,12 @@ namespace CompasXR.Robots.MqttData
                 return _sharedSequenceCounter.Increment();
             }
         }
-
-        // Method to increment responseID when required for each message
         private static int EnsureResponseID(bool incrementResponseID = false)
         {
+            /*
+            * Method is used to ensure the Header has a shared instance of the ResponseID
+            * and that it is incremented and returned.
+            */
             if (_sharedResponseIDCounter == null)
             {
                 _sharedResponseIDCounter = new ResponseID();
@@ -372,22 +381,19 @@ namespace CompasXR.Robots.MqttData
             }
             else
             {
-                //Only increment if input says to... more specifically only when I am sending a GetTrajectoryRequest.
                 if (incrementResponseID)
                 {
                     _sharedResponseIDCounter.Increment();
                 }
-                
                 int responseIDValue = _sharedResponseIDCounter.Value;
-                
                 return responseIDValue;
             }
         }
-
-        //Method to update my SequenceCounterValue based on parsed information from a received message
         private static void _updateSharedSequenceIDCounter(int sequenceID)
         {
-            //TODO: IF SEQUENCEID IS NULL THROW EXCEPTION.
+            /*
+            * Method is used to update the shared sequence counter based on the received information.
+            */
             if (_sharedSequenceCounter != null)
             {
                 _sharedSequenceCounter.UpdateFromMsg(sequenceID);
@@ -397,11 +403,11 @@ namespace CompasXR.Robots.MqttData
                 _sharedSequenceCounter = new SequenceCounter(sequenceID);
             }
         }
-
-        //Method to update my ResponseIDValue based on parsed information from a received message
         private static void _updateSharedResponseIDCounter(int responseID)
         {
-            //TODO: IF RESPONSEID IS NULL THROW EXCEPTION.
+            /*
+            * Method is used to update the shared response counter based on the received information.
+            */
             if (_sharedResponseIDCounter != null)
             {
                 _sharedResponseIDCounter.UpdateFromMsg(responseID);
@@ -411,67 +417,62 @@ namespace CompasXR.Robots.MqttData
                 _sharedResponseIDCounter = new ResponseID(responseID);
             }
         }
-
-        //method to get device ID
         private static string GetDeviceID()
         {
+            /*
+            * Method is used to retrieve the device ID for the current device.
+            */
             return SystemInfo.deviceUniqueIdentifier;
         }
-
-        //method to get time stamp
         private static string GetTimeStamp()
         {
+            /*
+            * Method is used to retrieve the current timestamp.
+            */
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }
-
-
-
-        // Method to parse an instance of the class from a json string
         public static Header Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-
-            // Extract header data from the JSON object and cast to new required types.
             var sequenceID = Convert.ToInt32(jsonObject["sequence_id"]);
             var responseID = Convert.ToInt32(jsonObject["response_id"]);
             var deviceID = jsonObject["device_id"].ToString();
             var timeStamp = jsonObject["time_stamp"].ToString();
 
-            //Update Header SequenceCounter based on received information
+            //Update message counters based on the received information if needed
             _updateSharedSequenceIDCounter(sequenceID);
-
-            //Update Header ResponseID Based on received information
             _updateSharedResponseIDCounter(responseID);
-
-            // Create and return a new Header instance with inputs so the values are the same and do not mess up internal logic of counters.
             return new Header(false, sequenceID, responseID, deviceID, timeStamp);
         }
     }
 
-    // Get Trajectory Request Compas XR Message specific class : Expected message for trajectory request sent to planner
     [System.Serializable]
     public class GetTrajectoryRequest
     {
-        // Accessible properties
+        /*
+        * GetTrajectoryRequest : Class is used to manage the GetTrajectoryRequest message for Compas XR communication.
+        * It is designed to store the element ID, robot name, and header for the message.
+        * It is sent to the CAD when a user requests a trajectory.
+        */
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string RobotName { get; private set; }
         public string TrajectoryID { get; private set; }
-
-        // Constructor for creating a new GetTrajectoryRequest Message instance
         public GetTrajectoryRequest(string elementID, string robotName, Header header=null)
         {
-            //Only moment to increment the responseID is when I send a new trajectory request.
             Header = header ?? new Header(true);
             ElementID = elementID;
             RobotName = robotName;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
-
-       // Method to retrieve request data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the GetTrajectoryRequest data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "header", Header.GetData() },
@@ -480,39 +481,35 @@ namespace CompasXR.Robots.MqttData
                 { "trajectory_id", TrajectoryID }
             };
         }
-
-        // Method to parse an instance of the class from a json string
         public static GetTrajectoryRequest Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-            
-            // Extract header data from the JSON object and parse into a new Header instance
             var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
             Header header = Header.Parse(headerInfo);
 
-            // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             var robotName = jsonObject["robot_name"].ToString();
-            
-            // Create and return a new GetTrajectoryResult instance
             return new GetTrajectoryRequest(elementID, robotName, header);
         }
     }
 
-    // Get Trajectory Result Compas XR Message specific class: Expected message trajectory reply from planner
     [System.Serializable]
     public class GetTrajectoryResult
     {
-        // Accessible properties
+        /*
+        * GetTrajectoryResult : Class is used to manage the GetTrajectoryResult message for Compas XR communication.
+        * It is designed to store the element ID, robot name, robot base frame, trajectory, and header for the message.
+        * It is sent from the CAD to the user to indicate weather a trajectory has been calculated or not.
+        */
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string RobotName { get; private set; }
         public Frame RobotBaseFrame { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<Dictionary<string, float>> Trajectory { get; private set; } 
-
-        // Constructor for creating a new GetTrajectoryResult Message instance
         public GetTrajectoryResult(string elementID, string robotName, Frame robotBaseFrame, List<Dictionary<string, float>> trajectory, Header header=null) 
         {
             Header = header ?? new Header();
@@ -522,10 +519,11 @@ namespace CompasXR.Robots.MqttData
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
         }
-
-       // Method to retrieve result data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the GetTrajectoryResult data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "header", Header.GetData() },
@@ -536,54 +534,49 @@ namespace CompasXR.Robots.MqttData
                 { "trajectory", Trajectory }
             };
         }
-
-        // Method to parse an instance of the class from a json string
         public static GetTrajectoryResult Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-            
-            // Extract header data from the JSON object and parse into a new Header instance
             var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
             Header header = Header.Parse(headerInfo);
-
-            // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             var robotName = jsonObject["robot_name"].ToString();
+
             var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
             var robotBaseFrameDataDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(robotBaseFrameDict["data"]));
-            Frame robotBaseFrame = Frame.Parse(robotBaseFrameDataDict);
+            Frame robotBaseFrame = Frame.FromData(robotBaseFrameDataDict);
             if (robotBaseFrame == null)
             {
                 throw new Exception("Robot Base Frame is null");
             }
-
-            //throw exception if trajectory is null //TODO: MAYBE IT SHOULD BE IN THE TRAJECTORY MANAGER CLASS METHOD?
             if (jsonObject["trajectory"] == null)
             {
                 throw new Exception("Trajectory is null");
             }
 
             var trajectory = JsonConvert.DeserializeObject<List<Dictionary<string, float>>>(jsonObject["trajectory"].ToString());
-            
-            // Create and return a new GetTrajectoryResult instance
             return new GetTrajectoryResult(elementID, robotName, robotBaseFrame, trajectory, header);
         }
     }
 
-    // Approve Trajectory Compas XR Message specific class: Expected message from devices for trajectory approval
     [System.Serializable]
     public class ApproveTrajectory
     {
-        // Accessible properties
+        /*
+        * ApproveTrajectory : Class is used to manage the ApproveTrajectory message for Compas XR communication.
+        * It is designed to store the element ID, robot name, trajectory, and approval status for the message.
+        * It is sent from User to User to signify each users approval status of the message.
+        * Approval Status: 0 = Rejected, 1 = Approved, 2 = Consensus (All users have approved), & 3 = Cancled (Used for Timeouts).
+        */
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string RobotName { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<Dictionary<string, float>> Trajectory { get; private set; }
         public int ApprovalStatus { get; private set; }
-
-        // Constructor for creating a new ApproveTrajectory Message instance
         public ApproveTrajectory(string elementID, string robotName, List<Dictionary<string, float>> trajectory, int approvalStatus, Header header=null)
         {
             Header = header ?? new Header();
@@ -593,10 +586,11 @@ namespace CompasXR.Robots.MqttData
             Trajectory = trajectory;
             ApprovalStatus = approvalStatus;
         }
-
-        // Method to retrieve approval data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the ApproveTrajectory data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "header", Header.GetData() },
@@ -607,48 +601,45 @@ namespace CompasXR.Robots.MqttData
                 { "approval_status", ApprovalStatus }
             };
         }
-
-        // Method to parse an instance of the class from a json string
         public static ApproveTrajectory Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-            
-            // Extract header data from the JSON object and parse into a new Header instance
             var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
             Header header = Header.Parse(headerInfo);
 
-            // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             var robotName = jsonObject["robot_name"].ToString();
             var approvalStatus = Convert.ToInt16(jsonObject["approval_status"]);
             var trajectory = JsonConvert.DeserializeObject<List<Dictionary<string, float>>>(jsonObject["trajectory"].ToString());
-            
-            // Create and return a new GetTrajectoryResult instance
             return new ApproveTrajectory(elementID, robotName, trajectory, approvalStatus, header);
         }
     }
 
-    // Approval Counter Request Compas XR Message specific class: Expected message from devices to request a reply from all active devices to control the amount of approvals needed to proceed
     [System.Serializable]
     public class ApprovalCounterRequest
     {
-        // Accessible properties
+        /*
+        * ApprovalCounterRequest : Class is used to manage the ApprovalCounterRequest message for Compas XR communication.
+        * It is designed to store the element ID, trajectory ID, and header for the message.
+        * It is sent from the Primary users to all other users to control the amount of approvals needed to proceed.
+        */
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
-
-        // Constructor for creating a new ApproveTrajectory Message instance
         public ApprovalCounterRequest(string elementID, Header header=null)
         {
             Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
-
-        // Method to retrieve approval data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the ApprovalCounterRequest data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "header", Header.GetData() },
@@ -656,45 +647,42 @@ namespace CompasXR.Robots.MqttData
                 { "trajectory_id", TrajectoryID }
             };
         }
-            
-        // Method to parse an instance of the class from a json string
         public static ApprovalCounterRequest Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-            
-            // Extract header data from the JSON object and parse into a new Header instance
             var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
             Header header = Header.Parse(headerInfo);
 
-            // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
-            
-            // Create and return a new GetTrajectoryResult instance
             return new ApprovalCounterRequest(elementID, header);
         }
     }
 
-    // Approval Counter Result Compas XR Message specific class: Expected message from devices to control the amount of approvals needed to proceed
     [System.Serializable]
     public class ApprovalCounterResult
     {
-        // Accessible properties
+        /*
+        * ApprovalCounterResult : Class is used to manage the ApprovalCounterResult message for Compas XR communication.
+        * It is designed to store the element ID, trajectory ID, and header for the message.
+        * It is sent from the users to the Primary user to signify they are required for approval.
+        */
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string TrajectoryID { get; private set; }
-
-        // Constructor for creating a new ApprovalCounterResult Message instance
         public ApprovalCounterResult(string elementID, Header header=null)
         {
             Header = header ?? new Header();
             ElementID = elementID;
             TrajectoryID = $"trajectory_id_{elementID}";
         }
-
-        // Method to retrieve counter response data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the ApprovalCounterResult data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "header", Header.GetData() },
@@ -702,35 +690,32 @@ namespace CompasXR.Robots.MqttData
                 { "trajectory_id", TrajectoryID }
             };
         }
-
-        // Method to parse an instance of the class from a json string
         public static ApprovalCounterResult Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-            
-            // Extract header data from the JSON object and parse into a new Header instance
             var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
             Header header = Header.Parse(headerInfo);
 
-            // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
-            
-            // Create and return a new GetTrajectoryResult instance
             return new ApprovalCounterResult(elementID, header);
         }
     }
     [System.Serializable]
-    public class SendTrajectory //TODO: ROBOT BASE FRAME?
+    public class SendTrajectory
     {
-        // Accessible properties
+        /*
+        * SendTrajectory : Class is used to manage the SendTrajectory message for Compas XR communication.
+        * It is designed to store the element ID, robot name, trajectory, and header for the message.
+        * It is sent from the Primary user to the CAD to signify sending of the Trajectory to the Robot.
+        */
         public Header Header { get; private set; }
         public string ElementID { get; private set; }
         public string Robotname { get; private set; }
         public string TrajectoryID { get; private set; }
         public List<Dictionary<string, float>> Trajectory { get; private set; } 
-
-        // Constructor for creating a new SendTrajectory Message instance
         public SendTrajectory(string elementID, string robotName, List<Dictionary<string, float>> trajectory, Header header=null) 
         {
             Header = header ?? new Header();
@@ -739,10 +724,11 @@ namespace CompasXR.Robots.MqttData
             TrajectoryID = $"trajectory_id_{elementID}";
             Trajectory = trajectory;
         }
-
-        // Method to retrieve approval data as a dictionary
         public Dictionary<string, object> GetData()
         {
+            /*
+            * Method is used to retrieve the SendTrajectory data as a dictionary.
+            */
             return new Dictionary<string, object>
             {
                 { "header", Header.GetData() },
@@ -752,26 +738,20 @@ namespace CompasXR.Robots.MqttData
                 { "trajectory", Trajectory }
             };
         }
-
-        // Method to parse an instance of the class from a json string
         public static SendTrajectory Parse(string jsonString)
         {
-            //Deserilize string into a dictionary string object
+            /*
+            * Method is used to parse an instance of the class from a JSON string.
+            */
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-            
-            // Extract header data from the JSON object and parse into a new Header instance
             var headerInfo = JsonConvert.SerializeObject(jsonObject["header"]);
             Header header = Header.Parse(headerInfo);
 
-            // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             var robotName = jsonObject["robot_name"].ToString();
             var trajectory = JsonConvert.DeserializeObject<List<Dictionary<string, float>>>(jsonObject["trajectory"].ToString());
-
-            // Create and return a new GetTrajectoryResult instance
             return new SendTrajectory(elementID, robotName, trajectory, header);
         }
-
     }
 }
 

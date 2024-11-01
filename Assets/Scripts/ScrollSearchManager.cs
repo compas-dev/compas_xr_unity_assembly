@@ -8,6 +8,11 @@ using CompasXR.Core.Extentions;
 
 namespace CompasXR.UI
 {
+    /*
+    * CompasXR.UI : Is the namespace for all Classes that
+    * controll the primary functionalities releated to the User Interface in the CompasXR Application.
+    * Functionalities, such as UI interaction, UI element creation, and UI element control.
+    */
     public class ScrollSearchManager : MonoBehaviour
     {
         //Other Scripts and global Objects for in script use
@@ -33,29 +38,32 @@ namespace CompasXR.UI
         private int closestCellIndex;
         private int? selectedCellIndex = null;
         public string selectedCellStepIndex;
-        
+
+        /////////////////////////////////////////////// Monobehaviour Methods //////////////////////////////////////////////////////////             
         void Start()
         {
-            //Find initial objects
             OnStartInitilization();
         }
-
         void Update()
         {
-            //Create Scroll Search Objects based on the active state
             ScrollSearchControler(ref cellsExist);
         }
 
         /////////////////////////////////////////////// Initilization and Control Methods ///////////////////////////////////////////////       
         private void OnStartInitilization()
         {
-            //Get the database manager
+            /*
+            * Method is used to initialize all the required variables and objects for the ScrollSearchManager script.
+            * The method is called in the Start() method of the Monobehaviour.
+            */
+
+            //Find Other script Objects
             databaseManager = GameObject.Find("DatabaseManager").GetComponent<DatabaseManager>();
             instantiateObjects = GameObject.Find("Instantiate").GetComponent<InstantiateObjects>();
             uiFunctionalites = GameObject.Find("UIFunctionalities").GetComponent<UIFunctionalities>();
             Elements = GameObject.Find("Elements");
 
-            //Find OnScreen Objects
+            //Find Objects
             GameObject Canvas = GameObject.Find("Canvas");
             GameObject VisiblityEditor = Canvas.FindObject("Visibility_Editor");
             GameObject ScrollSearchToggle = VisiblityEditor.FindObject("ScrollSearchToggle");
@@ -66,19 +74,18 @@ namespace CompasXR.UI
         }
         public void ScrollSearchControler(ref bool cellsExist)
         {
-            //If cells exist loop through the cells and get the closest cell
+            /*
+            * Method is used to control the scrolling and search functionality of the ScrollSearchManager script.
+            * The method is called in the Update() method of the Monobehaviour.
+            */
             if (cellsExist)
             {
-                //Calculate the distance between the center and the cells
                 for (int i = 0; i < cells.Count; i++)
                 {
                     cellDistances[i] = Mathf.Abs(center.transform.position.y - cells[i].transform.position.y);
                 }
-
-                //Get the minimum distance
                 float minDistance = Mathf.Min(cellDistances);
 
-                //Get the index of the closest cell
                 for (int a = 0; a < cells.Count; a++)
                 {
                     if (minDistance == cellDistances[a])
@@ -87,13 +94,9 @@ namespace CompasXR.UI
                     }
                 }
 
-                //If the dragging event has ended then lerp to the closest cell and color the item from the cell
                 if (!dragging)
                 {
-                    //Adjust pannel to the closest cell
                     LerpToCell(closestCellIndex * - cellSpacing);
-
-                    //Search for the step
                     ScrollSearchObjectColor(ref closestCellIndex, ref selectedCellIndex, ref selectedCellStepIndex, ref cells);
                 }
             }
@@ -102,26 +105,10 @@ namespace CompasXR.UI
         /////////////////////////////////////////////// OnScreen Object Management /////////////////////////////////////////////////////   
         public void CreateCellsFromPrefab(ref GameObject prefabAsset, int cellSpacing, GameObject cellsParent, int cellCount, ref bool cellsExist)
         {
-            if(prefabAsset == null)
-            {
-                Debug.Log("Prefab Asset is null");
-                return;
-            }
-            if(cellsParent == null)
-            {
-                Debug.Log("Cells Parent is null");
-                return;
-            }
-            if(cellCount == 0)
-            {
-                Debug.Log("Cell Count is 0");
-                return;
-            }
-
-            //Create cell distance array from the cell count
+            /*
+            * Method is used to create a list of cells from a prefab asset.
+            */
             cellDistances = new float[cellCount];
-
-            //Create cells from prefab
             for (int i = 0; i < cellCount; i++)
             {
                 GameObject cell = Instantiate(prefabAsset, cellsParent.transform);
@@ -130,27 +117,22 @@ namespace CompasXR.UI
                 cell.GetComponent<RectTransform>().anchoredPosition = newCellPosition;
                 cell.GetComponentInChildren<TMP_Text>().text = i.ToString();
                 cell.name = $"Cell {i}";
-
                 cells.Add(cell);
             }
-
-            //Change the reference bool
             cellsExist = true;
         }
         public void ResetScrollSearch(ref bool cellsExist)
         {
-            //Set bool to false
+            /*
+            * Method is used to reset the scroll search functionality.
+            */
             cellsExist = false;
-
-            //Destroy all cells
             DestroyCellInfo(ref cells, ref cellDistances);
 
-            //Color the last Selected Item based on the current application mode
             if (selectedCellStepIndex != null)
             {
                 Step step = databaseManager.BuildingPlanDataItem.steps[selectedCellStepIndex];
                 GameObject objectToColor = Elements.FindObject(selectedCellStepIndex).FindObject(step.data.element_ids[0] + " Geometry");
-
                 if (objectToColor != null)
                 {
                     instantiateObjects.ObjectColorandTouchEvaluater(
@@ -159,48 +141,49 @@ namespace CompasXR.UI
                         step, selectedCellStepIndex, objectToColor);
                 }
 
-                //If Priority Viewer toggle is on then color the add additional color based on priority
                 if (uiFunctionalites.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                 {
                     instantiateObjects.ColorObjectByPriority(uiFunctionalites.SelectedPriority, step.data.priority.ToString(), selectedCellStepIndex, objectToColor);
                 }
             }
-
-            //Reset the selected cell index
             selectedCellIndex = null;
         }
         public void DestroyCellInfo(ref List<GameObject> cells, ref float[] cellDistances)
         {
-            //Destroy all cells
+            /*
+            * Method is used to destroy all the cells and cell information.
+            */
             foreach (GameObject cell in cells)
             {
                 Destroy(cell);
             }
-
-            //Clear the cells list and cell distances array
             cells.Clear();
             cellDistances = new float[0];
         }
         void LerpToCell(int position)
         {
+            /*
+            * Method is used to lerp the scrollable panel to a specific cell position.
+            * used to inturpolate the position of the scrollable panel to the position of the cell.
+            */
             float newY = Mathf.Lerp(container.anchoredPosition.y, position, Time.deltaTime * 10f);
             Vector2 newPosition = new Vector2(container.anchoredPosition.x, newY);
-
             container.anchoredPosition = newPosition;
         }
 
         /////////////////////////////////////////////// Spatial Object Management /////////////////////////////////////////////////////
         public void ScrollSearchObjectColor(ref int closestCellIndex, ref int? selectedCellIndex, ref string selectedCellStepIndex, ref List<GameObject> cells)
         {
+            /*
+            * Method is used to control coloring the object that is being searched for in the scroll search functionality.
+            */
+
             if (closestCellIndex != selectedCellIndex)
             {
-                //Color the previous item based on current application mode settings
                 if (selectedCellIndex != null && selectedCellStepIndex != null)
                 {
-                    //Get information for the specific object
                     Step step = databaseManager.BuildingPlanDataItem.steps[selectedCellStepIndex];
                     GameObject objectToColor = Elements.FindObject(selectedCellStepIndex).FindObject(step.data.element_ids[0] + " Geometry");
-
                     if(objectToColor == null)
                     {
                         Debug.Log("ScrollSearchController: ObjectToColor is null.");
@@ -208,13 +191,11 @@ namespace CompasXR.UI
 
                     if (selectedCellStepIndex != uiFunctionalites.CurrentStep)
                     {
-                        //Color the object based on current application information
                         instantiateObjects.ObjectColorandTouchEvaluater(
                             instantiateObjects.visulizationController.VisulizationMode,
                             instantiateObjects.visulizationController.TouchMode,
                             step, selectedCellStepIndex, objectToColor);
 
-                        //If Priority Viewer toggle is on then color the add additional color based on priority
                         if (uiFunctionalites.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
                         {
                             instantiateObjects.ColorObjectByPriority(uiFunctionalites.SelectedPriority, step.data.priority.ToString(), selectedCellStepIndex, objectToColor);
@@ -222,21 +203,16 @@ namespace CompasXR.UI
                     }
                     else
                     {
-                        //Color the object based on human or robot
                         instantiateObjects.ColorHumanOrRobot(step.data.actor, step.data.is_built, objectToColor);
                     }
                     
                 }
 
-                //Set new selected cell index
                 selectedCellIndex = closestCellIndex;
                 selectedCellStepIndex = GetTextItemFromGameObject(cells[closestCellIndex]);
                 Step newStep = databaseManager.BuildingPlanDataItem.steps[selectedCellStepIndex];
-
-                //Find the gameObject associated with the cells text value
                 GameObject newObjectToColor = Elements.FindObject(selectedCellStepIndex).FindObject(newStep.data.element_ids[0] + " Geometry");
 
-                //if the search Object is not null then color it, but if it is null then display a warning message
                 if (newObjectToColor != null)
                 {
                     Debug.Log($"ScrollSearchController: Coloring Object {selectedCellStepIndex} by searched color.");
@@ -245,24 +221,31 @@ namespace CompasXR.UI
                 else
                 {
                     string message = $"WARNING: The item {selectedCellStepIndex} could not be found. Please retype information and try search again.";
-                    uiFunctionalites.SignalOnScreenMessageFromPrefab(ref uiFunctionalites.OnScreenErrorMessagePrefab, ref uiFunctionalites.SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", uiFunctionalites.MessagesParent, message, "ScrollSearchController: Could not find searched item.");
+                    UserInterface.SignalOnScreenMessageFromPrefab(ref uiFunctionalites.OnScreenErrorMessagePrefab, ref uiFunctionalites.SearchItemNotFoundWarningMessageObject, "SearchItemNotFoundWarningMessage", uiFunctionalites.MessagesParent, message, "ScrollSearchController: Could not find searched item.");
                 }
             }
         }
         public string GetTextItemFromGameObject(GameObject gameObject)
         {
+            /*
+            * Method is used to get the text item from a game object.
+            */
             return gameObject.GetComponentInChildren<TMP_Text>().text;
         }
 
         /////////////////////////////////////////////// Scrolling Object Event Methods  ////////////////////////////////////////////////
         public void StartDrag()
         {
-            Debug.Log("Start Drag");
+            /*
+            * Method is used to indicate the drag is active.
+            */
             dragging = true;
         }
         public void EndDrag()
         {
-            Debug.Log("End Drag");
+            /*
+            * Method is used to indicate the drag is inactive.
+            */
             dragging = false;
         }
 
