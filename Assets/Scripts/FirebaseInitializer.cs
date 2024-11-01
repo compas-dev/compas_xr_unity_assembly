@@ -1,77 +1,74 @@
 using UnityEngine;
-using UnityEngine.UI;
 using Firebase;
 using Firebase.Extensions;
-using UnityEngine.SceneManagement;
-using UnityEngine.Events;
-using TMPro;
-using System.Collections;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
+using CompasXR.Core.Extentions;
 
 
-public class FirebaseInitializer : MonoBehaviour
+namespace CompasXR.Database.FirebaseManagment
 {
-    public MqttFirebaseConfigManager mqttConfigManager;
+    /*
+    * CompasXR.Database.FirebaseManagement : A namespace to define and controll various Firebase connection,
+    * configuration information, user user record and general database management.
+    */
 
-    public void Start()
+    public class FirebaseInitializer : MonoBehaviour
     {
-        mqttConfigManager = FindObjectOfType<MqttFirebaseConfigManager>();
-        if (mqttConfigManager == null)
-        {
-            Debug.LogError("MqttConfigManager not found in the scene.");
-        }
-    }
+        /*
+        * FirebaseInitializer : Class is used to initialize Firebase with the provided configuration settings.
+        * Additionally it is designed to change scenes on successful initilization.
+        */
+        
+        public MqttFirebaseConfigManager mqttConfigManager;
 
-    public void InitializeFirebase()
-    {
-        Debug.Log("We are starting to initialize Firebase");
-        Debug.Log("Test Print" + " " + FirebaseManager.Instance.appId);
-
-        AppOptions options = new AppOptions
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
+        public void Start()
         {
-            AppId = FirebaseManager.Instance.appId,
-            ApiKey = FirebaseManager.Instance.apiKey,
-            DatabaseUrl = new System.Uri(FirebaseManager.Instance.databaseUrl),
-            StorageBucket = FirebaseManager.Instance.storageBucket,
-            ProjectId = FirebaseManager.Instance.projectId,
-        };
-
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
-        {
-            Firebase.DependencyStatus dependencyStatus = task.Result;
-            if (dependencyStatus == Firebase.DependencyStatus.Available)
+            mqttConfigManager = FindObjectOfType<MqttFirebaseConfigManager>();
+            if (mqttConfigManager == null)
             {
-                FirebaseApp app = FirebaseApp.Create(options);
+                Debug.LogError("MqttConfigManager not found in the scene.");
+            }
+        }
 
-                if (app != null)
+        //////////////////////////// Firebase Initilization Methods///////////////////////
+        public void InitializeFirebase()
+        {
+            /*
+            * InitializeFirebase : Method is used to initialize Firebase with the provided configuration settings.
+            */
+            AppOptions options = new AppOptions
+            {
+                AppId = FirebaseManager.Instance.appId,
+                ApiKey = FirebaseManager.Instance.apiKey,
+                DatabaseUrl = new System.Uri(FirebaseManager.Instance.databaseUrl),
+                StorageBucket = FirebaseManager.Instance.storageBucket,
+                ProjectId = FirebaseManager.Instance.projectId,
+            };
+
+            FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+            {
+                Firebase.DependencyStatus dependencyStatus = task.Result;
+                if (dependencyStatus == Firebase.DependencyStatus.Available)
                 {
-                    Debug.Log("Firebase Initialized Successfully");
-                    Debug.Log($"App Name: {app.Name}");
+                    FirebaseApp app = FirebaseApp.Create(options);
 
-                    //Disconnect from MQTT
-                    mqttConfigManager.Disconnect();
-                    Debug.Log("Disconnected from MQTT");
-
-                    // Load the new scene
-                    ChangeScene("Log");
-                    
+                    if (app != null)
+                    {
+                        Debug.Log("InitializeFirebase: Firebase Initialized Successfully");
+                        mqttConfigManager.Disconnect();
+                        HelpersExtensions.ChangeScene("Login");
+                    }
+                    else
+                    {
+                        Debug.LogError("InitializeFirebase: Failed to create Firebase app. Please check your configuration.");
+                    }
                 }
                 else
                 {
-                    Debug.LogError("Failed to create Firebase app. Please check your configuration.");
+                    Debug.LogError($"InitializeFirebase: Could not resolve all Firebase dependencies: {dependencyStatus}");
                 }
-            }
-            else
-            {
-                Debug.LogError($"Could not resolve all Firebase dependencies: {dependencyStatus}");
-            }
-        });
-    }
+            });
+        }
 
-    private void ChangeScene(string sceneName)
-    {
-        SceneManager.LoadScene(sceneName);
     }
-
 }

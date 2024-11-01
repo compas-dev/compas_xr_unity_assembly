@@ -7,35 +7,45 @@ using Firebase;
 using Firebase.Extensions;
 using Firebase.Database;
 
-public class CheckFirebase : MonoBehaviour
+namespace CompasXR.Database.FirebaseManagment
 {
-    //1. Define a delegate
-    public delegate void FirebaseInitializedEventHandler(object source, EventArgs args);
+    /*
+    * CompasXR.Database.FirebaseManagement : A namespace to define and controll various Firebase connection,
+    * configuration information, user record, and general database management.
+    */
 
-    //2. Define an event based on that delegate
-    public event FirebaseInitializedEventHandler FirebaseInitialized;
-
-    public void Start()
+    public class CheckFirebase : MonoBehaviour
     {
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+        /*
+        * CheckFirebase : Class is used to check if Firebase is initialized or not.
+        * It is linked to an event that is passed to additional scripts to provide initilization confirmation.
+        */
+
+        public delegate void FirebaseInitializedEventHandler(object source, EventArgs args);
+        public event FirebaseInitializedEventHandler FirebaseInitialized;
+
+        public void Start()
         {
-            if (task.Exception != null)
+            FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
             {
-                Debug.LogError(message: $"Failed to initialize Firebase with {task.Exception}");
-                return;
-            }
+                if (task.Exception != null)
+                {
+                    Debug.LogError(message: $"Failed to initialize Firebase with {task.Exception}");
+                    return;
+                }
 
-            OnFirebaseInitialized();
-            Debug.Log("Invoked");
-        });
-    }
-
-    protected virtual void OnFirebaseInitialized()
-    {
-        if(FirebaseInitialized != null)
-        {
-            FirebaseInitialized(this, EventArgs.Empty);
+                OnFirebaseInitialized();
+                Debug.Log("Invoked");
+            });
         }
-    } 
 
+        protected virtual void OnFirebaseInitialized()
+        {
+            if(FirebaseInitialized != null)
+            {
+                FirebaseInitialized(this, EventArgs.Empty);
+            }
+        } 
+
+    }
 }

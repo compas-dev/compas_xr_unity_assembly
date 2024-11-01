@@ -8,86 +8,109 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
-public class FirebaseConfigSettings : MonoBehaviour
+namespace CompasXR.Database.FirebaseManagment
 {
-    private TMP_InputField applicationIdInput;
-    private TMP_InputField apiKeyInput;
-    private TMP_InputField databaseUrlInput;
-    private TMP_InputField storageBucketInput;
-    private TMP_InputField projectIdInput;
-    private List<TMP_InputField> inputFields = new List<TMP_InputField>();
+    /*
+    * CompasXR.Database.FirebaseManagement : A namespace to define and controll various Firebase connection,
+    * configuration information, user record and general database management.
+    */
 
-    [HideInInspector]
-    public TMP_InputField topicSubscribeInput;
-    
-    void Awake()
+    public class FirebaseConfigSettings : MonoBehaviour
     {
-        applicationIdInput = GameObject.Find("appId").GetComponent<TMP_InputField>();
-        apiKeyInput = GameObject.Find("apiKey").GetComponent<TMP_InputField>();
-        databaseUrlInput = GameObject.Find("databaseUrl").GetComponent<TMP_InputField>();
-        storageBucketInput = GameObject.Find("storageBucket").GetComponent<TMP_InputField>();
-        projectIdInput = GameObject.Find("projectId").GetComponent<TMP_InputField>();
-        topicSubscribeInput = GameObject.Find("topicSubscribe").GetComponent<TMP_InputField>();
-       
-        inputFields.Add(applicationIdInput);
-        inputFields.Add(apiKeyInput);
-        inputFields.Add(databaseUrlInput);
-        inputFields.Add(storageBucketInput);
-        inputFields.Add(projectIdInput);
-        inputFields.Add(topicSubscribeInput);
-    }
+        /*
+        * FirebaseConfigSettings : Class is used to manage the Firebase configuration setting inputs.
+        * It is designed to save and load the user input Firebase configuration settings.
+        */
 
-    void Start()
-    { 
-        UpdateInputFields();
-        LoadInputs();
-        UpdateFirebaseManagerInputs();
-    }
+        private TMP_InputField applicationIdInput;
+        private TMP_InputField apiKeyInput;
+        private TMP_InputField databaseUrlInput;
+        private TMP_InputField storageBucketInput;
+        private TMP_InputField projectIdInput;
+        private List<TMP_InputField> inputFields = new List<TMP_InputField>();
 
-
-    public void SaveInputs()
-    {
-        foreach (TMP_InputField inputField in inputFields)
+        [HideInInspector]
+        public TMP_InputField topicSubscribeInput;
+        
+        //////////////////////////// Monobehaviour Methods //////////////////////////////
+        void Awake()
         {
-            string inputText = inputField.text;
-            PlayerPrefs.SetString(inputField.name, inputText);
-            Debug.Log("Input Saved: " + inputText);
+            applicationIdInput = GameObject.Find("appId").GetComponent<TMP_InputField>();
+            apiKeyInput = GameObject.Find("apiKey").GetComponent<TMP_InputField>();
+            databaseUrlInput = GameObject.Find("databaseUrl").GetComponent<TMP_InputField>();
+            storageBucketInput = GameObject.Find("storageBucket").GetComponent<TMP_InputField>();
+            projectIdInput = GameObject.Find("projectId").GetComponent<TMP_InputField>();
+            topicSubscribeInput = GameObject.Find("topicSubscribe").GetComponent<TMP_InputField>();
+
+            inputFields.Add(applicationIdInput);
+            inputFields.Add(apiKeyInput);
+            inputFields.Add(databaseUrlInput);
+            inputFields.Add(storageBucketInput);
+            inputFields.Add(projectIdInput);
+            inputFields.Add(topicSubscribeInput);
+        }
+        void Start()
+        { 
+            UpdateInputFields();
+            LoadInputs();
+            UpdateFirebaseManagerConfigSettings();
         }
 
-        PlayerPrefs.Save();
-        UpdateFirebaseManagerInputs();
-
-    }
-
-    private void LoadInputs()
-    {
-        foreach (TMP_InputField inputField in inputFields)
+        //////////////////////////// Custom Methods //////////////////////////////////////
+        public void SaveInputs()
         {
-            string key = inputField.name;
-            if (PlayerPrefs.HasKey(key))
+            /*
+            * Method used to save the user input Firebase
+            * values to the Player Preferences.
+            */
+            foreach (TMP_InputField inputField in inputFields)
             {
-                string savedInput = PlayerPrefs.GetString(key);
-                inputField.text = savedInput;
-                Debug.Log("Input Loaded: " + savedInput);
+                string inputText = inputField.text;
+                PlayerPrefs.SetString(inputField.name, inputText);
+                Debug.Log("SaveInputs: Input Saved: " + inputText);
+            }
+            PlayerPrefs.Save();
+            UpdateFirebaseManagerConfigSettings();
+        }
+        private void LoadInputs()
+        {
+            /*
+            * Method is used to load the Firebase
+            * values from the Player Preferences on start.
+            */
+            foreach (TMP_InputField inputField in inputFields)
+            {
+                string key = inputField.name;
+                if (PlayerPrefs.HasKey(key))
+                {
+                    string savedInput = PlayerPrefs.GetString(key);
+                    inputField.text = savedInput;
+                    Debug.Log("LoadInputs: Input Loaded: " + savedInput);
+                }
             }
         }
-    }
-
-    private void UpdateFirebaseManagerInputs()
-    {
-        FirebaseManager.Instance.appId = applicationIdInput.text;
-        FirebaseManager.Instance.apiKey = apiKeyInput.text;
-        FirebaseManager.Instance.databaseUrl = databaseUrlInput.text;
-        FirebaseManager.Instance.storageBucket = storageBucketInput.text;
-        FirebaseManager.Instance.projectId = projectIdInput.text;
-    }
-
-    public void UpdateInputFields()
-    {
-        applicationIdInput.text = FirebaseManager.Instance.appId;
-        apiKeyInput.text = FirebaseManager.Instance.apiKey;
-        databaseUrlInput.text = FirebaseManager.Instance.databaseUrl;
-        storageBucketInput.text = FirebaseManager.Instance.storageBucket;
-        projectIdInput.text = FirebaseManager.Instance.projectId;
+        private void UpdateFirebaseManagerConfigSettings()
+        {
+            /*
+            * Updates the FirebaseManager singleton instance values with
+            * configuration settings with the user input values.
+            */
+            FirebaseManager.Instance.appId = applicationIdInput.text;
+            FirebaseManager.Instance.apiKey = apiKeyInput.text;
+            FirebaseManager.Instance.databaseUrl = databaseUrlInput.text;
+            FirebaseManager.Instance.storageBucket = storageBucketInput.text;
+            FirebaseManager.Instance.projectId = projectIdInput.text;
+        }
+        public void UpdateInputFields()
+        {
+            /*
+            * Updates the input fields with the FirebaseManager singleton instance values.
+            */
+            applicationIdInput.text = FirebaseManager.Instance.appId;
+            apiKeyInput.text = FirebaseManager.Instance.apiKey;
+            databaseUrlInput.text = FirebaseManager.Instance.databaseUrl;
+            storageBucketInput.text = FirebaseManager.Instance.storageBucket;
+            projectIdInput.text = FirebaseManager.Instance.projectId;
+        }
     }
 }
