@@ -7,11 +7,12 @@ using System.Security.Cryptography.X509Certificates;
 using RosSharp.RosBridgeClient.MessageTypes.Rosapi;
 using Unity.VisualScripting.AssemblyQualifiedNameParser;
 using Newtonsoft.Json;
-using MQTTDataCompasXR;
-using JSON;
 using RosSharp.Urdf;
+using CompasXR.Core.Data;
+using Google.MiniJSON;
 
-namespace MQTTDataCompasXR
+
+namespace CompasXR.Robots.MqttData
 {
     /*
         WARNING: These classes define standard message formats for Compas XR MQTT communication.
@@ -65,8 +66,8 @@ namespace MQTTDataCompasXR
         public Publishers(string projectName)
         {
             getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
-            approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}"; //THIS is published to once the request trajectory button is pressed.
-            approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}"; //This is published by everyone once a request message is received.
+            approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";
+            approvalCounterResultTopic = $"compas_xr/approval_counter_result/{projectName}";
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
             sendTrajectoryTopic = $"compas_xr/send_trajectory/{projectName}";
         }
@@ -87,7 +88,7 @@ namespace MQTTDataCompasXR
         //Constructer for subscribers that takes an input project name
         public Subscribers(string projectName)
         {
-            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}"; //LISTENS TO GET APPLY REQUEST TRANSACTION LOCK WHEN THE REQUEST DOES NOT COME FROM ME.
+            getTrajectoryRequestTopic = $"compas_xr/get_trajectory_request/{projectName}";
             getTrajectoryResultTopic = $"compas_xr/get_trajectory_result/{projectName}";
             approveTrajectoryTopic = $"compas_xr/approve_trajectory/{projectName}";
             approvalCounterRequestTopic = $"compas_xr/approval_counter_request/{projectName}";
@@ -131,11 +132,14 @@ namespace MQTTDataCompasXR
         //Approval time out cancelation token source
         public CancellationTokenSource ApprovalTimeOutCancelationToken { get; set; }
 
-        //Is Dirty Bool used for time outs
-        public bool IsDirtyApproval { get; set; }
+        //Cancelation token source for GetTrajectoryRequest time out
+        public CancellationTokenSource GetTrajectoryRequestTimeOutCancelationToken { get; set; }
 
-        //Is Dirty Header used for time outs to know what to ignore
-        public Header IsDirtyApprovalHeader { get; set; }
+        //Is Dirty Bool used for the GetTrajectoryRequest
+        public bool IsDirtyTrajectory { get; set; }
+
+        //Is Dirty Header used for GetTrajectoryRequest time out
+        public Header IsDirtyGetTrajectoryRequestHeader { get; set; }
 
         //Constructer for ServiceManager
         public ServiceManager()
@@ -147,8 +151,8 @@ namespace MQTTDataCompasXR
             currentService = CurrentService.None;
             LastGetTrajectoryRequestMessage = null;
             LastGetTrajectoryResultMessage = null;
-            IsDirtyApproval = false;
-            IsDirtyApprovalHeader = null;
+            IsDirtyGetTrajectoryRequestHeader = null;
+            IsDirtyTrajectory = false;            
             TrajectoryRequestTransactionLock = false;
         }
 
@@ -210,7 +214,7 @@ namespace MQTTDataCompasXR
     [System.Serializable]
     public class SequenceCounter
     {
-        private static readonly int ROLLOVER_THRESHOLD = 1000000;
+        private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
 
@@ -251,7 +255,7 @@ namespace MQTTDataCompasXR
     public class ResponseID
     {
         //Response Attributes.
-        private static readonly int ROLLOVER_THRESHOLD = 1000000;
+        private static readonly int ROLLOVER_THRESHOLD = int.MaxValue;
         private int _value;
         private readonly object _lock = new object();
 
@@ -546,10 +550,9 @@ namespace MQTTDataCompasXR
             // Extract additional data from the JSON object and cast to new required types.
             var elementID = jsonObject["element_id"].ToString();
             var robotName = jsonObject["robot_name"].ToString();
-
-            //TODO: TRY AND CATCH FOR PARSING FRAME?
             var robotBaseFrameDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(jsonObject["robot_base_frame"]));
-            Frame robotBaseFrame = Frame.Parse(robotBaseFrameDict);
+            var robotBaseFrameDataDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(robotBaseFrameDict["data"]));
+            Frame robotBaseFrame = Frame.Parse(robotBaseFrameDataDict);
             if (robotBaseFrame == null)
             {
                 throw new Exception("Robot Base Frame is null");

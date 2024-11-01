@@ -3,14 +3,13 @@
     using System.Collections.Generic;
     using UnityEngine;
     
-    namespace ApplicationInfo
+    namespace CompasXR.AppSettings
     {
         [System.Serializable]
         public class ApplicationSettings
         {
-            public string parentname {get; set;}
-            public string storagename {get; set;}
-
-            public bool objorientation {get; set;}
+            public string project_name {get; set;}
+            public string storage_folder {get; set;}
+            public bool z_to_y_remap {get; set;}
         }
     }

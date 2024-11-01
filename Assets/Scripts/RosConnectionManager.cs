@@ -4,6 +4,7 @@ using RosSharp.RosBridgeClient.Protocols;
 using UnityEngine;
 using RosSharp.RosBridgeClient;
 using UnityEngine.UI;
+using CompasXR.UI;
 
 public class RosConnectionManager : MonoBehaviour
 {

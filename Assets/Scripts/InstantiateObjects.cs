@@ -1,33 +1,19 @@
 using System;
 using System.IO;
-using System.Collections;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Newtonsoft.Json;
-using Firebase.Database;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
-using UnityEngine.EventSystems;
-using ApplicationInfo;
-using JSON;
-using Helpers;
 using Dummiesman;
 using TMPro;
-using ApplicationModeControler;
-using UnityEngine.Events;
-using UnityEngine.Analytics;
-using UnityEngine.InputSystem;
-using System.Xml.Linq;
+using CompasXR.UI;
+using CompasXR.Core.Data;
+using CompasXR.Core.Extentions;
+using CompasXR.AppSettings;
 
-
-//scripts to initiate all geometries in the scene
-namespace Instantiate
+namespace CompasXR.Core
 {
     public class InstantiateObjects : MonoBehaviour
     {
-        
         //Other Sript Objects
         public DatabaseManager databaseManager;
         public UIFunctionalities UIFunctionalities;
@@ -80,7 +66,7 @@ namespace Instantiate
             //Initilization Method for finding objects and materials
             OnAwakeInitilization();
         }
-        
+
     /////////////////////////////// INSTANTIATE OBJECTS //////////////////////////////////////////
         private void OnAwakeInitilization()
         {
@@ -121,22 +107,33 @@ namespace Instantiate
             PriorityViewrLineObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerLine");
             PriorityViewerPointsObject = GameObject.Find("PriorityViewerObjects").FindObject("PriorityViewerPoints");
 
-            //Set Initial Visulization Modes
-            visulizationController.VisulizationMode = VisulizationMode.BuiltUnbuilt;
-            visulizationController.TouchMode = TouchMode.None;
         }
         public void placeElement(string Key, Step step)
         {
             Debug.Log($"Placing Element: {step.data.element_ids[0]} from Step: {Key}");
 
             //get position
-            Vector3 positionData = getPosition(step.data.location.point);
+            Vector3 positionData = GetPosition(step.data.location.point);
             
             //get rotation
-            Rotation rotationData = getRotation(step.data.location.xaxis, step.data.location.yaxis);
+            Rotation rotationData = GetRotation(step.data.location.xaxis, step.data.location.yaxis);
             
             //Define Object Rotation
-            Quaternion rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.objectOrientation);
+            Quaternion rotationQuaternion;
+            if(step.data.geometry == "2.ObjFile")
+            {
+                rotationQuaternion = FromRhinotoUnityRotation(rotationData, databaseManager.z_remapped);
+            }
+            else
+            {
+                rotationQuaternion = FromUnityRotation(rotationData);
+            }
+
+            //If the quaternion is null raise an error
+            if(rotationQuaternion == null)
+            {
+                Debug.LogError("placeElement: Cannot assign object rotation because it is null");
+            }
 
             //instantiate a geometry at this position and rotation
             GameObject geometry_object = gameobjectTypeSelector(step);
@@ -166,12 +163,12 @@ namespace Instantiate
             GameObject geometryObject = elementPrefab.FindObject(step.data.element_ids[0] + " Geometry");
             
             //Create 3D Index Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.155f, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
-            CreateBackgroundImageForText(ref IdxImage, elementPrefab, 0.155f, $"{elementPrefab.name}IdxImage", false);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
+            CreateBackgroundImageForText(ref IdxImage, elementPrefab,  databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{elementPrefab.name}IdxImage", false);
 
             //Create Priority Text
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], 0.15f, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
-            CreateBackgroundImageForText(ref PriorityImage, elementPrefab, 0.15f, $"{elementPrefab.name}PriorityImage", false);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
+            CreateBackgroundImageForText(ref PriorityImage, elementPrefab, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, $"{elementPrefab.name}PriorityImage", false);
 
             //Case Switches to evaluate color and touch modes.
             ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, step, Key, geometryObject);
@@ -237,7 +234,6 @@ namespace Instantiate
 
             switch (step.data.geometry)
                 {
-                    //TODO:REVIEW THE SIZE AND SCALE OF THESE
                     case "0.Cylinder":
                         //Create Empty gameObject to store the cylinder (Named by Step Number)
                         element = new GameObject();
@@ -256,8 +252,7 @@ namespace Instantiate
 
                         //Add a collider to the gameobject
                         BoxCollider cylinderCollider = cylinderObject.AddComponent<BoxCollider>();
-                        Vector3 cylinderSize = cylinderObject.GetComponent<MeshRenderer>().bounds.size;
-                        Vector3 cylinderColliderSize = new Vector3(cylinderSize.x*1.1f, cylinderSize.y*1.2f, cylinderSize.z*1.2f);
+                        Vector3 cylinderColliderSize = new Vector3(cylinderCollider.size.x*1.1f, cylinderCollider.size.y*1.2f, cylinderCollider.size.z*1.2f);
                         cylinderCollider.size = cylinderColliderSize;
 
                         //Set the cylinder as a child of the empty gameObject
@@ -272,7 +267,7 @@ namespace Instantiate
                         element.transform.rotation = Quaternion.identity;
                         
                         //Define the Size of the Cube from the data values
-                        Vector3 cubesize = new Vector3(databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.length);
+                        Vector3 cubesize = new Vector3(databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.length, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.width);
                         
                         //Create, Scale, & name Box object (Named by Assembly ID)
                         GameObject boxObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -281,8 +276,7 @@ namespace Instantiate
 
                         //Add a collider to the gameobject
                         BoxCollider boxCollider = boxObject.AddComponent<BoxCollider>();
-                        Vector3 boxSize = boxObject.GetComponent<MeshRenderer>().bounds.size;
-                        Vector3 boxColliderSize = new Vector3(boxSize.x*1.1f, boxSize.y*1.2f, boxSize.z*1.2f);
+                        Vector3 boxColliderSize = new Vector3(boxCollider.size.x*1.1f, boxCollider.size.y*1.2f, boxCollider.size.z*1.2f);
                         boxCollider.size = boxColliderSize;
 
                         //Set the cylinder as a child of the empty gameObject
@@ -457,11 +451,10 @@ namespace Instantiate
             }
             
             Vector3 objectCenter = FindGameObjectCenter(geometryObject);
-            Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, 0.13f, "y");
+            Vector3 arrowOffset = OffsetPositionVectorByDistance(objectCenter, databaseManager.AssemblyDataDict[step.data.element_ids[0].ToString()].attributes.height, "y"); //TODO: THIS NEEDS TO BE HEIGHT OF OBJECT
 
             //Define rotation for the gameObject.
             Quaternion rotationQuaternion = Quaternion.identity;
-            // Quaternion rotationQuaternion = GetQuaternionFromStepKey(stepKey);
 
             //Set new arrow item
             GameObject newArrow = null;
@@ -745,16 +738,18 @@ namespace Instantiate
         }
 
     /////////////////////////////// POSITION AND ROTATION ////////////////////////////////////////
-        public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool objZ_up)
+    
+    //TODO: Move these transformation things to a true static class and start the class library conversion process...
+        public Quaternion FromRhinotoUnityRotation(Rotation rotation, bool z_to_y_remapped)
         {   
             //Set Unity Rotation
-            Rotation rotationLh = rhToLh(rotation.x , rotation.y);
+            Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
 
             Rotation Zrotation = ZRotation(rotationLh);
 
             Rotation ObjectRotation;
 
-            if (objZ_up == true)
+            if (!z_to_y_remapped == true)
             {
                 ObjectRotation = XRotation(Zrotation);
             }
@@ -771,19 +766,19 @@ namespace Instantiate
         public Quaternion FromUnityRotation(Rotation rotation)
         {   
             //Right hand to left hand conversion
-            Rotation rotationLh = rhToLh(rotation.x , rotation.y);
+            Rotation rotationLh = RightHandToLeftHand(rotation.x , rotation.y);
 
             //Set Unity Rotation
             Quaternion rotationQuaternion = GetQuaternion(rotationLh.y, rotationLh.z);
 
             return rotationQuaternion;
         } 
-        public Vector3 getPosition(float[] pointlist)
+        public Vector3 GetPosition(float[] pointlist)
         {
             Vector3 position = new Vector3(pointlist[0], pointlist[2], pointlist[1]);
             return position;
         }
-        public Rotation getRotation(float[] x_vecdata, float [] y_vecdata)
+        public Rotation GetRotation(float[] x_vecdata, float [] y_vecdata)
         {
             Vector3 x_vec_right = new Vector3(x_vecdata[0], x_vecdata[1], x_vecdata[2]);
             Vector3 y_vec_right  = new Vector3(y_vecdata[0], y_vecdata[1], y_vecdata[2]);
@@ -797,7 +792,7 @@ namespace Instantiate
             
             return rotationRH;
         } 
-        public Rotation rhToLh(Vector3 x_vec_right, Vector3 y_vec_right)
+        public Rotation RightHandToLeftHand(Vector3 x_vec_right, Vector3 y_vec_right)
         {        
             Vector3 x_vec = new Vector3(x_vec_right[0], x_vec_right[2], x_vec_right[1]);
             Vector3 z_vec = new Vector3(y_vec_right[0], y_vec_right[2], y_vec_right[1]);
@@ -927,10 +922,10 @@ namespace Instantiate
         public Quaternion GetQuaternionFromStepKey(string key)
         {
             //Calculate Right Hand Rotation
-            Rotation rotationrh = getRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
+            Rotation rotationrh = GetRotation(databaseManager.BuildingPlanDataItem.steps[key].data.location.xaxis, databaseManager.BuildingPlanDataItem.steps[key].data.location.yaxis); 
             
             //Convert to Left Hand Rotation
-            Rotation rotationlh = rhToLh(rotationrh.x , rotationrh.y);
+            Rotation rotationlh = RightHandToLeftHand(rotationrh.x , rotationrh.y);
             
             //GetQuaterion from Left Hand Rotation
             Quaternion rotationQuaternion = GetQuaternion(rotationlh.y, rotationlh.z);
@@ -959,7 +954,7 @@ namespace Instantiate
         public void ObjectColorandTouchEvaluater(VisulizationMode visualizationMode, TouchMode touchMode, Step step, string key, GameObject geometryObject)
         {
             //Set Color Based on Visulization Mode
-            switch (visulizationController.VisulizationMode)
+            switch (visualizationMode)
             {
                 case VisulizationMode.BuiltUnbuilt:
                     ColorBuiltOrUnbuilt(step.data.is_built, geometryObject);
@@ -970,7 +965,7 @@ namespace Instantiate
             }
 
             //Set Touch mode based on Touch Mode
-            switch (visulizationController.TouchMode)
+            switch (touchMode)
             {
                 case TouchMode.None:
                     //Do nothing
@@ -1202,7 +1197,37 @@ namespace Instantiate
                 }
             }
         }
-    
+        public void ApplyColorBasedOnAppModes()
+        {
+            if (databaseManager.BuildingPlanDataItem.steps != null)
+            {
+                foreach (KeyValuePair<string, Step> entry in databaseManager.BuildingPlanDataItem.steps)
+                {
+                    GameObject gameObject = GameObject.Find(entry.Key);
+                    GameObject geometryObject = gameObject.FindObject(entry.Value.data.element_ids[0] + " Geometry");
+
+                    if (gameObject != null && geometryObject != null && gameObject.name != UIFunctionalities.CurrentStep)
+                    {
+                        //Color based on visulization mode
+                        ObjectColorandTouchEvaluater(visulizationController.VisulizationMode, visulizationController.TouchMode, entry.Value, entry.Key, geometryObject);
+
+                        //Check if Priority Viewer is on and color based on priority if it is.
+                        if (UIFunctionalities.PriorityViewerToggleObject.GetComponent<Toggle>().isOn)
+                        {
+                            //Color based on priority
+                            ColorObjectByPriority(UIFunctionalities.SelectedPriority, entry.Value.data.priority.ToString(), entry.Key, geometryObject);
+                        }
+
+                        //Check if the scroll Search is on and color selected cell if it is
+                        if (UIFunctionalities.ScrollSearchToggleObject.GetComponent<Toggle>().isOn && entry.Key == scrollSearchManager.selectedCellStepIndex)
+                        {
+                            //Color based on search
+                            ColorObjectbyInputMaterial(geometryObject, SearchedObjectMaterial);
+                        }
+                    }
+                }
+            }
+        }
     /////////////////////////////// EVENT HANDLING ////////////////////////////////////////
         public void OnDatabaseInitializedDict(object source, BuildingPlanDataDictEventArgs e)
         {

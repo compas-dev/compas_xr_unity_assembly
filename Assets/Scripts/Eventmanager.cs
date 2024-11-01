@@ -1,74 +1,76 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
 using Firebase.Database;
-using JSON;
-using Firebase.Auth;
-using TMPro;
-using Instantiate;
+using CompasXR.Database.FirebaseManagment;
+using CompasXR.Robots;
 
-public class Eventmanager : MonoBehaviour
+namespace CompasXR.Core
 {
-    public GameObject Databasemanager;
-    public GameObject Instantiateobjects;
-    public GameObject Checkfirebase;
-    public GameObject QRLocalization;
-    public GameObject MqttTrajectoryReceiver;
-    public GameObject TrajectoryVisulizer;
-    public DatabaseReference settings_reference;
-    DatabaseManager databaseManager;
+    public class EventManager : MonoBehaviour
+    {
+        //GameObjects for Script Storage
+        public GameObject databaseManagerObject;
+        public GameObject instantiateObjectsObject;
+        public GameObject checkFirebaseObject;
+        public GameObject qrLocalizationObject;
+        public GameObject mqttTrajectoryReceiverObject;
+        public GameObject trajectoryVisualizerObject;
 
-    void Awake()
-    {            
-        //On Application Start clear data in Cache.
-        Caching.ClearCache();
+        //Database Reference
+        public DatabaseReference dbReferenceSettings;
 
-        //Set Persistence: Disables storing information on the device for when there is no internet connection.
-        FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
-        
-        //Get Reference for the correct application settings. To dynamically connect to different RTDB and Storage.
-        settings_reference =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
-        
-        //Add script components to objects in the scene
-        databaseManager = Databasemanager.AddComponent<DatabaseManager>();  
-        InstantiateObjects instantiateObjects = Instantiateobjects.AddComponent<InstantiateObjects>();
-        CheckFirebase checkFirebase = Checkfirebase.AddComponent<CheckFirebase>();
-        QRLocalization qrLocalization = QRLocalization.GetComponent<QRLocalization>();
-        MqttTrajectoryManager mqttTrajectoryReceiver = MqttTrajectoryReceiver.GetComponent<MqttTrajectoryManager>();
-        TrajectoryVisulizer trajectoryVisulizer = TrajectoryVisulizer.GetComponent<TrajectoryVisulizer>();
-        
-        //Initilize Connection to Firebase and Fetch Settings Data
-        checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
+        //Other Script Components
+        public DatabaseManager databaseManager;
 
-        //Fetch data from realtime database
-        databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
+        void Awake()
+        {            
+            //On Application Start clear data in Cache.
+            Caching.ClearCache();
 
-        //Set publisher and subscriber topic based on project name from application settings.
-        databaseManager.ApplicationSettingUpdate += mqttTrajectoryReceiver.SetCompasXRTopics;
+            //Set Persistence: Disables storing information on the device for when there is no internet connection.
+            FirebaseDatabase.DefaultInstance.SetPersistenceEnabled(false);
+            
+            //Get Reference for the correct application settings. To dynamically connect to different RTDB and Storage.
+            dbReferenceSettings =  FirebaseDatabase.DefaultInstance.GetReference("ApplicationSettings");
+            
+            //Add script components to objects in the scene
+            databaseManager = databaseManagerObject.AddComponent<DatabaseManager>();  
+            InstantiateObjects instantiateObjects = instantiateObjectsObject.AddComponent<InstantiateObjects>();
+            CheckFirebase checkFirebase = checkFirebaseObject.AddComponent<CheckFirebase>();
+            QRLocalization qrLocalization = qrLocalizationObject.GetComponent<QRLocalization>();
+            MqttTrajectoryManager mqttTrajectoryReceiver = mqttTrajectoryReceiverObject.GetComponent<MqttTrajectoryManager>();
+            TrajectoryVisualizer trajectoryVisualizer = trajectoryVisualizerObject.GetComponent<TrajectoryVisualizer>();
+            
+            //Initilize Connection to Firebase and Fetch Settings Data
+            checkFirebase.FirebaseInitialized += DBInitializedFetchSettings;
 
-        //Initialize the database.. once the database is initialized the objects are instantiated
-        databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;
+            //Fetch data from realtime database
+            databaseManager.ApplicationSettingUpdate += databaseManager.FetchData;
 
-        //Start tracking Codes only once tracking information is received
-        databaseManager.TrackingDictReceived += qrLocalization.OnTrackingInformationReceived;
+            //Set publisher and subscriber topic based on project name from application settings.
+            databaseManager.ApplicationSettingUpdate += mqttTrajectoryReceiver.SetCompasXRTopics;
 
-        //Add listners after initial objects have been placed to avoid simultanous item placement
-        instantiateObjects.PlacedInitialElements += databaseManager.AddListeners;
+            //Initialize the database.. once the database is initialized the objects are instantiated
+            databaseManager.DatabaseInitializedDict += instantiateObjects.OnDatabaseInitializedDict;
 
-        //Trigger events for updates in the database.
-        databaseManager.DatabaseUpdate += instantiateObjects.OnDatabaseUpdate;
-        databaseManager.UserInfoUpdate += instantiateObjects.OnUserInfoUpdate;
+            //Start tracking Codes only once tracking information is received
+            databaseManager.TrackingDictReceived += qrLocalization.OnTrackingInformationReceived;
+
+            //Add listners after initial objects have been placed to avoid simultanous item placement
+            instantiateObjects.PlacedInitialElements += databaseManager.AddListeners;
+
+            //Trigger events for updates in the database.
+            databaseManager.DatabaseUpdate += instantiateObjects.OnDatabaseUpdate;
+            databaseManager.UserInfoUpdate += instantiateObjects.OnUserInfoUpdate;
+
+        }
+
+        public void DBInitializedFetchSettings(object sender, EventArgs e)
+        {
+            Debug.Log("Database Initilized: Safe to Fetch Settings Data.");
+            databaseManager.FetchSettingsData(dbReferenceSettings);
+        }  
 
     }
-
-    public void DBInitializedFetchSettings(object sender, EventArgs e)
-    {
-        Debug.Log("Database Initilized: Safe to Fetch Settings Data.");
-        databaseManager.FetchSettingsData(settings_reference);
-    }  
-
 }
 
