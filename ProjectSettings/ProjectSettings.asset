@@ -266,7 +266,7 @@ PlayerSettings:
   AndroidTargetDevices: 0
   AndroidSplashScreenScale: 1
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: X:/mas_t3_working/important_do_not_move/keystore.keystore
+  AndroidKeystoreName: C:/Users/jk6372/Desktop/keystore/keystore.keystore
   AndroidKeyaliasName: android
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidEnableArm64MTE: 0

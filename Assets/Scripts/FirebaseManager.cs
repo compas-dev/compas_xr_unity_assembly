@@ -49,22 +49,22 @@ namespace CompasXR.Database.FirebaseManagment
             * This constructor is used to set the configuration settings for Firebase.
             * It contains the required settings for connecting to the base database.
             */
-            apiKey = "AIzaSyBg2ES85_rL6Aeu76MXKsI4b6RYWW5V2hg";
-            databaseUrl = "https://test-project-94f41-default-rtdb.europe-west1.firebasedatabase.app";
-            storageBucket = "test-project-94f41.appspot.com";
-            projectId = "test-project-94f41";
+            apiKey = "AIzaSyAWVSHhg_x_0G1cJdRtsLyV5irp35vTylI";
+            databaseUrl = "https://caad-futures-database-default-rtdb.firebaseio.com";
+            storageBucket = "caad-futures-database.firebasestorage.app";
+            projectId = "caad-futures-database";
 
             CompasXR.Systems.OperatingSystem currentOS = OperatingSystemManager.GetCurrentOS();
             switch (currentOS)
             {
                 case CompasXR.Systems.OperatingSystem.iOS:
-                    appId = "1:116159730378:ios:a99ce204d214df3c0b5a33";
+                    appId = "1:970823414348:ios:1be2ca140aba48b38cbae9";
                     break;
                 case CompasXR.Systems.OperatingSystem.Android: 
-                    appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+                    appId = "1:970823414348:android:1be2ca140aba48b38cbae9";
                     break;
                 default:
-                    appId = "1:116159730378:android:a99ce204d214df3c0b5a33";
+                    appId = "1:970823414348:android:1be2ca140aba48b38cbae9";
                     break;
             }
         }

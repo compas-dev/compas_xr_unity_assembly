@@ -144,9 +144,10 @@ namespace CompasXR.Core
             
             //Set AR Text objects for the element
             float heightOffset = getHeightOffsetByStepGeometryType(step, step.data.geometry);
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{Key}", $"{elementPrefab.name}IdxText", 0.5f);
+            float textSize = 0.15f; //TODO: Joe Hard Coded this
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{Key}", $"{elementPrefab.name}IdxText", textSize);
             CreateBackgroundImageForText(ref IdxImage, elementPrefab,  heightOffset, $"{elementPrefab.name}IdxImage", false);
-            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", 0.5f);
+            CreateTextForGameObjectOnInstantiation(elementPrefab, step.data.element_ids[0], heightOffset, $"{step.data.priority}", $"{elementPrefab.name}PriorityText", textSize);
             CreateBackgroundImageForText(ref PriorityImage, elementPrefab, heightOffset, $"{elementPrefab.name}PriorityImage", false);
 
             //Control color and visualization of the object
@@ -165,7 +166,7 @@ namespace CompasXR.Core
             if (Key == UIFunctionalities.CurrentStep)
             {
                 ColorHumanOrRobot(step.data.actor, step.data.is_built, geometryObject);
-                UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.25f);
+                UserIndicatorInstantiator(ref MyUserIndacator, elementPrefab, Key, Key, "ME", 0.05f); //TODO: Joe Hard Coded this HEIGHT
             }
         }
         public float getHeightOffsetByStepGeometryType(Step step, string geometryType)
@@ -376,7 +377,9 @@ namespace CompasXR.Core
                 TextAlignmentOptions.Center, Color.white, newArrow.transform.position,
                 newArrow.transform.rotation, true, true, newArrow);
 
-            ObjectTransformations.OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, 0.12f , "y");
+            float heightOffsetForText = heightOffset + 0.01f;
+            Debug.Log($"UserIndicatorInstantiator: Height Offset for Text: {heightOffsetForText}");
+            ObjectTransformations.OffsetGameObjectPositionByExistingObjectPosition(IndexTextContainer, newArrow, heightOffsetForText , "y"); //TODO: Joe Hard Coded this
             newArrow.SetActive(true);
         }
         public void CreateNewUserObject(string UserInfoname, string itemKey)
